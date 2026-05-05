@@ -91,6 +91,105 @@ const brandNames = {
 };
 
 const allowedBrands = Object.keys(brandNames);
+
+const officialBrandDomains = {
+  agent_nateur: ["agentnateur.com"],
+  allbirds: ["allbirds.com"],
+  alpha_lion: ["alphalion.com"],
+  amazing_grass: ["amazinggrass.com"],
+  animal_pak: ["animalpak.com"],
+  armra: ["tryarmra.com"],
+  bare_performance: ["bareperformancenutrition.com"],
+  bear_komplex: ["bearkomplex.com"],
+  bloom_nutrition: ["bloomnu.com"],
+  bsn: ["bsnsupplements.com"],
+  cellucor: ["cellucor.com"],
+  century_martial_arts: ["centurymartialarts.com"],
+  codeage: ["codeage.com"],
+  compex: ["compex.com"],
+  core_nutritionals: ["corenutritionals.com"],
+  cure_hydration: ["curehydration.com"],
+  cymbiotika: ["cymbiotika.com"],
+  drip_drop: ["dripdrop.com"],
+  dymatize: ["dymatize.com"],
+  everlast: ["everlast.com"],
+  fairtex: ["fairtex.com"],
+  first_phorm: ["1stphorm.com"],
+  five_percent_nutrition: ["5percentnutrition.com"],
+  four_sigmatic: ["us.foursigmatic.com"],
+  fuji_sports: ["fujisports.com"],
+  garden_of_life: ["gardenoflife.com"],
+  ghost_lifestyle: ["ghostlifestyle.com"],
+  goli: ["goli.com"],
+  gorilla_mind: ["gorillamind.com"],
+  harbinger: ["harbingerfitness.com"],
+  hayabusa: ["hayabusafight.com"],
+  huge_supplements: ["hugesupplements.com"],
+  hyperice: ["hyperice.com"],
+  inno_supps: ["innosupps.com"],
+  iron_bull_strength: ["ironbullstrength.com"],
+  jacked_factory: ["jackedfactory.com"],
+  jocko_fuel: ["jockofuel.com"],
+  kaged: ["kaged.com"],
+  key_nutrients: ["keynutrients.com"],
+  kos: ["kos.com"],
+  liquid_iv: ["liquid-iv.com"],
+  manta_sleep: ["mantasleep.com"],
+  maryruth_organics: ["maryruthorganics.com"],
+  momentous: ["livemomentous.com"],
+  muscletech: ["muscletech.com"],
+  naked_nutrition: ["nakednutrition.com"],
+  nike: ["nike.com"],
+  nordic_naturals: ["nordic.com"],
+  now_foods: ["nowfoods.com"],
+  nutrabio: ["nutrabio.com"],
+  nuun: ["nuunlife.com"],
+  olly: ["olly.com"],
+  onnit: ["onnit.com"],
+  optimum_nutrition: ["optimumnutrition.com"],
+  orgain: ["orgain.com"],
+  outdoor_voices: ["outdoorvoices.com"],
+  owyn: ["liveowyn.com"],
+  pescience: ["pescience.com"],
+  primal_kitchen: ["primalkitchen.com"],
+  promix: ["promixnutrition.com"],
+  pure_encapsulations: ["pureencapsulationspro.com"],
+  quest_nutrition: ["questnutrition.com"],
+  raw_nutrition: ["getrawnutrition.com"],
+  redcon1: ["redcon1.com"],
+  renue_by_science: ["renuebyscience.com"],
+  ritual: ["ritual.com"],
+  rival_boxing: ["rivalboxing.us"],
+  sanabul: ["sanabulsports.com"],
+  schiek: ["schiek.com"],
+  skratch_labs: ["skratchlabs.com"],
+  soylent: ["soylent.com"],
+  swolverine: ["swolverine.com"],
+  ten_thousand: ["tenthousand.cc"],
+  terrasoul_superfoods: ["terrasoul.com"],
+  therabody: ["therabody.com"],
+  thorne: ["thorne.com"],
+  transparent_labs: ["transparentlabs.com"],
+  true_nutrition: ["truenutrition.com"],
+  trx: ["trxtraining.com"],
+  venum: ["venum.com"],
+  vital_proteins: ["vitalproteins.com"],
+};
+
+const blockedSourceDomains = new Set([
+  "bodyandfit.com",
+  "bodyscience.com.au",
+  "bodybuilding.com",
+  "discount-supplements.co.uk",
+  "nzmuscle.co.nz",
+  "supplementmart.com.au",
+  "supplementsource.ca",
+  "suppz.com",
+  "swansonvitamins.com",
+  "thefeed.com",
+  "tigerfitness.com",
+  "nutritionwarehouse.com.au",
+]);
 const excludedBrands = [
   "soccer_post",
   "soccer_zone_usa",
@@ -537,6 +636,25 @@ function isBlockedImage(url) {
   return blockedImageFragments.some((fragment) => normalized.includes(fragment));
 }
 
+function sourceDomain(url) {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function isOfficialBrandSource(row) {
+  const domain = sourceDomain(row.url);
+  if (!domain || blockedSourceDomains.has(domain)) return false;
+
+  const officialDomains = officialBrandDomains[row.brand] ?? [];
+  return officialDomains.some(
+    (officialDomain) =>
+      domain === officialDomain || domain.endsWith(`.${officialDomain}`)
+  );
+}
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -715,6 +833,7 @@ function productsForSection(section) {
 
   for (const row of rows) {
     if (isBrandMismatch(row)) continue;
+    if (!isOfficialBrandSource(row)) continue;
 
     const image = imageByProductId.get(row.id);
     if (!image) continue;
