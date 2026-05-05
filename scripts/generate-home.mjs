@@ -15,7 +15,9 @@ const brandNames = {
   bloom_nutrition: "Bloom Nutrition",
   body_science_au: "Body Science",
   bsn: "BSN",
+  bucked_up: "Bucked Up",
   cellucor: "Cellucor",
+  century_martial_arts: "Century Martial Arts",
   codeage: "Codeage",
   compex: "Compex",
   core_nutritionals: "Core Nutritionals",
@@ -23,13 +25,18 @@ const brandNames = {
   cymbiotika: "Cymbiotika",
   drip_drop: "DripDrop",
   dymatize: "Dymatize",
+  everlast: "Everlast",
+  fairtex: "Fairtex",
   first_phorm: "1st Phorm",
   five_percent_nutrition: "5% Nutrition",
+  four_sigmatic: "Four Sigmatic",
+  fuji_sports: "Fuji Sports",
   garden_of_life: "Garden of Life",
   ghost_lifestyle: "GHOST",
   goli: "Goli",
   gorilla_mind: "Gorilla Mind",
   harbinger: "Harbinger",
+  hayabusa: "Hayabusa",
   huge_supplements: "Huge Supplements",
   hyperice: "Hyperice",
   inno_supps: "Inno Supps",
@@ -37,11 +44,13 @@ const brandNames = {
   jacked_factory: "Jacked Factory",
   jocko_fuel: "Jocko Fuel",
   kaged: "Kaged",
+  key_nutrients: "Key Nutrients",
   kos: "KOS",
   liquid_iv: "Liquid I.V.",
   manta_sleep: "Manta Sleep",
   maryruth_organics: "MaryRuth Organics",
   momentous: "Momentous",
+  mud_wtr: "MUD/WTR",
   muscletech: "MuscleTech",
   naked_nutrition: "Naked Nutrition",
   nike: "Nike",
@@ -64,6 +73,8 @@ const brandNames = {
   redcon1: "Redcon1",
   renue_by_science: "Renue By Science",
   ritual: "Ritual",
+  rival_boxing: "Rival Boxing",
+  sanabul: "Sanabul",
   schiek: "Schiek",
   skratch_labs: "Skratch Labs",
   soylent: "Soylent",
@@ -75,6 +86,7 @@ const brandNames = {
   transparent_labs: "Transparent Labs",
   true_nutrition: "True Nutrition",
   trx: "TRX Training",
+  venum: "Venum",
   vital_proteins: "Vital Proteins",
 };
 
@@ -100,10 +112,50 @@ const forbiddenNameFilters = [
   "returns protection",
   "sample",
   "tester",
+  "test product",
+  "dented",
+  "free gifts",
+  "welcome gift",
+  "free welcome",
+  "prepaid",
   "tool",
   "drill",
   "saw",
   "wrench",
+];
+
+const imagePenaltyFragments = [
+  "back",
+  "alt-image",
+  "alt_image",
+  "comparison",
+  "benefits",
+  "usage",
+  "ingredient",
+  "callout",
+  "callouts",
+  "breakdown",
+  "nutrition-panel",
+  "nutritional-panel",
+  "supplement-facts",
+  "supplement_facts",
+  "nfp",
+  "sfp",
+  "label",
+  "how-to",
+  "how_to",
+];
+
+const blockedImageFragments = ["no-image", "placeholder", "missing-image"];
+
+const displayOnlyFragments = [
+  "front",
+  "hero",
+  "pdp",
+  "buybox",
+  "buy-box",
+  "thumbnail",
+  "plp",
 ];
 
 const sections = [
@@ -112,8 +164,22 @@ const sections = [
     eyebrow: "Sports nutrition",
     title: "Protein best sellers",
     description: "Whey, plant protein, meal shakes, and recovery protein.",
+    label: "Protein",
     where:
       "p.store_department = 'sports_nutrition' and p.store_collection = 'protein'",
+    nameIncludes: ["protein", "whey", "isolate", "casein", "mass gainer"],
+    nameExcludes: [
+      "bundle",
+      "stack",
+      "pack",
+      "2x",
+      "2 x",
+      "nl -",
+      "panel",
+      "nfp",
+      "creatine",
+      "créatine",
+    ],
     maxPrice: 180,
   },
   {
@@ -121,8 +187,20 @@ const sections = [
     eyebrow: "Strength",
     title: "Creatine shelf",
     description: "Creatine powders, capsules, chews, and stack bundles.",
+    label: "Creatine",
     where:
       "p.store_department = 'sports_nutrition' and p.store_collection = 'creatine'",
+    nameIncludes: ["creatine"],
+    nameExcludes: [
+      "whey protein",
+      "mass gainer",
+      "bundle",
+      "stack",
+      "pack",
+      "frother",
+      "offer",
+      "bottles of",
+    ],
     maxPrice: 130,
   },
   {
@@ -130,8 +208,22 @@ const sections = [
     eyebrow: "Energy",
     title: "Pre-workout",
     description: "Performance blends, pump formulas, and training energy.",
+    label: "Pre-workout",
     where:
       "p.store_department = 'sports_nutrition' and p.store_collection = 'pre_workout'",
+    nameIncludes: [
+      "pre-workout",
+      "pre workout",
+      "preworkout",
+      "amped",
+      "legend",
+      "gorilla mode",
+      "nitric",
+      "pump",
+      "stim",
+      "glycerol",
+    ],
+    nameExcludes: ["whey", "protein", "cinnabon", "bundle", "stack"],
     maxPrice: 120,
   },
   {
@@ -139,8 +231,19 @@ const sections = [
     eyebrow: "Daily performance",
     title: "Hydration & electrolytes",
     description: "Hydration mixes, electrolyte sticks, and functional drinks.",
+    label: "Hydration",
     where:
       "p.store_collection = 'energy_hydration' and (p.brand in ('liquid_iv','nuun','skratch_labs','drip_drop','cure_hydration','bare_performance','alpha_lion','body_science_au','naked_nutrition') or lower(p.name) like '%hydration%' or lower(p.name) like '%electrolyte%')",
+    nameIncludes: [
+      "hydration",
+      "electrolyte",
+      "drink mix",
+      "multiplier",
+      "amin.o",
+      "amino energy",
+      "nuun",
+    ],
+    nameExcludes: ["welcome", "starter kit", "bundle", "offer", "stack", "15% off"],
     maxPrice: 90,
   },
   {
@@ -148,8 +251,36 @@ const sections = [
     eyebrow: "Wellness",
     title: "Vitamins & daily health",
     description: "Multivitamins, minerals, omegas, immune, and joint support.",
+    label: "Daily health",
     where:
       "p.store_department = 'vitamins_health' and p.brand not in ('iron_bull_strength')",
+    nameIncludes: [
+      "multi",
+      "vitamin",
+      "omega",
+      "magnesium",
+      "zinc",
+      "zma",
+      "turmeric",
+      "ubiquinol",
+      "immune",
+      "probiotic",
+      "synbiotic",
+      "collagen",
+      "joint",
+    ],
+    nameExcludes: [
+      "protein",
+      "kids",
+      "bundle",
+      "stack",
+      "2 bags",
+      "bottles of",
+      "frother",
+      "java shred",
+      "night shred",
+      "b2b",
+    ],
     maxPrice: 110,
   },
   {
@@ -157,8 +288,25 @@ const sections = [
     eyebrow: "Wellness",
     title: "Greens & superfoods",
     description: "Greens blends, superfood powders, and daily nutrition.",
+    label: "Greens",
     where:
       "p.store_collection = 'greens_superfoods' and p.brand not in ('allbirds','ten_thousand')",
+    nameIncludes: [
+      "green",
+      "greens",
+      "superfood",
+      "cacao",
+      "spirulina",
+      "chlorella",
+    ],
+    nameExcludes: [
+      "hydration",
+      "sleep",
+      "gummies",
+      "protein",
+      "subscription",
+      "frother",
+    ],
     maxPrice: 90,
   },
   {
@@ -166,8 +314,11 @@ const sections = [
     eyebrow: "Ready now",
     title: "Bars, shakes & meal replacements",
     description: "Protein bars, RTD shakes, complete meals, and snacks.",
+    label: "Bars & shakes",
     where:
       "p.store_collection in ('protein_bars','rtd_shakes','meal_replacement')",
+    nameIncludes: ["bar", "bars", "shake", "shakes", "meal", "drink"],
+    nameExcludes: ["prepaid", "subscription", "bundle", "combo pack", "intro pack"],
     maxPrice: 120,
   },
   {
@@ -175,8 +326,25 @@ const sections = [
     eyebrow: "Recovery",
     title: "Recovery devices",
     description: "Massage, red light, compression, and recovery accessories.",
+    label: "Recovery device",
     where:
       "p.store_collection = 'recovery_devices'",
+    nameIncludes: [
+      "theragun",
+      "hypervolt",
+      "venom",
+      "massage",
+      "roller",
+      "roll",
+      "compression",
+      "recoverypulse",
+      "red light",
+      "infrared",
+      "heating pad",
+      "compex",
+      "fixx",
+    ],
+    nameExcludes: ["replacement", "strap only"],
     maxPrice: 250,
   },
   {
@@ -184,8 +352,11 @@ const sections = [
     eyebrow: "Recovery",
     title: "Sleep recovery",
     description: "Sleep masks, relaxation support, and nighttime recovery.",
+    label: "Sleep recovery",
     where:
       "p.store_collection in ('sleep_gear','sleep_stress') and p.brand not in ('codeage')",
+    nameIncludes: ["sleep", "mask", "pillow", "zma", "night", "magnesium"],
+    nameExcludes: ["welcome gift", "shaker", "carb", "combo pack"],
     maxPrice: 180,
   },
   {
@@ -193,8 +364,26 @@ const sections = [
     eyebrow: "Apparel",
     title: "Training apparel",
     description: "Leggings, shorts, tees, hoodies, active layers, and gym wear.",
+    label: "Training apparel",
     where:
       "p.store_department = 'apparel_accessories' and p.store_collection = 'apparel' and p.brand in ('nike','allbirds','ten_thousand','outdoor_voices','first_phorm','ghost_lifestyle','raw_nutrition','redcon1','bear_komplex','kaged','bare_performance','alpha_lion','trx')",
+    nameIncludes: [
+      "hoodie",
+      "shirt",
+      "tee",
+      "short",
+      "pant",
+      "jogger",
+      "legging",
+      "jacket",
+      "tank",
+      "bra",
+      "crewneck",
+      "sweatshirt",
+      "quarter zip",
+      "zip-up",
+    ],
+    nameExcludes: ["shoe", "air max", "jordan", "duffel", "bag"],
     maxPrice: 180,
   },
   {
@@ -202,17 +391,65 @@ const sections = [
     eyebrow: "Footwear",
     title: "Training shoes",
     description: "Running, training, trail, and performance footwear.",
+    label: "Training footwear",
     where:
       "p.store_department = 'apparel_accessories' and p.store_collection = 'shoes' and p.brand in ('nike','allbirds','ten_thousand')",
+    nameIncludes: [
+      "shoe",
+      "trainer",
+      "training",
+      "running",
+      "runner",
+      "trail",
+      "metcon",
+      "pegasus",
+      "vaporfly",
+      "allbirds",
+    ],
+    nameExcludes: [
+      "cleat",
+      "soccer",
+      "football",
+      "air max",
+      "spike",
+      "moon shoe",
+    ],
     maxPrice: 220,
+    maxPerBrand: 8,
   },
   {
     id: "accessories",
     eyebrow: "Accessories",
     title: "Bottles, bags & gym accessories",
     description: "Shakers, water bottles, belts, bags, grips, sleeves, and straps.",
+    label: "Gym accessory",
     where:
       "p.store_department = 'apparel_accessories' and p.store_collection = 'bags_bottles'",
+    nameIncludes: [
+      "shaker",
+      "bottle",
+      "bag",
+      "duffle",
+      "backpack",
+      "belt",
+      "wrap",
+      "grip",
+      "strap",
+      "sleeve",
+    ],
+    nameExcludes: [
+      "bundle",
+      "protein",
+      "whey",
+      "shirt",
+      "hoodie",
+      "longsleeve",
+      "shortsleeve",
+      "bodysuit",
+      "frother",
+      "offer",
+      "bottles of",
+    ],
     maxPrice: 130,
   },
   {
@@ -220,14 +457,56 @@ const sections = [
     eyebrow: "Training gear",
     title: "Gym equipment & fight gear",
     description: "Training systems, gloves, wraps, pads, grips, and fight gear.",
+    label: "Training gear",
     where:
-      "p.store_department = 'sports_gear' and p.store_collection = 'fight_gear'",
+      "p.store_department = 'sports_gear' and p.store_collection = 'fight_gear' and p.brand in ('hayabusa','rival_boxing','century_martial_arts','fuji_sports','everlast','fairtex','venum','sanabul','bear_komplex','schiek','harbinger','trx','iron_bull_strength')",
+    nameIncludes: [
+      "glove",
+      "wrap",
+      "mitt",
+      "pad",
+      "bag",
+      "boxing",
+      "muay",
+      "shin",
+      "guard",
+      "belt",
+      "grip",
+      "mat",
+      "rope",
+      "strap",
+      "training",
+    ],
+    nameExcludes: [
+      "jersey",
+      "soccer",
+      "football",
+      "whey",
+      "protein",
+      "duffel",
+      "duffle",
+      "roller bag",
+    ],
     maxPrice: 220,
   },
 ];
 
 function sqlString(value) {
   return `'${value.replaceAll("'", "''")}'`;
+}
+
+function likeAnySql(column, terms = []) {
+  if (terms.length === 0) return "";
+  return `and (${terms
+    .map((term) => `${column} like ${sqlString(`%${term.toLowerCase()}%`)}`)
+    .join(" or ")})`;
+}
+
+function notLikeAllSql(column, terms = []) {
+  if (terms.length === 0) return "";
+  return terms
+    .map((term) => `${column} not like ${sqlString(`%${term.toLowerCase()}%`)}`)
+    .join(" and ");
 }
 
 function runQuery(sql) {
@@ -238,22 +517,164 @@ function runQuery(sql) {
   return JSON.parse(output || "[]");
 }
 
+const usedProductIds = new Set();
+const usedImageKeys = new Set();
+const usedNameKeys = new Set();
+
+function imageKey(url) {
+  return String(url ?? "")
+    .split("?")[0]
+    .replace(/_[0-9]+x[0-9]+(?=\.)/i, "")
+    .replace(
+      /_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=\.)/gi,
+      ""
+    )
+    .toLowerCase();
+}
+
+function isBlockedImage(url) {
+  const normalized = String(url ?? "").toLowerCase();
+  return blockedImageFragments.some((fragment) => normalized.includes(fragment));
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function cleanProductName(name, brand) {
+  let value = String(name ?? "")
+    .normalize("NFKC")
+    .replace(/\u00a0/g, " ")
+    .replace(/[®™©]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  value = value.replace(/^[A-Z]{2}\s*-\s*/i, "");
+  value = value.replace(/^dented\s+/i, "");
+  value = value.replace(/^get\s+raw nutrition\s+/i, "");
+  value = value.replace(/^get\s+/i, "");
+
+  const brandLabel = brandNames[brand];
+  const aliases = [
+    brandLabel,
+    brandLabel?.replaceAll(".", ""),
+    brand === "raw_nutrition" ? "RAW Nutrition" : null,
+    brand === "raw_nutrition" ? "RAW" : null,
+    brand === "ghost_lifestyle" ? "GHOST" : null,
+    brand === "optimum_nutrition" ? "Optimum Nutrition" : null,
+    brand === "optimum_nutrition" ? "ON" : null,
+  ].filter(Boolean);
+
+  for (const alias of aliases) {
+    value = value.replace(
+      new RegExp(`^${escapeRegExp(alias)}\\s*[-:|]?\\s*`, "i"),
+      ""
+    );
+    value = value.replace(
+      new RegExp(`\\s+by\\s+${escapeRegExp(alias)}$`, "i"),
+      ""
+    );
+  }
+
+  value = value
+    .replace(/\s+by\s+[a-z0-9 .&+%-]+$/i, "")
+    .replace(/\s*\|\s*/g, " - ")
+    .replace(/([a-z])TM\b/gi, "$1")
+    .replace(/\bTM\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return value || String(name ?? "").trim();
+}
+
+function isBrandMismatch(row) {
+  const name = String(row.name ?? "").trim();
+  if (row.brand !== "now_foods" && /^now real food/i.test(name)) return true;
+  return false;
+}
+
+function canonicalName(name, brand) {
+  return cleanProductName(name, brand)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .split(/\s+-\s+/)[0]
+    .replace(/\b\d+\s*x\b/g, "")
+    .replace(/\b\d+\s*(lb|lbs|g|kg|oz|ml|ct|count|servings|serving)\b/g, "")
+    .replace(/\b(bundle|duo|stack|set|pack|prepaid|special offer|intro)\b/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function productImageScore(image) {
+  const url = String(image.url ?? "").toLowerCase();
+  let score = 0;
+
+  for (const fragment of imagePenaltyFragments) {
+    if (url.includes(fragment)) score += 20;
+  }
+
+  for (const fragment of displayOnlyFragments) {
+    if (url.includes(fragment)) score -= 6;
+  }
+
+  const position = Number(image.position ?? 0);
+  score += position === 0 || position === 1 ? 0 : position;
+
+  const width = Number(image.width ?? 0);
+  const height = Number(image.height ?? 0);
+  if (width > 0 && height > 0 && width > height * 1.8) score += 12;
+
+  return score;
+}
+
+function bestImagesForProducts(productIds) {
+  const ids = productIds
+    .map((id) => Number(id))
+    .filter((id) => Number.isInteger(id) && id > 0);
+
+  if (ids.length === 0) return new Map();
+
+  const images = runQuery(`
+    select product_row_id, position, url, width, height
+    from images
+    where product_row_id in (${ids.join(",")})
+      and url is not null
+    order by product_row_id asc, coalesce(position, 0) asc, id asc;
+  `);
+
+  const bestByProductId = new Map();
+  for (const image of images) {
+    if (isBlockedImage(image.url)) continue;
+    const current = bestByProductId.get(image.product_row_id);
+    if (!current || productImageScore(image) < productImageScore(current)) {
+      bestByProductId.set(image.product_row_id, image);
+    }
+  }
+
+  return bestByProductId;
+}
+
 function productsForSection(section) {
   const allowedSql = allowedBrands.map(sqlString).join(",");
   const excludedSql = excludedBrands.map(sqlString).join(",");
-  const forbiddenSql = forbiddenNameFilters
-    .map((term) => `lower(p.name) not like ${sqlString(`%${term}%`)}`)
-    .join(" and ");
+  const forbiddenSql = notLikeAllSql("lower(p.name)", [
+    ...forbiddenNameFilters,
+    ...(section.nameExcludes ?? []),
+  ]);
+  const nameIncludesSql = likeAnySql("lower(p.name)", section.nameIncludes);
 
   const sql = `
     select
+      p.id,
       p.brand,
       p.name,
       p.store_collection,
       p.price,
       coalesce(p.currency, 'USD') currency,
-      p.url,
-      min(i.url) image
+      p.url
     from products p
     join images i on i.product_row_id = p.id and i.url is not null
     where p.available = 1
@@ -264,6 +685,7 @@ function productsForSection(section) {
       and p.brand not in (${excludedSql})
       and coalesce(p.store_collection, '') not like 'soccer_%'
       and ${forbiddenSql}
+      ${nameIncludesSql}
       and (${section.where})
     group by p.id
     order by
@@ -287,20 +709,36 @@ function productsForSection(section) {
   `;
 
   const rows = runQuery(sql);
-  const seenNames = new Set();
+  const imageByProductId = bestImagesForProducts(rows.map((row) => row.id));
   const brandCounts = new Map();
   const products = [];
 
   for (const row of rows) {
-    const nameKey = String(row.name).toLowerCase().replace(/\s+/g, " ").trim();
-    if (seenNames.has(nameKey)) continue;
+    if (isBrandMismatch(row)) continue;
+
+    const image = imageByProductId.get(row.id);
+    if (!image) continue;
+    row.image = image.url;
+
+    const nameKey = canonicalName(row.name, row.brand);
+    const currentImageKey = imageKey(row.image);
+    if (!nameKey || !currentImageKey) continue;
+    if (usedProductIds.has(row.id)) continue;
+    if (usedNameKeys.has(`${row.brand}:${nameKey}`)) continue;
+    if (usedImageKeys.has(currentImageKey)) continue;
 
     const brandCount = brandCounts.get(row.brand) ?? 0;
-    if (brandCount >= 4) continue;
+    if (brandCount >= (section.maxPerBrand ?? 4)) continue;
 
-    seenNames.add(nameKey);
+    usedProductIds.add(row.id);
+    usedNameKeys.add(`${row.brand}:${nameKey}`);
+    usedImageKeys.add(currentImageKey);
     brandCounts.set(row.brand, brandCount + 1);
-    products.push(row);
+    products.push({
+      ...row,
+      displayName: cleanProductName(row.name, row.brand),
+      displayLabel: section.label ?? collectionLabel(row.store_collection),
+    });
 
     if (products.length >= 14) break;
   }
@@ -329,15 +767,17 @@ function collectionLabel(value) {
 
 function productCard(product) {
   const brand = brandNames[product.brand] ?? product.brand;
+  const name = product.displayName ?? product.name;
+  const label = product.displayLabel ?? collectionLabel(product.store_collection);
   return `
-          <article class="product-card">
+          <article class="product-card" data-product-id="${html(product.id)}">
             <a class="product-image" href="${html(product.url)}" target="_blank" rel="noreferrer">
-              <img src="${html(product.image)}" alt="${html(product.name)}" loading="lazy" />
+              <img src="${html(product.image)}" alt="${html(name)}" loading="lazy" />
             </a>
             <div class="product-body">
               <span>${html(brand)}</span>
-              <h3>${html(product.name)}</h3>
-              <p>${html(collectionLabel(product.store_collection))}</p>
+              <h3>${html(name)}</h3>
+              <p>${html(label)}</p>
               <strong>${html(money(product.price, product.currency))}</strong>
             </div>
           </article>`;
