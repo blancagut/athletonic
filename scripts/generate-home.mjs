@@ -780,9 +780,8 @@ const page = `<!doctype html>
   <body>
     <header class="market-header">
       <div class="header-main">
-        <a class="brand" href="/">
-          <span class="brand-mark">A</span>
-          <span>Athletonic<span>.com</span></span>
+        <a class="brand" href="/" aria-label="Athletonic home">
+          <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" />
         </a>
 
         <button class="location-chip" type="button">
@@ -831,7 +830,7 @@ const page = `<!doctype html>
     <main>
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Athletonic.com</p>
+          <p class="eyebrow"><img class="eyebrow-logo" src="./assets/logo.png" alt="Athletonic" /></p>
           <h1>Build your training stack in one marketplace.</h1>
           <p>
             Supplements, hydration, wellness, recovery devices, footwear,
@@ -894,6 +893,16 @@ ${productSections}
         </div>
       </section>
     </main>
+
+    <footer class="market-footer">
+      <div class="footer-main">
+        <a class="brand" href="/" aria-label="Athletonic home">
+          <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" />
+        </a>
+        <p class="footer-tagline">Performance marketplace for supplements, hydration, recovery and apparel.</p>
+        <p class="footer-copy">&copy; 2026 — All rights reserved.</p>
+      </div>
+    </footer>
   </body>
 </html>
 `;
