@@ -338,6 +338,7 @@ const sections = [
       "air max",
       "spike",
       "moon shoe",
+      " nz",
     ],
     maxPrice: 220,
     maxPerBrand: 8,
