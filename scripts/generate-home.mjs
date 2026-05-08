@@ -2,6 +2,8 @@ import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
 
+const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
+const SUPABASE_PUBLIC_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
 const DB_PATH = ATHLETONIC_SOURCE_OF_TRUTH.sourcePolicy.productDataSource;
 const brandNames = Object.fromEntries(
   ATHLETONIC_SOURCE_OF_TRUTH.brands.map((brand) => [brand.slug, brand.name])
@@ -715,9 +717,13 @@ function productCard(product) {
   const brand = brandNames[product.brand] ?? product.brand;
   const name = product.displayName ?? product.name;
   const label = product.displayLabel ?? collectionLabel(product.store_collection);
+  const searchText = [brand, name, label, product.sectionTitle, product.sectionEyebrow]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
   return `
-          <article class="product-card" data-product-id="${html(product.id)}">
-            <a class="product-image" href="${html(product.url)}" target="_blank" rel="noreferrer">
+          <article class="product-card" data-product-id="${html(product.id)}" data-category="${html(product.sectionId)}" data-search="${html(searchText)}">
+            <a class="product-image" href="${html(product.url)}" target="_blank" rel="noopener noreferrer">
               <img src="${html(product.image)}" alt="${html(name)}" loading="lazy" />
             </a>
             <div class="product-body">
@@ -725,6 +731,18 @@ function productCard(product) {
               <h3>${html(name)}</h3>
               <p>${html(label)}</p>
               <strong>${html(money(product.price, product.currency))}</strong>
+              <button
+                class="add-cart-button"
+                type="button"
+                data-add-to-cart
+                data-cart-id="${html(product.id)}"
+                data-cart-brand="${html(brand)}"
+                data-cart-name="${html(name)}"
+                data-cart-price="${html(product.price)}"
+                data-cart-currency="${html(product.currency)}"
+                data-cart-image="${html(product.image)}"
+                data-cart-url="${html(product.url)}"
+              >Add to cart</button>
             </div>
           </article>`;
 }
@@ -745,7 +763,14 @@ const sectionNav = populatedSections
 
 const productSections = populatedSections
   .map(
-    (section) => `
+    (section) => {
+      const productsWithSection = section.products.map((product) => ({
+        ...product,
+        sectionId: section.id,
+        sectionTitle: section.title,
+        sectionEyebrow: section.eyebrow,
+      }));
+      return `
       <section id="${section.id}" class="market-section">
         <div class="section-title">
           <div>
@@ -755,9 +780,10 @@ const productSections = populatedSections
           <p>${html(section.description)}</p>
         </div>
         <div class="product-row">
-${section.products.map(productCard).join("\n")}
+${productsWithSection.map(productCard).join("\n")}
         </div>
-      </section>`
+      </section>`;
+    }
   )
   .join("\n");
 
@@ -784,21 +810,15 @@ const page = `<!doctype html>
           <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" />
         </a>
 
-        <button class="location-chip" type="button">
-          <span>Ship to</span>
-          <strong>United States</strong>
-        </button>
-
-        <form class="market-search" action="#protein">
-          <select aria-label="Search category">
-            <option>All</option>
-            <option>Protein</option>
-            <option>Creatine</option>
-            <option>Hydration</option>
-            <option>Apparel</option>
-            <option>Recovery</option>
+        <form class="market-search" action="#catalog" data-catalog-search>
+          <select name="category" aria-label="Search category">
+            <option value="all">All</option>
+            ${populatedSections
+              .map((section) => `<option value="${html(section.id)}">${html(section.label ?? section.title)}</option>`)
+              .join("\n            ")}
           </select>
           <input
+            name="q"
             type="search"
             aria-label="Search Athletonic"
             placeholder="Search protein, creatine, hydration, apparel, recovery..."
@@ -806,28 +826,86 @@ const page = `<!doctype html>
           <button type="submit">Search</button>
         </form>
 
-        <a class="header-link" href="#brands">
-          <span>Explore</span>
-          <strong>Brands</strong>
-        </a>
-        <a class="header-link" href="#deals">
-          <span>${totalProducts}</span>
-          <strong>Top picks</strong>
-        </a>
-        <a class="cart-link" href="#protein" aria-label="Cart">
-          <span>0</span>
-          <strong>Cart</strong>
-        </a>
+        <div class="header-actions" aria-label="Account and cart">
+          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog">
+            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M7 20.4a5.5 5.5 0 0 1 10 0"></path>
+            </svg>
+            <span class="header-action-label" data-account-label>Guest</span>
+          </button>
+          <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-label="Open cart">
+            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="8" cy="21" r="1"></circle>
+              <circle cx="19" cy="21" r="1"></circle>
+              <path d="M2.05 2.05h2l2.65 12.4a2 2 0 0 0 2 1.6h8.95a2 2 0 0 0 1.95-1.57l1.25-5.48H5.45"></path>
+            </svg>
+            <span class="header-action-label">Cart</span>
+            <span class="cart-count" data-cart-count>0</span>
+          </button>
+        </div>
       </div>
 
       <nav class="department-nav" aria-label="Department navigation">
-        <a href="#deals">Today's Deals</a>
         ${sectionNav}
         <a href="#brands">Brands</a>
       </nav>
     </header>
 
+    <div class="drawer-overlay" data-drawer-overlay hidden></div>
+    <aside class="account-panel" data-account-panel hidden aria-hidden="true" aria-labelledby="account-title">
+      <div class="drawer-header">
+        <div>
+          <p class="drawer-eyebrow">Account</p>
+          <h2 id="account-title">Guest checkout profile</h2>
+        </div>
+        <button class="drawer-close" type="button" data-account-close aria-label="Close account panel">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form class="account-form" data-account-form>
+        <label for="guest-email">Email for checkout updates</label>
+        <input id="guest-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        <button type="submit">Save email</button>
+        <p class="form-note">Guest checkout stays available. This email only connects your cart to follow-up and order communication.</p>
+        <p class="form-status" data-account-status aria-live="polite"></p>
+      </form>
+    </aside>
+
+    <aside class="cart-drawer" data-cart-drawer hidden aria-hidden="true" aria-labelledby="cart-title">
+      <div class="drawer-header">
+        <div>
+          <p class="drawer-eyebrow">Checkout</p>
+          <h2 id="cart-title">Your cart</h2>
+        </div>
+        <button class="drawer-close" type="button" data-cart-close aria-label="Close cart">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="cart-items" data-cart-items></div>
+      <p class="form-status drawer-status" data-checkout-status aria-live="polite"></p>
+      <form class="checkout-form" data-checkout-form>
+        <label for="checkout-email">Email</label>
+        <input id="checkout-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        <div class="cart-total">
+          <span>Subtotal</span>
+          <strong data-cart-subtotal>$0.00</strong>
+        </div>
+        <button type="submit" data-checkout-submit>Send checkout request</button>
+        <p class="form-note">No fake payment step: this saves your cart so checkout can continue with a real order workflow.</p>
+      </form>
+    </aside>
+
     <main>
+      <p class="search-status" id="catalog" aria-live="polite" hidden></p>
+
       <section class="hero">
         <div class="hero-copy">
           <p class="eyebrow"><img class="eyebrow-logo" src="./assets/logo.png" alt="Athletonic" /></p>
@@ -837,20 +915,20 @@ const page = `<!doctype html>
             apparel, bottles, bags, and gym accessories from fitness-first brands.
           </p>
           <div class="hero-actions">
-            <a href="#protein">Shop top picks</a>
+            <a href="#protein">Shop products</a>
             <a href="#brands">Browse brands</a>
           </div>
         </div>
 
-        <div class="hero-deal" id="deals">
-          <span class="deal-label">Launch shelf</span>
+        <div class="hero-deal" id="catalog-summary">
+          <span class="deal-label">Catalog snapshot</span>
           <img
             src="https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-ON-2-GSW-2270g-bundle_Image_01_1.png"
             alt="Gold Standard 100% Whey Protein"
           />
           <h2>${totalProducts} curated products</h2>
           <p>Protein, creatine, pre-workout, hydration, recovery, apparel, footwear, and accessories.</p>
-          <strong>From $8.99</strong>
+          <strong>Official brand sources only</strong>
         </div>
       </section>
 
@@ -903,6 +981,345 @@ ${productSections}
         <p class="footer-copy">&copy; 2026 — All rights reserved.</p>
       </div>
     </footer>
+    <script>
+      const SUPABASE_PUBLIC_URL = "${html(SUPABASE_PUBLIC_URL)}";
+      const SUPABASE_PUBLIC_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
+      const CART_STORAGE_KEY = "athletonic-cart-v1";
+      const GUEST_EMAIL_KEY = "athletonic-guest-email";
+
+      const searchForm = document.querySelector("[data-catalog-search]");
+      const searchStatus = document.querySelector(".search-status");
+      const productCards = Array.from(document.querySelectorAll(".product-card"));
+      const drawerOverlay = document.querySelector("[data-drawer-overlay]");
+      const cartDrawer = document.querySelector("[data-cart-drawer]");
+      const accountPanel = document.querySelector("[data-account-panel]");
+      const cartItems = document.querySelector("[data-cart-items]");
+      const cartCount = document.querySelector("[data-cart-count]");
+      const cartSubtotal = document.querySelector("[data-cart-subtotal]");
+      const checkoutForm = document.querySelector("[data-checkout-form]");
+      const checkoutEmail = document.querySelector("#checkout-email");
+      const checkoutStatus = document.querySelector("[data-checkout-status]");
+      const checkoutSubmit = document.querySelector("[data-checkout-submit]");
+      const accountForm = document.querySelector("[data-account-form]");
+      const accountEmail = document.querySelector("#guest-email");
+      const accountStatus = document.querySelector("[data-account-status]");
+      const accountLabel = document.querySelector("[data-account-label]");
+
+      let cart = loadCart();
+
+      function loadCart() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveCart() {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      }
+
+      function formatMoney(value, currency) {
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: currency || "USD",
+        }).format(value || 0);
+      }
+
+      function cartQuantity() {
+        return cart.reduce((sum, item) => sum + item.quantity, 0);
+      }
+
+      function cartTotal() {
+        return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      }
+
+      function openPanel(panel) {
+        drawerOverlay.hidden = false;
+        panel.hidden = false;
+        panel.setAttribute("aria-hidden", "false");
+      }
+
+      function closePanels() {
+        drawerOverlay.hidden = true;
+        cartDrawer.hidden = true;
+        accountPanel.hidden = true;
+        cartDrawer.setAttribute("aria-hidden", "true");
+        accountPanel.setAttribute("aria-hidden", "true");
+      }
+
+      function openCart() {
+        openPanel(cartDrawer);
+      }
+
+      function openAccount() {
+        openPanel(accountPanel);
+        accountEmail.focus();
+      }
+
+      function setFormStatus(element, message, state) {
+        element.textContent = message;
+        element.dataset.state = state || "";
+      }
+
+      function hydrateEmailFields() {
+        const email = localStorage.getItem(GUEST_EMAIL_KEY) || "";
+        accountEmail.value = email;
+        checkoutEmail.value = email;
+        accountLabel.textContent = email ? "Guest" : "Guest";
+      }
+
+      function renderCart() {
+        const totalItems = cartQuantity();
+        const total = cartTotal();
+        cartCount.textContent = String(totalItems);
+        cartCount.hidden = totalItems === 0;
+        cartSubtotal.textContent = formatMoney(total, "USD");
+        cartItems.textContent = "";
+
+        if (cart.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "empty-cart";
+          const message = document.createElement("p");
+          message.textContent = "Your cart is empty.";
+          const action = document.createElement("button");
+          action.type = "button";
+          action.dataset.cartClose = "";
+          action.textContent = "Continue shopping";
+          empty.append(message, action);
+          cartItems.append(empty);
+          checkoutForm.hidden = true;
+          checkoutSubmit.disabled = true;
+          return;
+        }
+
+        checkoutForm.hidden = false;
+        checkoutSubmit.disabled = false;
+
+        for (const item of cart) {
+          const article = document.createElement("article");
+          article.className = "cart-item";
+
+          const image = document.createElement("img");
+          image.src = item.image;
+          image.alt = item.name;
+          image.loading = "lazy";
+
+          const body = document.createElement("div");
+          body.className = "cart-item-body";
+
+          const brand = document.createElement("span");
+          brand.textContent = item.brand;
+
+          const title = document.createElement("h3");
+          title.textContent = item.name;
+
+          const price = document.createElement("strong");
+          price.textContent = formatMoney(item.price * item.quantity, item.currency);
+
+          const controls = document.createElement("div");
+          controls.className = "cart-controls";
+
+          const minus = document.createElement("button");
+          minus.type = "button";
+          minus.dataset.cartDecrement = item.id;
+          minus.setAttribute("aria-label", "Decrease quantity");
+          minus.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg>';
+
+          const quantity = document.createElement("span");
+          quantity.textContent = String(item.quantity);
+
+          const plus = document.createElement("button");
+          plus.type = "button";
+          plus.dataset.cartIncrement = item.id;
+          plus.setAttribute("aria-label", "Increase quantity");
+          plus.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>';
+
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "cart-remove-button";
+          remove.dataset.cartRemove = item.id;
+          remove.setAttribute("aria-label", "Remove item");
+          remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>';
+
+          controls.append(minus, quantity, plus, remove);
+          body.append(brand, title, price, controls);
+          article.append(image, body);
+          cartItems.append(article);
+        }
+      }
+
+      function addToCart(button) {
+        const item = {
+          id: button.dataset.cartId,
+          brand: button.dataset.cartBrand,
+          name: button.dataset.cartName,
+          price: Number(button.dataset.cartPrice || 0),
+          currency: button.dataset.cartCurrency || "USD",
+          image: button.dataset.cartImage,
+          url: button.dataset.cartUrl,
+          quantity: 1,
+        };
+        const existing = cart.find((cartItem) => cartItem.id === item.id);
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          cart.push(item);
+        }
+        saveCart();
+        setFormStatus(checkoutStatus, "", "");
+        renderCart();
+        openCart();
+      }
+
+      function updateCartItem(id, delta) {
+        const item = cart.find((cartItem) => cartItem.id === id);
+        if (!item) return;
+        item.quantity += delta;
+        if (item.quantity <= 0) {
+          cart = cart.filter((cartItem) => cartItem.id !== id);
+        }
+        saveCart();
+        renderCart();
+      }
+
+      function removeCartItem(id) {
+        cart = cart.filter((cartItem) => cartItem.id !== id);
+        saveCart();
+        renderCart();
+      }
+
+      function sectionHasVisibleProducts(section) {
+        return Array.from(section.querySelectorAll(".product-card")).some(
+          (card) => !card.hidden
+        );
+      }
+
+      function applyCatalogSearch() {
+        const formData = new FormData(searchForm);
+        const query = String(formData.get("q") || "").trim().toLowerCase();
+        const category = String(formData.get("category") || "all");
+        let visibleCount = 0;
+
+        for (const card of productCards) {
+          const categoryMatches = category === "all" || card.dataset.category === category;
+          const queryMatches = !query || (card.dataset.search || "").includes(query);
+          const isVisible = categoryMatches && queryMatches;
+          card.hidden = !isVisible;
+          if (isVisible) visibleCount += 1;
+        }
+
+        for (const section of document.querySelectorAll(".market-section")) {
+          if (section.id === "brands") continue;
+          section.hidden = !sectionHasVisibleProducts(section);
+        }
+
+        searchStatus.hidden = false;
+        searchStatus.textContent = query || category !== "all"
+          ? visibleCount + " products found"
+          : "Showing all products";
+      }
+
+      async function submitCheckout(email) {
+        const payload = {
+          p_email: email,
+          p_cart: cart.map((item) => ({
+            id: item.id,
+            brand: item.brand,
+            name: item.name,
+            price: item.price,
+            currency: item.currency,
+            quantity: item.quantity,
+            url: item.url,
+          })),
+          p_subtotal: Number(cartTotal().toFixed(2)),
+          p_currency: "USD",
+        };
+
+        const response = await fetch(SUPABASE_PUBLIC_URL + "/rest/v1/rpc/submit_checkout_intent", {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_PUBLIC_KEY,
+            Authorization: "Bearer " + SUPABASE_PUBLIC_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        return response.json();
+      }
+
+      searchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        applyCatalogSearch();
+        searchStatus.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+
+      searchForm.addEventListener("input", applyCatalogSearch);
+      searchForm.addEventListener("change", applyCatalogSearch);
+
+      document.addEventListener("click", (event) => {
+        const closeButton = event.target.closest("[data-cart-close], [data-account-close]");
+        if (closeButton) closePanels();
+
+        const addButton = event.target.closest("[data-add-to-cart]");
+        if (addButton) addToCart(addButton);
+
+        const incrementButton = event.target.closest("[data-cart-increment]");
+        if (incrementButton) updateCartItem(incrementButton.dataset.cartIncrement, 1);
+
+        const decrementButton = event.target.closest("[data-cart-decrement]");
+        if (decrementButton) updateCartItem(decrementButton.dataset.cartDecrement, -1);
+
+        const removeButton = event.target.closest("[data-cart-remove]");
+        if (removeButton) removeCartItem(removeButton.dataset.cartRemove);
+      });
+
+      document.querySelector("[data-cart-open]").addEventListener("click", openCart);
+      document.querySelector("[data-account-open]").addEventListener("click", openAccount);
+      drawerOverlay.addEventListener("click", closePanels);
+
+      accountForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const email = String(new FormData(accountForm).get("email") || "").trim();
+        localStorage.setItem(GUEST_EMAIL_KEY, email);
+        hydrateEmailFields();
+        setFormStatus(accountStatus, "Email saved for guest checkout.", "success");
+      });
+
+      checkoutForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const email = String(new FormData(checkoutForm).get("email") || "").trim();
+        if (cart.length === 0) {
+          setFormStatus(checkoutStatus, "Add at least one product before checkout.", "error");
+          return;
+        }
+        localStorage.setItem(GUEST_EMAIL_KEY, email);
+        hydrateEmailFields();
+        checkoutSubmit.disabled = true;
+        setFormStatus(checkoutStatus, "Saving checkout request...", "pending");
+        try {
+          const records = await submitCheckout(email);
+          const reference = Array.isArray(records) && records[0] ? records[0].id : "received";
+          cart = [];
+          saveCart();
+          renderCart();
+          setFormStatus(checkoutStatus, "Checkout request saved. Reference: " + reference, "success");
+        } catch (error) {
+          console.error(error);
+          checkoutSubmit.disabled = false;
+          setFormStatus(checkoutStatus, "Could not save checkout online. Your cart is still saved here.", "error");
+        }
+      });
+
+      hydrateEmailFields();
+      renderCart();
+    </script>
   </body>
 </html>
 `;
