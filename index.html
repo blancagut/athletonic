@@ -44,14 +44,43 @@
         </form>
 
         <div class="header-actions" aria-label="Account and cart">
-          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog">
-            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"></circle>
-              <circle cx="12" cy="10" r="3"></circle>
-              <path d="M7 20.4a5.5 5.5 0 0 1 10 0"></path>
-            </svg>
-            <span class="header-action-label" data-account-label>Guest</span>
-          </button>
+          <div class="header-account" data-header-account>
+            <button class="header-icon-button account-trigger" type="button" data-account-open aria-haspopup="menu" aria-expanded="false">
+              <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="10" r="3"></circle>
+                <path d="M7 20.4a5.5 5.5 0 0 1 10 0"></path>
+              </svg>
+              <span class="account-greeting">
+                <span class="account-greeting-line" data-account-line>Hello, sign in</span>
+                <span class="account-greeting-sub" data-account-label>Account &amp; Lists</span>
+              </span>
+              <svg class="header-caret" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m6 9 6 6 6-6"></path>
+              </svg>
+            </button>
+            <div class="account-menu" data-account-menu hidden role="menu" aria-hidden="true">
+              <div class="account-menu-cta" data-account-menu-cta>
+                <button type="button" class="menu-signin" data-account-open-signin>Sign in</button>
+                <p class="menu-newcustomer">New customer? <a href="#" data-account-open-signup>Start here.</a></p>
+              </div>
+              <div class="account-menu-grid">
+                <div>
+                  <h4>Your Lists</h4>
+                  <a href="#account" data-account-go>Your Wish List</a>
+                  <a href="#account" data-account-go>Create a List</a>
+                </div>
+                <div>
+                  <h4>Your Account</h4>
+                  <a href="#account" data-account-go>Your Account</a>
+                  <a href="#account" data-account-go>Your Orders</a>
+                  <a href="#account" data-account-go>Login &amp; security</a>
+                  <a href="#account" data-account-go>Your Addresses</a>
+                  <a href="#" data-auth-signout-link hidden>Sign Out</a>
+                </div>
+              </div>
+            </div>
+          </div>
           <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-label="Open cart">
             <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="8" cy="21" r="1"></circle>
@@ -83,7 +112,7 @@
       <div class="drawer-header">
         <div>
           <p class="drawer-eyebrow">Account</p>
-          <h2 id="account-title">Guest checkout profile</h2>
+          <h2 id="account-title" data-auth-title>Sign in</h2>
         </div>
         <button class="drawer-close" type="button" data-account-close aria-label="Close account panel">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -92,13 +121,52 @@
           </svg>
         </button>
       </div>
-      <form class="account-form" data-account-form>
-        <label for="guest-email">Email for checkout updates</label>
-        <input id="guest-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
-        <button type="submit">Save email</button>
-        <p class="form-note">Guest checkout stays available. This email only connects your cart to follow-up and order communication.</p>
-        <p class="form-status" data-account-status aria-live="polite"></p>
-      </form>
+
+      <div class="auth-tabs" role="tablist" data-auth-tabs>
+        <button type="button" role="tab" aria-selected="true" data-auth-tab="signin">Sign in</button>
+        <button type="button" role="tab" aria-selected="false" data-auth-tab="signup">Create account</button>
+        <button type="button" role="tab" aria-selected="false" data-auth-tab="reset">Forgot password</button>
+      </div>
+
+      <div class="auth-body">
+        <form class="account-form auth-form" data-auth-form="signin">
+          <label for="signin-email">Email</label>
+          <input id="signin-email" name="email" type="email" autocomplete="email" required />
+          <label for="signin-password">Password</label>
+          <input id="signin-password" name="password" type="password" autocomplete="current-password" minlength="6" required />
+          <button type="submit">Sign in securely</button>
+          <p class="form-note">By continuing, you agree to Athletonic's Conditions of Use and Privacy Notice.</p>
+          <p class="form-status" data-auth-status="signin" aria-live="polite"></p>
+        </form>
+
+        <form class="account-form auth-form" data-auth-form="signup" hidden>
+          <label for="signup-name">Your name</label>
+          <input id="signup-name" name="full_name" type="text" autocomplete="name" required />
+          <label for="signup-email">Email</label>
+          <input id="signup-email" name="email" type="email" autocomplete="email" required />
+          <label for="signup-password">Password</label>
+          <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="6" required />
+          <p class="form-note">Passwords must be at least 6 characters.</p>
+          <button type="submit">Create your Athletonic account</button>
+          <p class="form-status" data-auth-status="signup" aria-live="polite"></p>
+        </form>
+
+        <form class="account-form auth-form" data-auth-form="reset" hidden>
+          <label for="reset-email">Email</label>
+          <input id="reset-email" name="email" type="email" autocomplete="email" required />
+          <button type="submit">Send password reset link</button>
+          <p class="form-note">We'll email a secure link to reset your password.</p>
+          <p class="form-status" data-auth-status="reset" aria-live="polite"></p>
+        </form>
+
+        <div class="account-form auth-signed" data-auth-signed hidden>
+          <p class="auth-greeting">Hello, <strong data-auth-name>friend</strong></p>
+          <p class="auth-email" data-auth-email></p>
+          <a class="auth-cta" href="#account" data-account-go>Go to Your Account</a>
+          <button type="button" class="auth-secondary" data-auth-signout>Sign out</button>
+          <p class="form-status" data-auth-status="signed" aria-live="polite"></p>
+        </div>
+      </div>
     </aside>
 
     <aside class="cart-drawer" data-cart-drawer hidden aria-hidden="true" aria-labelledby="cart-title">
@@ -4723,6 +4791,10 @@
       </section>
     </main>
 
+    <section class="account-hub" data-account-hub hidden aria-hidden="true">
+      <div class="account-hub-inner" data-account-hub-inner></div>
+    </section>
+
     <footer class="market-footer">
       <div class="footer-main">
         <a class="brand" href="/" aria-label="Athletonic home">
@@ -4733,10 +4805,15 @@
       </div>
     </footer>
     <script>
+      // ========================================================================
+      // Athletonic — Supabase auth + Amazon-style account hub
+      // ========================================================================
       const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
       const SUPABASE_PUBLIC_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
       const CART_STORAGE_KEY = "athletonic-cart-v1";
+      const SESSION_STORAGE_KEY = "athletonic-sb-session-v1";
       const GUEST_EMAIL_KEY = "athletonic-guest-email";
+      const HISTORY_KEY = "athletonic-browsing-history-v1";
 
       const searchForm = document.querySelector("[data-catalog-search]");
       const searchStatus = document.querySelector(".search-status");
@@ -4751,47 +4828,50 @@
       const checkoutEmail = document.querySelector("#checkout-email");
       const checkoutStatus = document.querySelector("[data-checkout-status]");
       const checkoutSubmit = document.querySelector("[data-checkout-submit]");
-      const accountForm = document.querySelector("[data-account-form]");
-      const accountEmail = document.querySelector("#guest-email");
-      const accountStatus = document.querySelector("[data-account-status]");
+      const accountLine = document.querySelector("[data-account-line]");
       const accountLabel = document.querySelector("[data-account-label]");
+      const accountTrigger = document.querySelector(".account-trigger");
+      const accountMenu = document.querySelector("[data-account-menu]");
+      const signoutLink = document.querySelector("[data-auth-signout-link]");
+      const mainCatalog = document.querySelector("main");
+      const accountHub = document.querySelector("[data-account-hub]");
+      const accountHubInner = document.querySelector("[data-account-hub-inner]");
 
       let cart = loadCart();
+      let session = loadSession();
+      let profile = null;
 
+      // -------- Storage helpers
       function loadCart() {
         try {
           const parsed = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
           return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
+        } catch { return []; }
+      }
+      function saveCart() { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }
+      function loadSession() {
+        try { return JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || "null"); }
+        catch { return null; }
+      }
+      function saveSession(s) {
+        if (s) localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(s));
+        else localStorage.removeItem(SESSION_STORAGE_KEY);
+        session = s;
       }
 
-      function saveCart() {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      }
-
+      // -------- Money / cart math
       function formatMoney(value, currency) {
-        return new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: currency || "USD",
-        }).format(value || 0);
+        return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD" }).format(value || 0);
       }
+      function cartQuantity() { return cart.reduce((s, i) => s + i.quantity, 0); }
+      function cartTotal() { return cart.reduce((s, i) => s + i.price * i.quantity, 0); }
 
-      function cartQuantity() {
-        return cart.reduce((sum, item) => sum + item.quantity, 0);
-      }
-
-      function cartTotal() {
-        return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      }
-
+      // -------- Drawer plumbing
       function openPanel(panel) {
         drawerOverlay.hidden = false;
         panel.hidden = false;
         panel.setAttribute("aria-hidden", "false");
       }
-
       function closePanels() {
         drawerOverlay.hidden = true;
         cartDrawer.hidden = true;
@@ -4799,28 +4879,273 @@
         cartDrawer.setAttribute("aria-hidden", "true");
         accountPanel.setAttribute("aria-hidden", "true");
       }
-
-      function openCart() {
-        openPanel(cartDrawer);
-      }
-
-      function openAccount() {
+      function openCart() { openPanel(cartDrawer); }
+      function openAccount(tab) {
         openPanel(accountPanel);
-        accountEmail.focus();
+        renderAuthDrawer(tab || (session ? "signed" : "signin"));
       }
 
       function setFormStatus(element, message, state) {
-        element.textContent = message;
+        if (!element) return;
+        element.textContent = message || "";
         element.dataset.state = state || "";
       }
 
-      function hydrateEmailFields() {
-        const email = localStorage.getItem(GUEST_EMAIL_KEY) || "";
-        accountEmail.value = email;
-        checkoutEmail.value = email;
-        accountLabel.textContent = email ? "Guest" : "Guest";
+      // -------- Supabase REST client (no SDK, dependency-free)
+      async function sbFetch(path, { method = "GET", body, useAuth = false, headers = {} } = {}) {
+        const h = {
+          apikey: SUPABASE_PUBLIC_KEY,
+          "Content-Type": "application/json",
+          ...headers,
+        };
+        if (useAuth && session && session.access_token) h.Authorization = "Bearer " + session.access_token;
+        else h.Authorization = "Bearer " + SUPABASE_PUBLIC_KEY;
+        const res = await fetch(SUPABASE_PUBLIC_URL + path, {
+          method,
+          headers: h,
+          body: body == null ? undefined : JSON.stringify(body),
+        });
+        const text = await res.text();
+        const data = text ? safeJSON(text) : null;
+        if (!res.ok) {
+          const message = (data && (data.msg || data.error_description || data.error || data.message)) || text || "Request failed";
+          const err = new Error(message);
+          err.status = res.status;
+          throw err;
+        }
+        return data;
+      }
+      function safeJSON(t) { try { return JSON.parse(t); } catch { return null; } }
+
+      async function refreshSessionIfNeeded() {
+        if (!session) return null;
+        const expiresAt = (session.expires_at || 0) * 1000;
+        if (expiresAt - Date.now() > 60_000) return session;
+        try {
+          const data = await sbFetch("/auth/v1/token?grant_type=refresh_token", {
+            method: "POST",
+            body: { refresh_token: session.refresh_token },
+          });
+          if (data && data.access_token) saveSession(data);
+          return session;
+        } catch (err) {
+          saveSession(null);
+          profile = null;
+          return null;
+        }
       }
 
+      async function fetchProfile() {
+        if (!session) { profile = null; return null; }
+        await refreshSessionIfNeeded();
+        if (!session) return null;
+        try {
+          const rows = await sbFetch(
+            "/rest/v1/profiles?select=id,email,full_name,role,avatar_url&id=eq." + encodeURIComponent(session.user.id),
+            { useAuth: true }
+          );
+          profile = Array.isArray(rows) && rows[0] ? rows[0] : null;
+          return profile;
+        } catch (err) {
+          console.warn("profile fetch failed", err);
+          profile = null;
+          return null;
+        }
+      }
+
+      // -------- Auth flows
+      async function authSignIn(email, password) {
+        const data = await sbFetch("/auth/v1/token?grant_type=password", {
+          method: "POST",
+          body: { email, password },
+        });
+        saveSession(data);
+        await fetchProfile();
+        await onAuthChanged();
+      }
+      async function authSignUp(email, password, fullName) {
+        const data = await sbFetch("/auth/v1/signup", {
+          method: "POST",
+          body: { email, password, data: { full_name: fullName } },
+        });
+        if (data && data.access_token) {
+          saveSession(data);
+          await fetchProfile();
+          await onAuthChanged();
+          return { confirmed: true };
+        }
+        return { confirmed: false };
+      }
+      async function authResetPassword(email) {
+        await sbFetch("/auth/v1/recover", { method: "POST", body: { email } });
+      }
+      async function authSignOut() {
+        if (session) {
+          try { await sbFetch("/auth/v1/logout", { method: "POST", useAuth: true }); }
+          catch (_) { /* ignore */ }
+        }
+        saveSession(null);
+        profile = null;
+        await onAuthChanged();
+      }
+
+      function displayName() {
+        const fromProfile = profile && (profile.full_name || (profile.email || "").split("@")[0]);
+        const fromSession = session && session.user && (
+          (session.user.user_metadata && session.user.user_metadata.full_name) ||
+          (session.user.email || "").split("@")[0]
+        );
+        return fromProfile || fromSession || "friend";
+      }
+      function userEmail() {
+        return (profile && profile.email) || (session && session.user && session.user.email) || "";
+      }
+      function isAdmin() { return !!(profile && profile.role === "admin"); }
+
+      // -------- Header reflection
+      async function onAuthChanged() {
+        renderHeaderAccount();
+        if ((location.hash || "") === "#account") renderAccountHub();
+        renderAuthDrawer(session ? "signed" : "signin");
+      }
+      function renderHeaderAccount() {
+        if (session) {
+          accountLine.textContent = "Hello, " + displayName().split(" ")[0];
+          accountLabel.textContent = "Account & Lists";
+          signoutLink.hidden = false;
+        } else {
+          accountLine.textContent = "Hello, sign in";
+          accountLabel.textContent = "Account & Lists";
+          signoutLink.hidden = true;
+        }
+      }
+
+      // -------- Auth drawer rendering
+      function renderAuthDrawer(activeTab) {
+        const tabsWrap = accountPanel.querySelector("[data-auth-tabs]");
+        const title = accountPanel.querySelector("[data-auth-title]");
+        const signedView = accountPanel.querySelector("[data-auth-signed]");
+        const forms = accountPanel.querySelectorAll("[data-auth-form]");
+
+        if (session) {
+          activeTab = "signed";
+          tabsWrap.hidden = true;
+          forms.forEach((f) => (f.hidden = true));
+          signedView.hidden = false;
+          title.textContent = "Hello, " + displayName().split(" ")[0];
+          signedView.querySelector("[data-auth-name]").textContent = displayName();
+          signedView.querySelector("[data-auth-email]").textContent = userEmail();
+          return;
+        }
+
+        tabsWrap.hidden = false;
+        signedView.hidden = true;
+        const tab = activeTab || "signin";
+        title.textContent = tab === "signup" ? "Create account" : tab === "reset" ? "Forgot password" : "Sign in";
+        tabsWrap.querySelectorAll("[data-auth-tab]").forEach((btn) => {
+          btn.setAttribute("aria-selected", String(btn.dataset.authTab === tab));
+        });
+        forms.forEach((form) => { form.hidden = form.dataset.authForm !== tab; });
+      }
+
+      // -------- Account hub (Amazon-style "Your Account")
+      const HUB_TILES = [
+        { key: "orders", title: "Your Orders", desc: "Track, return, cancel an order, download invoice or buy again.", icon: "M3 7h13l4 4v6H3z M3 7l3-4h7l3 4 M7 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M17 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" },
+        { key: "security", title: "Login & security", desc: "Edit login, name, email and password.", icon: "M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z" },
+        { key: "addresses", title: "Your Addresses", desc: "Edit, remove or set default address for delivery.", icon: "M12 22s8-7.5 8-13a8 8 0 1 0-16 0c0 5.5 8 13 8 13z M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" },
+        { key: "payments", title: "Payment options", desc: "Manage your saved cards and bank accounts.", icon: "M2 7h20v10H2z M2 11h20" },
+        { key: "wishlist", title: "Your Lists", desc: "View, modify and share your wish list and saved items.", icon: "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z" },
+        { key: "messages", title: "Your Messages", desc: "View messages from Athletonic about your orders.", icon: "M4 5h16v12H7l-3 3z" },
+        { key: "service", title: "Customer Service", desc: "Help with returns, refunds and your orders.", icon: "M12 2a10 10 0 1 0 10 10 M12 6v7l4 2" },
+        { key: "history", title: "Browsing history", desc: "View and manage products you have recently viewed.", icon: "M3 12a9 9 0 1 0 3-6.7 M3 4v5h5" },
+      ];
+
+      function renderAccountHub() {
+        if (!session) {
+          accountHubInner.innerHTML = `
+            <div class="hub-signin">
+              <h1>Sign in</h1>
+              <p class="hub-signin-sub">Sign in to access Your Account, orders, addresses and saved lists.</p>
+              <button class="hub-signin-cta" type="button" data-account-open-signin>Sign in</button>
+              <p class="hub-signin-new">New to Athletonic? <a href="#" data-account-open-signup>Create your account</a></p>
+            </div>`;
+          return;
+        }
+        const greeting = displayName();
+        const tilesHtml = HUB_TILES.map((t) => `
+          <a class="hub-tile" data-hub-tile="${t.key}" href="#account/${t.key}">
+            <span class="hub-tile-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="${t.icon}"></path></svg>
+            </span>
+            <span class="hub-tile-body">
+              <h3>${t.title}</h3>
+              <p>${t.desc}</p>
+            </span>
+          </a>`).join("");
+        const adminHtml = isAdmin() ? `
+          <a class="hub-tile hub-tile-admin" href="#account/admin">
+            <span class="hub-tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z"></path></svg></span>
+            <span class="hub-tile-body"><h3>Admin Console</h3><p>Manage users, roles and store data.</p></span>
+          </a>` : "";
+
+        accountHubInner.innerHTML = `
+          <nav class="hub-breadcrumb"><a href="#">Athletonic</a> <span>›</span> Your Account</nav>
+          <header class="hub-header">
+            <h1>Your Account</h1>
+            <p>Hello, ${escapeHtml(greeting)}</p>
+          </header>
+          <div class="hub-grid">${tilesHtml}${adminHtml}</div>
+          <section class="hub-extra">
+            <div>
+              <h2>Ordering and shopping preferences</h2>
+              <ul>
+                <li><a href="#account/addresses">Your Addresses</a></li>
+                <li><a href="#account/wishlist">Your Lists</a></li>
+                <li><a href="#account/history">Browsing history</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2>Email alerts and messages</h2>
+              <ul>
+                <li><a href="#account/messages">Your Messages</a></li>
+                <li><a href="#account/security">Communication preferences</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2>Payments</h2>
+              <ul>
+                <li><a href="#account/payments">Manage payment options</a></li>
+                <li><a href="#account/orders">Order history & invoices</a></li>
+              </ul>
+            </div>
+          </section>
+          <div class="hub-footer">
+            <button class="hub-signout" type="button" data-auth-signout>Sign out</button>
+          </div>`;
+      }
+
+      function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      }
+
+      // -------- Routing: #account ↔ catalog
+      function syncRoute() {
+        const isAccount = (location.hash || "").startsWith("#account");
+        if (isAccount) {
+          mainCatalog.hidden = true;
+          accountHub.hidden = false;
+          accountHub.setAttribute("aria-hidden", "false");
+          renderAccountHub();
+          window.scrollTo({ top: 0 });
+        } else {
+          mainCatalog.hidden = false;
+          accountHub.hidden = true;
+          accountHub.setAttribute("aria-hidden", "true");
+        }
+      }
+      window.addEventListener("hashchange", syncRoute);
+
+      // -------- Cart rendering (unchanged behaviour)
       function renderCart() {
         const totalItems = cartQuantity();
         const total = cartTotal();
@@ -4851,49 +5176,27 @@
         for (const item of cart) {
           const article = document.createElement("article");
           article.className = "cart-item";
-
           const image = document.createElement("img");
-          image.src = item.image;
-          image.alt = item.name;
-          image.loading = "lazy";
-
-          const body = document.createElement("div");
-          body.className = "cart-item-body";
-
-          const brand = document.createElement("span");
-          brand.textContent = item.brand;
-
-          const title = document.createElement("h3");
-          title.textContent = item.name;
-
+          image.src = item.image; image.alt = item.name; image.loading = "lazy";
+          const body = document.createElement("div"); body.className = "cart-item-body";
+          const brand = document.createElement("span"); brand.textContent = item.brand;
+          const title = document.createElement("h3"); title.textContent = item.name;
           const price = document.createElement("strong");
           price.textContent = formatMoney(item.price * item.quantity, item.currency);
-
-          const controls = document.createElement("div");
-          controls.className = "cart-controls";
-
+          const controls = document.createElement("div"); controls.className = "cart-controls";
           const minus = document.createElement("button");
-          minus.type = "button";
-          minus.dataset.cartDecrement = item.id;
+          minus.type = "button"; minus.dataset.cartDecrement = item.id;
           minus.setAttribute("aria-label", "Decrease quantity");
           minus.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg>';
-
-          const quantity = document.createElement("span");
-          quantity.textContent = String(item.quantity);
-
+          const quantity = document.createElement("span"); quantity.textContent = String(item.quantity);
           const plus = document.createElement("button");
-          plus.type = "button";
-          plus.dataset.cartIncrement = item.id;
+          plus.type = "button"; plus.dataset.cartIncrement = item.id;
           plus.setAttribute("aria-label", "Increase quantity");
           plus.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>';
-
           const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className = "cart-remove-button";
-          remove.dataset.cartRemove = item.id;
+          remove.type = "button"; remove.className = "cart-remove-button"; remove.dataset.cartRemove = item.id;
           remove.setAttribute("aria-label", "Remove item");
           remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>';
-
           controls.append(minus, quantity, plus, remove);
           body.append(brand, title, price, controls);
           article.append(image, body);
@@ -4912,47 +5215,34 @@
           url: button.dataset.cartUrl,
           quantity: 1,
         };
-        const existing = cart.find((cartItem) => cartItem.id === item.id);
-        if (existing) {
-          existing.quantity += 1;
-        } else {
-          cart.push(item);
-        }
+        const existing = cart.find((c) => c.id === item.id);
+        if (existing) existing.quantity += 1;
+        else cart.push(item);
         saveCart();
         setFormStatus(checkoutStatus, "", "");
         renderCart();
         openCart();
       }
-
       function updateCartItem(id, delta) {
-        const item = cart.find((cartItem) => cartItem.id === id);
+        const item = cart.find((c) => c.id === id);
         if (!item) return;
         item.quantity += delta;
-        if (item.quantity <= 0) {
-          cart = cart.filter((cartItem) => cartItem.id !== id);
-        }
-        saveCart();
-        renderCart();
+        if (item.quantity <= 0) cart = cart.filter((c) => c.id !== id);
+        saveCart(); renderCart();
       }
-
       function removeCartItem(id) {
-        cart = cart.filter((cartItem) => cartItem.id !== id);
-        saveCart();
-        renderCart();
+        cart = cart.filter((c) => c.id !== id);
+        saveCart(); renderCart();
       }
 
       function sectionHasVisibleProducts(section) {
-        return Array.from(section.querySelectorAll(".product-card")).some(
-          (card) => !card.hidden
-        );
+        return Array.from(section.querySelectorAll(".product-card")).some((c) => !c.hidden);
       }
-
       function applyCatalogSearch() {
         const formData = new FormData(searchForm);
         const query = String(formData.get("q") || "").trim().toLowerCase();
         const category = String(formData.get("category") || "all");
         let visibleCount = 0;
-
         for (const card of productCards) {
           const categoryMatches = category === "all" || card.dataset.category === category;
           const queryMatches = !query || (card.dataset.search || "").includes(query);
@@ -4960,106 +5250,165 @@
           card.hidden = !isVisible;
           if (isVisible) visibleCount += 1;
         }
-
         for (const section of document.querySelectorAll(".market-section")) {
           if (section.id === "brands") continue;
           section.hidden = !sectionHasVisibleProducts(section);
         }
-
         searchStatus.hidden = false;
         searchStatus.textContent = query || category !== "all"
           ? visibleCount + " products found"
           : "Showing all products";
       }
 
+      // -------- Checkout submit (now sends user JWT when signed in)
       async function submitCheckout(email) {
+        await refreshSessionIfNeeded();
         const payload = {
           p_email: email,
-          p_cart: cart.map((item) => ({
-            id: item.id,
-            brand: item.brand,
-            name: item.name,
-            price: item.price,
-            currency: item.currency,
-            quantity: item.quantity,
-            url: item.url,
+          p_cart: cart.map((i) => ({
+            id: i.id, brand: i.brand, name: i.name,
+            price: i.price, currency: i.currency, quantity: i.quantity, url: i.url,
           })),
           p_subtotal: Number(cartTotal().toFixed(2)),
           p_currency: "USD",
         };
-
-        const response = await fetch(SUPABASE_PUBLIC_URL + "/rest/v1/rpc/submit_checkout_intent", {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_PUBLIC_KEY,
-            Authorization: "Bearer " + SUPABASE_PUBLIC_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
+        const data = await sbFetch("/rest/v1/rpc/submit_checkout_intent", {
+          method: "POST", body: payload, useAuth: !!session,
         });
-
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-
-        return response.json();
+        return data;
       }
 
+      // -------- Event wiring
       searchForm.addEventListener("submit", (event) => {
         event.preventDefault();
         applyCatalogSearch();
         searchStatus.scrollIntoView({ block: "start", behavior: "smooth" });
       });
-
       searchForm.addEventListener("input", applyCatalogSearch);
       searchForm.addEventListener("change", applyCatalogSearch);
 
       document.addEventListener("click", (event) => {
         const closeButton = event.target.closest("[data-cart-close], [data-account-close]");
-        if (closeButton) closePanels();
-
+        if (closeButton) { closePanels(); return; }
         const addButton = event.target.closest("[data-add-to-cart]");
-        if (addButton) addToCart(addButton);
+        if (addButton) { addToCart(addButton); return; }
+        const inc = event.target.closest("[data-cart-increment]");
+        if (inc) { updateCartItem(inc.dataset.cartIncrement, 1); return; }
+        const dec = event.target.closest("[data-cart-decrement]");
+        if (dec) { updateCartItem(dec.dataset.cartDecrement, -1); return; }
+        const rem = event.target.closest("[data-cart-remove]");
+        if (rem) { removeCartItem(rem.dataset.cartRemove); return; }
 
-        const incrementButton = event.target.closest("[data-cart-increment]");
-        if (incrementButton) updateCartItem(incrementButton.dataset.cartIncrement, 1);
+        const tab = event.target.closest("[data-auth-tab]");
+        if (tab) { renderAuthDrawer(tab.dataset.authTab); return; }
+        const openSignin = event.target.closest("[data-account-open-signin]");
+        if (openSignin) { event.preventDefault(); openAccount("signin"); return; }
+        const openSignup = event.target.closest("[data-account-open-signup]");
+        if (openSignup) { event.preventDefault(); openAccount("signup"); return; }
+        const goAccount = event.target.closest("[data-account-go]");
+        if (goAccount) {
+          event.preventDefault();
+          if (!session) { openAccount("signin"); return; }
+          location.hash = "#account";
+          closeAccountMenu();
+          return;
+        }
+        const signoutBtn = event.target.closest("[data-auth-signout], [data-auth-signout-link]");
+        if (signoutBtn) { event.preventDefault(); authSignOut().catch(console.error); return; }
 
-        const decrementButton = event.target.closest("[data-cart-decrement]");
-        if (decrementButton) updateCartItem(decrementButton.dataset.cartDecrement, -1);
-
-        const removeButton = event.target.closest("[data-cart-remove]");
-        if (removeButton) removeCartItem(removeButton.dataset.cartRemove);
+        // Click-away to close account menu dropdown
+        if (!event.target.closest("[data-header-account]")) closeAccountMenu();
       });
 
+      // Account icon: open hover menu / on click navigate or open drawer
+      let menuOpen = false;
+      function openAccountMenu() {
+        if (!accountMenu) return;
+        accountMenu.hidden = false;
+        accountMenu.setAttribute("aria-hidden", "false");
+        accountTrigger.setAttribute("aria-expanded", "true");
+        menuOpen = true;
+      }
+      function closeAccountMenu() {
+        if (!accountMenu) return;
+        accountMenu.hidden = true;
+        accountMenu.setAttribute("aria-hidden", "true");
+        accountTrigger.setAttribute("aria-expanded", "false");
+        menuOpen = false;
+      }
+      const headerAccountWrap = document.querySelector("[data-header-account]");
+      headerAccountWrap.addEventListener("mouseenter", openAccountMenu);
+      headerAccountWrap.addEventListener("mouseleave", closeAccountMenu);
+      accountTrigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (session) { location.hash = "#account"; closeAccountMenu(); }
+        else openAccount("signin");
+      });
+      accountTrigger.addEventListener("focus", openAccountMenu);
+
       document.querySelector("[data-cart-open]").addEventListener("click", openCart);
-      document.querySelector("[data-account-open]").addEventListener("click", openAccount);
       drawerOverlay.addEventListener("click", closePanels);
 
-      accountForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const email = String(new FormData(accountForm).get("email") || "").trim();
-        localStorage.setItem(GUEST_EMAIL_KEY, email);
-        hydrateEmailFields();
-        setFormStatus(accountStatus, "Email saved for guest checkout.", "success");
+      // Auth form submissions
+      accountPanel.querySelector('[data-auth-form="signin"]').addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const status = accountPanel.querySelector('[data-auth-status="signin"]');
+        setFormStatus(status, "Signing in...", "pending");
+        try {
+          await authSignIn(String(fd.get("email") || "").trim(), String(fd.get("password") || ""));
+          setFormStatus(status, "Signed in. Welcome back.", "success");
+        } catch (err) {
+          setFormStatus(status, err.message || "Sign in failed.", "error");
+        }
+      });
+      accountPanel.querySelector('[data-auth-form="signup"]').addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const status = accountPanel.querySelector('[data-auth-status="signup"]');
+        setFormStatus(status, "Creating your account...", "pending");
+        try {
+          const res = await authSignUp(
+            String(fd.get("email") || "").trim(),
+            String(fd.get("password") || ""),
+            String(fd.get("full_name") || "").trim() || null,
+          );
+          setFormStatus(
+            status,
+            res.confirmed ? "Account created. You're signed in." : "Account created. Check your email to confirm and then sign in.",
+            "success",
+          );
+        } catch (err) {
+          setFormStatus(status, err.message || "Could not create account.", "error");
+        }
+      });
+      accountPanel.querySelector('[data-auth-form="reset"]').addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const status = accountPanel.querySelector('[data-auth-status="reset"]');
+        setFormStatus(status, "Sending reset link...", "pending");
+        try {
+          await authResetPassword(String(fd.get("email") || "").trim());
+          setFormStatus(status, "If that email is registered, a reset link is on the way.", "success");
+        } catch (err) {
+          setFormStatus(status, err.message || "Could not request reset.", "error");
+        }
       });
 
       checkoutForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const email = String(new FormData(checkoutForm).get("email") || "").trim();
+        const email = String(new FormData(checkoutForm).get("email") || "").trim() || userEmail();
         if (cart.length === 0) {
           setFormStatus(checkoutStatus, "Add at least one product before checkout.", "error");
           return;
         }
         localStorage.setItem(GUEST_EMAIL_KEY, email);
-        hydrateEmailFields();
         checkoutSubmit.disabled = true;
         setFormStatus(checkoutStatus, "Saving checkout request...", "pending");
         try {
           const records = await submitCheckout(email);
           const reference = Array.isArray(records) && records[0] ? records[0].id : "received";
-          cart = [];
-          saveCart();
-          renderCart();
+          cart = []; saveCart(); renderCart();
           setFormStatus(checkoutStatus, "Checkout request saved. Reference: " + reference, "success");
         } catch (error) {
           console.error(error);
@@ -5068,8 +5417,21 @@
         }
       });
 
-      hydrateEmailFields();
-      renderCart();
+      // Pre-fill checkout email from saved session/guest
+      function hydrateCheckoutEmail() {
+        const email = userEmail() || localStorage.getItem(GUEST_EMAIL_KEY) || "";
+        if (email && !checkoutEmail.value) checkoutEmail.value = email;
+      }
+
+      // -------- Boot
+      (async function boot() {
+        renderHeaderAccount();
+        renderCart();
+        if (session) { await refreshSessionIfNeeded(); await fetchProfile(); }
+        renderHeaderAccount();
+        hydrateCheckoutEmail();
+        syncRoute();
+      })();
     </script>
   </body>
 </html>
