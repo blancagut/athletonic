@@ -791,6 +791,148 @@ const topBrands = ATHLETONIC_SOURCE_OF_TRUTH.featuredBrandSlugs.map(
   (brandSlug) => brandNames[brandSlug] ?? brandSlug
 );
 
+// ---------------------------------------------------------------------------
+// Footer renderer — produces an enterprise-grade multi-tier footer.
+// Data lives in `ATHLETONIC_SOURCE_OF_TRUTH.footer` so future pages
+// (shop, brands, deals) can reuse the same markup without duplication.
+// ---------------------------------------------------------------------------
+function renderFooterLinkList(links) {
+  return links
+    .map(
+      (link) =>
+        `<li><a href="${html(link.href)}"${
+          link.external ? ' rel="noopener noreferrer" target="_blank"' : ""
+        }>${html(link.label)}</a></li>`
+    )
+    .join("\n              ");
+}
+
+function renderFooter() {
+  const footer = ATHLETONIC_SOURCE_OF_TRUTH.footer;
+
+  const newsletter = `
+      <section class="footer-newsletter" aria-labelledby="footer-newsletter-title">
+        <div class="footer-newsletter-inner">
+          <div class="footer-newsletter-copy">
+            <p class="footer-newsletter-eyebrow">${html(footer.newsletter.eyebrow)}</p>
+            <h2 id="footer-newsletter-title" class="footer-newsletter-headline">${html(
+              footer.newsletter.headline
+            )}</h2>
+            <p class="footer-newsletter-text">${html(footer.newsletter.copy)}</p>
+          </div>
+          <form class="footer-newsletter-form" data-footer-newsletter novalidate>
+            <label class="sr-only" for="footer-newsletter-email">Email address</label>
+            <input
+              id="footer-newsletter-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder="${html(footer.newsletter.placeholder)}"
+            />
+            <input type="text" name="company" tabindex="-1" autocomplete="off" class="sr-only" aria-hidden="true" />
+            <button type="submit">${html(footer.newsletter.cta)}</button>
+            <p class="footer-newsletter-status" data-footer-newsletter-status role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>`;
+
+  const backToTop = `
+      <button type="button" class="footer-backtotop" data-back-to-top>
+        <span>${html(footer.backToTop.label)}</span>
+      </button>`;
+
+  const columns = `
+      <nav class="footer-main-grid" aria-label="Footer">
+        ${footer.columns
+          .map(
+            (col) => `<div class="footer-col">
+          <h3>${html(col.title)}</h3>
+          <ul>
+              ${renderFooterLinkList(col.links)}
+          </ul>
+        </div>`
+          )
+          .join("\n        ")}
+      </nav>`;
+
+  const locale = `
+      <div class="footer-locale" role="group" aria-label="Region preferences">
+        <button type="button" class="footer-locale-pill" aria-disabled="true" disabled>
+          <span class="footer-locale-text"><small>${html(footer.locale.language.label)}</small>${html(
+    footer.locale.language.value
+  )}</span>
+        </button>
+        <button type="button" class="footer-locale-pill" aria-disabled="true" disabled>
+          <span class="footer-locale-text"><small>${html(footer.locale.currency.label)}</small>${html(
+    footer.locale.currency.value
+  )}</span>
+        </button>
+        <button type="button" class="footer-locale-pill" aria-disabled="true" disabled>
+          <span class="footer-locale-text"><small>${html(footer.locale.country.label)}</small>${html(
+    footer.locale.country.value
+  )}</span>
+        </button>
+      </div>`;
+
+  // Resolve mega-grid: fill any column that requests featured brands.
+  const megaColumns = footer.megaGrid.map((col) => {
+    if (col.linksFromFeaturedBrands) {
+      const n = col.linksFromFeaturedBrands;
+      const brandLinks = ATHLETONIC_SOURCE_OF_TRUTH.featuredBrandSlugs
+        .slice(0, n)
+        .map((slug) => ({
+          label: brandNames[slug] ?? slug,
+          href: "#brands",
+        }));
+      return { title: col.title, links: brandLinks };
+    }
+    return col;
+  });
+
+  const mega = `
+      <nav class="footer-mega" aria-label="Site directory">
+        ${megaColumns
+          .map(
+            (col) => `<div class="footer-mega-col">
+          <h4>${html(col.title)}</h4>
+          <ul>
+              ${renderFooterLinkList(col.links)}
+          </ul>
+        </div>`
+          )
+          .join("\n        ")}
+      </nav>`;
+
+  const legalLinks = footer.legal.links
+    .map(
+      (link) =>
+        `<li><a href="${html(link.href)}">${html(link.label)}</a></li>`
+    )
+    .join("\n            ");
+
+  const legal = `
+      <div class="footer-legal">
+        <a class="footer-legal-brand" href="/" aria-label="Athletonic home">
+          <img src="./assets/logo.png" alt="Athletonic" />
+        </a>
+        <ul class="footer-legal-links">
+            ${legalLinks}
+        </ul>
+        <p class="footer-legal-copy">${html(footer.legal.copyright)}</p>
+      </div>`;
+
+  return `
+    <footer class="market-footer" role="contentinfo">
+${newsletter}
+${backToTop}
+${columns}
+${locale}
+${mega}
+${legal}
+    </footer>`;
+}
+
 const page = `<!doctype html>
 <html lang="en">
   <head>
@@ -804,6 +946,7 @@ const page = `<!doctype html>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <a id="top" tabindex="-1" aria-hidden="true"></a>
     <header class="market-header">
       <div class="header-main">
         <a class="brand" href="/" aria-label="Athletonic home">
@@ -972,15 +1115,7 @@ ${productSections}
       </section>
     </main>
 
-    <footer class="market-footer">
-      <div class="footer-main">
-        <a class="brand" href="/" aria-label="Athletonic home">
-          <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" />
-        </a>
-        <p class="footer-tagline">Performance marketplace for supplements, hydration, recovery and apparel.</p>
-        <p class="footer-copy">&copy; 2026 — All rights reserved.</p>
-      </div>
-    </footer>
+${renderFooter()}
     <script>
       const SUPABASE_PUBLIC_URL = "${html(SUPABASE_PUBLIC_URL)}";
       const SUPABASE_PUBLIC_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
@@ -1319,6 +1454,39 @@ ${productSections}
 
       hydrateEmailFields();
       renderCart();
+
+      // -------- Footer: back-to-top
+      const backToTopBtn = document.querySelector("[data-back-to-top]");
+      if (backToTopBtn) {
+        backToTopBtn.addEventListener("click", () => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }
+
+      // -------- Footer: newsletter signup (stub)
+      const newsletterForm = document.querySelector("[data-footer-newsletter]");
+      const newsletterStatus = document.querySelector("[data-footer-newsletter-status]");
+      if (newsletterForm) {
+        newsletterForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const formData = new FormData(newsletterForm);
+          // Honeypot: silently drop if filled
+          if ((formData.get("company") || "").toString().trim() !== "") return;
+          const email = (formData.get("email") || "").toString().trim();
+          if (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) {
+            if (newsletterStatus) {
+              newsletterStatus.textContent = "Please enter a valid email.";
+              newsletterStatus.dataset.state = "error";
+            }
+            return;
+          }
+          if (newsletterStatus) {
+            newsletterStatus.textContent = "Thanks — you're on the list.";
+            newsletterStatus.dataset.state = "success";
+          }
+          newsletterForm.reset();
+        });
+      }
     </script>
   </body>
 </html>

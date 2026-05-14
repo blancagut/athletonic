@@ -189,4 +189,131 @@ export const ATHLETONIC_SOURCE_OF_TRUTH = {
     { slug: "venum", name: "Venum", officialDomains: ["venum.com"] },
     { slug: "vital_proteins", name: "Vital Proteins", officialDomains: ["vitalproteins.com"] },
   ],
+
+  footer: {
+    newsletter: {
+      eyebrow: "Performance Club",
+      headline: "Train smarter. Recover faster.",
+      copy: "Weekly product drops, exclusive member pricing, and science-backed performance briefings — straight to your inbox.",
+      placeholder: "Enter your email address",
+      cta: "Subscribe",
+    },
+    backToTop: {
+      label: "Back to top",
+    },
+    columns: [
+      {
+        title: "Get to Know Us",
+        links: [
+          { label: "About Athletonic", href: "#" },
+          { label: "Careers", href: "#" },
+          { label: "Press Releases", href: "#" },
+          { label: "Athletonic Science", href: "#" },
+          { label: "Sustainability", href: "#" },
+          { label: "Athletonic Cares", href: "#" },
+        ],
+      },
+      {
+        title: "Shop With Us",
+        links: [
+          { label: "Shop all products", href: "#catalog" },
+          { label: "Brand directory", href: "#brands" },
+          { label: "Daily deals", href: "#" },
+          { label: "Best sellers", href: "#protein" },
+          { label: "New arrivals", href: "#" },
+          { label: "Gift cards", href: "#" },
+        ],
+      },
+      {
+        title: "Make Money With Us",
+        links: [
+          { label: "Sell on Athletonic", href: "#" },
+          { label: "Become an affiliate", href: "#" },
+          { label: "Advertise your brand", href: "#" },
+          { label: "Become a vendor", href: "#" },
+          { label: "Athletonic for Coaches", href: "#" },
+          { label: "Athletonic for Gyms", href: "#" },
+        ],
+      },
+      {
+        title: "Let Us Help You",
+        links: [
+          { label: "Your account", href: "#account" },
+          { label: "Your orders", href: "#account" },
+          { label: "Shipping rates & policies", href: "#" },
+          { label: "Returns & replacements", href: "#" },
+          { label: "Help center", href: "#" },
+          { label: "Contact us", href: "#" },
+        ],
+      },
+    ],
+    locale: {
+      language: { label: "Language", value: "English" },
+      currency: { label: "Currency", value: "USD — $" },
+      country: { label: "Ship to", value: "United States" },
+    },
+    megaGrid: [
+      {
+        title: "Supplements",
+        links: [
+          { label: "Protein", href: "#protein" },
+          { label: "Creatine", href: "#creatine" },
+          { label: "Pre-workout", href: "#pre-workout" },
+          { label: "Hydration & electrolytes", href: "#hydration" },
+          { label: "Vitamins & daily health", href: "#vitamins" },
+          { label: "Greens & superfoods", href: "#greens" },
+          { label: "Bars, shakes & meals", href: "#bars-shakes" },
+        ],
+      },
+      {
+        title: "Recovery & Sleep",
+        links: [
+          { label: "Recovery devices", href: "#recovery" },
+          { label: "Sleep recovery", href: "#sleep" },
+          { label: "Massage & mobility", href: "#recovery" },
+          { label: "Compression", href: "#recovery" },
+          { label: "Cold therapy", href: "#recovery" },
+          { label: "Sleep supplements", href: "#sleep" },
+        ],
+      },
+      {
+        title: "Goals",
+        links: [
+          { label: "Build muscle", href: "#protein" },
+          { label: "Lose fat", href: "#pre-workout" },
+          { label: "Endurance", href: "#hydration" },
+          { label: "Daily wellness", href: "#vitamins" },
+          { label: "Women's health", href: "#vitamins" },
+          { label: "Energy & focus", href: "#pre-workout" },
+        ],
+      },
+      {
+        title: "Apparel & Gear",
+        links: [
+          { label: "Training apparel", href: "#brands" },
+          { label: "Footwear", href: "#brands" },
+          { label: "Accessories", href: "#brands" },
+          { label: "Bags", href: "#brands" },
+          { label: "Lifting gear", href: "#brands" },
+          { label: "Combat sports", href: "#brands" },
+        ],
+      },
+      {
+        title: "Featured Brands",
+        // Populated at render-time from featuredBrandSlugs[:6]
+        linksFromFeaturedBrands: 6,
+      },
+    ],
+    legal: {
+      links: [
+        { label: "Conditions of Use", href: "#" },
+        { label: "Privacy Notice", href: "#" },
+        { label: "Your Ads Privacy Choices", href: "#" },
+        { label: "Cookie Preferences", href: "#" },
+        { label: "Accessibility", href: "#" },
+        { label: "Do Not Sell My Personal Information", href: "#" },
+      ],
+      copyright: "© 2026 Athletonic Marketplace, Inc. All rights reserved.",
+    },
+  },
 };
