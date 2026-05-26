@@ -15,8 +15,45 @@ from typing import Any, Dict, List
 
 from config import DB_PATH, DATA_DIR
 from utils.logger import get_logger
+from utils.quality_gate import QualityRules, evaluate_catalog_quality, format_gate_failure
 
 log = get_logger(__name__)
+
+QUALITY_GATE_DISABLE_ENV = "SUPS_DISABLE_QUALITY_GATE"
+
+
+def _run_export_quality_gate(conn: sqlite3.Connection, brand: str | None) -> None:
+    if os.getenv(QUALITY_GATE_DISABLE_ENV, "0") == "1":
+        log.warning(
+            "Quality gate bypassed because %s=1. Export will continue.",
+            QUALITY_GATE_DISABLE_ENV,
+        )
+        return
+
+    rules = QualityRules(
+        allowed_currencies=("USD",),
+        min_price=0.99,
+        max_price=999.99,
+        min_description_length=80,
+        max_empty_description_pct=0.0,
+        max_short_description_pct=5.0,
+        max_suspicious_html_pct=0.0,
+        strict_warnings=False,
+        max_samples_per_issue=50,
+    )
+    report = evaluate_catalog_quality(conn, brand=brand, rules=rules)
+
+    gate = report.get("gate", {})
+    if gate.get("passed"):
+        log.info(
+            "Quality gate passed for export scope brand=%s active_rows=%s",
+            brand or "all",
+            report.get("scope", {}).get("active_rows", 0),
+        )
+        return
+
+    reason = format_gate_failure(report)
+    raise ValueError(f"Export blocked by quality gate: {reason}")
 
 
 # ── helpers ────────────────────────────────────────────────────────────────────
@@ -231,6 +268,7 @@ def update_image_local_path(brand: str, product_id: str, url: str, local_path: s
 def export_to_json(brand: str | None = None) -> str:
     """Export products (optionally filtered by brand) to a JSON file."""
     conn = _connect()
+    _run_export_quality_gate(conn, brand)
     where = "WHERE p.brand = ?" if brand else ""
     params = (brand,) if brand else ()
 
@@ -270,6 +308,7 @@ def export_to_csv(brand: str | None = None) -> str:
     import csv
 
     conn = _connect()
+    _run_export_quality_gate(conn, brand)
     where = "WHERE p.brand = ?" if brand else ""
     params = (brand,) if brand else ()
 

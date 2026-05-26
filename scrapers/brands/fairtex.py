@@ -6,5 +6,5 @@ class FairtexScraper(ShopifyScraper):
     display_name = "Fairtex"
     base_url     = "https://www.fairtex.com"
     collection_handle = "all"
-    sort_by = "best-selling"
-    max_products = 100
+    sort_by      = "best-selling"
+    max_products = None          # fetch entire catalog (gloves, shorts, pads, apparel, etc.)

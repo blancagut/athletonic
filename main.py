@@ -142,6 +142,9 @@ from scrapers.brands.truvani          import TruvaniScraper
 from scrapers.brands.venum            import VenumScraper
 from scrapers.brands.hayabusa         import HayabusaScraper
 from scrapers.brands.fairtex          import FairtexScraper
+from scrapers.brands.raja_boxing      import RajaBoxingScraper
+from scrapers.brands.twins_special    import TwinsSpecialScraper
+from scrapers.brands.windy            import WindyScraper
 from scrapers.brands.sanabul          import SanabulScraper
 from scrapers.brands.century_martial_arts import CenturyMartialArtsScraper
 from scrapers.brands.fuji_sports      import FujiSportsScraper
@@ -288,6 +291,9 @@ SCRAPER_MAP: Dict[str, Type[BaseScraper]] = {
     "venum":                  VenumScraper,
     "hayabusa":               HayabusaScraper,
     "fairtex":                FairtexScraper,
+    "raja_boxing":            RajaBoxingScraper,
+    "twins_special":          TwinsSpecialScraper,
+    "windy":                  WindyScraper,
     "sanabul":                SanabulScraper,
     "century_martial_arts":   CenturyMartialArtsScraper,
     "fuji_sports":            FujiSportsScraper,
