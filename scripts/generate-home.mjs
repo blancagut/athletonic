@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
 
 const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
@@ -713,7 +713,7 @@ function collectionLabel(value) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function productCard(product) {
+function productCard(product, pathPrefix = "./") {
   const brand = brandNames[product.brand] ?? product.brand;
   const name = product.displayName ?? product.name;
   const label = product.displayLabel ?? collectionLabel(product.store_collection);
@@ -721,14 +721,15 @@ function productCard(product) {
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
+  const pdpHref = `${pathPrefix}product/${html(product.id)}.html`;
   return `
           <article class="product-card" data-product-id="${html(product.id)}" data-category="${html(product.sectionId)}" data-search="${html(searchText)}">
-            <a class="product-image" href="${html(product.url)}" target="_blank" rel="noopener noreferrer">
+            <a class="product-image" href="${pdpHref}">
               <img src="${html(product.image)}" alt="${html(name)}" loading="lazy" />
             </a>
             <div class="product-body">
               <span>${html(brand)}</span>
-              <h3>${html(name)}</h3>
+              <h3><a class="product-card-link" href="${pdpHref}">${html(name)}</a></h3>
               <p>${html(label)}</p>
               <strong>${html(money(product.price, product.currency))}</strong>
               <button
@@ -741,7 +742,6 @@ function productCard(product) {
                 data-cart-price="${html(product.price)}"
                 data-cart-currency="${html(product.currency)}"
                 data-cart-image="${html(product.image)}"
-                data-cart-url="${html(product.url)}"
               >Add to cart</button>
             </div>
           </article>`;
@@ -780,7 +780,7 @@ const productSections = populatedSections
           <p>${html(section.description)}</p>
         </div>
         <div class="product-row">
-${productsWithSection.map(productCard).join("\n")}
+${productsWithSection.map((product) => productCard(product)).join("\n")}
         </div>
       </section>`;
     }
@@ -796,18 +796,29 @@ const topBrands = ATHLETONIC_SOURCE_OF_TRUTH.featuredBrandSlugs.map(
 // Data lives in `ATHLETONIC_SOURCE_OF_TRUTH.footer` so future pages
 // (shop, brands, deals) can reuse the same markup without duplication.
 // ---------------------------------------------------------------------------
-function renderFooterLinkList(links) {
+function resolveSiteHref(href, pathPrefix = "./") {
+  const value = String(href ?? "").trim();
+  if (!value) return "#";
+  if (/^(https?:|mailto:|tel:)/i.test(value)) return value;
+  if (value.startsWith("#")) return `${pathPrefix}${value}`;
+  if (value.startsWith("./") || value.startsWith("../") || value.startsWith("/")) {
+    return value;
+  }
+  return `${pathPrefix}${value}`;
+}
+
+function renderFooterLinkList(links, pathPrefix = "./") {
   return links
     .map(
       (link) =>
-        `<li><a href="${html(link.href)}"${
+        `<li><a href="${html(resolveSiteHref(link.href, pathPrefix))}"${
           link.external ? ' rel="noopener noreferrer" target="_blank"' : ""
         }>${html(link.label)}</a></li>`
     )
     .join("\n              ");
 }
 
-function renderFooter() {
+function renderFooter(pathPrefix = "./") {
   const footer = ATHLETONIC_SOURCE_OF_TRUTH.footer;
 
   const newsletter = `
@@ -849,7 +860,7 @@ function renderFooter() {
             (col) => `<div class="footer-col">
           <h3>${html(col.title)}</h3>
           <ul>
-              ${renderFooterLinkList(col.links)}
+              ${renderFooterLinkList(col.links, pathPrefix)}
           </ul>
         </div>`
           )
@@ -897,7 +908,7 @@ function renderFooter() {
             (col) => `<div class="footer-mega-col">
           <h4>${html(col.title)}</h4>
           <ul>
-              ${renderFooterLinkList(col.links)}
+              ${renderFooterLinkList(col.links, pathPrefix)}
           </ul>
         </div>`
           )
@@ -907,14 +918,16 @@ function renderFooter() {
   const legalLinks = footer.legal.links
     .map(
       (link) =>
-        `<li><a href="${html(link.href)}">${html(link.label)}</a></li>`
+        `<li><a href="${html(resolveSiteHref(link.href, pathPrefix))}">${html(
+          link.label
+        )}</a></li>`
     )
     .join("\n            ");
 
   const legal = `
       <div class="footer-legal">
-        <a class="footer-legal-brand" href="/" aria-label="Athletonic home">
-          <img src="./assets/logo.png" alt="Athletonic" />
+        <a class="footer-legal-brand" href="${pathPrefix}" aria-label="Athletonic home">
+          <img src="${pathPrefix}assets/logo.png" alt="Athletonic" />
         </a>
         <ul class="footer-legal-links">
             ${legalLinks}
@@ -949,7 +962,7 @@ const page = `<!doctype html>
     <a id="top" tabindex="-1" aria-hidden="true"></a>
     <header class="market-header">
       <div class="header-main">
-        <a class="brand" href="/" aria-label="Athletonic home">
+        <a class="brand" href="./" aria-label="Athletonic home">
           <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" />
         </a>
 
@@ -1041,8 +1054,8 @@ const page = `<!doctype html>
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Send checkout request</button>
-        <p class="form-note">No fake payment step: this saves your cart so checkout can continue with a real order workflow.</p>
+        <button type="submit" data-checkout-submit>Continue to secure payment</button>
+        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
       </form>
     </aside>
 
@@ -1071,7 +1084,7 @@ const page = `<!doctype html>
           />
           <h2>${totalProducts} curated products</h2>
           <p>Protein, creatine, pre-workout, hydration, recovery, apparel, footwear, and accessories.</p>
-          <strong>Official brand sources only</strong>
+          <strong>Sold through Athletonic</strong>
         </div>
       </section>
 
@@ -1115,379 +1128,12 @@ ${productSections}
       </section>
     </main>
 
-${renderFooter()}
+${renderFooter("./")}
     <script>
-      const SUPABASE_PUBLIC_URL = "${html(SUPABASE_PUBLIC_URL)}";
-      const SUPABASE_PUBLIC_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
-      const CART_STORAGE_KEY = "athletonic-cart-v1";
-      const GUEST_EMAIL_KEY = "athletonic-guest-email";
-
-      const searchForm = document.querySelector("[data-catalog-search]");
-      const searchStatus = document.querySelector(".search-status");
-      const productCards = Array.from(document.querySelectorAll(".product-card"));
-      const drawerOverlay = document.querySelector("[data-drawer-overlay]");
-      const cartDrawer = document.querySelector("[data-cart-drawer]");
-      const accountPanel = document.querySelector("[data-account-panel]");
-      const cartItems = document.querySelector("[data-cart-items]");
-      const cartCount = document.querySelector("[data-cart-count]");
-      const cartSubtotal = document.querySelector("[data-cart-subtotal]");
-      const checkoutForm = document.querySelector("[data-checkout-form]");
-      const checkoutEmail = document.querySelector("#checkout-email");
-      const checkoutStatus = document.querySelector("[data-checkout-status]");
-      const checkoutSubmit = document.querySelector("[data-checkout-submit]");
-      const accountForm = document.querySelector("[data-account-form]");
-      const accountEmail = document.querySelector("#guest-email");
-      const accountStatus = document.querySelector("[data-account-status]");
-      const accountLabel = document.querySelector("[data-account-label]");
-
-      let cart = loadCart();
-
-      function loadCart() {
-        try {
-          const parsed = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      }
-
-      function saveCart() {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      }
-
-      function formatMoney(value, currency) {
-        return new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: currency || "USD",
-        }).format(value || 0);
-      }
-
-      function cartQuantity() {
-        return cart.reduce((sum, item) => sum + item.quantity, 0);
-      }
-
-      function cartTotal() {
-        return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      }
-
-      function openPanel(panel) {
-        drawerOverlay.hidden = false;
-        panel.hidden = false;
-        panel.setAttribute("aria-hidden", "false");
-      }
-
-      function closePanels() {
-        drawerOverlay.hidden = true;
-        cartDrawer.hidden = true;
-        accountPanel.hidden = true;
-        cartDrawer.setAttribute("aria-hidden", "true");
-        accountPanel.setAttribute("aria-hidden", "true");
-      }
-
-      function openCart() {
-        openPanel(cartDrawer);
-      }
-
-      function openAccount() {
-        openPanel(accountPanel);
-        accountEmail.focus();
-      }
-
-      function setFormStatus(element, message, state) {
-        element.textContent = message;
-        element.dataset.state = state || "";
-      }
-
-      function hydrateEmailFields() {
-        const email = localStorage.getItem(GUEST_EMAIL_KEY) || "";
-        accountEmail.value = email;
-        checkoutEmail.value = email;
-        accountLabel.textContent = email ? "Guest" : "Guest";
-      }
-
-      function renderCart() {
-        const totalItems = cartQuantity();
-        const total = cartTotal();
-        cartCount.textContent = String(totalItems);
-        cartCount.hidden = totalItems === 0;
-        cartSubtotal.textContent = formatMoney(total, "USD");
-        cartItems.textContent = "";
-
-        if (cart.length === 0) {
-          const empty = document.createElement("div");
-          empty.className = "empty-cart";
-          const message = document.createElement("p");
-          message.textContent = "Your cart is empty.";
-          const action = document.createElement("button");
-          action.type = "button";
-          action.dataset.cartClose = "";
-          action.textContent = "Continue shopping";
-          empty.append(message, action);
-          cartItems.append(empty);
-          checkoutForm.hidden = true;
-          checkoutSubmit.disabled = true;
-          return;
-        }
-
-        checkoutForm.hidden = false;
-        checkoutSubmit.disabled = false;
-
-        for (const item of cart) {
-          const article = document.createElement("article");
-          article.className = "cart-item";
-
-          const image = document.createElement("img");
-          image.src = item.image;
-          image.alt = item.name;
-          image.loading = "lazy";
-
-          const body = document.createElement("div");
-          body.className = "cart-item-body";
-
-          const brand = document.createElement("span");
-          brand.textContent = item.brand;
-
-          const title = document.createElement("h3");
-          title.textContent = item.name;
-
-          const price = document.createElement("strong");
-          price.textContent = formatMoney(item.price * item.quantity, item.currency);
-
-          const controls = document.createElement("div");
-          controls.className = "cart-controls";
-
-          const minus = document.createElement("button");
-          minus.type = "button";
-          minus.dataset.cartDecrement = item.id;
-          minus.setAttribute("aria-label", "Decrease quantity");
-          minus.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg>';
-
-          const quantity = document.createElement("span");
-          quantity.textContent = String(item.quantity);
-
-          const plus = document.createElement("button");
-          plus.type = "button";
-          plus.dataset.cartIncrement = item.id;
-          plus.setAttribute("aria-label", "Increase quantity");
-          plus.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>';
-
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className = "cart-remove-button";
-          remove.dataset.cartRemove = item.id;
-          remove.setAttribute("aria-label", "Remove item");
-          remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>';
-
-          controls.append(minus, quantity, plus, remove);
-          body.append(brand, title, price, controls);
-          article.append(image, body);
-          cartItems.append(article);
-        }
-      }
-
-      function addToCart(button) {
-        const item = {
-          id: button.dataset.cartId,
-          brand: button.dataset.cartBrand,
-          name: button.dataset.cartName,
-          price: Number(button.dataset.cartPrice || 0),
-          currency: button.dataset.cartCurrency || "USD",
-          image: button.dataset.cartImage,
-          url: button.dataset.cartUrl,
-          quantity: 1,
-        };
-        const existing = cart.find((cartItem) => cartItem.id === item.id);
-        if (existing) {
-          existing.quantity += 1;
-        } else {
-          cart.push(item);
-        }
-        saveCart();
-        setFormStatus(checkoutStatus, "", "");
-        renderCart();
-        openCart();
-      }
-
-      function updateCartItem(id, delta) {
-        const item = cart.find((cartItem) => cartItem.id === id);
-        if (!item) return;
-        item.quantity += delta;
-        if (item.quantity <= 0) {
-          cart = cart.filter((cartItem) => cartItem.id !== id);
-        }
-        saveCart();
-        renderCart();
-      }
-
-      function removeCartItem(id) {
-        cart = cart.filter((cartItem) => cartItem.id !== id);
-        saveCart();
-        renderCart();
-      }
-
-      function sectionHasVisibleProducts(section) {
-        return Array.from(section.querySelectorAll(".product-card")).some(
-          (card) => !card.hidden
-        );
-      }
-
-      function applyCatalogSearch() {
-        const formData = new FormData(searchForm);
-        const query = String(formData.get("q") || "").trim().toLowerCase();
-        const category = String(formData.get("category") || "all");
-        let visibleCount = 0;
-
-        for (const card of productCards) {
-          const categoryMatches = category === "all" || card.dataset.category === category;
-          const queryMatches = !query || (card.dataset.search || "").includes(query);
-          const isVisible = categoryMatches && queryMatches;
-          card.hidden = !isVisible;
-          if (isVisible) visibleCount += 1;
-        }
-
-        for (const section of document.querySelectorAll(".market-section")) {
-          if (section.id === "brands") continue;
-          section.hidden = !sectionHasVisibleProducts(section);
-        }
-
-        searchStatus.hidden = false;
-        searchStatus.textContent = query || category !== "all"
-          ? visibleCount + " products found"
-          : "Showing all products";
-      }
-
-      async function submitCheckout(email) {
-        const payload = {
-          p_email: email,
-          p_cart: cart.map((item) => ({
-            id: item.id,
-            brand: item.brand,
-            name: item.name,
-            price: item.price,
-            currency: item.currency,
-            quantity: item.quantity,
-            url: item.url,
-          })),
-          p_subtotal: Number(cartTotal().toFixed(2)),
-          p_currency: "USD",
-        };
-
-        const response = await fetch(SUPABASE_PUBLIC_URL + "/rest/v1/rpc/submit_checkout_intent", {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_PUBLIC_KEY,
-            Authorization: "Bearer " + SUPABASE_PUBLIC_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-
-        return response.json();
-      }
-
-      searchForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        applyCatalogSearch();
-        searchStatus.scrollIntoView({ block: "start", behavior: "smooth" });
-      });
-
-      searchForm.addEventListener("input", applyCatalogSearch);
-      searchForm.addEventListener("change", applyCatalogSearch);
-
-      document.addEventListener("click", (event) => {
-        const closeButton = event.target.closest("[data-cart-close], [data-account-close]");
-        if (closeButton) closePanels();
-
-        const addButton = event.target.closest("[data-add-to-cart]");
-        if (addButton) addToCart(addButton);
-
-        const incrementButton = event.target.closest("[data-cart-increment]");
-        if (incrementButton) updateCartItem(incrementButton.dataset.cartIncrement, 1);
-
-        const decrementButton = event.target.closest("[data-cart-decrement]");
-        if (decrementButton) updateCartItem(decrementButton.dataset.cartDecrement, -1);
-
-        const removeButton = event.target.closest("[data-cart-remove]");
-        if (removeButton) removeCartItem(removeButton.dataset.cartRemove);
-      });
-
-      document.querySelector("[data-cart-open]").addEventListener("click", openCart);
-      document.querySelector("[data-account-open]").addEventListener("click", openAccount);
-      drawerOverlay.addEventListener("click", closePanels);
-
-      accountForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const email = String(new FormData(accountForm).get("email") || "").trim();
-        localStorage.setItem(GUEST_EMAIL_KEY, email);
-        hydrateEmailFields();
-        setFormStatus(accountStatus, "Email saved for guest checkout.", "success");
-      });
-
-      checkoutForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const email = String(new FormData(checkoutForm).get("email") || "").trim();
-        if (cart.length === 0) {
-          setFormStatus(checkoutStatus, "Add at least one product before checkout.", "error");
-          return;
-        }
-        localStorage.setItem(GUEST_EMAIL_KEY, email);
-        hydrateEmailFields();
-        checkoutSubmit.disabled = true;
-        setFormStatus(checkoutStatus, "Saving checkout request...", "pending");
-        try {
-          const records = await submitCheckout(email);
-          const reference = Array.isArray(records) && records[0] ? records[0].id : "received";
-          cart = [];
-          saveCart();
-          renderCart();
-          setFormStatus(checkoutStatus, "Checkout request saved. Reference: " + reference, "success");
-        } catch (error) {
-          console.error(error);
-          checkoutSubmit.disabled = false;
-          setFormStatus(checkoutStatus, "Could not save checkout online. Your cart is still saved here.", "error");
-        }
-      });
-
-      hydrateEmailFields();
-      renderCart();
-
-      // -------- Footer: back-to-top
-      const backToTopBtn = document.querySelector("[data-back-to-top]");
-      if (backToTopBtn) {
-        backToTopBtn.addEventListener("click", () => {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-      }
-
-      // -------- Footer: newsletter signup (stub)
-      const newsletterForm = document.querySelector("[data-footer-newsletter]");
-      const newsletterStatus = document.querySelector("[data-footer-newsletter-status]");
-      if (newsletterForm) {
-        newsletterForm.addEventListener("submit", (event) => {
-          event.preventDefault();
-          const formData = new FormData(newsletterForm);
-          // Honeypot: silently drop if filled
-          if ((formData.get("company") || "").toString().trim() !== "") return;
-          const email = (formData.get("email") || "").toString().trim();
-          if (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) {
-            if (newsletterStatus) {
-              newsletterStatus.textContent = "Please enter a valid email.";
-              newsletterStatus.dataset.state = "error";
-            }
-            return;
-          }
-          if (newsletterStatus) {
-            newsletterStatus.textContent = "Thanks — you're on the list.";
-            newsletterStatus.dataset.state = "success";
-          }
-          newsletterForm.reset();
-        });
-      }
+      window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
+      window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
     </script>
+    <script src="./assets/cart.js" defer></script>
   </body>
 </html>
 `;
@@ -1496,3 +1142,1086 @@ writeFileSync(new URL("../index.html", import.meta.url), page);
 console.log(
   `Generated ${totalProducts} products across ${populatedSections.length} sections.`
 );
+
+// ---------------------------------------------------------------------------
+// Product Detail Pages (PDPs)
+// ---------------------------------------------------------------------------
+
+const allCuratedProducts = populatedSections.flatMap((section) =>
+  section.products.map((product) => ({
+    ...product,
+    sectionId: section.id,
+    sectionTitle: section.title,
+    sectionEyebrow: section.eyebrow,
+    sectionDescription: section.description,
+  }))
+);
+
+const commerceCatalogDir = new URL("../data/", import.meta.url);
+mkdirSync(commerceCatalogDir, { recursive: true });
+writeFileSync(
+  new URL("athletonic-catalog.json", commerceCatalogDir),
+  JSON.stringify(
+    {
+      generated_at: new Date().toISOString(),
+      currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+      products: allCuratedProducts.map((product) => ({
+        id: String(product.id),
+        brand_slug: product.brand,
+        brand: brandNames[product.brand] ?? product.brand,
+        name: product.displayName ?? product.name,
+        sku: product.sku ?? null,
+        url: product.url ?? null,
+        image: product.image ?? null,
+        price_cents: Math.round(Number(product.price || 0) * 100),
+        currency: product.currency || ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+        available: true,
+        section_id: product.sectionId,
+        section_title: product.sectionTitle,
+      })),
+    },
+    null,
+    2
+  )
+);
+
+function fetchPdpData(productIds) {
+  const ids = productIds
+    .map((id) => Number(id))
+    .filter((id) => Number.isInteger(id) && id > 0);
+  if (ids.length === 0) return { rowsById: new Map(), imagesById: new Map() };
+
+  const rows = runQuery(`
+    select id, brand, name, handle, description_html, price, compare_at_price,
+           currency, options, tags, store_collection, category_normalized
+    from products
+    where id in (${ids.join(",")});
+  `);
+  const rowsById = new Map(rows.map((row) => [row.id, row]));
+
+  const images = runQuery(`
+    select product_row_id, position, url, width, height
+    from images
+    where product_row_id in (${ids.join(",")})
+      and url is not null
+    order by product_row_id asc, coalesce(position, 0) asc, id asc;
+  `);
+  const imagesById = new Map();
+  for (const image of images) {
+    if (isBlockedImage(image.url)) continue;
+    if (!imagesById.has(image.product_row_id)) {
+      imagesById.set(image.product_row_id, []);
+    }
+    imagesById.get(image.product_row_id).push(image);
+  }
+  for (const list of imagesById.values()) {
+    list.sort((a, b) => productImageScore(a) - productImageScore(b));
+  }
+  return { rowsById, imagesById };
+}
+
+function safeParseJson(raw, fallback) {
+  if (raw == null || raw === "") return fallback;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+const ALLOWED_DESC_TAGS = new Set([
+  "p", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li",
+  "h1", "h2", "h3", "h4", "h5", "h6", "span", "div", "table",
+  "thead", "tbody", "tr", "td", "th", "small", "sub", "sup", "hr",
+]);
+
+function sanitizeDescriptionHtml(raw) {
+  if (!raw) return "";
+  let out = String(raw);
+  // Strip <script>, <style>, <meta>, <link>, <iframe>, <object>, <embed>, comments, doctypes
+  out = out.replace(/<!--([\s\S]*?)-->/g, "");
+  out = out.replace(/<!doctype[^>]*>/gi, "");
+  out = out.replace(
+    /<\s*(script|style|meta|link|iframe|object|embed|noscript)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi,
+    ""
+  );
+  out = out.replace(
+    /<\s*(script|style|meta|link|iframe|object|embed|noscript)\b[^>]*\/?>/gi,
+    ""
+  );
+  // Drop disallowed tags but keep their inner text
+  out = out.replace(/<\s*\/?\s*([a-zA-Z0-9]+)\b[^>]*>/g, (match, tag) => {
+    return ALLOWED_DESC_TAGS.has(tag.toLowerCase()) ? match : "";
+  });
+  // Strip inline event handlers and javascript: URIs
+  out = out.replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "");
+  out = out.replace(/\son[a-z]+\s*=\s*'[^']*'/gi, "");
+  out = out.replace(/javascript:/gi, "");
+  return out.trim();
+}
+
+function renderPdpHeader(pathPrefix) {
+  return `
+    <header class="market-header pdp-header">
+      <div class="header-main">
+        <a class="brand" href="${pathPrefix}" aria-label="Athletonic home">
+          <img class="brand-logo" src="${pathPrefix}assets/logo.png" alt="Athletonic" />
+        </a>
+        <div class="pdp-header-search">
+          <form class="market-search" action="${pathPrefix}#catalog" method="get" data-catalog-search>
+            <input
+              name="q"
+              type="search"
+              aria-label="Search Athletonic"
+              placeholder="Search products, brands, categories..."
+            />
+            <button type="submit">Search</button>
+          </form>
+        </div>
+        <div class="header-actions" aria-label="Account and cart">
+          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog">
+            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M7 20.4a5.5 5.5 0 0 1 10 0"></path>
+            </svg>
+            <span class="header-action-label" data-account-label>Guest</span>
+          </button>
+          <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-label="Open cart">
+            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="8" cy="21" r="1"></circle>
+              <circle cx="19" cy="21" r="1"></circle>
+              <path d="M2.05 2.05h2l2.65 12.4a2 2 0 0 0 2 1.6h8.95a2 2 0 0 0 1.95-1.57l1.25-5.48H5.45"></path>
+            </svg>
+            <span class="header-action-label">Cart</span>
+            <span class="cart-count" data-cart-count>0</span>
+          </button>
+        </div>
+      </div>
+    </header>`;
+}
+
+function renderDrawers() {
+  return `
+    <div class="drawer-overlay" data-drawer-overlay hidden></div>
+    <aside class="account-panel" data-account-panel hidden aria-hidden="true" aria-labelledby="account-title">
+      <div class="drawer-header">
+        <div>
+          <p class="drawer-eyebrow">Account</p>
+          <h2 id="account-title">Guest checkout profile</h2>
+        </div>
+        <button class="drawer-close" type="button" data-account-close aria-label="Close account panel">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form class="account-form" data-account-form>
+        <label for="guest-email">Email for checkout updates</label>
+        <input id="guest-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        <button type="submit">Save email</button>
+        <p class="form-note">Guest checkout stays available. This email only connects your cart to follow-up and order communication.</p>
+        <p class="form-status" data-account-status aria-live="polite"></p>
+      </form>
+    </aside>
+
+    <aside class="cart-drawer" data-cart-drawer hidden aria-hidden="true" aria-labelledby="cart-title">
+      <div class="drawer-header">
+        <div>
+          <p class="drawer-eyebrow">Checkout</p>
+          <h2 id="cart-title">Your cart</h2>
+        </div>
+        <button class="drawer-close" type="button" data-cart-close aria-label="Close cart">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="cart-items" data-cart-items></div>
+      <p class="form-status drawer-status" data-checkout-status aria-live="polite"></p>
+      <form class="checkout-form" data-checkout-form>
+        <label for="checkout-email">Email</label>
+        <input id="checkout-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        <div class="cart-total">
+          <span>Subtotal</span>
+          <strong data-cart-subtotal>$0.00</strong>
+        </div>
+        <button type="submit" data-checkout-submit>Continue to secure payment</button>
+        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+      </form>
+    </aside>`;
+}
+
+function productPage(curated, fullRow, imageList, relatedProducts) {
+  const pathPrefix = "../";
+  const brand = brandNames[curated.brand] ?? curated.brand;
+  const name = curated.displayName ?? curated.name;
+  const price = Number(fullRow?.price ?? curated.price ?? 0);
+  const compareAt = Number(fullRow?.compare_at_price ?? 0);
+  const currency = fullRow?.currency || curated.currency || "USD";
+  const onSale = compareAt > 0 && compareAt > price;
+  const discountPct = onSale
+    ? Math.round(((compareAt - price) / compareAt) * 100)
+    : 0;
+
+  // Build image list: curated.image first (already best on home), then rest deduped
+  const seen = new Set();
+  const images = [];
+  if (curated.image) {
+    images.push(curated.image);
+    seen.add(curated.image);
+  }
+  for (const img of imageList || []) {
+    if (img.url && !seen.has(img.url)) {
+      images.push(img.url);
+      seen.add(img.url);
+    }
+  }
+  if (images.length === 0 && curated.image) images.push(curated.image);
+
+  const options = safeParseJson(fullRow?.options, []);
+  const variantOptions = Array.isArray(options)
+    ? options.filter(
+        (opt) =>
+          opt &&
+          typeof opt === "object" &&
+          Array.isArray(opt.values) &&
+          opt.values.filter((v) => v != null && String(v).trim() !== "").length > 1
+      )
+    : [];
+
+  const description = sanitizeDescriptionHtml(fullRow?.description_html);
+
+  const galleryHtml = `
+        <div class="pdp-gallery">
+          <div class="pdp-gallery-main">
+            <img id="pdp-main-image" src="${html(images[0])}" alt="${html(name)}" />
+          </div>
+          ${
+            images.length > 1
+              ? `<div class="pdp-thumbs" role="tablist" aria-label="Product images">
+            ${images
+              .map(
+                (src, idx) => `<button type="button" class="pdp-thumb${
+                  idx === 0 ? " is-active" : ""
+                }" data-pdp-thumb data-src="${html(src)}" aria-label="View image ${
+                  idx + 1
+                }"><img src="${html(src)}" alt="" loading="lazy" /></button>`
+              )
+              .join("\n            ")}
+          </div>`
+              : ""
+          }
+        </div>`;
+
+  const variantSelectorsHtml = variantOptions.length
+    ? `
+          <div class="pdp-variants" data-pdp-variants>
+            ${variantOptions
+              .map(
+                (opt, idx) => `
+            <label class="pdp-variant">
+              <span class="pdp-variant-label">${html(opt.name || "Option")}</span>
+              <select data-pdp-variant data-variant-name="${html(opt.name || `Option ${idx + 1}`)}" required>
+                <option value="" disabled selected>Select ${html(opt.name || "option")}…</option>
+                ${opt.values
+                  .filter((v) => v != null && String(v).trim() !== "")
+                  .map(
+                    (val) =>
+                      `<option value="${html(val)}">${html(val)}</option>`
+                  )
+                  .join("\n                ")}
+              </select>
+            </label>`
+              )
+              .join("")}
+          </div>`
+    : "";
+
+  const relatedHtml = relatedProducts && relatedProducts.length
+    ? `
+      <section class="market-section pdp-related">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">More in ${html(curated.sectionTitle || "this category")}</p>
+            <h2>You may also like</h2>
+          </div>
+        </div>
+        <div class="product-row">
+${relatedProducts.map((product) => productCard(product, pathPrefix)).join("\n")}
+        </div>
+      </section>`
+    : "";
+
+  const breadcrumbHtml = `
+        <nav class="pdp-breadcrumb" aria-label="Breadcrumb">
+          <a href="${pathPrefix}">Home</a>
+          <span aria-hidden="true">›</span>
+          <a href="${pathPrefix}#${html(curated.sectionId)}">${html(curated.sectionTitle || "Catalog")}</a>
+          <span aria-hidden="true">›</span>
+          <span class="pdp-breadcrumb-current">${html(name)}</span>
+        </nav>`;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${html(name)} — ${html(brand)} | Athletonic</title>
+    <meta name="description" content="${html(
+      `${name} by ${brand}. Buy directly on Athletonic — marketplace for sports nutrition, hydration, recovery, apparel, and training gear.`
+    )}" />
+    <meta property="og:title" content="${html(`${name} — ${brand}`)}" />
+    <meta property="og:type" content="product" />
+    <meta property="og:image" content="${html(images[0] || "")}" />
+    <link rel="stylesheet" href="${pathPrefix}styles.css" />
+  </head>
+  <body class="pdp-body">
+    <a id="top" tabindex="-1" aria-hidden="true"></a>
+${renderPdpHeader(pathPrefix)}
+${renderDrawers()}
+
+    <main class="pdp-main">
+${breadcrumbHtml}
+
+      <article class="pdp-wrap">
+${galleryHtml}
+
+        <div class="pdp-info">
+          <p class="pdp-brand">${html(brand)}</p>
+          <h1 class="pdp-title">${html(name)}</h1>
+          <div class="pdp-price-row">
+            <strong class="pdp-price">${html(money(price, currency))}</strong>
+            ${
+              onSale
+                ? `<span class="pdp-compare">${html(
+                    money(compareAt, currency)
+                  )}</span><span class="pdp-discount">−${discountPct}%</span>`
+                : ""
+            }
+          </div>
+          <p class="pdp-availability">In stock · Sold by Athletonic</p>
+${variantSelectorsHtml}
+          <div class="pdp-cta-row">
+            <button
+              class="pdp-cta"
+              type="button"
+              data-add-to-cart
+              data-pdp-add-button
+              data-cart-id="${html(curated.id)}"
+              data-cart-brand="${html(brand)}"
+              data-cart-name="${html(name)}"
+              data-cart-price="${html(price)}"
+              data-cart-currency="${html(currency)}"
+              data-cart-image="${html(images[0] || curated.image || "")}"
+              data-cart-variant=""
+              ${variantOptions.length ? "disabled" : ""}
+            >${variantOptions.length ? "Select options" : "Add to cart"}</button>
+          </div>
+          <p class="pdp-cta-note" data-pdp-cta-note></p>
+
+          ${
+            description
+              ? `<section class="pdp-section">
+            <h2>About this product</h2>
+            <div class="pdp-desc">${description}</div>
+          </section>`
+              : ""
+          }
+
+          <section class="pdp-section pdp-specs">
+            <h2>Details</h2>
+            <dl>
+              <div><dt>Brand</dt><dd>${html(brand)}</dd></div>
+              <div><dt>Category</dt><dd>${html(
+                curated.sectionTitle || collectionLabel(curated.store_collection || "")
+              )}</dd></div>
+              ${
+                fullRow?.handle
+                  ? `<div><dt>Reference</dt><dd>${html(fullRow.handle)}</dd></div>`
+                  : ""
+              }
+            </dl>
+          </section>
+        </div>
+      </article>
+${relatedHtml}
+    </main>
+
+${renderFooter(pathPrefix)}
+    <script>
+      window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
+      window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
+    </script>
+    <script src="${pathPrefix}assets/cart.js" defer></script>
+    <script>
+      (function () {
+        // Gallery: thumbnail click swaps main image
+        var mainImg = document.getElementById("pdp-main-image");
+        var thumbs = document.querySelectorAll("[data-pdp-thumb]");
+        thumbs.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var src = btn.getAttribute("data-src");
+            if (src && mainImg) mainImg.src = src;
+            thumbs.forEach(function (b) { b.classList.remove("is-active"); });
+            btn.classList.add("is-active");
+          });
+        });
+
+        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        var addBtn = document.querySelector("[data-pdp-add-button]");
+        var note = document.querySelector("[data-pdp-cta-note]");
+        var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
+        function refresh() {
+          if (!addBtn) return;
+          var allChosen = selects.every(function (s) { return s.value !== ""; });
+          if (selects.length === 0) {
+            addBtn.disabled = false;
+            return;
+          }
+          if (allChosen) {
+            var parts = selects.map(function (s) { return s.value; });
+            addBtn.dataset.cartVariant = parts.join(" / ");
+            addBtn.disabled = false;
+            addBtn.textContent = "Add to cart";
+            if (note) note.textContent = "";
+          } else {
+            addBtn.dataset.cartVariant = "";
+            addBtn.disabled = true;
+            addBtn.textContent = "Select options";
+          }
+        }
+        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        refresh();
+      })();
+    </script>
+  </body>
+</html>
+`;
+}
+
+const staticPages = [
+  {
+    slug: "about",
+    title: "About Athletonic",
+    eyebrow: "Company",
+    summary:
+      "Athletonic is a performance marketplace built for customers who want supplements, training gear, apparel, footwear, recovery tools, and daily wellness products in one focused store.",
+    sections: [
+      {
+        heading: "What We Sell",
+        body:
+          "Our catalog is organized around real training needs: strength, endurance, recovery, hydration, sleep, wellness, and everyday athletic essentials.",
+      },
+      {
+        heading: "How We Operate",
+        body:
+          "Athletonic presents products in our own storefront, keeps carts inside Athletonic, and handles customer interest through our checkout request workflow.",
+      },
+    ],
+  },
+  {
+    slug: "careers",
+    title: "Careers",
+    eyebrow: "Team",
+    summary:
+      "Athletonic is building a focused commerce team across marketplace operations, product catalog quality, customer experience, performance marketing, and partnerships.",
+    sections: [
+      {
+        heading: "Current Focus",
+        bullets: [
+          "Marketplace operations and vendor coordination",
+          "Catalog quality, product data, and pricing checks",
+          "Customer support and post-purchase operations",
+          "Growth, paid social, and lifecycle marketing",
+        ],
+      },
+      {
+        heading: "Contact",
+        body:
+          "For hiring conversations, email careers@athletonic.com with your background and the area where you can help.",
+      },
+    ],
+  },
+  {
+    slug: "press",
+    title: "Press Releases",
+    eyebrow: "Newsroom",
+    summary:
+      "Company announcements, marketplace updates, catalog milestones, and partnership news from Athletonic.",
+    sections: [
+      {
+        heading: "Media Contact",
+        body:
+          "For press inquiries, email press@athletonic.com with your publication, deadline, and requested topic.",
+      },
+      {
+        heading: "Launch Status",
+        body:
+          "Athletonic is preparing its performance marketplace for public customer acquisition and paid social campaigns.",
+      },
+    ],
+  },
+  {
+    slug: "science",
+    title: "Athletonic Science",
+    eyebrow: "Standards",
+    summary:
+      "Athletonic prioritizes clear product presentation, responsible category organization, and customer-friendly supplement information.",
+    sections: [
+      {
+        heading: "Product Information",
+        body:
+          "Product pages are designed to show brand, category, price, images, options, and customer-relevant details before checkout intent is submitted.",
+      },
+      {
+        heading: "Customer Safety",
+        body:
+          "Supplement and wellness products should be used according to label directions. Customers with medical conditions, allergies, or medication questions should consult a qualified professional.",
+      },
+    ],
+  },
+  {
+    slug: "sustainability",
+    title: "Sustainability",
+    eyebrow: "Responsibility",
+    summary:
+      "Athletonic is building a marketplace that can grow responsibly through careful catalog selection, lower waste operations, and transparent customer communication.",
+    sections: [
+      {
+        heading: "Operational Commitments",
+        bullets: [
+          "Avoiding unnecessary sample and test products in the public catalog",
+          "Reviewing product data quality before promotion",
+          "Prioritizing useful product information over misleading claims",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "athletonic-cares",
+    title: "Athletonic Cares",
+    eyebrow: "Community",
+    summary:
+      "Athletonic Cares is our customer and community commitment for helping athletes, coaches, gyms, and everyday active people make confident buying decisions.",
+    sections: [
+      {
+        heading: "Support Priorities",
+        bullets: [
+          "Responsive help before and after checkout",
+          "Clear shipping, return, and privacy policies",
+          "Responsible product categorization for serious customers",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "daily-deals",
+    title: "Daily Deals",
+    eyebrow: "Shop",
+    summary:
+      "Daily deal placement is reserved for products with current pricing, available inventory, and a clean path to checkout inside Athletonic.",
+    links: [{ label: "Shop all products", href: "#catalog" }],
+    sections: [
+      {
+        heading: "Deal Standards",
+        body:
+          "Promoted offers should be checked before ads go live so customers do not land on unavailable, stale, or mismatched products.",
+      },
+    ],
+  },
+  {
+    slug: "new-arrivals",
+    title: "New Arrivals",
+    eyebrow: "Shop",
+    summary:
+      "New arrivals highlight recently added products across supplements, apparel, footwear, recovery, and training accessories.",
+    links: [{ label: "Browse catalog", href: "#catalog" }],
+    sections: [
+      {
+        heading: "Catalog Review",
+        body:
+          "New products should pass image, price, category, and checkout checks before they are promoted to customers.",
+      },
+    ],
+  },
+  {
+    slug: "gift-cards",
+    title: "Gift Cards",
+    eyebrow: "Shop",
+    summary:
+      "Athletonic gift cards are planned for a future release after payments, account credit, and redemption rules are fully configured.",
+    sections: [
+      {
+        heading: "Availability",
+        body:
+          "Gift cards are not active yet. This page is connected so the footer does not send customers to a dead link while the program is prepared.",
+      },
+    ],
+  },
+  {
+    slug: "sell-on-athletonic",
+    title: "Sell on Athletonic",
+    eyebrow: "Partners",
+    summary:
+      "Brands and suppliers can apply to list products that fit Athletonic's performance, wellness, recovery, apparel, footwear, and training categories.",
+    sections: [
+      {
+        heading: "Partner Fit",
+        bullets: [
+          "Relevant products for active customers",
+          "Reliable product images, prices, and inventory data",
+          "Clear fulfillment, returns, and support expectations",
+        ],
+      },
+      {
+        heading: "Contact",
+        body:
+          "Email partners@athletonic.com with your brand name, product categories, and operating region.",
+      },
+    ],
+  },
+  {
+    slug: "affiliate",
+    title: "Become an Affiliate",
+    eyebrow: "Partners",
+    summary:
+      "Athletonic's affiliate program is intended for creators, coaches, reviewers, and publishers who serve serious fitness and wellness audiences.",
+    sections: [
+      {
+        heading: "Program Status",
+        body:
+          "Affiliate tracking and commission rules should be finalized before public recruitment begins.",
+      },
+    ],
+  },
+  {
+    slug: "advertise",
+    title: "Advertise Your Brand",
+    eyebrow: "Partners",
+    summary:
+      "Athletonic advertising placements are for relevant brands that want visibility with customers shopping performance products.",
+    sections: [
+      {
+        heading: "Placement Areas",
+        bullets: [
+          "Category placements",
+          "Featured product shelves",
+          "Email and lifecycle campaigns",
+          "Paid social landing experiences",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "vendor",
+    title: "Become a Vendor",
+    eyebrow: "Partners",
+    summary:
+      "Vendor onboarding covers product data, pricing, images, fulfillment rules, return expectations, and customer service responsibilities.",
+    sections: [
+      {
+        heading: "Required Information",
+        bullets: [
+          "Legal business name and support contact",
+          "Product feed or product list",
+          "Wholesale or marketplace pricing terms",
+          "Shipping and return policies",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "coaches",
+    title: "Athletonic for Coaches",
+    eyebrow: "Teams",
+    summary:
+      "Coaches can use Athletonic to organize product recommendations for athletes, clients, and training groups.",
+    sections: [
+      {
+        heading: "Use Cases",
+        bullets: [
+          "Recovery and hydration recommendations",
+          "Training accessory lists",
+          "Apparel and footwear shelves",
+          "Supplement stacks reviewed for customer clarity",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "gyms",
+    title: "Athletonic for Gyms",
+    eyebrow: "Teams",
+    summary:
+      "Gyms can coordinate product recommendations, member offers, and training essentials through Athletonic.",
+    sections: [
+      {
+        heading: "Gym Opportunities",
+        bullets: [
+          "Member product shelves",
+          "Recovery and mobility recommendations",
+          "Hydration and nutrition bundles",
+          "Local campaign landing pages",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "account",
+    title: "Your Account",
+    eyebrow: "Customer",
+    summary:
+      "Athletonic currently supports guest checkout profiles so customers can save an email locally and submit checkout interest from the cart.",
+    sections: [
+      {
+        heading: "Guest Checkout",
+        body:
+          "Use the account button in the header to save the email used for checkout updates.",
+      },
+    ],
+  },
+  {
+    slug: "orders",
+    title: "Your Orders",
+    eyebrow: "Customer",
+    summary:
+      "Order tracking will connect to completed checkout records once the full payment and fulfillment workflow is active.",
+    sections: [
+      {
+        heading: "Checkout Requests",
+        body:
+          "Current checkout submissions create a saved request reference so the customer flow can continue with a real order workflow.",
+      },
+    ],
+  },
+  {
+    slug: "shipping",
+    title: "Shipping Rates & Policies",
+    eyebrow: "Customer Care",
+    summary:
+      "Shipping options, costs, and delivery windows are shown or confirmed during the checkout workflow.",
+    sections: [
+      {
+        heading: "Shipping Scope",
+        body:
+          "Athletonic is configured for United States customers and USD pricing. International shipping should remain unavailable until rates, taxes, and restrictions are configured.",
+      },
+      {
+        heading: "Processing",
+        body:
+          "Orders should not be advertised as final until payment capture, fulfillment, tracking, and customer notifications are connected.",
+      },
+    ],
+  },
+  {
+    slug: "returns",
+    title: "Returns & Replacements",
+    eyebrow: "Customer Care",
+    summary:
+      "Returns and replacements are handled according to product condition, category, customer issue, and applicable health and safety restrictions.",
+    sections: [
+      {
+        heading: "Return Review",
+        body:
+          "Customers should contact support with their order reference, product name, issue, and photos if the item arrived damaged.",
+      },
+      {
+        heading: "Restricted Products",
+        body:
+          "Opened supplements, ingestible products, hygiene products, and worn apparel may be restricted from return for safety reasons.",
+      },
+    ],
+  },
+  {
+    slug: "help",
+    title: "Help Center",
+    eyebrow: "Customer Care",
+    summary:
+      "Find help with product selection, checkout requests, shipping, returns, privacy choices, and account questions.",
+    sections: [
+      {
+        heading: "Support Topics",
+        bullets: [
+          "Checkout and cart questions",
+          "Shipping and delivery status",
+          "Product options and availability",
+          "Returns, replacements, and damaged items",
+          "Privacy and advertising choices",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "contact",
+    title: "Contact Us",
+    eyebrow: "Customer Care",
+    summary:
+      "Contact Athletonic for order questions, partnership requests, privacy choices, press inquiries, and customer support.",
+    sections: [
+      {
+        heading: "Support",
+        body:
+          "Email support@athletonic.com with your name, email, product, and checkout reference if available.",
+      },
+      {
+        heading: "Business",
+        body:
+          "For partnerships, advertising, vendors, and press, use partners@athletonic.com or press@athletonic.com.",
+      },
+    ],
+  },
+  {
+    slug: "conditions-of-use",
+    title: "Conditions of Use",
+    eyebrow: "Legal",
+    summary:
+      "These Conditions of Use govern access to Athletonic and purchases or checkout requests made through the marketplace.",
+    sections: [
+      {
+        heading: "Use of Athletonic",
+        body:
+          "Customers may browse products, save cart items, submit checkout requests, and communicate with Athletonic for support. Misuse, scraping, fraud, or interference with site operations is prohibited.",
+      },
+      {
+        heading: "Products and Orders",
+        body:
+          "Product details, pricing, availability, and offers may change. A checkout request is not a completed order until payment, fulfillment, and confirmation steps are complete.",
+      },
+      {
+        heading: "Health and Product Information",
+        body:
+          "Supplement and wellness content is informational and is not medical advice. Customers should read labels and consult a qualified professional when needed.",
+      },
+    ],
+  },
+  {
+    slug: "privacy",
+    title: "Privacy Notice",
+    eyebrow: "Legal",
+    summary:
+      "This Privacy Notice explains how Athletonic collects, uses, and protects customer information when people browse, save carts, subscribe, or submit checkout requests.",
+    sections: [
+      {
+        heading: "Information We Collect",
+        bullets: [
+          "Contact details such as email address",
+          "Cart and checkout request contents",
+          "Device, browser, analytics, and advertising signals",
+          "Customer support messages and preferences",
+        ],
+      },
+      {
+        heading: "How We Use Information",
+        bullets: [
+          "To operate checkout and customer support",
+          "To improve catalog quality and site performance",
+          "To send updates when customers request them",
+          "To measure advertising and reduce irrelevant marketing",
+        ],
+      },
+      {
+        heading: "Choices",
+        body:
+          "Customers can request privacy help by emailing privacy@athletonic.com.",
+      },
+    ],
+  },
+  {
+    slug: "ads-privacy-choices",
+    title: "Your Ads Privacy Choices",
+    eyebrow: "Legal",
+    summary:
+      "Athletonic may use advertising and analytics technologies to understand campaign performance and show relevant offers.",
+    sections: [
+      {
+        heading: "Advertising Data",
+        body:
+          "Advertising systems may use cookies, pixels, event data, device information, and shopping activity to measure campaigns and improve relevance.",
+      },
+      {
+        heading: "Opt-Out Requests",
+        body:
+          "Customers can email privacy@athletonic.com with the subject Ads Privacy Choices.",
+      },
+    ],
+  },
+  {
+    slug: "cookie-preferences",
+    title: "Cookie Preferences",
+    eyebrow: "Legal",
+    summary:
+      "Cookies and similar technologies help Athletonic remember carts, measure site usage, protect the service, and understand advertising performance.",
+    sections: [
+      {
+        heading: "Cookie Categories",
+        bullets: [
+          "Required cookies for cart and site operation",
+          "Preference cookies for saved checkout details",
+          "Analytics cookies for performance measurement",
+          "Advertising cookies and pixels for campaign attribution",
+        ],
+      },
+      {
+        heading: "Managing Cookies",
+        body:
+          "Customers can manage cookies in their browser settings. A dedicated cookie consent control should be connected before paid advertising is scaled.",
+      },
+    ],
+  },
+  {
+    slug: "accessibility",
+    title: "Accessibility",
+    eyebrow: "Legal",
+    summary:
+      "Athletonic aims to provide a storefront that is usable by customers with different devices, assistive technologies, and accessibility needs.",
+    sections: [
+      {
+        heading: "Standards",
+        body:
+          "The storefront uses semantic headings, keyboard-accessible controls, alt text for product images, and visible focus styles where possible.",
+      },
+      {
+        heading: "Feedback",
+        body:
+          "Email accessibility@athletonic.com with the page URL, issue description, assistive technology used, and contact information.",
+      },
+    ],
+  },
+  {
+    slug: "do-not-sell",
+    title: "Do Not Sell My Personal Information",
+    eyebrow: "Legal",
+    summary:
+      "Customers can request that Athletonic limit the sale or sharing of personal information as required by applicable privacy laws.",
+    sections: [
+      {
+        heading: "Request Method",
+        body:
+          "Email privacy@athletonic.com with the subject Do Not Sell or Share My Personal Information.",
+      },
+      {
+        heading: "Verification",
+        body:
+          "Athletonic may need to verify the request before applying it to customer records, advertising identifiers, or support history.",
+      },
+    ],
+  },
+];
+
+function renderInfoSections(sections = []) {
+  return sections
+    .map((section) => {
+      const bullets = Array.isArray(section.bullets)
+        ? `<ul>${section.bullets
+            .map((item) => `<li>${html(item)}</li>`)
+            .join("\n              ")}</ul>`
+        : "";
+      const body = section.body ? `<p>${html(section.body)}</p>` : "";
+      return `
+        <section class="info-section">
+          <h2>${html(section.heading)}</h2>
+          ${body}
+          ${bullets}
+        </section>`;
+    })
+    .join("\n");
+}
+
+function renderInfoLinks(links = [], pathPrefix = "../") {
+  if (!links.length) return "";
+  return `
+          <div class="info-actions">
+            ${links
+              .map(
+                (link) =>
+                  `<a href="${html(resolveSiteHref(link.href, pathPrefix))}">${html(
+                    link.label
+                  )}</a>`
+              )
+              .join("\n            ")}
+          </div>`;
+}
+
+function infoPage(pageInfo) {
+  const pathPrefix = "../";
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${html(pageInfo.title)} | Athletonic</title>
+    <meta name="description" content="${html(pageInfo.summary)}" />
+    <link rel="stylesheet" href="${pathPrefix}styles.css" />
+  </head>
+  <body class="info-body">
+    <a id="top" tabindex="-1" aria-hidden="true"></a>
+${renderPdpHeader(pathPrefix)}
+${renderDrawers()}
+
+    <main class="info-main">
+      <section class="info-hero">
+        <p class="eyebrow">${html(pageInfo.eyebrow)}</p>
+        <h1>${html(pageInfo.title)}</h1>
+        <p>${html(pageInfo.summary)}</p>
+        ${renderInfoLinks(pageInfo.links, pathPrefix)}
+      </section>
+      <div class="info-grid">
+${renderInfoSections(pageInfo.sections)}
+      </div>
+      <p class="info-updated">Last updated May 20, 2026</p>
+    </main>
+
+${renderFooter(pathPrefix)}
+    <script>
+      window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
+      window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
+    </script>
+    <script src="${pathPrefix}assets/cart.js" defer></script>
+  </body>
+</html>
+`;
+}
+
+const curatedIds = allCuratedProducts.map((p) => p.id);
+const { rowsById: pdpRowsById, imagesById: pdpImagesById } = fetchPdpData(curatedIds);
+
+// Group curated products by section to compute "related" lists
+const sectionProductsBySection = new Map();
+for (const product of allCuratedProducts) {
+  if (!sectionProductsBySection.has(product.sectionId)) {
+    sectionProductsBySection.set(product.sectionId, []);
+  }
+  sectionProductsBySection.get(product.sectionId).push(product);
+}
+
+const pdpDir = new URL("../product/", import.meta.url);
+mkdirSync(pdpDir, { recursive: true });
+
+let pdpCount = 0;
+for (const product of allCuratedProducts) {
+  const fullRow = pdpRowsById.get(product.id);
+  const imageList = pdpImagesById.get(product.id) || [];
+  const peers = (sectionProductsBySection.get(product.sectionId) || [])
+    .filter((p) => p.id !== product.id)
+    .slice(0, 4);
+  const pageHtml = productPage(product, fullRow, imageList, peers);
+  writeFileSync(new URL(`${product.id}.html`, pdpDir), pageHtml);
+  pdpCount += 1;
+}
+
+console.log(`Generated ${pdpCount} product detail pages in /product/.`);
+
+const pagesDir = new URL("../pages/", import.meta.url);
+mkdirSync(pagesDir, { recursive: true });
+
+let staticPageCount = 0;
+for (const pageInfo of staticPages) {
+  writeFileSync(new URL(`${pageInfo.slug}.html`, pagesDir), infoPage(pageInfo));
+  staticPageCount += 1;
+}
+
+console.log(`Generated ${staticPageCount} footer pages in /pages/.`);
