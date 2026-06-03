@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
 
 const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
@@ -707,6 +707,15 @@ function money(value, currency) {
   return `${symbol}${Number(value).toFixed(2)}`;
 }
 
+function readJsonFile(url, fallback) {
+  try {
+    if (!existsSync(url)) return fallback;
+    return JSON.parse(readFileSync(url, "utf8")) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function collectionLabel(value) {
   return String(value ?? "")
     .replaceAll("_", " ")
@@ -717,6 +726,13 @@ function productCard(product, pathPrefix = "./") {
   const brand = brandNames[product.brand] ?? product.brand;
   const name = product.displayName ?? product.name;
   const label = product.displayLabel ?? collectionLabel(product.store_collection);
+  const deal = product.deal;
+  const dealEnds = deal?.expires_at
+    ? new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(new Date(deal.expires_at))
+    : "";
   const searchText = [brand, name, label, product.sectionTitle, product.sectionEyebrow]
     .filter(Boolean)
     .join(" ")
@@ -731,7 +747,21 @@ function productCard(product, pathPrefix = "./") {
               <span>${html(brand)}</span>
               <h3><a class="product-card-link" href="${pdpHref}">${html(name)}</a></h3>
               <p>${html(label)}</p>
-              <strong>${html(money(product.price, product.currency))}</strong>
+              <div class="product-price-line">
+                <strong>${html(money(product.price, product.currency))}</strong>
+                ${
+                  deal?.original_price
+                    ? `<span>${html(money(deal.original_price, product.currency))}</span>`
+                    : ""
+                }
+              </div>
+              ${
+                deal
+                  ? `<p class="product-deal-note">${html(
+                      `${deal.discount_percent}% off${dealEnds ? ` through ${dealEnds}` : ""}`
+                    )}</p>`
+                  : ""
+              }
               <button
                 class="add-cart-button"
                 type="button"
@@ -750,6 +780,54 @@ function productCard(product, pathPrefix = "./") {
 const populatedSections = sections
   .map((section) => ({ ...section, products: productsForSection(section) }))
   .filter((section) => section.products.length > 0);
+
+const allCuratedProducts = populatedSections.flatMap((section) =>
+  section.products.map((product) => ({
+    ...product,
+    sectionId: section.id,
+    sectionTitle: section.title,
+    sectionEyebrow: section.eyebrow,
+    sectionDescription: section.description,
+  }))
+);
+
+const dealsState = readJsonFile(new URL("../data/deals-state.json", import.meta.url), {
+  offers: [],
+});
+const activeDealsByProductId = new Map(
+  (Array.isArray(dealsState.offers) ? dealsState.offers : [])
+    .filter((offer) => {
+      const expiresAt = Date.parse(offer.expires_at || "");
+      return offer.product_id != null && Number.isFinite(expiresAt) && expiresAt > Date.now();
+    })
+    .map((offer) => [String(offer.product_id), offer])
+);
+
+for (const product of allCuratedProducts) {
+  const deal = activeDealsByProductId.get(String(product.id));
+  if (!deal) continue;
+  const originalPrice = Number(product.price || 0);
+  const salePrice = Number(deal.sale_price_cents || 0) / 100;
+  if (!salePrice || salePrice >= originalPrice) continue;
+  product.price = salePrice;
+  product.deal = {
+    discount_percent: Number(deal.discount_percent || 0),
+    original_price: originalPrice,
+    expires_at: deal.expires_at,
+    reason: deal.reason || "Limited-time Athletonic offer",
+  };
+}
+
+const hydratedProductsBySectionId = new Map();
+for (const product of allCuratedProducts) {
+  if (!hydratedProductsBySectionId.has(product.sectionId)) {
+    hydratedProductsBySectionId.set(product.sectionId, []);
+  }
+  hydratedProductsBySectionId.get(product.sectionId).push(product);
+}
+for (const section of populatedSections) {
+  section.products = hydratedProductsBySectionId.get(section.id) ?? [];
+}
 
 const totalProducts = populatedSections.reduce(
   (sum, section) => sum + section.products.length,
@@ -894,7 +972,7 @@ function renderFooter(pathPrefix = "./") {
         .slice(0, n)
         .map((slug) => ({
           label: brandNames[slug] ?? slug,
-          href: "#brands",
+          href: `pages/brands.html#brand-${slug}`,
         }));
       return { title: col.title, links: brandLinks };
     }
@@ -954,7 +1032,7 @@ const page = `<!doctype html>
     <title>Athletonic.com</title>
     <meta
       name="description"
-      content="Athletonic.com is a performance marketplace for supplements, sports nutrition, hydration, recovery, apparel, and fitness essentials."
+      content="Athletonic.com is a performance store for supplements, sports nutrition, hydration, recovery, apparel, and fitness essentials."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -1065,7 +1143,7 @@ const page = `<!doctype html>
       <section class="hero">
         <div class="hero-copy">
           <p class="eyebrow"><img class="eyebrow-logo" src="./assets/logo.png" alt="Athletonic" /></p>
-          <h1>Build your training stack in one marketplace.</h1>
+          <h1>Build your training stack in one store.</h1>
           <p>
             Supplements, hydration, wellness, recovery devices, footwear,
             apparel, bottles, bags, and gym accessories from fitness-first brands.
@@ -1117,7 +1195,7 @@ ${productSections}
         <div class="section-title">
           <div>
             <p class="eyebrow">Brands</p>
-            <h2>Aligned marketplace brands</h2>
+            <h2>Aligned performance brands</h2>
           </div>
           <p>Fitness, sports nutrition, wellness, apparel, accessories, and recovery brands only.</p>
         </div>
@@ -1147,15 +1225,21 @@ console.log(
 // Product Detail Pages (PDPs)
 // ---------------------------------------------------------------------------
 
-const allCuratedProducts = populatedSections.flatMap((section) =>
-  section.products.map((product) => ({
-    ...product,
-    sectionId: section.id,
-    sectionTitle: section.title,
-    sectionEyebrow: section.eyebrow,
-    sectionDescription: section.description,
-  }))
-);
+const SECTION_PAGE_HREFS = {
+  protein: "pages/protein.html",
+  creatine: "pages/creatine.html",
+  "pre-workout": "pages/pre-workout.html",
+  hydration: "pages/hydration.html",
+  vitamins: "pages/vitamins.html",
+  greens: "pages/greens.html",
+  "bars-shakes": "pages/bars-shakes.html",
+  recovery: "pages/recovery.html",
+  sleep: "pages/sleep.html",
+  apparel: "pages/training-apparel.html",
+  shoes: "pages/footwear.html",
+  accessories: "pages/accessories.html",
+  "training-gear": "pages/lifting-gear.html",
+};
 
 const commerceCatalogDir = new URL("../data/", import.meta.url);
 mkdirSync(commerceCatalogDir, { recursive: true });
@@ -1174,10 +1258,20 @@ writeFileSync(
         url: product.url ?? null,
         image: product.image ?? null,
         price_cents: Math.round(Number(product.price || 0) * 100),
+        compare_at_price_cents: product.deal?.original_price
+          ? Math.round(Number(product.deal.original_price) * 100)
+          : null,
         currency: product.currency || ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
         available: true,
         section_id: product.sectionId,
         section_title: product.sectionTitle,
+        deal: product.deal
+          ? {
+              discount_percent: product.deal.discount_percent,
+              expires_at: product.deal.expires_at,
+              reason: product.deal.reason,
+            }
+          : null,
       })),
     },
     null,
@@ -1250,9 +1344,12 @@ function sanitizeDescriptionHtml(raw) {
     /<\s*(script|style|meta|link|iframe|object|embed|noscript)\b[^>]*\/?>/gi,
     ""
   );
-  // Drop disallowed tags but keep their inner text
-  out = out.replace(/<\s*\/?\s*([a-zA-Z0-9]+)\b[^>]*>/g, (match, tag) => {
-    return ALLOWED_DESC_TAGS.has(tag.toLowerCase()) ? match : "";
+  // Keep only a small tag set and strip source attributes such as ids/classes.
+  out = out.replace(/<\s*(\/?)\s*([a-zA-Z0-9]+)\b[^>]*>/g, (_match, slash, tag) => {
+    const normalizedTag = tag.toLowerCase();
+    if (!ALLOWED_DESC_TAGS.has(normalizedTag)) return "";
+    const safeTag = normalizedTag === "h1" || normalizedTag === "h2" ? "h3" : normalizedTag;
+    return `<${slash ? "/" : ""}${safeTag}>`;
   });
   // Strip inline event handlers and javascript: URIs
   out = out.replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "");
@@ -1359,8 +1456,8 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
   const pathPrefix = "../";
   const brand = brandNames[curated.brand] ?? curated.brand;
   const name = curated.displayName ?? curated.name;
-  const price = Number(fullRow?.price ?? curated.price ?? 0);
-  const compareAt = Number(fullRow?.compare_at_price ?? 0);
+  const price = Number(curated.price ?? fullRow?.price ?? 0);
+  const compareAt = Number(curated.deal?.original_price ?? fullRow?.compare_at_price ?? 0);
   const currency = fullRow?.currency || curated.currency || "USD";
   const onSale = compareAt > 0 && compareAt > price;
   const discountPct = onSale
@@ -1460,7 +1557,12 @@ ${relatedProducts.map((product) => productCard(product, pathPrefix)).join("\n")}
         <nav class="pdp-breadcrumb" aria-label="Breadcrumb">
           <a href="${pathPrefix}">Home</a>
           <span aria-hidden="true">›</span>
-          <a href="${pathPrefix}#${html(curated.sectionId)}">${html(curated.sectionTitle || "Catalog")}</a>
+          <a href="${html(
+            resolveSiteHref(
+              SECTION_PAGE_HREFS[curated.sectionId] ?? `#${curated.sectionId}`,
+              pathPrefix
+            )
+          )}">${html(curated.sectionTitle || "Catalog")}</a>
           <span aria-hidden="true">›</span>
           <span class="pdp-breadcrumb-current">${html(name)}</span>
         </nav>`;
@@ -1472,7 +1574,7 @@ ${relatedProducts.map((product) => productCard(product, pathPrefix)).join("\n")}
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${html(name)} — ${html(brand)} | Athletonic</title>
     <meta name="description" content="${html(
-      `${name} by ${brand}. Buy directly on Athletonic — marketplace for sports nutrition, hydration, recovery, apparel, and training gear.`
+      `${name} by ${brand}. Buy directly on Athletonic, a performance store for sports nutrition, hydration, recovery, apparel, and training gear.`
     )}" />
     <meta property="og:title" content="${html(`${name} — ${brand}`)}" />
     <meta property="og:type" content="product" />
@@ -1600,16 +1702,767 @@ ${renderFooter(pathPrefix)}
     </script>
   </body>
 </html>
-`;
+  `;
 }
 
+const sectionById = new Map(populatedSections.map((section) => [section.id, section]));
+const productsBySectionId = new Map();
+for (const product of allCuratedProducts) {
+  if (!productsBySectionId.has(product.sectionId)) {
+    productsBySectionId.set(product.sectionId, []);
+  }
+  productsBySectionId.get(product.sectionId).push(product);
+}
+
+function productSearchText(product) {
+  return [
+    brandNames[product.brand] ?? product.brand,
+    product.displayName ?? product.name,
+    product.displayLabel,
+    product.store_collection,
+    product.sectionTitle,
+    product.sectionEyebrow,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function productMatchesTerms(product, terms = []) {
+  if (!terms.length) return true;
+  const searchText = productSearchText(product);
+  return terms.some((term) => searchText.includes(term.toLowerCase()));
+}
+
+function uniqueProducts(products = [], limit = 14) {
+  const seen = new Set();
+  const out = [];
+  for (const product of products) {
+    const key = String(product.id);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(product);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+function sectionProducts(sectionId, limit = 14) {
+  return uniqueProducts(productsBySectionId.get(sectionId) ?? [], limit);
+}
+
+function blendedProducts(sectionIds = [], limit = 14) {
+  const buckets = sectionIds.map((sectionId) => sectionProducts(sectionId, 80));
+  const maxLength = Math.max(0, ...buckets.map((bucket) => bucket.length));
+  const blended = [];
+  for (let index = 0; index < maxLength && blended.length < limit * 3; index += 1) {
+    for (const bucket of buckets) {
+      if (bucket[index]) blended.push(bucket[index]);
+    }
+  }
+  return uniqueProducts(blended, limit);
+}
+
+function shelfFromSection(sectionId, overrides = {}) {
+  const section = sectionById.get(sectionId);
+  if (!section) return null;
+  return {
+    eyebrow: overrides.eyebrow ?? section.eyebrow,
+    title: overrides.title ?? section.title,
+    description: overrides.description ?? section.description,
+    products: uniqueProducts(overrides.products ?? sectionProducts(sectionId, 80), overrides.limit ?? 14),
+  };
+}
+
+function customShelf({
+  eyebrow = "Shop",
+  title,
+  description,
+  sectionIds = [],
+  products,
+  limit = 14,
+}) {
+  return {
+    eyebrow,
+    title,
+    description,
+    products: uniqueProducts(products ?? blendedProducts(sectionIds, limit), limit),
+  };
+}
+
+function filteredShelf({
+  eyebrow = "Shop",
+  title,
+  description,
+  sectionIds = [],
+  terms = [],
+  limit = 14,
+}) {
+  const candidates = blendedProducts(sectionIds, 80);
+  const filtered = candidates.filter((product) => productMatchesTerms(product, terms));
+  return customShelf({
+    eyebrow,
+    title,
+    description,
+    products: filtered.length ? filtered : candidates,
+    limit,
+  });
+}
+
+const catalogDirectoryGroups = [
+  {
+    title: "Shop",
+    items: [
+      {
+        label: "All products",
+        href: "pages/catalog.html",
+        description: `${totalProducts} curated products across performance categories.`,
+      },
+      {
+        label: "Best sellers",
+        href: "pages/best-sellers.html",
+        description: "Top store picks from each active shelf.",
+      },
+      {
+        label: "New arrivals",
+        href: "pages/new-arrivals.html",
+        description: "Recently generated product picks from the live catalog.",
+      },
+      {
+        label: "Daily deals",
+        href: "pages/daily-deals.html",
+        description: "Lower-price picks and timely promo candidates.",
+      },
+    ],
+  },
+  {
+    title: "Supplements",
+    items: [
+      { label: "Protein", href: "pages/protein.html", description: "Whey, plant protein, shakes, and recovery protein." },
+      { label: "Creatine", href: "pages/creatine.html", description: "Creatine powders, capsules, gummies, and daily strength support." },
+      { label: "Pre-workout", href: "pages/pre-workout.html", description: "Pump, energy, and focus formulas for training days." },
+      { label: "Hydration", href: "pages/hydration.html", description: "Electrolyte sticks, drink mixes, and hydration support." },
+      { label: "Vitamins", href: "pages/vitamins.html", description: "Daily health, minerals, omegas, immune, and joint support." },
+      { label: "Greens", href: "pages/greens.html", description: "Greens blends, superfood powders, and daily nutrition." },
+      { label: "Bars & shakes", href: "pages/bars-shakes.html", description: "Ready-to-drink shakes, protein bars, and meal replacements." },
+    ],
+  },
+  {
+    title: "Recovery, Apparel & Gear",
+    items: [
+      { label: "Recovery devices", href: "pages/recovery.html", description: "Massage, red light, compression, and mobility tools." },
+      { label: "Sleep recovery", href: "pages/sleep.html", description: "Sleep gear and nighttime recovery support." },
+      { label: "Training apparel", href: "pages/training-apparel.html", description: "Shorts, tees, layers, leggings, and gym wear." },
+      { label: "Footwear", href: "pages/footwear.html", description: "Running, training, trail, and performance footwear." },
+      { label: "Accessories", href: "pages/accessories.html", description: "Bottles, bags, grips, belts, straps, and sleeves." },
+      { label: "Lifting gear", href: "pages/lifting-gear.html", description: "Training systems, belts, wraps, grips, and fight gear." },
+    ],
+  },
+];
+
+const brandProductCounts = new Map();
+for (const product of allCuratedProducts) {
+  brandProductCounts.set(product.brand, (brandProductCounts.get(product.brand) ?? 0) + 1);
+}
+
+const catalogBrandItems = ATHLETONIC_SOURCE_OF_TRUTH.brands
+  .filter((brand) => brandProductCounts.has(brand.slug))
+  .map((brand) => ({
+    id: `brand-${brand.slug}`,
+    label: brand.name,
+    href: `pages/brands.html#brand-${brand.slug}`,
+    description: `${brandProductCounts.get(brand.slug)} curated products`,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
+
+const featuredBrandItems = ATHLETONIC_SOURCE_OF_TRUTH.featuredBrandSlugs
+  .filter((slug) => brandProductCounts.has(slug))
+  .slice(0, 12)
+  .map((slug) => ({
+    label: brandNames[slug] ?? slug,
+    href: `pages/brands.html#brand-${slug}`,
+    description: `${brandProductCounts.get(slug)} curated products`,
+  }));
+
+const brandSpotlightShelves = ATHLETONIC_SOURCE_OF_TRUTH.featuredBrandSlugs
+  .slice(0, 6)
+  .map((slug) =>
+    customShelf({
+      eyebrow: "Featured brand",
+      title: brandNames[slug] ?? slug,
+      description: "Popular products from this brand in the Athletonic catalog.",
+      products: allCuratedProducts.filter((product) => product.brand === slug),
+      limit: 8,
+    })
+  )
+  .filter((shelf) => shelf.products.length > 0);
+
+const catalogShelves = populatedSections
+  .map((section) => shelfFromSection(section.id, { limit: 8 }))
+  .filter(Boolean);
+
+const bestSellerShelf = customShelf({
+  eyebrow: "Popular picks",
+  title: "Popular picks",
+  description: "Strong picks from each Athletonic category while sales ranking data is being built.",
+  products: populatedSections.flatMap((section) => sectionProducts(section.id, 2)),
+  limit: 18,
+});
+
+const dailyDealsShelf = customShelf({
+  eyebrow: "Deals",
+  title: "Active limited-time offers",
+  description:
+    "Offers selected from trend signals, margin-safe discounts, and active expiration dates.",
+  products: allCuratedProducts.filter((product) => product.deal || Number(product.price) <= 50),
+  limit: 18,
+});
+
+const newArrivalsShelf = customShelf({
+  eyebrow: "New arrivals",
+  title: "Recently added picks",
+  description: "Fresh product picks from the current Athletonic catalog build.",
+  products: [...allCuratedProducts].reverse(),
+  limit: 18,
+});
+
 const staticPages = [
+  {
+    slug: "catalog",
+    title: "Shop All Products",
+    eyebrow: "Catalog",
+    summary:
+      "Browse Athletonic's curated store across sports nutrition, wellness, recovery, apparel, footwear, and training gear.",
+    directoryGroups: catalogDirectoryGroups,
+    productSections: catalogShelves,
+    sections: [
+      {
+        heading: "Catalog Standard",
+        body:
+          "Products shown here come from the curated Athletonic catalog build and use official brand product data where available.",
+      },
+    ],
+  },
+  {
+    slug: "brands",
+    title: "Brand Directory",
+    eyebrow: "Brands",
+    summary:
+      "Explore the performance, wellness, recovery, apparel, footwear, and training brands represented in the Athletonic catalog.",
+    directoryGroups: [
+      { title: "Featured Brands", items: featuredBrandItems },
+      { title: "All Catalog Brands", items: catalogBrandItems },
+    ],
+    productSections: brandSpotlightShelves,
+    sections: [
+      {
+        heading: "Brand Quality",
+        body:
+          "Athletonic keeps brand pages tied to products that are currently present in the curated catalog instead of listing empty brand destinations.",
+      },
+    ],
+  },
+  {
+    slug: "best-sellers",
+    title: "Best Sellers",
+    eyebrow: "Shop",
+    summary:
+      "A cross-category view of strong Athletonic picks for customers who want the fastest route into the catalog.",
+    productSections: [bestSellerShelf],
+    sections: [
+      {
+        heading: "How This Shelf Works",
+        body:
+          "Best-seller placement should be validated against sales, inventory, margin, and campaign data before paid promotion.",
+      },
+    ],
+  },
+  {
+    slug: "protein",
+    title: "Protein",
+    eyebrow: "Sports Nutrition",
+    summary:
+      "Shop protein powders, shakes, bars, isolates, plant protein, and recovery-focused protein products.",
+    productSections: [shelfFromSection("protein")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Protein customers usually compare serving size, protein source, flavor, sweetener preferences, and price per serving.",
+      },
+    ],
+  },
+  {
+    slug: "creatine",
+    title: "Creatine",
+    eyebrow: "Strength",
+    summary:
+      "Shop creatine powders, capsules, gummies, and strength-focused daily staples.",
+    productSections: [shelfFromSection("creatine")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Creatine shoppers commonly compare format, serving size, flavor, and whether the product is a single-ingredient staple or part of a stack.",
+      },
+    ],
+  },
+  {
+    slug: "pre-workout",
+    title: "Pre-workout",
+    eyebrow: "Energy",
+    summary:
+      "Shop pre-workout, pump, focus, and training energy formulas from performance brands.",
+    productSections: [shelfFromSection("pre-workout")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Pre-workout customers should compare stimulant level, flavor, serving size, and label directions before checkout.",
+      },
+    ],
+  },
+  {
+    slug: "hydration",
+    title: "Hydration & Electrolytes",
+    eyebrow: "Daily Performance",
+    summary:
+      "Shop hydration mixes, electrolyte sticks, amino drinks, and functional hydration products.",
+    productSections: [shelfFromSection("hydration")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Hydration customers often compare sodium level, sugar content, flavor format, and pack count.",
+      },
+    ],
+  },
+  {
+    slug: "vitamins",
+    title: "Vitamins & Daily Health",
+    eyebrow: "Wellness",
+    summary:
+      "Shop multivitamins, minerals, omegas, immune support, joint support, and daily wellness products.",
+    productSections: [shelfFromSection("vitamins")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Daily wellness customers should review label directions, allergens, serving size, and ingredient fit.",
+      },
+    ],
+  },
+  {
+    slug: "greens",
+    title: "Greens & Superfoods",
+    eyebrow: "Wellness",
+    summary:
+      "Shop greens blends, superfood powders, cacao blends, spirulina, chlorella, and daily nutrition products.",
+    productSections: [shelfFromSection("greens")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Greens customers often compare flavor, ingredient profile, serving count, and whether the product includes probiotics or digestive support.",
+      },
+    ],
+  },
+  {
+    slug: "bars-shakes",
+    title: "Bars, Shakes & Meals",
+    eyebrow: "Ready Now",
+    summary:
+      "Shop protein bars, ready-to-drink shakes, complete meals, and convenient nutrition products.",
+    productSections: [shelfFromSection("bars-shakes")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Ready-to-eat customers often compare calories, protein, sugar, pack count, texture, and portability.",
+      },
+    ],
+  },
+  {
+    slug: "recovery",
+    title: "Recovery Devices",
+    eyebrow: "Recovery",
+    summary:
+      "Shop massage, mobility, red light, compression, and recovery accessories.",
+    productSections: [shelfFromSection("recovery")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Recovery-device customers should compare use case, portability, included attachments, warranty expectations, and return restrictions.",
+      },
+    ],
+  },
+  {
+    slug: "sleep",
+    title: "Sleep Recovery",
+    eyebrow: "Recovery",
+    summary:
+      "Shop sleep masks, nighttime recovery products, and relaxation support.",
+    productSections: [shelfFromSection("sleep")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Sleep recovery customers often compare fit, comfort, ingredients, serving timing, and sensitivity to nighttime formulas.",
+      },
+    ],
+  },
+  {
+    slug: "massage-mobility",
+    title: "Massage & Mobility",
+    eyebrow: "Recovery",
+    summary:
+      "Shop massage devices, mobility tools, rollers, and recovery accessories.",
+    productSections: [
+      filteredShelf({
+        eyebrow: "Recovery",
+        title: "Massage & mobility",
+        description: "Massage, rolling, mobility, and recovery tools from the curated recovery shelf.",
+        sectionIds: ["recovery"],
+        terms: ["massage", "roller", "roll", "theragun", "hypervolt", "fixx"],
+      }),
+    ],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Customers should compare device size, intensity controls, attachments, and where the product fits in their recovery routine.",
+      },
+    ],
+  },
+  {
+    slug: "compression",
+    title: "Compression",
+    eyebrow: "Recovery",
+    summary:
+      "Shop compression recovery products, sleeves, and related support accessories.",
+    productSections: [
+      filteredShelf({
+        eyebrow: "Recovery",
+        title: "Compression",
+        description: "Compression and sleeve-focused products from the recovery catalog.",
+        sectionIds: ["recovery", "accessories"],
+        terms: ["compression", "sleeve", "recoverypulse"],
+      }),
+    ],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Compression customers should compare size, fit, body area, care instructions, and whether the item is wearable or device-based.",
+      },
+    ],
+  },
+  {
+    slug: "cold-therapy",
+    title: "Cold Therapy",
+    eyebrow: "Recovery",
+    summary:
+      "Shop cold-therapy-adjacent recovery products and recovery tools suitable for post-training routines.",
+    productSections: [
+      filteredShelf({
+        eyebrow: "Recovery",
+        title: "Cold therapy",
+        description: "Recovery products and tools relevant to cold-therapy routines.",
+        sectionIds: ["recovery"],
+        terms: ["cold", "ice", "therapy", "recovery"],
+      }),
+    ],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Cold therapy placement should stay conservative until dedicated cold plunge, ice bath, or cold-pack inventory is available.",
+      },
+    ],
+  },
+  {
+    slug: "sleep-supplements",
+    title: "Sleep Supplements",
+    eyebrow: "Recovery",
+    summary:
+      "Shop nighttime supplement products and sleep-support items from the Athletonic catalog.",
+    productSections: [
+      filteredShelf({
+        eyebrow: "Recovery",
+        title: "Sleep supplements",
+        description: "Nighttime, magnesium, and sleep-support products from the recovery shelf.",
+        sectionIds: ["sleep", "vitamins"],
+        terms: ["sleep", "night", "magnesium", "zma"],
+      }),
+    ],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Sleep supplement customers should read label directions carefully and consider ingredient sensitivities.",
+      },
+    ],
+  },
+  {
+    slug: "build-muscle",
+    title: "Build Muscle",
+    eyebrow: "Goals",
+    summary:
+      "Shop protein, creatine, and training staples commonly compared by strength-focused customers.",
+    productSections: [
+      customShelf({
+        eyebrow: "Goals",
+        title: "Build muscle",
+        description: "Protein and creatine products for strength-focused shopping.",
+        sectionIds: ["protein", "creatine"],
+        limit: 18,
+      }),
+    ],
+    sections: [
+      {
+        heading: "Goal Fit",
+        body:
+          "Goal pages group relevant categories for faster shopping; customers should still review product labels and serving directions.",
+      },
+    ],
+  },
+  {
+    slug: "lose-fat",
+    title: "Lose Fat",
+    eyebrow: "Goals",
+    summary:
+      "Shop lower-friction products customers often compare when building a leaner nutrition and training routine.",
+    productSections: [
+      customShelf({
+        eyebrow: "Goals",
+        title: "Lose fat",
+        description: "Protein, hydration, bars, and training energy products organized for comparison.",
+        sectionIds: ["protein", "hydration", "bars-shakes", "pre-workout"],
+        limit: 18,
+      }),
+    ],
+    sections: [
+      {
+        heading: "Goal Fit",
+        body:
+          "Athletonic does not treat product placement as medical or nutrition advice; customers should compare labels and choose what fits their plan.",
+      },
+    ],
+  },
+  {
+    slug: "endurance",
+    title: "Endurance",
+    eyebrow: "Goals",
+    summary:
+      "Shop hydration, electrolytes, recovery, and ready-now nutrition for endurance-focused routines.",
+    productSections: [
+      customShelf({
+        eyebrow: "Goals",
+        title: "Endurance",
+        description: "Hydration, ready nutrition, sleep, and recovery products for longer training days.",
+        sectionIds: ["hydration", "bars-shakes", "sleep", "recovery"],
+        limit: 18,
+      }),
+    ],
+    sections: [
+      {
+        heading: "Goal Fit",
+        body:
+          "Endurance shoppers often compare packability, flavor, serving timing, and hydration format.",
+      },
+    ],
+  },
+  {
+    slug: "daily-wellness",
+    title: "Daily Wellness",
+    eyebrow: "Goals",
+    summary:
+      "Shop vitamins, greens, hydration, and daily staples for general wellness routines.",
+    productSections: [
+      customShelf({
+        eyebrow: "Goals",
+        title: "Daily wellness",
+        description: "Daily health, greens, hydration, and convenient nutrition products.",
+        sectionIds: ["vitamins", "greens", "hydration", "bars-shakes"],
+        limit: 18,
+      }),
+    ],
+    sections: [
+      {
+        heading: "Goal Fit",
+        body:
+          "Daily wellness shoppers should compare label directions, allergens, ingredient overlap, and product format.",
+      },
+    ],
+  },
+  {
+    slug: "womens-health",
+    title: "Women's Health",
+    eyebrow: "Goals",
+    summary:
+      "Shop daily wellness, vitamins, greens, hydration, and nutrition products relevant to women's health routines.",
+    productSections: [
+      customShelf({
+        eyebrow: "Goals",
+        title: "Women's health",
+        description: "Daily health and wellness products organized for easier comparison.",
+        sectionIds: ["vitamins", "greens", "hydration", "bars-shakes"],
+        limit: 18,
+      }),
+    ],
+    sections: [
+      {
+        heading: "Goal Fit",
+        body:
+          "Customers with medical, pregnancy, postpartum, hormone, allergy, or medication questions should consult a qualified professional.",
+      },
+    ],
+  },
+  {
+    slug: "energy-focus",
+    title: "Energy & Focus",
+    eyebrow: "Goals",
+    summary:
+      "Shop training energy, pre-workout, hydration, and focus-oriented products.",
+    productSections: [
+      customShelf({
+        eyebrow: "Goals",
+        title: "Energy & focus",
+        description: "Training energy, pump, focus, and hydration products for comparison.",
+        sectionIds: ["pre-workout", "hydration"],
+        limit: 18,
+      }),
+    ],
+    sections: [
+      {
+        heading: "Goal Fit",
+        body:
+          "Energy-focused customers should compare stimulant content, serving directions, flavor, and personal tolerance.",
+      },
+    ],
+  },
+  {
+    slug: "training-apparel",
+    title: "Training Apparel",
+    eyebrow: "Apparel",
+    summary:
+      "Shop training apparel, gym wear, tees, shorts, leggings, hoodies, and active layers.",
+    productSections: [shelfFromSection("apparel")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Apparel customers should compare size, fit, material, care instructions, and return eligibility before checkout.",
+      },
+    ],
+  },
+  {
+    slug: "footwear",
+    title: "Footwear",
+    eyebrow: "Apparel",
+    summary:
+      "Shop running, training, trail, and performance footwear.",
+    productSections: [shelfFromSection("shoes")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Footwear customers should compare fit, intended use, size availability, return condition, and brand-specific sizing.",
+      },
+    ],
+  },
+  {
+    slug: "accessories",
+    title: "Accessories",
+    eyebrow: "Gear",
+    summary:
+      "Shop gym accessories including shakers, bottles, bags, belts, grips, wraps, straps, and sleeves.",
+    productSections: [shelfFromSection("accessories")],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Accessory customers usually compare size, material, use case, carry capacity, and compatibility with their training setup.",
+      },
+    ],
+  },
+  {
+    slug: "bags",
+    title: "Bags",
+    eyebrow: "Gear",
+    summary:
+      "Shop gym bags, duffles, backpacks, and carry accessories.",
+    productSections: [
+      filteredShelf({
+        eyebrow: "Gear",
+        title: "Bags",
+        description: "Gym bags, duffles, backpacks, and carry accessories.",
+        sectionIds: ["accessories"],
+        terms: ["bag", "duffle", "duffel", "backpack"],
+      }),
+    ],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Bag customers should compare capacity, strap style, compartments, material, and travel or gym use case.",
+      },
+    ],
+  },
+  {
+    slug: "lifting-gear",
+    title: "Lifting Gear",
+    eyebrow: "Gear",
+    summary:
+      "Shop training systems, belts, wraps, grips, straps, gloves, and strength accessories.",
+    productSections: [
+      customShelf({
+        eyebrow: "Gear",
+        title: "Lifting gear",
+        description: "Strength training gear and accessories from the curated catalog.",
+        sectionIds: ["training-gear", "accessories"],
+        limit: 18,
+      }),
+    ],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Lifting gear customers should compare size, support level, material, use case, and return condition.",
+      },
+    ],
+  },
+  {
+    slug: "combat-sports",
+    title: "Combat Sports",
+    eyebrow: "Gear",
+    summary:
+      "Shop boxing, martial arts, Muay Thai, wraps, gloves, pads, guards, and fight-training gear.",
+    productSections: [
+      filteredShelf({
+        eyebrow: "Gear",
+        title: "Combat sports",
+        description: "Fight-training gear from the curated sports gear shelf.",
+        sectionIds: ["training-gear"],
+        terms: ["glove", "wrap", "mitt", "pad", "boxing", "muay", "shin", "guard", "fight"],
+        limit: 18,
+      }),
+    ],
+    sections: [
+      {
+        heading: "Shop Notes",
+        body:
+          "Combat sports customers should compare sizing, protection level, intended discipline, and training vs competition use.",
+      },
+    ],
+  },
   {
     slug: "about",
     title: "About Athletonic",
     eyebrow: "Company",
     summary:
-      "Athletonic is a performance marketplace built for customers who want supplements, training gear, apparel, footwear, recovery tools, and daily wellness products in one focused store.",
+      "Athletonic is a performance store built for customers who want supplements, training gear, apparel, footwear, recovery tools, and daily wellness products in one focused store.",
     sections: [
       {
         heading: "What We Sell",
@@ -1628,12 +2481,12 @@ const staticPages = [
     title: "Careers",
     eyebrow: "Team",
     summary:
-      "Athletonic is building a focused commerce team across marketplace operations, product catalog quality, customer experience, performance marketing, and partnerships.",
+      "Athletonic is building a focused commerce team across store operations, product catalog quality, customer experience, performance marketing, and partnerships.",
     sections: [
       {
         heading: "Current Focus",
         bullets: [
-          "Marketplace operations and vendor coordination",
+          "Store operations and vendor coordination",
           "Catalog quality, product data, and pricing checks",
           "Customer support and post-purchase operations",
           "Growth, paid social, and lifecycle marketing",
@@ -1651,17 +2504,17 @@ const staticPages = [
     title: "Press Releases",
     eyebrow: "Newsroom",
     summary:
-      "Company announcements, marketplace updates, catalog milestones, and partnership news from Athletonic.",
+      "Company announcements, store updates, catalog milestones, and partnership news from Athletonic.",
     sections: [
       {
         heading: "Media Contact",
         body:
-          "For press inquiries, email press@athletonic.com with your publication, deadline, and requested topic.",
+          "For press inquiries, email support@athletonic.com with your publication, deadline, and requested topic.",
       },
       {
         heading: "Launch Status",
         body:
-          "Athletonic is preparing its performance marketplace for public customer acquisition and paid social campaigns.",
+          "Athletonic is preparing its performance store for public customer acquisition and paid social campaigns.",
       },
     ],
   },
@@ -1724,7 +2577,8 @@ const staticPages = [
     eyebrow: "Shop",
     summary:
       "Daily deal placement is reserved for products with current pricing, available inventory, and a clean path to checkout inside Athletonic.",
-    links: [{ label: "Shop all products", href: "#catalog" }],
+    links: [{ label: "Shop all products", href: "pages/catalog.html" }],
+    productSections: [dailyDealsShelf],
     sections: [
       {
         heading: "Deal Standards",
@@ -1739,7 +2593,8 @@ const staticPages = [
     eyebrow: "Shop",
     summary:
       "New arrivals highlight recently added products across supplements, apparel, footwear, recovery, and training accessories.",
-    links: [{ label: "Browse catalog", href: "#catalog" }],
+    links: [{ label: "Browse catalog", href: "pages/catalog.html" }],
+    productSections: [newArrivalsShelf],
     sections: [
       {
         heading: "Catalog Review",
@@ -1780,7 +2635,7 @@ const staticPages = [
       {
         heading: "Contact",
         body:
-          "Email partners@athletonic.com with your brand name, product categories, and operating region.",
+          "Email support@athletonic.com with your brand name, product categories, and operating region.",
       },
     ],
   },
@@ -1794,7 +2649,7 @@ const staticPages = [
       {
         heading: "Program Status",
         body:
-          "Affiliate tracking and commission rules should be finalized before public recruitment begins.",
+          "Affiliate tracking, account tools, and commission rules are being expanded before large-scale public recruitment.",
       },
     ],
   },
@@ -1828,7 +2683,7 @@ const staticPages = [
         bullets: [
           "Legal business name and support contact",
           "Product feed or product list",
-          "Wholesale or marketplace pricing terms",
+          "Wholesale, service, or commission terms",
           "Shipping and return policies",
         ],
       },
@@ -1885,20 +2740,6 @@ const staticPages = [
     ],
   },
   {
-    slug: "orders",
-    title: "Your Orders",
-    eyebrow: "Customer",
-    summary:
-      "Order tracking will connect to completed checkout records once the full payment and fulfillment workflow is active.",
-    sections: [
-      {
-        heading: "Checkout Requests",
-        body:
-          "Current checkout submissions create a saved request reference so the customer flow can continue with a real order workflow.",
-      },
-    ],
-  },
-  {
     slug: "shipping",
     title: "Shipping Rates & Policies",
     eyebrow: "Customer Care",
@@ -1908,7 +2749,7 @@ const staticPages = [
       {
         heading: "Shipping Scope",
         body:
-          "Athletonic is configured for United States customers and USD pricing. International shipping should remain unavailable until rates, taxes, and restrictions are configured.",
+          "Athletonic is US-first and USD-based, with international delivery available only where service, taxes, duties, payment review, and product restrictions allow.",
       },
       {
         heading: "Processing",
@@ -1923,6 +2764,7 @@ const staticPages = [
     eyebrow: "Customer Care",
     summary:
       "Returns and replacements are handled according to product condition, category, customer issue, and applicable health and safety restrictions.",
+    links: [{ label: "Start a return request", href: "pages/returns-request.html" }],
     sections: [
       {
         heading: "Return Review",
@@ -1970,7 +2812,7 @@ const staticPages = [
       {
         heading: "Business",
         body:
-          "For partnerships, advertising, vendors, and press, use partners@athletonic.com or press@athletonic.com.",
+          "For partnerships, advertising, vendors, and press, use support@athletonic.com with a clear subject line.",
       },
     ],
   },
@@ -1979,7 +2821,7 @@ const staticPages = [
     title: "Conditions of Use",
     eyebrow: "Legal",
     summary:
-      "These Conditions of Use govern access to Athletonic and purchases or checkout requests made through the marketplace.",
+      "These Conditions of Use govern access to Athletonic and purchases or checkout requests made through the store.",
     sections: [
       {
         heading: "Use of Athletonic",
@@ -2026,7 +2868,7 @@ const staticPages = [
       {
         heading: "Choices",
         body:
-          "Customers can request privacy help by emailing privacy@athletonic.com.",
+          "Customers can request privacy help by emailing support@athletonic.com.",
       },
     ],
   },
@@ -2045,7 +2887,7 @@ const staticPages = [
       {
         heading: "Opt-Out Requests",
         body:
-          "Customers can email privacy@athletonic.com with the subject Ads Privacy Choices.",
+          "Customers can email support@athletonic.com with the subject Ads Privacy Choices.",
       },
     ],
   },
@@ -2087,7 +2929,7 @@ const staticPages = [
       {
         heading: "Feedback",
         body:
-          "Email accessibility@athletonic.com with the page URL, issue description, assistive technology used, and contact information.",
+          "Email support@athletonic.com with the page URL, issue description, assistive technology used, and contact information.",
       },
     ],
   },
@@ -2101,7 +2943,7 @@ const staticPages = [
       {
         heading: "Request Method",
         body:
-          "Email privacy@athletonic.com with the subject Do Not Sell or Share My Personal Information.",
+          "Email support@athletonic.com with the subject Do Not Sell or Share My Personal Information.",
       },
       {
         heading: "Verification",
@@ -2111,6 +2953,620 @@ const staticPages = [
     ],
   },
 ];
+
+const footerPageCopy = {
+  about: {
+    title: "About Athletonic",
+    eyebrow: "United States performance store",
+    summary:
+      "Athletonic is a US-based performance store for supplements, training gear, recovery products, apparel, footwear, and everyday fitness essentials.",
+    links: [{ label: "Contact support", href: "mailto:support@athletonic.com" }],
+    sections: [
+      {
+        heading: "What We Sell",
+        body:
+          "Products sold through Athletonic are offered by Athletonic through its own catalog. We focus on useful fitness categories instead of filling the store with random marketplace clutter.",
+      },
+      {
+        heading: "How We Work",
+        bullets: [
+          "United States first in pricing, support, and customer experience",
+          "Worldwide shipping where service, payment review, and product rules allow",
+          "Product pages built from catalog data, image review, and current merchandising checks",
+        ],
+      },
+      {
+        heading: "Customer Standard",
+        body:
+          "Customers should know what they are buying, what it costs, when it may ship, and how to reach a real support contact when something needs attention.",
+      },
+    ],
+  },
+  careers: {
+    title: "Careers",
+    eyebrow: "Build with us",
+    summary:
+      "Athletonic is building a lean US-first commerce operation across catalog, operations, customer support, fulfillment, growth, and partner programs.",
+    links: [{ label: "Send your interest", href: "mailto:support@athletonic.com?subject=Careers" }],
+    sections: [
+      {
+        heading: "Who Fits",
+        bullets: [
+          "People who understand fitness customers and can work with detail",
+          "Operators who care about clean product data, shipping accuracy, and customer trust",
+          "Growth-minded people who can sell without making claims the business cannot stand behind",
+        ],
+      },
+      {
+        heading: "Current Status",
+        body:
+          "Open roles may change as the company grows. Email support with the subject Careers and include your location, strengths, and the kind of work you can handle.",
+      },
+    ],
+  },
+  press: {
+    title: "Press",
+    eyebrow: "Company news",
+    summary:
+      "Company updates, catalog milestones, customer experience improvements, and partnership news from Athletonic.",
+    links: [{ label: "Email press request", href: "mailto:support@athletonic.com?subject=Press" }],
+    sections: [
+      {
+        heading: "Press Contact",
+        body:
+          "For press requests, email support@athletonic.com with the subject Press. Include your publication, deadline, topic, and the best way to reach you.",
+      },
+      {
+        heading: "Company Stage",
+        body:
+          "Athletonic is building a US-first performance store with customer support, checkout, order tracking, partner programs, and controlled offers being expanded step by step.",
+      },
+    ],
+  },
+  science: {
+    title: "Athletonic Science",
+    eyebrow: "Product clarity",
+    summary:
+      "Athletonic Science is our internal standard for writing product pages clearly, avoiding hype, and keeping health and supplement language responsible.",
+    sections: [
+      {
+        heading: "Our Standard",
+        bullets: [
+          "Use label directions, product facts, and customer-relevant details",
+          "Avoid medical promises, cure language, or exaggerated performance claims",
+          "Encourage customers to read labels and speak with a qualified professional when needed",
+        ],
+      },
+      {
+        heading: "Not Medical Advice",
+        body:
+          "Product information on Athletonic is for shopping and education only. Supplements and wellness products are not a replacement for medical care.",
+      },
+    ],
+  },
+  sustainability: {
+    title: "Sustainability",
+    eyebrow: "Responsible operations",
+    summary:
+      "Athletonic is building responsible operations by keeping the catalog cleaner, reducing avoidable waste, and making product and shipping details easier to understand.",
+    sections: [
+      {
+        heading: "Where We Start",
+        bullets: [
+          "Cleaner catalog data before products are promoted",
+          "Packaging and shipping choices reviewed as operations scale",
+          "Less waste from duplicate, dead, or misleading product listings",
+        ],
+      },
+      {
+        heading: "Practical Commitment",
+        body:
+          "We do not pretend every step is perfect. The goal is steady improvement while keeping the store useful, honest, and operationally realistic.",
+      },
+    ],
+  },
+  "athletonic-cares": {
+    title: "Athletonic Cares",
+    eyebrow: "Customers and community",
+    summary:
+      "Athletonic Cares is our commitment to support serious customers, coaches, gyms, and active people with clear shopping help and fair issue review.",
+    links: [{ label: "Contact support", href: "mailto:support@athletonic.com" }],
+    sections: [
+      {
+        heading: "What Matters",
+        bullets: [
+          "Clear help before and after checkout",
+          "Careful review for damaged, missing, or incorrect items",
+          "Responsible product information for supplements, gear, apparel, and recovery",
+        ],
+      },
+      {
+        heading: "How to Reach Us",
+        body:
+          "Email support@athletonic.com with your order reference, product name, and photos when the issue involves damage or delivery condition.",
+      },
+    ],
+  },
+  "best-sellers": {
+    title: "Best Sellers / Popular Picks",
+    eyebrow: "Shop",
+    summary:
+      "A fast route into strong Athletonic picks across nutrition, hydration, recovery, apparel, footwear, and training gear.",
+    sections: [
+      {
+        heading: "How This Page Works",
+        body:
+          "Live sales ranking is being connected. Until then, this page highlights popular catalog picks by category, product quality checks, trend signals, and merchandising review.",
+      },
+      {
+        heading: "Pricing and Availability",
+        body:
+          "Prices, inventory, and offers can change before checkout. A product is not reserved until payment and order review are complete.",
+      },
+    ],
+  },
+  "daily-deals": {
+    title: "Daily Deals",
+    eyebrow: "Limited-time offers",
+    summary:
+      "Limited-time Athletonic offers selected from US-first trend signals, catalog fit, pricing rules, and active expiration dates.",
+    links: [{ label: "Shop all products", href: "pages/catalog.html" }],
+    sections: [
+      {
+        heading: "Offer Timing",
+        body:
+          "Deals are time limited and may end automatically at the listed expiration time. A deal can also be changed, removed, or refused if there is a pricing error, product issue, fraud risk, or inventory problem.",
+      },
+      {
+        heading: "How Deals Are Chosen",
+        body:
+          "The deals engine checks US-focused fitness news signals, matches them to Athletonic catalog categories, and applies controlled discounts that protect the business.",
+      },
+    ],
+  },
+  "gift-cards": {
+    title: "Gift Cards",
+    eyebrow: "Coming soon",
+    summary:
+      "Athletonic gift cards are planned for a future release in the United States only. They are not available for international purchase or redemption at launch.",
+    sections: [
+      {
+        heading: "Availability",
+        body:
+          "Gift cards are coming soon for US customers after account credit, redemption, fraud review, and support rules are fully connected.",
+      },
+      {
+        heading: "International Restriction",
+        body:
+          "Gift cards will not be offered internationally at launch. This keeps the program tighter, reduces fraud exposure, and gives support a cleaner review path.",
+      },
+    ],
+  },
+  "sell-on-athletonic": {
+    title: "Sell Athletonic Products",
+    eyebrow: "Partner program",
+    summary:
+      "Apply to sell Athletonic products as an approved partner. Athletonic controls the product catalog; partners help bring those products to customers.",
+    links: [{ label: "Apply by email", href: "mailto:support@athletonic.com?subject=Sell%20Athletonic%20Products" }],
+    sections: [
+      {
+        heading: "Who This Is For",
+        bullets: [
+          "International sellers who can represent Athletonic products responsibly",
+          "Fitness operators, communities, and local sellers with real customer reach",
+          "Partners who can follow pricing, brand, support, and claim rules",
+        ],
+      },
+      {
+        heading: "Commission Review",
+        body:
+          "Commission terms are reviewed before approval. Athletonic may approve, pause, reject, or remove a partner if orders, claims, chargebacks, or customer behavior create risk.",
+      },
+    ],
+  },
+  affiliate: {
+    title: "Become an Affiliate",
+    eyebrow: "Commissions",
+    summary:
+      "Athletonic is recruiting affiliates who can promote Athletonic products with clean language, real audience fit, and responsible customer expectations.",
+    links: [{ label: "Request affiliate review", href: "mailto:support@athletonic.com?subject=Affiliate%20Program" }],
+    sections: [
+      {
+        heading: "Program Fit",
+        bullets: [
+          "Fitness creators, coaches, reviewers, publishers, and community owners",
+          "US-first promotion, with international opportunities reviewed case by case",
+          "No fake health claims, fake discounts, misleading urgency, or traffic that creates fraud risk",
+        ],
+      },
+      {
+        heading: "Tracking",
+        body:
+          "Affiliate tracking and real account systems are being expanded. Commission eligibility depends on approved tracking, completed orders, return status, chargeback status, and program terms.",
+      },
+    ],
+  },
+  advertise: {
+    title: "Advertise with Athletonic",
+    eyebrow: "Growth partners",
+    summary:
+      "Athletonic reviews advertising and partnership requests that fit fitness, performance, wellness, recovery, apparel, footwear, or training audiences.",
+    links: [{ label: "Send advertising request", href: "mailto:support@athletonic.com?subject=Advertising" }],
+    sections: [
+      {
+        heading: "What We Review",
+        bullets: [
+          "Campaigns tied to Athletonic products or approved fitness categories",
+          "Creator, gym, coach, and community placements",
+          "Brand-safe copy that does not make medical or unrealistic performance claims",
+        ],
+      },
+      {
+        heading: "Approval",
+        body:
+          "Athletonic can approve, decline, change, pause, or remove placements when they do not fit the company, the customer experience, or the legal standard we need.",
+      },
+    ],
+  },
+  vendor: {
+    title: "Vendor & Supply Partners",
+    eyebrow: "Operations",
+    summary:
+      "Athletonic works with selected vendors, service partners, fulfillment contacts, and supply relationships that support the Athletonic-owned catalog.",
+    links: [{ label: "Contact vendor review", href: "mailto:support@athletonic.com?subject=Vendor%20Review" }],
+    sections: [
+      {
+        heading: "Important Difference",
+        body:
+          "Athletonic is not opening a free-for-all marketplace. The company controls what is sold on Athletonic, and vendor relationships are reviewed before anything reaches customers.",
+      },
+      {
+        heading: "What to Send",
+        bullets: [
+          "Legal business name and operating region",
+          "Products or services offered",
+          "Pricing, fulfillment, compliance, and support details",
+          "Proof that product claims and images can be used correctly",
+        ],
+      },
+    ],
+  },
+  coaches: {
+    title: "Athletonic for Coaches",
+    eyebrow: "Coach program",
+    summary:
+      "Coaches can apply to recommend Athletonic products to athletes and clients through approved lists, campaigns, or commission-based programs.",
+    links: [{ label: "Apply as a coach", href: "mailto:support@athletonic.com?subject=Coach%20Program" }],
+    sections: [
+      {
+        heading: "How Coaches Can Use It",
+        bullets: [
+          "Build product lists for hydration, recovery, training gear, and nutrition basics",
+          "Share approved Athletonic product recommendations with clients",
+          "Earn commission only when tracking, order status, and program rules support it",
+        ],
+      },
+      {
+        heading: "Professional Standard",
+        body:
+          "Coaches should not present supplement information as medical advice. Product recommendations must be practical, honest, and tied to the customer's own needs.",
+      },
+    ],
+  },
+  gyms: {
+    title: "Athletonic for Gyms",
+    eyebrow: "Gym program",
+    summary:
+      "Gyms can apply to sell or recommend Athletonic products for members through approved product shelves, campaigns, and commission programs.",
+    links: [{ label: "Apply as a gym", href: "mailto:support@athletonic.com?subject=Gym%20Program" }],
+    sections: [
+      {
+        heading: "Gym Opportunities",
+        bullets: [
+          "Member product shelves for training essentials",
+          "Recovery, hydration, apparel, and gear recommendations",
+          "Commission opportunities for approved sales channels",
+        ],
+      },
+      {
+        heading: "Review First",
+        body:
+          "Athletonic reviews each gym before approval. We may limit products, countries, promotions, or payout terms to protect customers and the company.",
+      },
+    ],
+  },
+  account: {
+    title: "Your Account",
+    eyebrow: "Customer",
+    summary:
+      "Athletonic is expanding real customer accounts. Today, customers can use checkout email, order reference, and support history for tracking and returns.",
+    links: [{ label: "Track an order", href: "pages/order-tracking.html" }],
+    sections: [
+      {
+        heading: "Current Account Tools",
+        bullets: [
+          "Save a checkout email in the account panel",
+          "Track orders by email and order reference",
+          "Submit return or replacement requests from the order lookup flow",
+        ],
+      },
+      {
+        heading: "Tracking and Security",
+        body:
+          "Athletonic may use account, checkout, order, device, fraud, and support signals to protect customers, prevent abuse, review returns, and improve the store.",
+      },
+    ],
+  },
+  shipping: {
+    title: "Shipping Rates & Policies",
+    eyebrow: "Customer care",
+    summary:
+      "Athletonic ships from a US-first operating standard and supports worldwide delivery where service, payment review, product restrictions, and local rules allow.",
+    links: [
+      { label: "Track an order", href: "pages/order-tracking.html" },
+      { label: "Contact support", href: "mailto:support@athletonic.com?subject=Shipping%20Help" },
+    ],
+    sections: [
+      {
+        heading: "US First, Worldwide Where Available",
+        body:
+          "The United States is Athletonic's priority market. International delivery may be available for selected products and countries, but it can be limited by carrier service, customs, payment review, or product rules.",
+      },
+      {
+        heading: "Processing",
+        body:
+          "Most orders are reviewed before fulfillment. Processing may take longer during high volume, address review, payment review, inventory checks, weather events, or carrier disruption.",
+      },
+      {
+        heading: "Customs, Duties, and Taxes",
+        body:
+          "International customers are responsible for customs duties, taxes, brokerage fees, import rules, and local delivery requirements unless Athletonic states otherwise at checkout.",
+      },
+      {
+        heading: "Delivery and Tracking",
+        body:
+          "Tracking is provided when available. Delivery estimates are not guarantees, and Athletonic is not responsible for carrier delays, incorrect addresses, customs holds, or missed delivery attempts.",
+      },
+    ],
+  },
+  returns: {
+    title: "Returns & Replacements",
+    eyebrow: "Customer care",
+    summary:
+      "Returns are reviewed by product type, condition, timing, order status, safety rules, and the reason for the request.",
+    links: [
+      { label: "Start a return request", href: "pages/returns-request.html" },
+      { label: "Email support", href: "mailto:support@athletonic.com?subject=Returns" },
+    ],
+    sections: [
+      {
+        heading: "Return Window",
+        body:
+          "Return requests should be submitted within 14 days of delivery. A request is not approved until Athletonic reviews the order, product, condition, and reason.",
+      },
+      {
+        heading: "What We Can Usually Accept",
+        bullets: [
+          "Unopened supplements or ingestible products in original packaging",
+          "Unworn apparel or footwear with tags and clean original packaging",
+          "Unused gear or accessories returned with all parts and packaging",
+        ],
+      },
+      {
+        heading: "What We Do Not Accept",
+        bullets: [
+          "Opened supplements, ingestibles, hygiene items, or products with broken seals",
+          "Worn, washed, damaged, altered, or incomplete items",
+          "Gift cards, digital credit, final sale items, unauthorized returns, or suspicious activity",
+        ],
+      },
+      {
+        heading: "Refunds and Costs",
+        body:
+          "Customers pay return shipping unless Athletonic sent the wrong item or confirms eligible damage. Shipping charges, duties, taxes, and import fees are usually not refundable. Refunds may be denied or reduced after inspection.",
+      },
+    ],
+  },
+  help: {
+    title: "Help Center",
+    eyebrow: "Customer care",
+    summary:
+      "Get help with product questions, checkout, orders, shipping, returns, privacy choices, accounts, and partner requests.",
+    links: [
+      { label: "Track an order", href: "pages/order-tracking.html" },
+      { label: "Contact support", href: "mailto:support@athletonic.com" },
+    ],
+    sections: [
+      {
+        heading: "Fastest Way to Get Help",
+        body:
+          "Email support@athletonic.com with your order reference, checkout email, product name, and a short explanation. Add photos for damaged, wrong, or incomplete items.",
+      },
+      {
+        heading: "Support Topics",
+        bullets: [
+          "Orders, tracking, shipping, and delivery review",
+          "Returns, replacements, refunds, and damaged items",
+          "Product availability, pricing, and checkout issues",
+          "Privacy, cookies, advertising choices, and account questions",
+          "Affiliate, coach, gym, vendor, and advertising requests",
+        ],
+      },
+    ],
+  },
+  contact: {
+    title: "Contact Us",
+    eyebrow: "Customer care",
+    summary:
+      "Use support@athletonic.com for customer support, orders, returns, privacy requests, partnerships, vendors, coaches, gyms, advertising, press, and general help.",
+    links: [{ label: "Email support", href: "mailto:support@athletonic.com" }],
+    sections: [
+      {
+        heading: "Customer Support",
+        body:
+          "For orders, shipping, returns, product questions, or account help, email support@athletonic.com. Include your order reference when you have one.",
+      },
+      {
+        heading: "Business Requests",
+        body:
+          "For affiliates, partners, vendors, coaches, gyms, advertising, or press, email support@athletonic.com with a clear subject line so the request can be routed.",
+      },
+      {
+        heading: "Privacy and Legal Requests",
+        body:
+          "For privacy, cookie, advertising choice, or accessibility requests, use support@athletonic.com and include the request type in the subject line.",
+      },
+    ],
+  },
+  "conditions-of-use": {
+    title: "Conditions of Use",
+    eyebrow: "Legal",
+    summary:
+      "These Conditions of Use apply when customers browse Athletonic, use account tools, submit checkout information, place orders, request returns, or contact support.",
+    sections: [
+      {
+        heading: "Orders and Review",
+        body:
+          "A checkout submission or payment attempt does not guarantee acceptance. Athletonic may review, refuse, cancel, limit, or adjust orders for pricing errors, product restrictions, fraud risk, inventory issues, address problems, or policy concerns.",
+      },
+      {
+        heading: "Products, Pricing, and Offers",
+        body:
+          "Product details, images, prices, availability, discounts, and offers can change. Limited-time offers may expire, sell out, or be removed before checkout is complete.",
+      },
+      {
+        heading: "Use of the Site",
+        body:
+          "Customers may not misuse the site, scrape data, interfere with checkout, abuse returns, create fake accounts, manipulate promotions, or use Athletonic in a way that harms customers or the company.",
+      },
+      {
+        heading: "Health Information",
+        body:
+          "Supplement, wellness, and training content is not medical advice. Customers should read labels, follow product directions, and consult a qualified professional when needed.",
+      },
+    ],
+  },
+  privacy: {
+    title: "Privacy Notice",
+    eyebrow: "Legal",
+    summary:
+      "This Privacy Notice explains how Athletonic may collect, use, protect, and review information from customers, visitors, account users, checkout users, and support contacts.",
+    links: [{ label: "Email privacy request", href: "mailto:support@athletonic.com?subject=Privacy%20Request" }],
+    sections: [
+      {
+        heading: "Information We May Collect",
+        bullets: [
+          "Contact details such as name, email, phone, shipping address, and support messages",
+          "Account, checkout, cart, order, return, payment status, and fulfillment information",
+          "Device, browser, cookie, analytics, advertising, fraud, and security signals",
+          "Partner, affiliate, coach, gym, vendor, or advertising application details",
+        ],
+      },
+      {
+        heading: "How We Use Information",
+        bullets: [
+          "Operate checkout, accounts, shipping, tracking, support, returns, and refunds",
+          "Prevent fraud, chargebacks, abuse, fake accounts, and policy violations",
+          "Improve catalog quality, site performance, marketing, and customer service",
+          "Comply with legal, tax, payment, customs, and business record requirements",
+        ],
+      },
+      {
+        heading: "US-Based Business",
+        body:
+          "Athletonic is a United States business. If a customer uses Athletonic from outside the United States, information may be processed in the United States and with service providers that support the store.",
+      },
+    ],
+  },
+  "cookie-preferences": {
+    title: "Cookie Preferences",
+    eyebrow: "Legal",
+    summary:
+      "Cookies and similar technologies help Athletonic operate the cart, account tools, checkout, security, analytics, advertising, and customer experience.",
+    links: [{ label: "Email cookie request", href: "mailto:support@athletonic.com?subject=Cookie%20Preferences" }],
+    sections: [
+      {
+        heading: "Cookie Categories",
+        bullets: [
+          "Required cookies for cart, checkout, account tools, security, and site operation",
+          "Preference cookies for saved email, region, and customer experience settings",
+          "Analytics cookies for performance, product interest, and site improvement",
+          "Advertising cookies and pixels for attribution, campaign measurement, and relevant offers",
+        ],
+      },
+      {
+        heading: "Managing Cookies",
+        body:
+          "Customers can manage many cookies in their browser settings. Athletonic may add a dedicated preference tool as the tracking and account systems expand.",
+      },
+    ],
+  },
+  "ads-privacy-choices": {
+    title: "Your Ads Privacy Choices",
+    eyebrow: "Legal",
+    summary:
+      "Athletonic may use advertising, analytics, pixels, cookies, and event data to measure campaigns, improve offers, and reduce irrelevant marketing.",
+    links: [{ label: "Email ads privacy request", href: "mailto:support@athletonic.com?subject=Ads%20Privacy%20Choices" }],
+    sections: [
+      {
+        heading: "Advertising Data",
+        body:
+          "Advertising systems may use shopping activity, product interest, device data, browser signals, cookies, pixels, and campaign events for measurement and relevance.",
+      },
+      {
+        heading: "Choices",
+        body:
+          "Customers can email support@athletonic.com with the subject Ads Privacy Choices. Athletonic may need to verify the request before applying it to customer records or advertising identifiers.",
+      },
+    ],
+  },
+  "do-not-sell": {
+    title: "Do Not Sell or Share My Personal Information",
+    eyebrow: "Legal",
+    summary:
+      "Customers can ask Athletonic to limit certain sale or sharing of personal information where required by applicable privacy law.",
+    links: [{ label: "Email privacy request", href: "mailto:support@athletonic.com?subject=Do%20Not%20Sell%20or%20Share" }],
+    sections: [
+      {
+        heading: "Request Method",
+        body:
+          "Email support@athletonic.com with the subject Do Not Sell or Share My Personal Information. Include enough information for Athletonic to review and verify the request.",
+      },
+      {
+        heading: "Verification and Limits",
+        body:
+          "Athletonic may need to verify identity and may keep information needed for security, legal, transaction, tax, fraud prevention, and customer support purposes.",
+      },
+    ],
+  },
+  accessibility: {
+    title: "Accessibility",
+    eyebrow: "Legal",
+    summary:
+      "Athletonic aims to make the storefront usable for customers using different devices, browsers, keyboards, screen readers, and assistive technologies.",
+    links: [{ label: "Email accessibility request", href: "mailto:support@athletonic.com?subject=Accessibility" }],
+    sections: [
+      {
+        heading: "Our Approach",
+        bullets: [
+          "Readable structure, semantic headings, and keyboard-friendly controls",
+          "Alt text for product images where catalog data supports it",
+          "Visible focus states and straightforward checkout flows where possible",
+        ],
+      },
+      {
+        heading: "Feedback",
+        body:
+          "Email support@athletonic.com with the subject Accessibility. Include the page URL, issue, device, browser, and assistive technology if you can.",
+      },
+    ],
+  },
+};
+
+for (const page of staticPages) {
+  const copy = footerPageCopy[page.slug];
+  if (copy) Object.assign(page, copy);
+}
 
 function renderInfoSections(sections = []) {
   return sections
@@ -2146,8 +3602,61 @@ function renderInfoLinks(links = [], pathPrefix = "../") {
           </div>`;
 }
 
+function renderDirectoryGroups(groups = [], pathPrefix = "../") {
+  const visibleGroups = groups.filter((group) => Array.isArray(group.items) && group.items.length);
+  if (!visibleGroups.length) return "";
+  return `
+      <div class="directory-groups">
+        ${visibleGroups
+          .map(
+            (group) => `<section class="directory-group">
+          <h2>${html(group.title)}</h2>
+          <div class="directory-grid">
+            ${group.items
+              .map(
+                (item) => `<a class="directory-card" href="${html(
+                  resolveSiteHref(item.href, pathPrefix)
+                )}"${item.id ? ` id="${html(item.id)}"` : ""}>
+              <span>${html(item.label)}</span>
+              ${item.description ? `<small>${html(item.description)}</small>` : ""}
+            </a>`
+              )
+              .join("\n            ")}
+          </div>
+        </section>`
+          )
+          .join("\n        ")}
+      </div>`;
+}
+
+function renderProductShelves(shelves = [], pathPrefix = "../") {
+  const visibleShelves = shelves.filter((shelf) => shelf && shelf.products?.length);
+  if (!visibleShelves.length) return "";
+  return `
+      <div class="listing-sections">
+        ${visibleShelves
+          .map(
+            (shelf) => `<section class="market-section listing-section">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">${html(shelf.eyebrow)}</p>
+              <h2>${html(shelf.title)}</h2>
+            </div>
+            <p>${html(shelf.description)}</p>
+          </div>
+          <div class="product-row">
+${shelf.products.map((product) => productCard(product, pathPrefix)).join("\n")}
+          </div>
+        </section>`
+          )
+          .join("\n        ")}
+      </div>`;
+}
+
 function infoPage(pageInfo) {
   const pathPrefix = "../";
+  const hasExtendedContent =
+    pageInfo.productSections?.length || pageInfo.directoryGroups?.length;
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -2162,17 +3671,19 @@ function infoPage(pageInfo) {
 ${renderPdpHeader(pathPrefix)}
 ${renderDrawers()}
 
-    <main class="info-main">
+    <main class="info-main${hasExtendedContent ? " listing-main" : ""}">
       <section class="info-hero">
         <p class="eyebrow">${html(pageInfo.eyebrow)}</p>
         <h1>${html(pageInfo.title)}</h1>
         <p>${html(pageInfo.summary)}</p>
         ${renderInfoLinks(pageInfo.links, pathPrefix)}
       </section>
+${renderDirectoryGroups(pageInfo.directoryGroups, pathPrefix)}
+${renderProductShelves(pageInfo.productSections, pathPrefix)}
       <div class="info-grid">
 ${renderInfoSections(pageInfo.sections)}
       </div>
-      <p class="info-updated">Last updated May 20, 2026</p>
+      <p class="info-updated">Last updated June 3, 2026</p>
     </main>
 
 ${renderFooter(pathPrefix)}
@@ -2181,6 +3692,216 @@ ${renderFooter(pathPrefix)}
       window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
     </script>
     <script src="${pathPrefix}assets/cart.js" defer></script>
+  </body>
+</html>
+`;
+}
+
+function renderCommerceHeader(activePage, shopLabel = "Shop") {
+  const current = (page) => (activePage === page ? ' aria-current="page"' : "");
+  return `
+    <header class="market-header pdp-header">
+      <div class="header-main">
+        <a class="brand" href="../" aria-label="Athletonic home">
+          <img class="brand-logo" src="../assets/logo.png" alt="Athletonic" />
+        </a>
+        <nav class="commerce-nav" aria-label="Order navigation">
+          <a href="./order-tracking.html"${current("tracking")}>Track order</a>
+          <a href="./returns-request.html"${current("returns")}>Returns</a>
+          <a href="./catalog.html">${html(shopLabel)}</a>
+        </nav>
+      </div>
+    </header>`;
+}
+
+const orderLookupContent = ({ eyebrow, title, copy }) => `
+    <main class="commerce-main">
+      <section class="commerce-hero">
+        <p class="eyebrow">${html(eyebrow)}</p>
+        <h1>${html(title)}</h1>
+        <p>${html(copy)}</p>
+      </section>
+
+      <section class="commerce-grid commerce-grid-form">
+        <article class="commerce-panel">
+          <form class="commerce-form" data-order-lookup-form>
+            <label for="tracking-email">Email</label>
+            <input id="tracking-email" name="email" type="email" autocomplete="email" required />
+
+            <label for="tracking-reference">Order reference</label>
+            <input id="tracking-reference" name="order_reference" type="text" placeholder="ATH-123ABC4567" required />
+
+            <button type="submit">Find order</button>
+            <p class="form-status" data-order-lookup-status aria-live="polite"></p>
+          </form>
+        </article>
+
+        <article class="commerce-panel commerce-result" data-order-lookup-result hidden></article>
+      </section>
+    </main>`;
+
+const returnsRequestContent = `
+    <main class="commerce-main">
+      <section class="commerce-hero">
+        <p class="eyebrow">Returns</p>
+        <h1>Request a return or replacement.</h1>
+        <p>Find your order first, then select the item, reason, preferred resolution, and optional photos.</p>
+      </section>
+
+      <section class="commerce-grid commerce-grid-form">
+        <article class="commerce-panel">
+          <form class="commerce-form" data-return-lookup-form>
+            <label for="return-email">Email</label>
+            <input id="return-email" name="email" type="email" autocomplete="email" required />
+
+            <label for="return-reference">Order reference</label>
+            <input id="return-reference" name="order_reference" type="text" placeholder="ATH-123ABC4567" required />
+
+            <button type="submit">Find order</button>
+          </form>
+          <p class="form-status" data-return-status aria-live="polite"></p>
+        </article>
+
+        <article class="commerce-panel">
+          <div class="return-order-summary" data-return-order-summary></div>
+
+          <form class="commerce-form" data-return-request-form hidden>
+            <label for="return-item">Item</label>
+            <select id="return-item" name="item" data-return-item required></select>
+
+            <label for="return-quantity">Quantity</label>
+            <input id="return-quantity" name="quantity" type="number" min="1" value="1" data-return-quantity required />
+
+            <label for="return-resolution">Resolution</label>
+            <select id="return-resolution" name="resolution" required>
+              <option value="refund">Refund</option>
+              <option value="replacement">Replacement</option>
+            </select>
+
+            <label for="return-reason">Reason</label>
+            <select id="return-reason" name="reason" required>
+              <option value="">Choose a reason</option>
+              <option value="Damaged item">Damaged item</option>
+              <option value="Wrong item received">Wrong item received</option>
+              <option value="Missing part or accessory">Missing part or accessory</option>
+              <option value="Quality issue">Quality issue</option>
+              <option value="Changed my mind">Changed my mind</option>
+            </select>
+
+            <label for="return-notes">Notes</label>
+            <textarea id="return-notes" name="notes" rows="4" placeholder="Add details for support."></textarea>
+
+            <label for="return-photos">Photos optional</label>
+            <input id="return-photos" name="photos" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+
+            <button type="submit">Submit request</button>
+          </form>
+        </article>
+      </section>
+    </main>`;
+
+const orderConfirmationContent = `
+    <main class="commerce-main">
+      <section class="commerce-hero">
+        <p class="eyebrow">Order confirmation</p>
+        <h1>Thanks for your order.</h1>
+        <p data-confirmation-status data-state="pending">Confirming your payment with Stripe...</p>
+      </section>
+
+      <section class="commerce-grid">
+        <article class="commerce-panel">
+          <span class="order-kicker">Reference</span>
+          <h2 data-order-reference>Pending</h2>
+          <p class="commerce-muted">A copy of this reference is used for tracking and return requests.</p>
+          <dl class="commerce-meta">
+            <div>
+              <dt>Email</dt>
+              <dd data-order-email>Pending</dd>
+            </div>
+          </dl>
+          <div data-order-summary></div>
+        </article>
+
+        <article class="commerce-panel">
+          <h2>Items</h2>
+          <div class="order-lines" data-order-items></div>
+        </article>
+
+        <article class="commerce-panel commerce-panel-wide">
+          <h2>Timeline</h2>
+          <ol class="order-timeline" data-order-timeline></ol>
+        </article>
+      </section>
+    </main>`;
+
+const commercePages = [
+  {
+    slug: "order-tracking",
+    title: "Order Tracking",
+    description: "Track an Athletonic order by email and order reference.",
+    activePage: "tracking",
+    content: orderLookupContent({
+      eyebrow: "Tracking",
+      title: "Track your Athletonic order.",
+      copy: "Use the email from checkout and the order reference from your confirmation page.",
+    }),
+    scripts: ["assets/order-tracking.js"],
+  },
+  {
+    slug: "orders",
+    title: "Your Orders",
+    description: "Track an Athletonic order by email and order reference.",
+    activePage: "tracking",
+    content: orderLookupContent({
+      eyebrow: "Orders",
+      title: "Your Athletonic orders.",
+      copy: "Use the email from checkout and the order reference from your confirmation page.",
+    }),
+    scripts: ["assets/order-tracking.js"],
+  },
+  {
+    slug: "returns-request",
+    title: "Returns & Replacements Request",
+    description: "Request a return or replacement for an Athletonic order.",
+    activePage: "returns",
+    content: returnsRequestContent,
+    scripts: ["assets/returns-request.js"],
+  },
+  {
+    slug: "order-confirmation",
+    title: "Order Confirmation",
+    description: "Athletonic order confirmation and payment status.",
+    activePage: "",
+    shopLabel: "Continue shopping",
+    content: orderConfirmationContent,
+    scripts: ["assets/order-confirmation.js"],
+  },
+];
+
+function commercePage(pageInfo) {
+  const pathPrefix = "../";
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${html(pageInfo.title)} | Athletonic</title>
+    <meta name="description" content="${html(pageInfo.description)}" />
+    <link rel="stylesheet" href="${pathPrefix}styles.css" />
+  </head>
+  <body class="info-body commerce-body">
+${renderCommerceHeader(pageInfo.activePage, pageInfo.shopLabel)}
+${pageInfo.content}
+
+${renderFooter(pathPrefix)}
+    <script>
+      window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
+      window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
+    </script>
+    <script src="${pathPrefix}assets/cart.js" defer></script>
+    ${pageInfo.scripts
+      .map((src) => `<script src="${pathPrefix}${html(src)}" defer></script>`)
+      .join("\n    ")}
   </body>
 </html>
 `;
@@ -2224,4 +3945,12 @@ for (const pageInfo of staticPages) {
   staticPageCount += 1;
 }
 
-console.log(`Generated ${staticPageCount} footer pages in /pages/.`);
+let commercePageCount = 0;
+for (const pageInfo of commercePages) {
+  writeFileSync(new URL(`${pageInfo.slug}.html`, pagesDir), commercePage(pageInfo));
+  commercePageCount += 1;
+}
+
+console.log(
+  `Generated ${staticPageCount} footer pages and ${commercePageCount} commerce pages in /pages/.`
+);

@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "deals": "node scripts/deals-engine.mjs",
     "generate": "node scripts/generate-home.mjs",
-    "test": "node --check api/checkout.js && node --check api/stripe-webhook.js && node --check api/orders/session.js && node --check api/orders/lookup.js && node --check api/returns/request.js"
+    "generate:deals": "npm run deals && npm run generate",
+    "test": "find api -name '*.js' -exec node --check {} ';'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.0",

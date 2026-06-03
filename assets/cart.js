@@ -530,3 +530,473 @@
     formatMoney,
   };
 })();
+
+/* ============================================================
+ *  Athletonic Live Search  —  self-contained module
+ *  Appended to cart.js so it runs on every page automatically.
+ * ============================================================ */
+(function () {
+  "use strict";
+
+  var RECENT_KEY  = "ath-recent-searches-v1";
+  var MAX_RESULTS = 7;
+  var MAX_RECENT  = 5;
+  var DEBOUNCE_MS = 80;
+
+  var TRENDING = [
+    { label: "Whey protein",        q: "whey protein",   category: "protein"      },
+    { label: "Creatine monohydrate",q: "creatine",       category: "creatine"     },
+    { label: "Pre-workout",         q: "pre-workout",    category: "pre-workout"  },
+    { label: "Electrolytes",        q: "electrolytes",   category: "hydration"    },
+    { label: "Vitamins & minerals", q: "vitamins",       category: "vitamins"     },
+    { label: "Greens powder",       q: "greens powder",  category: "greens"       },
+    { label: "Protein bars",        q: "protein bars",   category: "bars-shakes"  },
+    { label: "Recovery tools",      q: "recovery",       category: "recovery"     },
+  ];
+
+  /* ── Path helpers ── */
+  function isProductOrPages() {
+    return /\/(product|pages)\//.test(window.location.pathname);
+  }
+  function baseHref() {
+    return isProductOrPages() ? "../" : "./";
+  }
+  function catalogUrl() {
+    return baseHref() + "data/athletonic-catalog.json";
+  }
+  function isHome() {
+    var p = window.location.pathname;
+    return p === "/" || p === "" || p.endsWith("/index.html");
+  }
+
+  /* ── Catalog load (cached) ── */
+  var _catalog = null;
+  var _catalogReq = null;
+  function loadCatalog() {
+    if (_catalog) return Promise.resolve(_catalog);
+    if (_catalogReq) return _catalogReq;
+    _catalogReq = fetch(catalogUrl())
+      .then(function (r) { return r.json(); })
+      .then(function (d) { _catalog = d.products || []; return _catalog; })
+      .catch(function () { _catalog = []; return _catalog; });
+    return _catalogReq;
+  }
+
+  /* ── Utils ── */
+  function fmtPrice(cents) {
+    return "$" + (cents / 100).toFixed(2);
+  }
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function highlight(text, q) {
+    if (!q) return esc(text);
+    var rx = new RegExp("(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+    return esc(text).replace(rx, "<mark>$1</mark>");
+  }
+
+  /* ── Recent searches ── */
+  function getRecents() {
+    try {
+      var d = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+      return Array.isArray(d) ? d.slice(0, MAX_RECENT) : [];
+    } catch (e) { return []; }
+  }
+  function pushRecent(q) {
+    q = (q || "").trim();
+    if (q.length < 2) return;
+    var list = getRecents().filter(function (r) { return r.toLowerCase() !== q.toLowerCase(); });
+    list.unshift(q);
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENT))); } catch (e) {}
+  }
+  function removeRecent(q) {
+    var list = getRecents().filter(function (r) { return r.toLowerCase() !== q.toLowerCase(); });
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  /* ── Product search ── */
+  function scoreProduct(p, lq) {
+    var n = (p.name  || "").toLowerCase();
+    var b = (p.brand || "").toLowerCase();
+    if (n.startsWith(lq)) return 4;
+    if (b === lq)         return 3;
+    if (n.includes(lq))   return 2;
+    if (b.includes(lq))   return 1;
+    return 0;
+  }
+  function searchProducts(products, q, category) {
+    var lq = q.toLowerCase();
+    var res = products.filter(function (p) {
+      if (!p.available) return false;
+      if (category && category !== "all" && p.section_id !== category) return false;
+      if (!lq) return true;
+      return (
+        (p.name         || "").toLowerCase().includes(lq) ||
+        (p.brand        || "").toLowerCase().includes(lq) ||
+        (p.section_title|| "").toLowerCase().includes(lq)
+      );
+    });
+    if (lq) res.sort(function (a, b) { return scoreProduct(b, lq) - scoreProduct(a, lq); });
+    return res.slice(0, MAX_RESULTS);
+  }
+
+  /* ── Navigation ── */
+  function navigateTo(q, category) {
+    pushRecent(q);
+    if (isHome()) {
+      var form = document.querySelector("[data-catalog-search]");
+      if (form) {
+        var qi = form.querySelector("input[name='q']");
+        var cs = form.querySelector("select[name='category']");
+        if (qi) qi.value = q;
+        if (cs && category) cs.value = category;
+        form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      }
+      var anchor = document.getElementById("catalog");
+      if (anchor) anchor.scrollIntoView({ behavior: "smooth" });
+    } else {
+      var url = baseHref() + "?q=" + encodeURIComponent(q);
+      if (category && category !== "all") url += "&category=" + encodeURIComponent(category);
+      url += "#catalog";
+      window.location.href = url;
+    }
+  }
+
+  /* ── Apply URL query params on home page ── */
+  function applyUrlParams() {
+    if (!isHome()) return;
+    var params   = new URLSearchParams(window.location.search);
+    var q        = params.get("q");
+    var category = params.get("category");
+    if (!q) return;
+    var form = document.querySelector("[data-catalog-search]");
+    if (!form) return;
+    var qi = form.querySelector("input[name='q']");
+    var cs = form.querySelector("select[name='category']");
+    if (qi) qi.value = q;
+    if (cs && category) cs.value = category;
+    // Defer one tick — cart.js event listeners are already wired at this point
+    setTimeout(function () {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    }, 0);
+  }
+
+  /* ── Per-form initialization ── */
+  function initForm(form) {
+    var qInput    = form.querySelector("input[name='q']");
+    if (!qInput) return;
+    var catSelect = form.querySelector("select[name='category']");
+
+    /* Wrap the form in a positioned container so the dropdown sits relative to it */
+    var wrapper = document.createElement("div");
+    wrapper.className = "search-wrapper";
+    form.parentNode.insertBefore(wrapper, form);
+    wrapper.appendChild(form);
+
+    /* Dropdown shell */
+    var dropdown = document.createElement("div");
+    dropdown.className = "search-dropdown";
+    dropdown.setAttribute("role", "listbox");
+    dropdown.setAttribute("aria-label", "Search suggestions");
+    dropdown.hidden = true;
+    wrapper.appendChild(dropdown);
+
+    /* Accessibility: connect input → listbox */
+    qInput.setAttribute("role", "combobox");
+    qInput.setAttribute("aria-autocomplete", "list");
+    qInput.setAttribute("aria-haspopup", "listbox");
+    qInput.setAttribute("aria-expanded", "false");
+    qInput.setAttribute("autocomplete", "off");
+    qInput.setAttribute("spellcheck", "false");
+
+    var activeIdx  = -1;
+    var debounceT  = null;
+
+    function getCategory() { return catSelect ? catSelect.value : "all"; }
+    function openDD() {
+      dropdown.hidden = false;
+      qInput.setAttribute("aria-expanded", "true");
+    }
+    function closeDD() {
+      dropdown.hidden = true;
+      qInput.setAttribute("aria-expanded", "false");
+      activeIdx = -1;
+    }
+    function setActive(idx) {
+      var items = dropdown.querySelectorAll("[role='option']");
+      items.forEach(function (item, i) {
+        item.classList.toggle("is-active", i === idx);
+        item.setAttribute("aria-selected", String(i === idx));
+      });
+      activeIdx = idx;
+      if (items[idx]) items[idx].scrollIntoView({ block: "nearest" });
+    }
+
+    /* ── Render: empty / default state ── */
+    function renderEmpty() {
+      var recents = getRecents();
+      var html = "";
+
+      if (recents.length) {
+        html += '<div class="sdd-section">';
+        html += '<div class="sdd-label">Recent searches'
+              + '<button type="button" class="sdd-clear-all">Clear all</button></div><ul>';
+        recents.forEach(function (r) {
+          html += '<li role="option" aria-selected="false" class="sdd-item sdd-item--recent" data-q="' + esc(r) + '">'
+                + '<svg class="sdd-icon" viewBox="0 0 24 24" aria-hidden="true">'
+                + '<polyline points="1 4 1 10 7 10"></polyline>'
+                + '<path d="M3.51 15a9 9 0 1 0 .49-4.5"></path></svg>'
+                + '<span class="sdd-item-text">' + esc(r) + '</span>'
+                + '<button type="button" class="sdd-remove" data-remove="' + esc(r) + '" aria-label="Remove">&#x2715;</button>'
+                + '</li>';
+        });
+        html += '</ul></div>';
+      }
+
+      html += '<div class="sdd-section"><div class="sdd-label">Trending on Athletonic</div><ul>';
+      TRENDING.forEach(function (t) {
+        html += '<li role="option" aria-selected="false" class="sdd-item sdd-item--trend"'
+              + ' data-q="' + esc(t.q) + '" data-category="' + esc(t.category) + '">'
+              + '<svg class="sdd-icon sdd-icon--trend" viewBox="0 0 24 24" aria-hidden="true">'
+              + '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>'
+              + '<polyline points="17 6 23 6 23 12"></polyline></svg>'
+              + '<span class="sdd-item-text">' + esc(t.label) + '</span>'
+              + '</li>';
+      });
+      html += '</ul></div>';
+
+      dropdown.innerHTML = html;
+      bindDropdownEvents();
+      openDD();
+    }
+
+    /* ── Render: results ── */
+    function renderResults(q, products) {
+      var html = "";
+
+      if (products.length) {
+        html += '<ul class="sdd-results">';
+        products.forEach(function (p) {
+          var href = baseHref() + "product/" + p.id + ".html";
+          html += '<li role="option" aria-selected="false" class="sdd-item sdd-item--product" data-href="' + esc(href) + '">'
+                + '<img class="sdd-thumb" src="' + esc(p.image) + '" alt="" loading="lazy">'
+                + '<div class="sdd-item-body">'
+                + '<span class="sdd-brand">' + esc(p.brand) + '</span>'
+                + '<span class="sdd-name">'  + highlight(p.name, q) + '</span>'
+                + '</div>'
+                + '<span class="sdd-price">' + fmtPrice(p.price_cents) + '</span>'
+                + '</li>';
+        });
+        html += '</ul>';
+      } else {
+        html += '<div class="sdd-empty">'
+              + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+              + '<circle cx="11" cy="11" r="8"></circle>'
+              + '<line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
+              + '<p>No results for <strong>&ldquo;' + esc(q) + '&rdquo;</strong></p>'
+              + '</div>';
+      }
+
+      html += '<div class="sdd-footer">'
+            + '<button type="button" class="sdd-see-all" data-q="' + esc(q) + '">'
+            + 'See all results for &ldquo;<strong>' + esc(q) + '</strong>&rdquo;'
+            + '</button></div>';
+
+      dropdown.innerHTML = html;
+      bindDropdownEvents();
+      openDD();
+    }
+
+    /* ── Bind events on freshly-rendered dropdown content ── */
+    function bindDropdownEvents() {
+      /* Product items → navigate to PDP */
+      dropdown.querySelectorAll(".sdd-item--product").forEach(function (item) {
+        item.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          pushRecent(qInput.value.trim());
+          window.location.href = item.dataset.href;
+        });
+      });
+
+      /* Recent / trending items → fill + search */
+      dropdown.querySelectorAll(".sdd-item--recent, .sdd-item--trend").forEach(function (item) {
+        item.addEventListener("mousedown", function (e) {
+          if (e.target.closest(".sdd-remove")) return;
+          e.preventDefault();
+          var q   = item.dataset.q        || "";
+          var cat = item.dataset.category || "";
+          qInput.value = q;
+          if (catSelect && cat) catSelect.value = cat;
+          navigateTo(q, cat || getCategory());
+          closeDD();
+        });
+      });
+
+      /* Remove-recent button */
+      dropdown.querySelectorAll(".sdd-remove").forEach(function (btn) {
+        btn.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          removeRecent(btn.dataset.remove);
+          renderEmpty();
+        });
+      });
+
+      /* Clear-all recents */
+      var clearAll = dropdown.querySelector(".sdd-clear-all");
+      if (clearAll) {
+        clearAll.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          try { localStorage.removeItem(RECENT_KEY); } catch (ex) {}
+          renderEmpty();
+        });
+      }
+
+      /* "See all results" footer button */
+      var seeAll = dropdown.querySelector(".sdd-see-all");
+      if (seeAll) {
+        seeAll.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          navigateTo(seeAll.dataset.q || qInput.value.trim(), getCategory());
+          closeDD();
+        });
+      }
+    }
+
+    /* ── Run search query ── */
+    function runSearch(q) {
+      loadCatalog().then(function (products) {
+        renderResults(q, searchProducts(products, q, getCategory()));
+      });
+    }
+
+    /* ── Input change handler ── */
+    function onInput() {
+      var q = qInput.value.trim();
+      activeIdx = -1;
+      clearTimeout(debounceT);
+      if (!q) {
+        renderEmpty();
+      } else {
+        debounceT = setTimeout(function () { runSearch(q); }, DEBOUNCE_MS);
+      }
+    }
+
+    /* ── Keyboard navigation ── */
+    qInput.addEventListener("keydown", function (e) {
+      /* Open dropdown if closed and arrow pressed */
+      if (dropdown.hidden) {
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          onInput();
+        }
+        return;
+      }
+
+      var items = dropdown.querySelectorAll("[role='option']");
+      var n = items.length;
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setActive(Math.min(activeIdx + 1, n - 1));
+          break;
+
+        case "ArrowUp":
+          e.preventDefault();
+          if (activeIdx <= 0) {
+            activeIdx = -1;
+            items.forEach(function (it) {
+              it.classList.remove("is-active");
+              it.setAttribute("aria-selected", "false");
+            });
+          } else {
+            setActive(activeIdx - 1);
+          }
+          break;
+
+        case "Enter":
+          if (activeIdx >= 0 && items[activeIdx]) {
+            e.preventDefault();
+            items[activeIdx].dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+          } else if (!isHome()) {
+            var q = qInput.value.trim();
+            if (q) {
+              e.preventDefault();
+              navigateTo(q, getCategory());
+              closeDD();
+            }
+          }
+          /* On home page with no selection: let form submit naturally (cart.js handles it) */
+          break;
+
+        case "Escape":
+          e.preventDefault();
+          closeDD();
+          qInput.blur();
+          break;
+
+        case "Tab":
+          closeDD();
+          break;
+      }
+    });
+
+    /* ── Focus opens dropdown ── */
+    qInput.addEventListener("focus", function () {
+      if (qInput.value.trim()) {
+        runSearch(qInput.value.trim());
+      } else {
+        renderEmpty();
+      }
+    });
+
+    /* ── Input drives live preview ── */
+    qInput.addEventListener("input", onInput);
+
+    /* ── Category change re-filters preview ── */
+    if (catSelect) {
+      catSelect.addEventListener("change", function () {
+        if (!dropdown.hidden) onInput();
+      });
+    }
+
+    /* ── Form submit ── */
+    form.addEventListener("submit", function (e) {
+      var q = qInput.value.trim();
+      if (!isHome()) {
+        e.preventDefault();
+        navigateTo(q, getCategory());
+        closeDD();
+      } else {
+        /* On home page cart.js already calls preventDefault + applyCatalogSearch */
+        pushRecent(q);
+        closeDD();
+      }
+    });
+
+    /* ── Click outside closes dropdown ── */
+    document.addEventListener("click", function (e) {
+      if (!wrapper.contains(e.target)) closeDD();
+    });
+
+    /* Preload catalog silently so first keystroke feels instant */
+    loadCatalog();
+  }
+
+  /* ── Bootstrap ── */
+  function init() {
+    document.querySelectorAll("[data-catalog-search]").forEach(initForm);
+    applyUrlParams();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();

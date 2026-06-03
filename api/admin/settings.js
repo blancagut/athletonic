@@ -1,0 +1,64 @@
+const { handleError, json, methodNotAllowed, readJson, requireEnv } = require("../_lib/http");
+const { requireAdmin, requireSuperAdmin, logAudit } = require("../_lib/auth");
+const { getSupabaseAdmin } = require("../_lib/supabase");
+
+function validationError(message, code) {
+  const error = new Error(message);
+  error.statusCode = 400;
+  error.code = code || "invalid_input";
+  return error;
+}
+
+module.exports = async function handler(req, res) {
+  try {
+    requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
+    const supabase = getSupabaseAdmin();
+
+    if (req.method === "GET") {
+      await requireAdmin(req);
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("key, value, description, updated_at")
+        .order("key", { ascending: true });
+      if (error) throw error;
+      json(res, 200, { settings: data || [] });
+      return;
+    }
+
+    if (req.method === "PATCH") {
+      // Only super admins may change application settings.
+      const ctx = await requireSuperAdmin(req);
+
+      const body = await readJson(req);
+      const key = String(body.key || "").trim();
+      if (!key) throw validationError("Missing settings key.", "missing_key");
+      if (body.value === undefined || typeof body.value !== "object" || body.value === null) {
+        throw validationError("value must be a JSON object.", "invalid_value");
+      }
+
+      const { data, error } = await supabase
+        .from("app_settings")
+        .update({ value: body.value, updated_by: ctx.user.id })
+        .eq("key", key)
+        .select("key, value, description, updated_at")
+        .single();
+      if (error) {
+        if (error.code === "PGRST116") {
+          const notFound = new Error("Unknown settings key.");
+          notFound.statusCode = 404;
+          notFound.code = "settings_not_found";
+          throw notFound;
+        }
+        throw error;
+      }
+
+      await logAudit(ctx, "settings.update", "app_settings", key, { value: body.value });
+      json(res, 200, { setting: data });
+      return;
+    }
+
+    methodNotAllowed(res, ["GET", "PATCH"]);
+  } catch (error) {
+    handleError(res, error);
+  }
+};
