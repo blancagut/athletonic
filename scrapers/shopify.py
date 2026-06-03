@@ -9,7 +9,7 @@ import asyncio
 import re
 import ssl
 from typing import Any, Dict, List, Optional
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode, urljoin, urlparse
 
 import aiohttp
 import certifi
@@ -93,6 +93,32 @@ class ShopifyScraper(BaseScraper):
 
     # ── product parsing ────────────────────────────────────────────────────────
 
+    # Map non-US storefront ccTLDs to their real currency so the quality gate
+    # rejects foreign-market prices instead of silently storing them as USD.
+    _NON_US_CURRENCY_BY_TLD = (
+        (".com.au", "AUD"),
+        (".net.au", "AUD"),
+        (".co.nz", "NZD"),
+        (".co.uk", "GBP"),
+        (".org.uk", "GBP"),
+        (".ca", "CAD"),
+        (".de", "EUR"),
+        (".fr", "EUR"),
+        (".eu", "EUR"),
+        (".nz", "NZD"),
+        (".au", "AUD"),
+    )
+
+    @classmethod
+    def _currency_for(cls, base_url: str) -> str:
+        host = urlparse(base_url).netloc.lower()
+        if host.startswith("www."):
+            host = host[4:]
+        for suffix, currency in cls._NON_US_CURRENCY_BY_TLD:
+            if host.endswith(suffix):
+                return currency
+        return "USD"
+
     @staticmethod
     def _parse_product(raw: Dict, brand_slug: str, base_url: str) -> Dict[str, Any]:
         handle = raw.get("handle", "")
@@ -161,7 +187,7 @@ class ShopifyScraper(BaseScraper):
             "tags":             raw.get("tags", []),
             "price":            price,
             "compare_at_price": compare_at_price,
-            "currency":         "USD",
+            "currency":         ShopifyScraper._currency_for(base_url),
             "available":        any(v.get("available", True) for v in variants_raw),
             "variants":         variants,
             "images":           images,
