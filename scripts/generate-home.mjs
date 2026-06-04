@@ -1438,7 +1438,6 @@ function buildSearchIndex() {
   `;
   const rows = runQuery(sql);
   const imageByProductId = bestImagesForProducts(rows.map((row) => row.id));
-  const curatedIds = new Set(allCuratedProducts.map((product) => String(product.id)));
 
   const MAX_RECORDS = 50000;
   const records = [];
@@ -1470,9 +1469,10 @@ function buildSearchIndex() {
         .toLowerCase(),
     };
     // Currency is USD (US-only store) and availability is always true here, so
-    // both are omitted to keep the index small; the client defaults them. PDP
-    // flag is only stored when a generated product page exists.
-    if (curatedIds.has(id)) record.has_pdp = true;
+    // both are omitted to keep the index small; the client defaults them. Every
+    // indexed product now has a generated on-site PDP (product/<id>.html), so
+    // catalogCardHtml always links on-site instead of the external brand url.
+    record.has_pdp = true;
     records.push(record);
   }
   return records;
@@ -1502,29 +1502,40 @@ function fetchPdpData(productIds) {
     .filter((id) => Number.isInteger(id) && id > 0);
   if (ids.length === 0) return { rowsById: new Map(), imagesById: new Map() };
 
-  const rows = runQuery(`
-    select id, brand, name, handle, description_html, price, compare_at_price,
-           currency, options, tags, store_collection, category_normalized
-    from products
-    where id in (${ids.join(",")});
-  `);
-  const rowsById = new Map(rows.map((row) => [row.id, row]));
-
-  const images = runQuery(`
-    select product_row_id, position, url, width, height
-    from images
-    where product_row_id in (${ids.join(",")})
-      and url is not null
-    order by product_row_id asc, coalesce(position, 0) asc, id asc;
-  `);
+  // Batch DB reads in chunks so large id sets (the full ~34.5k catalog) do not
+  // build oversized SQL strings or overflow sqlite3's stdout buffer (ENOBUFS),
+  // mirroring bestImagesForProducts.
+  const BATCH = 3000;
+  const rowsById = new Map();
   const imagesById = new Map();
-  for (const image of images) {
-    if (isBlockedImage(image.url)) continue;
-    if (!imagesById.has(image.product_row_id)) {
-      imagesById.set(image.product_row_id, []);
+
+  for (let i = 0; i < ids.length; i += BATCH) {
+    const chunk = ids.slice(i, i + BATCH);
+
+    const rows = runQuery(`
+      select id, brand, name, handle, description_html, price, compare_at_price,
+             currency, options, tags, store_collection, category_normalized, url
+      from products
+      where id in (${chunk.join(",")});
+    `);
+    for (const row of rows) rowsById.set(row.id, row);
+
+    const images = runQuery(`
+      select product_row_id, position, url, width, height
+      from images
+      where product_row_id in (${chunk.join(",")})
+        and url is not null
+      order by product_row_id asc, coalesce(position, 0) asc, id asc;
+    `);
+    for (const image of images) {
+      if (isBlockedImage(image.url)) continue;
+      if (!imagesById.has(image.product_row_id)) {
+        imagesById.set(image.product_row_id, []);
+      }
+      imagesById.get(image.product_row_id).push(image);
     }
-    imagesById.get(image.product_row_id).push(image);
   }
+
   for (const list of imagesById.values()) {
     list.sort((a, b) => productImageScore(a) - productImageScore(b));
   }
@@ -1715,6 +1726,15 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
 
   const description = sanitizeDescriptionHtml(fullRow?.description_html);
 
+  // External brand page kept ONLY as a secondary reference (never the primary
+  // click target). The on-site PDP is the destination from search and cards.
+  const officialUrl = curated.url || fullRow?.url || "";
+  const officialLinkHtml = officialUrl
+    ? `<p class="pdp-official-link"><a href="${html(
+        officialUrl
+      )}" target="_blank" rel="noopener nofollow">View official brand page ↗</a></p>`
+    : "";
+
   const galleryHtml = `
         <div class="pdp-gallery">
           <div class="pdp-gallery-main">
@@ -1847,6 +1867,7 @@ ${variantSelectorsHtml}
             >${variantOptions.length ? "Select options" : "Add to cart"}</button>
           </div>
           <p class="pdp-cta-note" data-pdp-cta-note></p>
+          ${officialLinkHtml}
 
           ${
             description
@@ -1856,7 +1877,6 @@ ${variantSelectorsHtml}
           </section>`
               : ""
           }
-
           <section class="pdp-section pdp-specs">
             <h2>Details</h2>
             <dl>
@@ -4170,7 +4190,71 @@ for (const product of allCuratedProducts) {
   pdpCount += 1;
 }
 
-console.log(`Generated ${pdpCount} product detail pages in /product/.`);
+console.log(`Generated ${pdpCount} curated product detail pages in /product/.`);
+
+// Generate an on-site PDP for EVERY remaining indexed product (the ~34.5k full
+// catalog) so search/cards never redirect to an external brand site. Curated
+// products already got their richer treatment above and are skipped here.
+// Reuses the same productPage() / fetchPdpData() / sanitizeDescriptionHtml()
+// pipeline; DB reads are batched inside fetchPdpData to avoid ENOBUFS.
+const curatedIdSet = new Set(allCuratedProducts.map((p) => String(p.id)));
+
+// Pre-bucket index records by section for "related" lists on non-curated PDPs.
+const indexRecordsBySection = new Map();
+for (const record of searchIndexRecords) {
+  if (!indexRecordsBySection.has(record.section_id)) {
+    indexRecordsBySection.set(record.section_id, []);
+  }
+  indexRecordsBySection.get(record.section_id).push(record);
+}
+
+function indexRecordToProduct(record) {
+  return {
+    id: record.id,
+    brand: record.brand_slug,
+    name: record.name,
+    displayName: record.name,
+    image: record.image,
+    price: (Number(record.price_cents) || 0) / 100,
+    currency: "USD",
+    sectionId: record.section_id,
+    sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
+    store_collection: "",
+    url: record.url || null,
+  };
+}
+
+const nonCuratedRecords = searchIndexRecords.filter(
+  (record) => !curatedIdSet.has(record.id)
+);
+
+let extraPdpCount = 0;
+const PDP_BATCH = 3000;
+for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
+  const batch = nonCuratedRecords.slice(i, i + PDP_BATCH);
+  const batchIds = batch.map((record) => record.id);
+  const { rowsById: batchRows, imagesById: batchImages } = fetchPdpData(batchIds);
+
+  for (const record of batch) {
+    const numericId = Number(record.id);
+    const fullRow = batchRows.get(numericId);
+    const imageList = batchImages.get(numericId) || [];
+    const product = indexRecordToProduct(record);
+    const peers = (indexRecordsBySection.get(record.section_id) || [])
+      .filter((peer) => peer.id !== record.id)
+      .slice(0, 4)
+      .map(indexRecordToProduct);
+    const pageHtml = productPage(product, fullRow, imageList, peers);
+    writeFileSync(new URL(`${record.id}.html`, pdpDir), pageHtml);
+    extraPdpCount += 1;
+  }
+}
+
+console.log(
+  `Generated ${extraPdpCount} additional catalog PDPs (total ${
+    pdpCount + extraPdpCount
+  }) in /product/.`
+);
 
 const pagesDir = new URL("../pages/", import.meta.url);
 mkdirSync(pagesDir, { recursive: true });
