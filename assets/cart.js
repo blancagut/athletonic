@@ -587,6 +587,45 @@
     return _catalogReq;
   }
 
+  /* ── Full search index load (cached) ──
+     The catalog RESULTS page searches this lightweight index of the broad
+     active/US/official-source catalog (thousands of products), not just the
+     curated ~181 in athletonic-catalog.json (which still powers the dropdown). */
+  function searchIndexUrl() {
+    return baseHref() + "data/search-index.json";
+  }
+  var _searchIndex = null;
+  var _searchIndexReq = null;
+  function loadSearchIndex() {
+    if (_searchIndex) return Promise.resolve(_searchIndex);
+    if (_searchIndexReq) return _searchIndexReq;
+    _searchIndexReq = fetch(searchIndexUrl())
+      .then(function (r) { return r.json(); })
+      .then(function (d) { _searchIndex = d.products || []; return _searchIndex; })
+      .catch(function () { _searchIndex = []; return _searchIndex; });
+    return _searchIndexReq;
+  }
+
+  /* Friendly category labels for index records (which omit section_title). */
+  var SECTION_LABELS = {
+    protein: "Protein",
+    creatine: "Creatine",
+    "pre-workout": "Pre-workout",
+    hydration: "Hydration",
+    vitamins: "Daily health",
+    greens: "Greens",
+    "bars-shakes": "Bars & shakes",
+    recovery: "Recovery",
+    sleep: "Sleep recovery",
+    apparel: "Training apparel",
+    shoes: "Training footwear",
+    accessories: "Gym accessory",
+    "training-gear": "Training gear",
+  };
+  function sectionLabel(p) {
+    return p.section_title || SECTION_LABELS[p.section_id] || "";
+  }
+
   /* ── Utils ── */
   function fmtPrice(cents) {
     return "$" + (cents / 100).toFixed(2);
@@ -649,15 +688,18 @@
     return res.slice(0, MAX_RESULTS);
   }
 
-  /* ── Catalog page: full-depth filter over the curated JSON ──
+  /* ── Catalog page: full-depth filter over the search index ──
      Unlike searchProducts() (which caps results for the dropdown preview), this
-     returns ALL matching curated products and allows category-only filtering. */
+     returns ALL matching products and allows category-only filtering. It matches
+     against the prebuilt lowercased `search` blob when present (index records),
+     falling back to name/brand/section_title for curated records. */
   function filterCatalogFull(products, q, category) {
     var lq = (q || "").trim().toLowerCase();
     var res = products.filter(function (p) {
       if (p.available === false) return false;
       if (category && category !== "all" && p.section_id !== category) return false;
       if (!lq) return true;
+      if (p.search) return p.search.indexOf(lq) !== -1;
       return (
         (p.name          || "").toLowerCase().includes(lq) ||
         (p.brand         || "").toLowerCase().includes(lq) ||
@@ -669,15 +711,19 @@
   }
 
   /* Build a product card matching the generated markup so the delegated
-     add-to-cart handler in the cart module works on these dynamic cards. */
+     add-to-cart handler in the cart module works on these dynamic cards.
+     Index records carry has_pdp + url so the link points at the generated PDP
+     when one exists, otherwise the brand's official product page. */
   function catalogCardHtml(p) {
-    var href = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
+    var pdpHref = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
+    var href = p.has_pdp ? pdpHref : (p.url || pdpHref);
     var price = (Number(p.price_cents) || 0) / 100;
     var priceStr = price.toFixed(2);
     var compare = p.compare_at_price_cents
       ? (Number(p.compare_at_price_cents) || 0) / 100
       : null;
     var currency = p.currency || "USD";
+    var label = sectionLabel(p);
     var dealNote = "";
     if (p.deal && p.deal.discount_percent) {
       var ends = "";
@@ -704,7 +750,7 @@
           '<span>' + esc(p.brand || "") + '</span>' +
           '<h3><a class="product-card-link" href="' + esc(href) + '">' +
             esc(p.name || "") + '</a></h3>' +
-          '<p>' + esc(p.section_title || "") + '</p>' +
+          '<p>' + esc(label) + '</p>' +
           '<div class="product-price-line">' +
             '<strong>' + fmtPrice(p.price_cents) + '</strong>' +
             (compare ? '<span>$' + compare.toFixed(2) + '</span>' : "") +
@@ -732,8 +778,47 @@
     history.replaceState(null, "", window.location.pathname + (qs ? "?" + qs : ""));
   }
 
-  /* Render the catalog results grid from the curated JSON, or restore the
-     default browse view when there is no active query/category. */
+  /* Render the catalog results grid from the full search index, or restore the
+     default browse view when there is no active query/category. Results are
+     paginated (PAGE_SIZE per chunk) with a "Load more" button so a large match
+     set never injects thousands of nodes at once. */
+  var CATALOG_PAGE_SIZE = 60;
+  var _catalogMatches = [];
+  var _catalogShown = 0;
+  var _loadMoreBtn = null;
+
+  function ensureLoadMoreButton(resultsEl) {
+    if (_loadMoreBtn && _loadMoreBtn.isConnected) return _loadMoreBtn;
+    _loadMoreBtn = document.createElement("button");
+    _loadMoreBtn.type = "button";
+    _loadMoreBtn.className = "catalog-load-more";
+    _loadMoreBtn.setAttribute("data-catalog-load-more", "");
+    _loadMoreBtn.hidden = true;
+    _loadMoreBtn.addEventListener("click", function () {
+      renderCatalogChunk(resultsEl);
+    });
+    resultsEl.parentNode.insertBefore(_loadMoreBtn, resultsEl.nextSibling);
+    return _loadMoreBtn;
+  }
+
+  function renderCatalogChunk(resultsEl) {
+    var next = _catalogMatches.slice(
+      _catalogShown,
+      _catalogShown + CATALOG_PAGE_SIZE
+    );
+    resultsEl.insertAdjacentHTML("beforeend", next.map(catalogCardHtml).join(""));
+    _catalogShown += next.length;
+    var btn = ensureLoadMoreButton(resultsEl);
+    var remaining = _catalogMatches.length - _catalogShown;
+    if (remaining > 0) {
+      btn.hidden = false;
+      btn.textContent =
+        "Load more (" + remaining + " more)";
+    } else {
+      btn.hidden = true;
+    }
+  }
+
   function renderCatalogPage(q, category) {
     var resultsEl = document.querySelector("[data-catalog-results]");
     if (!resultsEl) return;
@@ -744,18 +829,25 @@
     if (!hasQuery) {
       resultsEl.hidden = true;
       resultsEl.innerHTML = "";
+      _catalogMatches = [];
+      _catalogShown = 0;
+      if (_loadMoreBtn) _loadMoreBtn.hidden = true;
       if (browseEl) browseEl.hidden = false;
       if (statusEl) statusEl.hidden = true;
       return;
     }
 
-    loadCatalog().then(function (products) {
+    loadSearchIndex().then(function (products) {
       var matches = filterCatalogFull(products, q, category);
+      _catalogMatches = matches;
+      _catalogShown = 0;
       if (browseEl) browseEl.hidden = true;
       resultsEl.hidden = false;
+      resultsEl.innerHTML = "";
       if (matches.length) {
-        resultsEl.innerHTML = matches.map(catalogCardHtml).join("");
+        renderCatalogChunk(resultsEl);
       } else {
+        if (_loadMoreBtn) _loadMoreBtn.hidden = true;
         resultsEl.innerHTML =
           '<div class="catalog-empty">' +
             '<svg viewBox="0 0 24 24" aria-hidden="true">' +
@@ -1121,8 +1213,10 @@
       if (!wrapper.contains(e.target)) closeDD();
     });
 
-    /* Preload catalog silently so first keystroke feels instant */
+    /* Preload silently so the first interaction feels instant: the dropdown
+       uses the curated catalog; the results page uses the full search index. */
     loadCatalog();
+    if (isCatalogPage()) loadSearchIndex();
   }
 
   /* ── Bootstrap ── */

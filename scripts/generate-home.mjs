@@ -1338,6 +1338,141 @@ writeFileSync(
   )
 );
 
+// ---------------------------------------------------------------------------
+// Full-catalog search index (data/search-index.json)
+//
+// Lightweight records spanning the broad active/US/priced/imaged catalog for
+// every aligned (allowlisted) brand whose data comes from its official domain.
+// Reuses the SAME availability + allowlist + official-source + forbidden-name +
+// soccer-exclusion filters as the curated catalog, just without the per-section
+// curation, dedup, and limits. Soccer / non-allowlisted / non-official rows stay
+// excluded by policy. Only search/card fields are stored (no descriptions/HTML).
+// ---------------------------------------------------------------------------
+function categoryForRow(row) {
+  const dept = String(row.store_department ?? "");
+  const coll = String(row.store_collection ?? "");
+  const key = `${dept}/${coll}`;
+  const map = {
+    "sports_nutrition/protein": "protein",
+    "sports_nutrition/mass_gainers": "protein",
+    "sports_nutrition/creatine": "creatine",
+    "sports_nutrition/pre_workout": "pre-workout",
+    "sports_nutrition/amino_acids": "recovery",
+    "sports_nutrition/recovery": "recovery",
+    "supplements/amino_acids": "recovery",
+    "wellness_goals/energy_hydration": "hydration",
+    "supplements/greens_superfoods": "greens",
+    "functional_foods/protein_bars": "bars-shakes",
+    "functional_foods/rtd_shakes": "bars-shakes",
+    "functional_foods/meal_replacement": "bars-shakes",
+    "functional_foods/snacks": "bars-shakes",
+    "wellness_devices/recovery_devices": "recovery",
+    "wellness_devices/sleep_gear": "sleep",
+    "wellness_goals/sleep_stress": "sleep",
+    "apparel_accessories/apparel": "apparel",
+    "apparel_accessories/shoes": "shoes",
+    "apparel_accessories/bags_bottles": "accessories",
+    "sports_gear/fight_gear": "training-gear",
+  };
+  if (map[key]) return map[key];
+  if (dept === "vitamins_health") return "vitamins";
+  if (dept === "womens_wellness") return "vitamins";
+  if (dept === "supplements" || dept === "wellness_goals") return "vitamins";
+  return "";
+}
+
+const sectionTitleById = Object.fromEntries(
+  sections.map((section) => [section.id, section.label ?? section.title])
+);
+
+function buildSearchIndex() {
+  const allowedSql = allowedBrands.map(sqlString).join(",");
+  const excludedSql = excludedBrands.map(sqlString).join(",");
+  const forbiddenSql = notLikeAllSql("lower(p.name)", forbiddenNameFilters);
+  const sql = `
+    select
+      p.id,
+      p.brand,
+      p.name,
+      p.store_department,
+      p.store_collection,
+      p.price,
+      coalesce(p.currency, 'USD') currency,
+      p.url,
+      coalesce(p.store_priority, 0) store_priority
+    from products p
+    join images i on i.product_row_id = p.id and i.url is not null
+    where p.available = 1
+      and p.price is not null
+      and p.price between 8 and 1000
+      and p.url is not null
+      and p.brand in (${allowedSql})
+      and p.brand not in (${excludedSql})
+      and coalesce(p.store_collection, '') not like 'soccer_%'
+      and ${forbiddenSql}
+    group by p.id
+    order by coalesce(p.store_priority, 0) desc, p.price desc, p.name asc;
+  `;
+  const rows = runQuery(sql);
+  const imageByProductId = bestImagesForProducts(rows.map((row) => row.id));
+  const curatedIds = new Set(allCuratedProducts.map((product) => String(product.id)));
+
+  const MAX_RECORDS = 12000;
+  const records = [];
+  for (const row of rows) {
+    if (records.length >= MAX_RECORDS) break;
+    if (isBrandMismatch(row)) continue;
+    if (!isOfficialBrandSource(row)) continue;
+    const image = imageByProductId.get(row.id);
+    if (!image || isBlockedImage(image.url)) continue;
+
+    const id = String(row.id);
+    const brandLabel = brandNames[row.brand] ?? row.brand;
+    const name = cleanProductName(row.name, row.brand);
+    if (!name) continue;
+    const category = categoryForRow(row);
+    const sectionTitle = sectionTitleById[category] ?? "Athletonic catalog";
+    const record = {
+      id,
+      name,
+      brand: brandLabel,
+      brand_slug: row.brand,
+      section_id: category,
+      url: row.url ?? null,
+      image: image.url,
+      price_cents: Math.round(Number(row.price || 0) * 100),
+      search: [name, brandLabel, sectionTitle, category]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase(),
+    };
+    // Currency is USD (US-only store) and availability is always true here, so
+    // both are omitted to keep the index small; the client defaults them. PDP
+    // flag is only stored when a generated product page exists.
+    if (curatedIds.has(id)) record.has_pdp = true;
+    records.push(record);
+  }
+  return records;
+}
+
+const searchIndexRecords = buildSearchIndex();
+writeFileSync(
+  new URL("search-index.json", commerceCatalogDir),
+  JSON.stringify(
+    {
+      generated_at: new Date().toISOString(),
+      currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+      count: searchIndexRecords.length,
+      products: searchIndexRecords,
+    },
+    null,
+    0
+  )
+);
+console.log(
+  `Generated search index with ${searchIndexRecords.length} products in /data/search-index.json.`
+);
+
 function fetchPdpData(productIds) {
   const ids = productIds
     .map((id) => Number(id))
