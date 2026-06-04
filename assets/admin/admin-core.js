@@ -102,8 +102,18 @@ export function statusBadge(status) {
   return `<span class="admin-badge s-${escapeHtml(status || "")}">${safe}</span>`;
 }
 
+const ROLE_LABELS = {
+  user: "Customer",
+  admin: "Admin",
+  super_admin: "Super admin",
+};
+
+export function roleLabel(role) {
+  return ROLE_LABELS[role] || role || "";
+}
+
 export function roleBadge(role) {
-  return `<span class="admin-badge role-${escapeHtml(role || "")}">${escapeHtml(role || "")}</span>`;
+  return `<span class="admin-badge role-${escapeHtml(role || "")}">${escapeHtml(roleLabel(role))}</span>`;
 }
 
 let toastTimer = null;

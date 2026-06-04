@@ -1,5 +1,5 @@
 // Users & admins view (super_admin only): manage roles.
-import { escapeHtml, formatDate, roleBadge, toast } from "../admin-core.js";
+import { escapeHtml, formatDate, roleBadge, roleLabel, toast } from "../admin-core.js";
 import { listView, openModal } from "./_ui.js";
 
 const ROLES = ["user", "admin", "super_admin"];
@@ -17,7 +17,7 @@ async function openUser(app, user, reload) {
       <div class="admin-field">
         <label>Role</label>
         <select name="role" ${isSelf ? "disabled" : ""}>
-          ${ROLES.map((r) => `<option value="${r}"${r === user.role ? " selected" : ""}>${r}</option>`).join("")}
+          ${ROLES.map((r) => `<option value="${r}"${r === user.role ? " selected" : ""}>${roleLabel(r)}</option>`).join("")}
         </select>
       </div>
       ${isSelf ? '<p class="admin-metric-sub">You cannot change your own role.</p>' : ""}
@@ -51,7 +51,7 @@ export default {
       app,
       endpoint: "/api/admin/users",
       dataKey: "users",
-      statuses: ROLES.map((r) => ({ value: r, label: r })),
+      statuses: ROLES.map((r) => ({ value: r, label: roleLabel(r) })),
       filterParam: "role",
       searchPlaceholder: "Search email or name…",
       columns: [

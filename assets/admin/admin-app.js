@@ -1,5 +1,5 @@
 // Admin panel bootstrap: session guard, role-aware nav, and hash router.
-import { supabase, authFetch, redirectToLogin, toast } from "./admin-core.js";
+import { supabase, authFetch, redirectToLogin, roleLabel, toast } from "./admin-core.js";
 import dashboard from "./views/dashboard.js";
 import orders from "./views/orders.js";
 import returns from "./views/returns.js";
@@ -103,7 +103,7 @@ async function boot() {
 
   app.user = me.user;
   els.email.textContent = me.user.email;
-  els.role.textContent = me.user.role;
+  els.role.textContent = roleLabel(me.user.role);
   els.role.className = `admin-badge role-${me.user.role}`;
   applyRoleVisibility();
 
