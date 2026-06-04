@@ -293,41 +293,6 @@
     renderCart();
   }
 
-  function sectionHasVisibleProducts(section) {
-    return $$(".product-card", section).some((card) => !card.hidden);
-  }
-
-  function applyCatalogSearch() {
-    if (!searchForm) return;
-    const formData = new FormData(searchForm);
-    const query = String(formData.get("q") || "").trim().toLowerCase();
-    const category = String(formData.get("category") || "all");
-    let visibleCount = 0;
-
-    for (const card of productCards) {
-      const categoryMatches =
-        category === "all" || card.dataset.category === category;
-      const queryMatches =
-        !query || (card.dataset.search || "").includes(query);
-      const isVisible = categoryMatches && queryMatches;
-      card.hidden = !isVisible;
-      if (isVisible) visibleCount += 1;
-    }
-
-    for (const section of $$(".market-section")) {
-      if (section.id === "brands") continue;
-      section.hidden = !sectionHasVisibleProducts(section);
-    }
-
-    if (searchStatus) {
-      searchStatus.hidden = false;
-      searchStatus.textContent =
-        query || category !== "all"
-          ? visibleCount + " products found"
-          : "Showing all products";
-    }
-  }
-
   async function submitCheckout(email) {
     const payload = {
       email,
@@ -377,16 +342,32 @@
     }
   }
 
-  if (searchForm && searchStatus && productCards.length) {
+  // Search navigation: the submit handler attaches whenever the form exists.
+  // On the catalog page the live-search module (below) owns submit and renders
+  // results from data/athletonic-catalog.json. Everywhere else, submitting the
+  // search navigates to the catalog page carrying the query string.
+  const onCatalogResultsPage = /\/pages\/catalog\.html$/.test(
+    window.location.pathname
+  );
+
+  function catalogResultsUrl(query, category) {
+    const onSubPath = /\/(pages|product)\//.test(window.location.pathname);
+    const base = (onSubPath ? "../" : "./") + "pages/catalog.html";
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (category && category !== "all") params.set("category", category);
+    const qs = params.toString();
+    return qs ? base + "?" + qs : base;
+  }
+
+  if (searchForm && !onCatalogResultsPage) {
     searchForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      applyCatalogSearch();
-      if (searchStatus) {
-        searchStatus.scrollIntoView({ block: "start", behavior: "smooth" });
-      }
+      const formData = new FormData(searchForm);
+      const query = String(formData.get("q") || "").trim();
+      const category = String(formData.get("category") || "all");
+      window.location.href = catalogResultsUrl(query, category);
     });
-    searchForm.addEventListener("input", applyCatalogSearch);
-    searchForm.addEventListener("change", applyCatalogSearch);
   }
 
   document.addEventListener("click", (event) => {
@@ -422,6 +403,27 @@
   const accountOpenButton = $("[data-account-open]");
   if (accountOpenButton)
     accountOpenButton.addEventListener("click", openAccount);
+
+  // Responsive department menu: the hamburger toggles `.department-nav` on
+  // narrow viewports. Accessible via keyboard and reflects state in aria-expanded.
+  const navToggle = $("[data-nav-toggle]");
+  const departmentNav = $("[data-department-nav]");
+  if (navToggle && departmentNav) {
+    const setNavOpen = (open) => {
+      navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      departmentNav.classList.toggle("is-open", open);
+    };
+    navToggle.addEventListener("click", () => {
+      const open = navToggle.getAttribute("aria-expanded") === "true";
+      setNavOpen(!open);
+    });
+    departmentNav.addEventListener("click", (event) => {
+      if (event.target.closest("a")) setNavOpen(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setNavOpen(false);
+    });
+  }
 
   if (drawerOverlay) drawerOverlay.addEventListener("click", closePanels);
 
@@ -568,6 +570,9 @@
     var p = window.location.pathname;
     return p === "/" || p === "" || p.endsWith("/index.html");
   }
+  function isCatalogPage() {
+    return /\/pages\/catalog\.html$/.test(window.location.pathname);
+  }
 
   /* ── Catalog load (cached) ── */
   var _catalog = null;
@@ -644,45 +649,173 @@
     return res.slice(0, MAX_RESULTS);
   }
 
+  /* ── Catalog page: full-depth filter over the curated JSON ──
+     Unlike searchProducts() (which caps results for the dropdown preview), this
+     returns ALL matching curated products and allows category-only filtering. */
+  function filterCatalogFull(products, q, category) {
+    var lq = (q || "").trim().toLowerCase();
+    var res = products.filter(function (p) {
+      if (p.available === false) return false;
+      if (category && category !== "all" && p.section_id !== category) return false;
+      if (!lq) return true;
+      return (
+        (p.name          || "").toLowerCase().includes(lq) ||
+        (p.brand         || "").toLowerCase().includes(lq) ||
+        (p.section_title || "").toLowerCase().includes(lq)
+      );
+    });
+    if (lq) res.sort(function (a, b) { return scoreProduct(b, lq) - scoreProduct(a, lq); });
+    return res;
+  }
+
+  /* Build a product card matching the generated markup so the delegated
+     add-to-cart handler in the cart module works on these dynamic cards. */
+  function catalogCardHtml(p) {
+    var href = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
+    var price = (Number(p.price_cents) || 0) / 100;
+    var priceStr = price.toFixed(2);
+    var compare = p.compare_at_price_cents
+      ? (Number(p.compare_at_price_cents) || 0) / 100
+      : null;
+    var currency = p.currency || "USD";
+    var dealNote = "";
+    if (p.deal && p.deal.discount_percent) {
+      var ends = "";
+      if (p.deal.expires_at) {
+        var d = new Date(p.deal.expires_at);
+        if (!isNaN(d)) {
+          ends = " through " + d.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+        }
+      }
+      dealNote = '<p class="product-deal-note">' +
+        esc(p.deal.discount_percent + "% off" + ends) + "</p>";
+    }
+    return (
+      '<article class="product-card" data-product-id="' + esc(p.id) +
+        '" data-category="' + esc(p.section_id || "") + '">' +
+        '<a class="product-image" href="' + esc(href) + '">' +
+          '<img src="' + esc(p.image || "") + '" alt="' + esc(p.name || "") +
+            '" loading="lazy" />' +
+        '</a>' +
+        '<div class="product-body">' +
+          '<span>' + esc(p.brand || "") + '</span>' +
+          '<h3><a class="product-card-link" href="' + esc(href) + '">' +
+            esc(p.name || "") + '</a></h3>' +
+          '<p>' + esc(p.section_title || "") + '</p>' +
+          '<div class="product-price-line">' +
+            '<strong>' + fmtPrice(p.price_cents) + '</strong>' +
+            (compare ? '<span>$' + compare.toFixed(2) + '</span>' : "") +
+          '</div>' +
+          dealNote +
+          '<button class="add-cart-button" type="button" data-add-to-cart' +
+            ' data-cart-id="' + esc(p.id) + '"' +
+            ' data-cart-brand="' + esc(p.brand || "") + '"' +
+            ' data-cart-name="' + esc(p.name || "") + '"' +
+            ' data-cart-price="' + esc(priceStr) + '"' +
+            ' data-cart-currency="' + esc(currency) + '"' +
+            ' data-cart-image="' + esc(p.image || "") + '"' +
+          '>Add to cart</button>' +
+        '</div>' +
+      '</article>'
+    );
+  }
+
+  /* Keep the catalog page URL in sync with the active query/category. */
+  function updateCatalogUrl(q, category) {
+    var params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (category && category !== "all") params.set("category", category);
+    var qs = params.toString();
+    history.replaceState(null, "", window.location.pathname + (qs ? "?" + qs : ""));
+  }
+
+  /* Render the catalog results grid from the curated JSON, or restore the
+     default browse view when there is no active query/category. */
+  function renderCatalogPage(q, category) {
+    var resultsEl = document.querySelector("[data-catalog-results]");
+    if (!resultsEl) return;
+    var browseEl = document.querySelector("[data-catalog-browse]");
+    var statusEl = document.querySelector(".search-status");
+    var hasQuery = !!(q && q.trim()) || (category && category !== "all");
+
+    if (!hasQuery) {
+      resultsEl.hidden = true;
+      resultsEl.innerHTML = "";
+      if (browseEl) browseEl.hidden = false;
+      if (statusEl) statusEl.hidden = true;
+      return;
+    }
+
+    loadCatalog().then(function (products) {
+      var matches = filterCatalogFull(products, q, category);
+      if (browseEl) browseEl.hidden = true;
+      resultsEl.hidden = false;
+      if (matches.length) {
+        resultsEl.innerHTML = matches.map(catalogCardHtml).join("");
+      } else {
+        resultsEl.innerHTML =
+          '<div class="catalog-empty">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+              '<circle cx="11" cy="11" r="8"></circle>' +
+              '<line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>' +
+            '<p>No results' + (q ? ' for <strong>&ldquo;' + esc(q) + '&rdquo;</strong>' : "") +
+              (category && category !== "all" ? " in " + esc(category) : "") + ".</p>" +
+            '<p class="catalog-empty-hint">Try a broader term or browse a category above.</p>' +
+          '</div>';
+      }
+      if (statusEl) {
+        statusEl.hidden = false;
+        statusEl.textContent =
+          matches.length + " result" + (matches.length === 1 ? "" : "s") +
+          (q ? ' for "' + q + '"' : "") +
+          (category && category !== "all" ? " in " + category : "");
+      }
+    });
+  }
+
   /* ── Navigation ── */
   function navigateTo(q, category) {
     pushRecent(q);
-    if (isHome()) {
+    if (isCatalogPage()) {
+      /* Already on the results page: update fields, URL, and re-render in place. */
       var form = document.querySelector("[data-catalog-search]");
       if (form) {
         var qi = form.querySelector("input[name='q']");
         var cs = form.querySelector("select[name='category']");
         if (qi) qi.value = q;
         if (cs && category) cs.value = category;
-        form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
       }
+      updateCatalogUrl(q, category || "all");
+      renderCatalogPage(q, category || "all");
       var anchor = document.getElementById("catalog");
       if (anchor) anchor.scrollIntoView({ behavior: "smooth" });
     } else {
-      var url = baseHref() + "?q=" + encodeURIComponent(q);
-      if (category && category !== "all") url += "&category=" + encodeURIComponent(category);
-      url += "#catalog";
+      /* Everywhere else: go to the real catalog results page with the query. */
+      var url = baseHref() + "pages/catalog.html?q=" + encodeURIComponent(q);
+      if (category && category !== "all") {
+        url += "&category=" + encodeURIComponent(category);
+      }
       window.location.href = url;
     }
   }
 
-  /* ── Apply URL query params on home page ── */
+  /* ── Initialize the catalog results page from the URL query string ── */
   function applyUrlParams() {
-    if (!isHome()) return;
+    if (!isCatalogPage()) return;
     var params   = new URLSearchParams(window.location.search);
-    var q        = params.get("q");
-    var category = params.get("category");
-    if (!q) return;
+    var q        = params.get("q") || "";
+    var category = params.get("category") || "all";
     var form = document.querySelector("[data-catalog-search]");
-    if (!form) return;
-    var qi = form.querySelector("input[name='q']");
-    var cs = form.querySelector("select[name='category']");
-    if (qi) qi.value = q;
-    if (cs && category) cs.value = category;
-    // Defer one tick — cart.js event listeners are already wired at this point
-    setTimeout(function () {
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    }, 0);
+    if (form) {
+      var qi = form.querySelector("input[name='q']");
+      var cs = form.querySelector("select[name='category']");
+      if (qi) qi.value = q;
+      if (cs) cs.value = category;
+    }
+    renderCatalogPage(q, category);
   }
 
   /* ── Per-form initialization ── */
@@ -968,15 +1101,19 @@
     /* ── Form submit ── */
     form.addEventListener("submit", function (e) {
       var q = qInput.value.trim();
-      if (!isHome()) {
+      var category = getCategory();
+      pushRecent(q);
+      closeDD();
+      if (isCatalogPage()) {
+        /* Own the catalog page: render from JSON in place, no reload. */
         e.preventDefault();
-        navigateTo(q, getCategory());
-        closeDD();
-      } else {
-        /* On home page cart.js already calls preventDefault + applyCatalogSearch */
-        pushRecent(q);
-        closeDD();
+        updateCatalogUrl(q, category);
+        renderCatalogPage(q, category);
+        var statusEl = document.querySelector(".search-status");
+        if (statusEl) statusEl.scrollIntoView({ block: "start", behavior: "smooth" });
       }
+      /* Other pages: the cart module's submit handler navigates to the catalog
+         page with the query string. */
     });
 
     /* ── Click outside closes dropdown ── */

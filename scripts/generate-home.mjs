@@ -834,10 +834,89 @@ const totalProducts = populatedSections.reduce(
   0
 );
 
-const sectionNav = populatedSections
-  .slice(0, 9)
-  .map((section) => `<a href="#${section.id}">${html(section.title)}</a>`)
-  .join("\n        ");
+// ---------------------------------------------------------------------------
+// Single source of truth: department/section id -> real category page.
+// Reused by the top nav, hero links, and the PDP "shop the section" links so
+// the generated markup never points at a dead in-page anchor.
+// ---------------------------------------------------------------------------
+const SECTION_PAGE_HREFS = {
+  protein: "pages/protein.html",
+  creatine: "pages/creatine.html",
+  "pre-workout": "pages/pre-workout.html",
+  hydration: "pages/hydration.html",
+  vitamins: "pages/vitamins.html",
+  greens: "pages/greens.html",
+  "bars-shakes": "pages/bars-shakes.html",
+  recovery: "pages/recovery.html",
+  sleep: "pages/sleep.html",
+  apparel: "pages/training-apparel.html",
+  shoes: "pages/footwear.html",
+  accessories: "pages/accessories.html",
+  "training-gear": "pages/lifting-gear.html",
+};
+
+// Resolve a section id to its real category page when that page exists on disk;
+// otherwise fall back to the in-page anchor so no nav link 404s.
+function sectionHref(id, pathPrefix = "./") {
+  const page = SECTION_PAGE_HREFS[id];
+  if (page && existsSync(new URL(`../${page}`, import.meta.url))) {
+    return `${pathPrefix}${page}`;
+  }
+  return `${pathPrefix}#${id}`;
+}
+
+const BRANDS_PAGE_HREF = existsSync(
+  new URL("../pages/brands.html", import.meta.url)
+)
+  ? "pages/brands.html"
+  : "#brands";
+
+// Department navigation, reused by the home header and the PDP/info headers so
+// every page (including category pages) gets the same reachable nav. A leading
+// hamburger button toggles `.department-nav` on narrow viewports.
+function departmentNavHtml(pathPrefix = "./") {
+  const links = populatedSections
+    .slice(0, 9)
+    .map(
+      (section) =>
+        `<a href="${html(sectionHref(section.id, pathPrefix))}">${html(
+          section.label ?? section.title
+        )}</a>`
+    )
+    .join("\n        ");
+  const brandsHref =
+    BRANDS_PAGE_HREF === "#brands"
+      ? `${pathPrefix}#brands`
+      : `${pathPrefix}${BRANDS_PAGE_HREF}`;
+  return `<nav class="department-nav" id="department-nav" data-department-nav aria-label="Department navigation">
+        ${links}
+        <a href="${html(brandsHref)}">Brands</a>
+      </nav>`;
+}
+
+function navToggleButton() {
+  return `<button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="department-nav" aria-label="Open department menu">
+            <svg class="nav-toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>`;
+}
+
+const sectionNav = departmentNavHtml("./");
+
+// Shared <select> options for the search category filter, reused by the home
+// header and every PDP/info/catalog header so the values stay in sync with the
+// real section ids used by the catalog filter and product cards.
+const categoryOptionsHtml = populatedSections
+  .map(
+    (section) =>
+      `<option value="${html(section.id)}">${html(
+        section.label ?? section.title
+      )}</option>`
+  )
+  .join("\n              ");
 
 const productSections = populatedSections
   .map(
@@ -1040,16 +1119,15 @@ const page = `<!doctype html>
     <a id="top" tabindex="-1" aria-hidden="true"></a>
     <header class="market-header">
       <div class="header-main">
+        ${navToggleButton()}
         <a class="brand" href="./" aria-label="Athletonic home">
           <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" />
         </a>
 
-        <form class="market-search" action="#catalog" data-catalog-search>
+        <form class="market-search" action="./pages/catalog.html" method="get" data-catalog-search>
           <select name="category" aria-label="Search category">
             <option value="all">All</option>
-            ${populatedSections
-              .map((section) => `<option value="${html(section.id)}">${html(section.label ?? section.title)}</option>`)
-              .join("\n            ")}
+            ${categoryOptionsHtml}
           </select>
           <input
             name="q"
@@ -1081,10 +1159,7 @@ const page = `<!doctype html>
         </div>
       </div>
 
-      <nav class="department-nav" aria-label="Department navigation">
-        ${sectionNav}
-        <a href="#brands">Brands</a>
-      </nav>
+      ${sectionNav}
     </header>
 
     <div class="drawer-overlay" data-drawer-overlay hidden></div>
@@ -1149,8 +1224,8 @@ const page = `<!doctype html>
             apparel, bottles, bags, and gym accessories from fitness-first brands.
           </p>
           <div class="hero-actions">
-            <a href="#protein">Shop products</a>
-            <a href="#brands">Browse brands</a>
+            <a href="${sectionHref("protein")}">Shop products</a>
+            <a href="./${BRANDS_PAGE_HREF}">Browse brands</a>
           </div>
         </div>
 
@@ -1170,22 +1245,22 @@ const page = `<!doctype html>
         <article>
           <h2>Sports Nutrition</h2>
           <p>Protein, creatine, pre-workout, amino acids, bars, and shakes.</p>
-          <a href="#protein">Shop nutrition</a>
+          <a href="${sectionHref("protein")}">Shop nutrition</a>
         </article>
         <article>
           <h2>Hydration & Wellness</h2>
           <p>Electrolytes, vitamins, minerals, greens, gut health, and focus support.</p>
-          <a href="#hydration">See wellness</a>
+          <a href="${sectionHref("hydration")}">See wellness</a>
         </article>
         <article>
           <h2>Apparel & Footwear</h2>
           <p>Training shoes, leggings, shorts, shirts, bags, bottles, and shakers.</p>
-          <a href="#apparel">View apparel</a>
+          <a href="${sectionHref("apparel")}">View apparel</a>
         </article>
         <article>
           <h2>Recovery</h2>
           <p>Massage, compression, sleep masks, mobility, and post-training support.</p>
-          <a href="#recovery">View recovery</a>
+          <a href="${sectionHref("recovery")}">View recovery</a>
         </article>
       </section>
 
@@ -1224,22 +1299,6 @@ console.log(
 // ---------------------------------------------------------------------------
 // Product Detail Pages (PDPs)
 // ---------------------------------------------------------------------------
-
-const SECTION_PAGE_HREFS = {
-  protein: "pages/protein.html",
-  creatine: "pages/creatine.html",
-  "pre-workout": "pages/pre-workout.html",
-  hydration: "pages/hydration.html",
-  vitamins: "pages/vitamins.html",
-  greens: "pages/greens.html",
-  "bars-shakes": "pages/bars-shakes.html",
-  recovery: "pages/recovery.html",
-  sleep: "pages/sleep.html",
-  apparel: "pages/training-apparel.html",
-  shoes: "pages/footwear.html",
-  accessories: "pages/accessories.html",
-  "training-gear": "pages/lifting-gear.html",
-};
 
 const commerceCatalogDir = new URL("../data/", import.meta.url);
 mkdirSync(commerceCatalogDir, { recursive: true });
@@ -1362,11 +1421,16 @@ function renderPdpHeader(pathPrefix) {
   return `
     <header class="market-header pdp-header">
       <div class="header-main">
+        ${navToggleButton()}
         <a class="brand" href="${pathPrefix}" aria-label="Athletonic home">
           <img class="brand-logo" src="${pathPrefix}assets/logo.png" alt="Athletonic" />
         </a>
         <div class="pdp-header-search">
-          <form class="market-search" action="${pathPrefix}#catalog" method="get" data-catalog-search>
+          <form class="market-search" action="${pathPrefix}pages/catalog.html" method="get" data-catalog-search>
+            <select name="category" aria-label="Search category">
+              <option value="all">All</option>
+              ${categoryOptionsHtml}
+            </select>
             <input
               name="q"
               type="search"
@@ -1396,6 +1460,7 @@ function renderPdpHeader(pathPrefix) {
           </button>
         </div>
       </div>
+      ${departmentNavHtml(pathPrefix)}
     </header>`;
 }
 
@@ -1931,6 +1996,7 @@ const staticPages = [
     slug: "catalog",
     title: "Shop All Products",
     eyebrow: "Catalog",
+    dynamicSearch: true,
     summary:
       "Browse Athletonic's curated store across sports nutrition, wellness, recovery, apparel, footwear, and training gear.",
     directoryGroups: catalogDirectoryGroups,
@@ -3671,15 +3737,27 @@ function infoPage(pageInfo) {
 ${renderPdpHeader(pathPrefix)}
 ${renderDrawers()}
 
-    <main class="info-main${hasExtendedContent ? " listing-main" : ""}">
+    <main class="info-main${hasExtendedContent ? " listing-main" : ""}"${
+      pageInfo.dynamicSearch ? " data-catalog-page" : ""
+    }>
       <section class="info-hero">
         <p class="eyebrow">${html(pageInfo.eyebrow)}</p>
         <h1>${html(pageInfo.title)}</h1>
         <p>${html(pageInfo.summary)}</p>
         ${renderInfoLinks(pageInfo.links, pathPrefix)}
       </section>
+      ${
+        pageInfo.dynamicSearch
+          ? `<p class="search-status" id="catalog" aria-live="polite" hidden></p>
+      <div class="product-row catalog-results" data-catalog-results hidden></div>`
+          : pageInfo.productSections?.length
+          ? `<p class="search-status" id="catalog" aria-live="polite" hidden></p>`
+          : ""
+      }
+      <div${pageInfo.dynamicSearch ? " data-catalog-browse" : ""}>
 ${renderDirectoryGroups(pageInfo.directoryGroups, pathPrefix)}
 ${renderProductShelves(pageInfo.productSections, pathPrefix)}
+      </div>
       <div class="info-grid">
 ${renderInfoSections(pageInfo.sections)}
       </div>
