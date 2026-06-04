@@ -584,13 +584,19 @@ function bestImagesForProducts(productIds) {
 
   if (ids.length === 0) return new Map();
 
-  const images = runQuery(`
-    select product_row_id, position, url, width, height
-    from images
-    where product_row_id in (${ids.join(",")})
-      and url is not null
-    order by product_row_id asc, coalesce(position, 0) asc, id asc;
-  `);
+  const BATCH = 4000;
+  const images = [];
+  for (let i = 0; i < ids.length; i += BATCH) {
+    const chunk = ids.slice(i, i + BATCH);
+    const rows = runQuery(`
+      select product_row_id, position, url, width, height
+      from images
+      where product_row_id in (${chunk.join(",")})
+        and url is not null
+      order by product_row_id asc, coalesce(position, 0) asc, id asc;
+    `);
+    for (const row of rows) images.push(row);
+  }
 
   const bestByProductId = new Map();
   for (const image of images) {
@@ -1341,12 +1347,13 @@ writeFileSync(
 // ---------------------------------------------------------------------------
 // Full-catalog search index (data/search-index.json)
 //
-// Lightweight records spanning the broad active/US/priced/imaged catalog for
-// every aligned (allowlisted) brand whose data comes from its official domain.
-// Reuses the SAME availability + allowlist + official-source + forbidden-name +
-// soccer-exclusion filters as the curated catalog, just without the per-section
-// curation, dedup, and limits. Soccer / non-allowlisted / non-official rows stay
-// excluded by policy. Only search/card fields are stored (no descriptions/HTML).
+// Lightweight records spanning the ENTIRE active US (USD) catalog: every
+// available, priced, imaged product regardless of brand allowlist, so searches
+// surface the full inventory (e.g. Twins Special, soccer/World-Cup jerseys, and
+// any other real product). Only guardrails kept: must be available, have a
+// price + image, be priced in USD (THB/foreign excluded), not on the brand
+// deny-list, not a forbidden junk/service name, and not served from a blocked
+// reseller domain. Only search/card fields are stored (no descriptions/HTML).
 // ---------------------------------------------------------------------------
 function categoryForRow(row) {
   const dept = String(row.store_department ?? "");
@@ -1385,10 +1392,28 @@ const sectionTitleById = Object.fromEntries(
   sections.map((section) => [section.id, section.label ?? section.title])
 );
 
+// Junk/service names to keep out of the full search index. Unlike the curated
+// catalog's forbiddenNameFilters, this does NOT exclude soccer/football/jersey
+// or the soccer storefront brands — those are real US inventory the search must
+// surface. Only non-product service add-ons and test rows are removed.
+const indexJunkNameFilters = [
+  "package protection",
+  "returns protection",
+  "shipping protection",
+  "free returns",
+  "sample",
+  "tester",
+  "test product",
+  "dented",
+  "free gifts",
+  "welcome gift",
+  "free welcome",
+  "prepaid",
+  "logo print",
+];
+
 function buildSearchIndex() {
-  const allowedSql = allowedBrands.map(sqlString).join(",");
-  const excludedSql = excludedBrands.map(sqlString).join(",");
-  const forbiddenSql = notLikeAllSql("lower(p.name)", forbiddenNameFilters);
+  const forbiddenSql = notLikeAllSql("lower(p.name)", indexJunkNameFilters);
   const sql = `
     select
       p.id,
@@ -1404,11 +1429,9 @@ function buildSearchIndex() {
     join images i on i.product_row_id = p.id and i.url is not null
     where p.available = 1
       and p.price is not null
-      and p.price between 8 and 1000
+      and p.price between 3 and 2000
       and p.url is not null
-      and p.brand in (${allowedSql})
-      and p.brand not in (${excludedSql})
-      and coalesce(p.store_collection, '') not like 'soccer_%'
+      and coalesce(p.currency, 'USD') = 'USD'
       and ${forbiddenSql}
     group by p.id
     order by coalesce(p.store_priority, 0) desc, p.price desc, p.name asc;
@@ -1417,12 +1440,12 @@ function buildSearchIndex() {
   const imageByProductId = bestImagesForProducts(rows.map((row) => row.id));
   const curatedIds = new Set(allCuratedProducts.map((product) => String(product.id)));
 
-  const MAX_RECORDS = 12000;
+  const MAX_RECORDS = 50000;
   const records = [];
   for (const row of rows) {
     if (records.length >= MAX_RECORDS) break;
-    if (isBrandMismatch(row)) continue;
-    if (!isOfficialBrandSource(row)) continue;
+    const domain = sourceDomain(row.url);
+    if (!domain || blockedSourceDomains.has(domain)) continue;
     const image = imageByProductId.get(row.id);
     if (!image || isBlockedImage(image.url)) continue;
 
