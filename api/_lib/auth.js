@@ -84,7 +84,9 @@ async function logAudit(ctx, action, targetType, targetId, metadata) {
     const supabase = getSupabaseAdmin();
     await supabase.from("admin_audit_log").insert({
       actor_id: ctx && ctx.user ? ctx.user.id : null,
-      actor_email: ctx && ctx.profile ? ctx.profile.email : null,
+      actor_email: ctx && ctx.user
+        ? ctx.user.email
+        : (ctx && ctx.profile ? ctx.profile.email : null),
       actor_role: ctx ? ctx.role : null,
       action,
       target_type: targetType || null,

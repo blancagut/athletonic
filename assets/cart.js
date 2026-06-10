@@ -17,6 +17,69 @@
   const $$ = (selector, root) =>
     Array.from((root || document).querySelectorAll(selector));
 
+  function pagePathPrefix() {
+    return /\/(pages|product)\//.test(window.location.pathname) ? "../" : "./";
+  }
+
+  function ensureMobileBottomNav() {
+    if (document.querySelector(".mobile-bottom-nav")) return;
+    if (/\/pages\/admin\//.test(window.location.pathname)) return;
+
+    const pathPrefix = pagePathPrefix();
+    const nav = document.createElement("nav");
+    nav.className = "mobile-bottom-nav";
+    nav.setAttribute("aria-label", "Mobile store navigation");
+    nav.innerHTML =
+      '<a href="' + pathPrefix + '" aria-label="Home">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<path d="m3 11 9-8 9 8"></path>' +
+          '<path d="M5 10v10h14V10"></path>' +
+          '<path d="M9 20v-6h6v6"></path>' +
+        '</svg>' +
+        '<span>Home</span>' +
+      '</a>' +
+      '<a href="#department-nav" aria-label="Categories">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<path d="M4 6h16"></path>' +
+          '<path d="M4 12h16"></path>' +
+          '<path d="M4 18h16"></path>' +
+        '</svg>' +
+        '<span>Categories</span>' +
+      '</a>' +
+      '<a href="' + pathPrefix + 'pages/daily-deals.html" aria-label="Deals">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<path d="M20 12v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-7"></path>' +
+          '<path d="M2 7h20v5H2z"></path>' +
+          '<path d="M12 7v13"></path>' +
+          '<path d="M12 7H7.5A2.5 2.5 0 1 1 10 4.5c0 1.5 2 2.5 2 2.5z"></path>' +
+          '<path d="M12 7h4.5A2.5 2.5 0 1 0 14 4.5c0 1.5-2 2.5-2 2.5z"></path>' +
+        '</svg>' +
+        '<span>Deals</span>' +
+      '</a>' +
+      '<button type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart-drawer" aria-expanded="false" aria-label="Open cart">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<circle cx="8" cy="21" r="1"></circle>' +
+          '<circle cx="19" cy="21" r="1"></circle>' +
+          '<path d="M2.05 2.05h2l2.65 12.4a2 2 0 0 0 2 1.6h8.95a2 2 0 0 0 1.95-1.57l1.25-5.48H5.45"></path>' +
+        '</svg>' +
+        '<span>Cart</span>' +
+        '<span class="mobile-bottom-count" data-cart-count hidden>0</span>' +
+      '</button>';
+    document.body.appendChild(nav);
+  }
+
+  function normalizeLegacyCatalogLinks() {
+    const catalogHref = pagePathPrefix() + "pages/catalog.html";
+    document.querySelectorAll('a[href="../#"], a[href="./#"]').forEach((link) => {
+      if (link.textContent.trim().toLowerCase() === "athletonic catalog") {
+        link.setAttribute("href", catalogHref);
+      }
+    });
+  }
+
+  ensureMobileBottomNav();
+  normalizeLegacyCatalogLinks();
+
   const searchForm = $("[data-catalog-search]");
   const searchStatus = $(".search-status");
   const productCards = $$(".product-card");
@@ -24,7 +87,7 @@
   const cartDrawer = $("[data-cart-drawer]");
   const accountPanel = $("[data-account-panel]");
   const cartItems = $("[data-cart-items]");
-  const cartCount = $("[data-cart-count]");
+  const cartCounts = $$("[data-cart-count]");
   const cartSubtotal = $("[data-cart-subtotal]");
   const checkoutForm = $("[data-checkout-form]");
   const checkoutEmail = $("#checkout-email");
@@ -34,27 +97,92 @@
   const accountEmail = $("#guest-email");
   const accountStatus = $("[data-account-status]");
   const accountLabel = $("[data-account-label]");
+  const cartOpenButtons = $$("[data-cart-open]");
+  const accountOpenButtons = $$("[data-account-open]");
 
   let cart = loadCart();
+  let lastDrawerTrigger = null;
+
+  function storageGet(key, fallback) {
+    try {
+      return localStorage.getItem(key) ?? fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function storageSet(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function normalizeCartItem(item) {
+    if (!item || typeof item !== "object") return null;
+
+    const rawId = String(item.id || item.productId || "").trim();
+    const productId = String(item.productId || rawId.split("::")[0] || "").trim();
+    if (!productId) return null;
+
+    const storedVariant =
+      rawId.includes("::") && !item.variant
+        ? rawId.slice(rawId.indexOf("::") + 2)
+        : item.variant;
+    const variant = String(storedVariant || "").trim();
+    const quantity =
+      item.quantity == null ? 1 : Math.floor(Number(item.quantity));
+    if (!Number.isFinite(quantity) || quantity < 1) return null;
+
+    const price = Number(item.price);
+    const currency = String(item.currency || "USD").toUpperCase();
+    return {
+      id: variant ? productId + "::" + variant : productId,
+      productId,
+      brand: String(item.brand || ""),
+      name: String(item.name || ""),
+      price: Number.isFinite(price) && price > 0 ? price : 0,
+      currency: /^[A-Z]{3}$/.test(currency) ? currency : "USD",
+      image: String(item.image || ""),
+      variant,
+      quantity,
+    };
+  }
+
+  function normalizeAddQuantity(value) {
+    const quantity = value == null ? 1 : Math.floor(Number(value));
+    return Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
+  }
 
   function loadCart() {
     try {
-      const parsed = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed = JSON.parse(storageGet(CART_STORAGE_KEY, "[]"));
+      return Array.isArray(parsed)
+        ? parsed.map(normalizeCartItem).filter(Boolean)
+        : [];
     } catch {
       return [];
     }
   }
 
   function saveCart() {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    storageSet(CART_STORAGE_KEY, JSON.stringify(cart));
   }
 
   function formatMoney(value, currency) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "USD",
-    }).format(value || 0);
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currency || "USD",
+      }).format(value || 0);
+    } catch {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(value || 0);
+    }
   }
 
   function cartQuantity() {
@@ -65,14 +193,43 @@
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }
 
-  function openPanel(panel) {
-    if (!panel || !drawerOverlay) return;
-    drawerOverlay.hidden = false;
-    panel.hidden = false;
-    panel.setAttribute("aria-hidden", "false");
+  function setExpanded(buttons, expanded) {
+    for (const button of buttons) {
+      button.setAttribute("aria-expanded", expanded ? "true" : "false");
+    }
   }
 
-  function closePanels() {
+  function focusDrawer(panel, preferredSelector) {
+    window.requestAnimationFrame(() => {
+      const preferred = preferredSelector ? $(preferredSelector, panel) : null;
+      const fallback = $(
+        "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])",
+        panel
+      );
+      const target = preferred || fallback;
+      if (!target) return;
+      try {
+        target.focus({ preventScroll: true });
+      } catch {
+        target.focus();
+      }
+    });
+  }
+
+  function openPanel(panel, trigger, buttons, focusSelector) {
+    if (!panel || !drawerOverlay) return;
+    closePanels({ restoreFocus: false });
+    lastDrawerTrigger = trigger || null;
+    drawerOverlay.hidden = false;
+    document.body.classList.add("drawer-is-open");
+    panel.hidden = false;
+    panel.setAttribute("aria-hidden", "false");
+    setExpanded(buttons, true);
+    focusDrawer(panel, focusSelector);
+  }
+
+  function closePanels(options) {
+    const restoreFocus = !options || options.restoreFocus !== false;
     if (drawerOverlay) drawerOverlay.hidden = true;
     if (cartDrawer) {
       cartDrawer.hidden = true;
@@ -82,15 +239,25 @@
       accountPanel.hidden = true;
       accountPanel.setAttribute("aria-hidden", "true");
     }
+    setExpanded(cartOpenButtons, false);
+    setExpanded(accountOpenButtons, false);
+    document.body.classList.remove("drawer-is-open");
+    if (restoreFocus && lastDrawerTrigger?.isConnected) {
+      try {
+        lastDrawerTrigger.focus({ preventScroll: true });
+      } catch {
+        lastDrawerTrigger.focus();
+      }
+    }
+    lastDrawerTrigger = null;
   }
 
-  function openCart() {
-    openPanel(cartDrawer);
+  function openCart(trigger) {
+    openPanel(cartDrawer, trigger, cartOpenButtons, "[data-cart-close]");
   }
 
-  function openAccount() {
-    openPanel(accountPanel);
-    if (accountEmail) accountEmail.focus();
+  function openAccount(trigger) {
+    openPanel(accountPanel, trigger, accountOpenButtons, "#guest-email");
   }
 
   function setFormStatus(element, message, state) {
@@ -100,7 +267,7 @@
   }
 
   function hydrateEmailFields() {
-    const email = localStorage.getItem(GUEST_EMAIL_KEY) || "";
+    const email = storageGet(GUEST_EMAIL_KEY, "");
     if (accountEmail) accountEmail.value = email;
     if (checkoutEmail) checkoutEmail.value = email;
     if (accountLabel) accountLabel.textContent = "Guest";
@@ -151,7 +318,7 @@
   function renderCart() {
     const totalItems = cartQuantity();
     const total = cartTotal();
-    if (cartCount) {
+    for (const cartCount of cartCounts) {
       cartCount.textContent = String(totalItems);
       cartCount.hidden = totalItems === 0;
     }
@@ -185,7 +352,10 @@
       const image = document.createElement("img");
       image.src = item.image;
       image.alt = item.name;
+      image.width = 78;
+      image.height = 78;
       image.loading = "lazy";
+      image.decoding = "async";
 
       const body = document.createElement("div");
       body.className = "cart-item-body";
@@ -193,10 +363,11 @@
       const brand = document.createElement("span");
       brand.textContent = item.brand;
 
-      const title = document.createElement("h3");
-      title.textContent = item.variant
+      const itemTitle = item.variant
         ? item.name + " — " + item.variant
         : item.name;
+      const title = document.createElement("h3");
+      title.textContent = itemTitle;
 
       const price = document.createElement("strong");
       price.textContent = formatMoney(item.price * item.quantity, item.currency);
@@ -207,7 +378,7 @@
       const minus = document.createElement("button");
       minus.type = "button";
       minus.dataset.cartDecrement = item.id;
-      minus.setAttribute("aria-label", "Decrease quantity");
+      minus.setAttribute("aria-label", "Decrease quantity for " + itemTitle);
       minus.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg>';
 
       const quantity = document.createElement("span");
@@ -216,14 +387,14 @@
       const plus = document.createElement("button");
       plus.type = "button";
       plus.dataset.cartIncrement = item.id;
-      plus.setAttribute("aria-label", "Increase quantity");
+      plus.setAttribute("aria-label", "Increase quantity for " + itemTitle);
       plus.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>';
 
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "cart-remove-button";
       remove.dataset.cartRemove = item.id;
-      remove.setAttribute("aria-label", "Remove item");
+      remove.setAttribute("aria-label", "Remove " + itemTitle + " from cart");
       remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>';
 
       controls.append(minus, quantity, plus, remove);
@@ -239,23 +410,26 @@
    */
   function addItem(payload) {
     if (!payload || !payload.id) return;
+    const quantity = normalizeAddQuantity(payload.quantity);
     const cartId = payload.variant
       ? payload.id + "::" + payload.variant
       : String(payload.id);
     const existing = cart.find((cartItem) => cartItem.id === cartId);
     if (existing) {
-      existing.quantity += payload.quantity || 1;
+      existing.quantity += quantity;
     } else {
+      const currency = String(payload.currency || "USD").toUpperCase();
+      const price = Number(payload.price || 0);
       cart.push({
         id: cartId,
         productId: String(payload.id),
         brand: payload.brand || "",
         name: payload.name || "",
-        price: Number(payload.price || 0),
-        currency: payload.currency || "USD",
+        price: Number.isFinite(price) && price > 0 ? price : 0,
+        currency: /^[A-Z]{3}$/.test(currency) ? currency : "USD",
         image: payload.image || "",
         variant: payload.variant || "",
-        quantity: payload.quantity || 1,
+        quantity,
       });
     }
     saveCart();
@@ -378,9 +552,9 @@
 
     const addButton = event.target.closest("[data-add-to-cart]");
     if (addButton) {
-      // PDP buttons render their own handler that calls window.AthletonicCart.addItem
-      // and skip the data attributes path, so we only handle simple cards here.
-      if (addButton.dataset.cartId) {
+      // Card and PDP buttons share the same data attributes; disabled PDP
+      // variant buttons are ignored until their required options are selected.
+      if (!addButton.disabled && addButton.dataset.cartId) {
         addToCartFromButton(addButton);
       }
     }
@@ -397,12 +571,13 @@
     if (removeButton) removeCartItem(removeButton.dataset.cartRemove);
   });
 
-  const cartOpenButton = $("[data-cart-open]");
-  if (cartOpenButton) cartOpenButton.addEventListener("click", openCart);
+  cartOpenButtons.forEach((button) =>
+    button.addEventListener("click", () => openCart(button))
+  );
 
-  const accountOpenButton = $("[data-account-open]");
-  if (accountOpenButton)
-    accountOpenButton.addEventListener("click", openAccount);
+  accountOpenButtons.forEach((button) =>
+    button.addEventListener("click", () => openAccount(button))
+  );
 
   // Responsive department menu: the hamburger toggles `.department-nav` on
   // narrow viewports. Accessible via keyboard and reflects state in aria-expanded.
@@ -411,6 +586,10 @@
   if (navToggle && departmentNav) {
     const setNavOpen = (open) => {
       navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      navToggle.setAttribute(
+        "aria-label",
+        open ? "Close department menu" : "Open department menu"
+      );
       departmentNav.classList.toggle("is-open", open);
     };
     navToggle.addEventListener("click", () => {
@@ -425,13 +604,19 @@
     });
   }
 
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && drawerOverlay && !drawerOverlay.hidden) {
+      closePanels();
+    }
+  });
+
   if (drawerOverlay) drawerOverlay.addEventListener("click", closePanels);
 
   if (accountForm) {
     accountForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const email = String(new FormData(accountForm).get("email") || "").trim();
-      localStorage.setItem(GUEST_EMAIL_KEY, email);
+      storageSet(GUEST_EMAIL_KEY, email);
       hydrateEmailFields();
       setFormStatus(
         accountStatus,
@@ -455,13 +640,13 @@
         );
         return;
       }
-      localStorage.setItem(GUEST_EMAIL_KEY, email);
+      storageSet(GUEST_EMAIL_KEY, email);
       hydrateEmailFields();
       if (checkoutSubmit) checkoutSubmit.disabled = true;
       setFormStatus(checkoutStatus, "Creating secure checkout...", "pending");
       try {
         const checkout = await submitCheckout(email);
-        localStorage.setItem(
+        storageSet(
           LAST_ORDER_REFERENCE_KEY,
           checkout.order_reference || ""
         );
@@ -487,6 +672,14 @@
   applyCheckoutLabels();
   renderCart();
   showCheckoutNoticeFromUrl();
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === CART_STORAGE_KEY || event.key === null) {
+      cart = loadCart();
+      renderCart();
+    }
+    if (event.key === GUEST_EMAIL_KEY || event.key === null) hydrateEmailFields();
+  });
 
   // Footer: back-to-top
   const backToTopBtn = $("[data-back-to-top]");
@@ -544,6 +737,7 @@
   var MAX_RESULTS = 7;
   var MAX_RECENT  = 5;
   var DEBOUNCE_MS = 80;
+  var formCounter = 0;
 
   var TRENDING = [
     { label: "Whey protein",        q: "whey protein",   category: "protein"      },
@@ -589,8 +783,8 @@
 
   /* ── Full search index load (cached) ──
      The catalog RESULTS page searches this lightweight index of the broad
-     active/US/official-source catalog (thousands of products), not just the
-     curated ~181 in athletonic-catalog.json (which still powers the dropdown). */
+     active/US/official-source catalog. The dropdown still uses the curated
+     athletonic-catalog.json preview set. */
   function searchIndexUrl() {
     return baseHref() + "data/search-index.json";
   }
@@ -625,6 +819,10 @@
   function sectionLabel(p) {
     return p.section_title || SECTION_LABELS[p.section_id] || "";
   }
+  function categoryLabel(category) {
+    if (!category || category === "all") return "";
+    return SECTION_LABELS[category] || String(category).replace(/-/g, " ");
+  }
 
   /* ── Utils ── */
   function fmtPrice(cents) {
@@ -641,6 +839,60 @@
     if (!q) return esc(text);
     var rx = new RegExp("(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
     return esc(text).replace(rx, "<mark>$1</mark>");
+  }
+  function queryTokens(q) {
+    var seen = {};
+    return String(q || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim()
+      .split(/\s+/)
+      .filter(function (token) { return token && (token.length > 1 || /\d/.test(token)); })
+      .filter(function (token) {
+        if (seen[token]) return false;
+        seen[token] = true;
+        return true;
+      });
+  }
+  function productSearchText(p) {
+    return (p.search || [
+      p.name,
+      p.brand,
+      p.section_title,
+      sectionLabel(p),
+      p.section_id,
+    ].filter(Boolean).join(" ")).toLowerCase();
+  }
+  function matchesProductQuery(p, lq, tokens) {
+    if (!lq) return true;
+    var haystack = productSearchText(p);
+    if (haystack.indexOf(lq) !== -1) return true;
+    return tokens.length > 0 && tokens.every(function (token) {
+      return haystack.indexOf(token) !== -1;
+    });
+  }
+  function scoreCatalogProduct(p, lq, tokens) {
+    var n = (p.name || "").toLowerCase();
+    var b = (p.brand || "").toLowerCase();
+    var label = (sectionLabel(p) || "").toLowerCase();
+    var section = String(p.section_id || "").toLowerCase();
+    var haystack = productSearchText(p);
+    var score = scoreProduct(p, lq);
+
+    if (!lq) return score;
+    if (n === lq) score += 20;
+    else if (n.startsWith(lq)) score += 12;
+    if (b === lq) score += 10;
+    if (label === lq || section === lq) score += 6;
+    if (haystack.indexOf(lq) !== -1) score += 4;
+
+    tokens.forEach(function (token) {
+      if (n.indexOf(token) !== -1) score += 3;
+      else if (b.indexOf(token) !== -1) score += 2;
+      else if (label.indexOf(token) !== -1 || section.indexOf(token) !== -1) score += 1;
+    });
+
+    return score;
   }
 
   /* ── Recent searches ── */
@@ -695,18 +947,17 @@
      falling back to name/brand/section_title for curated records. */
   function filterCatalogFull(products, q, category) {
     var lq = (q || "").trim().toLowerCase();
+    var tokens = queryTokens(lq);
     var res = products.filter(function (p) {
       if (p.available === false) return false;
       if (category && category !== "all" && p.section_id !== category) return false;
-      if (!lq) return true;
-      if (p.search) return p.search.indexOf(lq) !== -1;
-      return (
-        (p.name          || "").toLowerCase().includes(lq) ||
-        (p.brand         || "").toLowerCase().includes(lq) ||
-        (p.section_title || "").toLowerCase().includes(lq)
-      );
+      return matchesProductQuery(p, lq, tokens);
     });
-    if (lq) res.sort(function (a, b) { return scoreProduct(b, lq) - scoreProduct(a, lq); });
+    if (lq) {
+      res.sort(function (a, b) {
+        return scoreCatalogProduct(b, lq, tokens) - scoreCatalogProduct(a, lq, tokens);
+      });
+    }
     return res;
   }
 
@@ -719,6 +970,9 @@
     var href = p.has_pdp ? pdpHref : (p.url || pdpHref);
     var price = (Number(p.price_cents) || 0) / 100;
     var priceStr = price.toFixed(2);
+    var imageWidth = Number(p.image_width || p.imageWidth || 640) || 640;
+    var imageHeight =
+      Number(p.image_height || p.imageHeight || imageWidth) || imageWidth;
     var compare = p.compare_at_price_cents
       ? (Number(p.compare_at_price_cents) || 0) / 100
       : null;
@@ -744,7 +998,8 @@
         '" data-category="' + esc(p.section_id || "") + '">' +
         '<a class="product-image" href="' + esc(href) + '">' +
           '<img src="' + esc(p.image || "") + '" alt="' + esc(p.name || "") +
-            '" loading="lazy" />' +
+            '" width="' + esc(imageWidth) + '" height="' + esc(imageHeight) +
+            '" loading="lazy" decoding="async" />' +
         '</a>' +
         '<div class="product-body">' +
           '<span>' + esc(p.brand || "") + '</span>' +
@@ -763,6 +1018,7 @@
             ' data-cart-price="' + esc(priceStr) + '"' +
             ' data-cart-currency="' + esc(currency) + '"' +
             ' data-cart-image="' + esc(p.image || "") + '"' +
+            ' aria-label="Add ' + esc(p.name || "product") + ' to cart"' +
           '>Add to cart</button>' +
         '</div>' +
       '</article>'
@@ -812,8 +1068,7 @@
     var remaining = _catalogMatches.length - _catalogShown;
     if (remaining > 0) {
       btn.hidden = false;
-      btn.textContent =
-        "Load more (" + remaining + " more)";
+      btn.textContent = "Load more products";
     } else {
       btn.hidden = true;
     }
@@ -838,6 +1093,7 @@
     }
 
     loadSearchIndex().then(function (products) {
+      var activeCategoryLabel = categoryLabel(category);
       var matches = filterCatalogFull(products, q, category);
       _catalogMatches = matches;
       _catalogShown = 0;
@@ -854,16 +1110,16 @@
               '<circle cx="11" cy="11" r="8"></circle>' +
               '<line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>' +
             '<p>No results' + (q ? ' for <strong>&ldquo;' + esc(q) + '&rdquo;</strong>' : "") +
-              (category && category !== "all" ? " in " + esc(category) : "") + ".</p>" +
+              (activeCategoryLabel ? " in " + esc(activeCategoryLabel) : "") + ".</p>" +
             '<p class="catalog-empty-hint">Try a broader term or browse a category above.</p>' +
           '</div>';
       }
       if (statusEl) {
         statusEl.hidden = false;
         statusEl.textContent =
-          matches.length + " result" + (matches.length === 1 ? "" : "s") +
+          (matches.length ? "Showing matching products" : "No matching products") +
           (q ? ' for "' + q + '"' : "") +
-          (category && category !== "all" ? " in " + category : "");
+          (activeCategoryLabel ? " in " + activeCategoryLabel : "");
       }
     });
   }
@@ -925,6 +1181,7 @@
     /* Dropdown shell */
     var dropdown = document.createElement("div");
     dropdown.className = "search-dropdown";
+    dropdown.id = "search-suggestions-" + (++formCounter);
     dropdown.setAttribute("role", "listbox");
     dropdown.setAttribute("aria-label", "Search suggestions");
     dropdown.hidden = true;
@@ -934,6 +1191,7 @@
     qInput.setAttribute("role", "combobox");
     qInput.setAttribute("aria-autocomplete", "list");
     qInput.setAttribute("aria-haspopup", "listbox");
+    qInput.setAttribute("aria-controls", dropdown.id);
     qInput.setAttribute("aria-expanded", "false");
     qInput.setAttribute("autocomplete", "off");
     qInput.setAttribute("spellcheck", "false");
@@ -949,16 +1207,23 @@
     function closeDD() {
       dropdown.hidden = true;
       qInput.setAttribute("aria-expanded", "false");
+      qInput.removeAttribute("aria-activedescendant");
       activeIdx = -1;
     }
     function setActive(idx) {
       var items = dropdown.querySelectorAll("[role='option']");
       items.forEach(function (item, i) {
+        if (!item.id) item.id = dropdown.id + "-option-" + i;
         item.classList.toggle("is-active", i === idx);
         item.setAttribute("aria-selected", String(i === idx));
       });
       activeIdx = idx;
-      if (items[idx]) items[idx].scrollIntoView({ block: "nearest" });
+      if (items[idx]) {
+        qInput.setAttribute("aria-activedescendant", items[idx].id);
+        items[idx].scrollIntoView({ block: "nearest" });
+      } else {
+        qInput.removeAttribute("aria-activedescendant");
+      }
     }
 
     /* ── Render: empty / default state ── */
@@ -976,7 +1241,7 @@
                 + '<polyline points="1 4 1 10 7 10"></polyline>'
                 + '<path d="M3.51 15a9 9 0 1 0 .49-4.5"></path></svg>'
                 + '<span class="sdd-item-text">' + esc(r) + '</span>'
-                + '<button type="button" class="sdd-remove" data-remove="' + esc(r) + '" aria-label="Remove">&#x2715;</button>'
+                + '<button type="button" class="sdd-remove" data-remove="' + esc(r) + '" aria-label="Remove ' + esc(r) + ' from recent searches">&#x2715;</button>'
                 + '</li>';
         });
         html += '</ul></div>';
@@ -1008,7 +1273,7 @@
         products.forEach(function (p) {
           var href = baseHref() + "product/" + p.id + ".html";
           html += '<li role="option" aria-selected="false" class="sdd-item sdd-item--product" data-href="' + esc(href) + '">'
-                + '<img class="sdd-thumb" src="' + esc(p.image) + '" alt="" loading="lazy">'
+                + '<img class="sdd-thumb" src="' + esc(p.image) + '" alt="" width="44" height="44" loading="lazy" decoding="async">'
                 + '<div class="sdd-item-body">'
                 + '<span class="sdd-brand">' + esc(p.brand) + '</span>'
                 + '<span class="sdd-name">'  + highlight(p.name, q) + '</span>'
@@ -1135,6 +1400,7 @@
           e.preventDefault();
           if (activeIdx <= 0) {
             activeIdx = -1;
+            qInput.removeAttribute("aria-activedescendant");
             items.forEach(function (it) {
               it.classList.remove("is-active");
               it.setAttribute("aria-selected", "false");

@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
     json(res, 200, {
       user: {
         id: ctx.user.id,
-        email: ctx.profile.email,
+        email: ctx.user.email || ctx.profile.email,
         full_name: ctx.profile.full_name || null,
         role: ctx.role,
       },

@@ -1,10 +1,9 @@
 const { handleError, json, methodNotAllowed, readJson, requireEnv } = require("../../_lib/http");
-const { requireAdmin, requireSuperAdmin, logAudit } = require("../../_lib/auth");
+const { requireSuperAdmin, logAudit } = require("../../_lib/auth");
 const { getSupabaseAdmin } = require("../../_lib/supabase");
 const { getParam } = require("../../_lib/admin");
 
 const ROLES = ["user", "admin", "super_admin"];
-const ELEVATED = ["admin", "super_admin"];
 
 function validationError(message, code) {
   const error = new Error(message);
@@ -21,6 +20,7 @@ module.exports = async function handler(req, res) {
 
   try {
     requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
+    const ctx = await requireSuperAdmin(req);
 
     const userId = getParam(req, "id");
     if (!userId) throw validationError("Missing user id.", "missing_id");
@@ -33,7 +33,6 @@ module.exports = async function handler(req, res) {
 
     const supabase = getSupabaseAdmin();
 
-    // Load the target's current role to decide which privilege is required.
     const { data: target, error: targetError } = await supabase
       .from("profiles")
       .select("id, email, role")
@@ -46,13 +45,6 @@ module.exports = async function handler(req, res) {
       error.code = "user_not_found";
       throw error;
     }
-
-    // Granting or removing an elevated role requires super_admin. Promoting a
-    // plain user to/from 'user' (non-elevated) is allowed for any admin.
-    const touchesElevated = ELEVATED.includes(newRole) || ELEVATED.includes(target.role);
-    const ctx = touchesElevated
-      ? await requireSuperAdmin(req)
-      : await requireAdmin(req);
 
     // A super admin cannot demote themselves (avoid locking out the tier).
     if (target.id === ctx.user.id && newRole !== target.role) {

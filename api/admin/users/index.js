@@ -1,7 +1,7 @@
 const { handleError, json, methodNotAllowed, requireEnv } = require("../../_lib/http");
-const { requireAdmin } = require("../../_lib/auth");
+const { requireSuperAdmin } = require("../../_lib/auth");
 const { getSupabaseAdmin } = require("../../_lib/supabase");
-const { getQuery, getPagination } = require("../../_lib/admin");
+const { buildIlikeOr, getQuery, getPagination, normalizeSearchTerm } = require("../../_lib/admin");
 
 const LIST_SELECT = "id, email, full_name, role, created_at, updated_at";
 
@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
 
   try {
     requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
-    await requireAdmin(req);
+    await requireSuperAdmin(req);
 
     const query = getQuery(req);
     const { page, pageSize, from, to } = getPagination(query);
@@ -30,9 +30,12 @@ module.exports = async function handler(req, res) {
       builder = builder.eq("role", role);
     }
 
-    const search = String(query.search || "").trim();
+    const search = normalizeSearchTerm(query.search);
     if (search) {
-      builder = builder.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
+      builder = builder.or(buildIlikeOr([
+        { column: "email", value: search },
+        { column: "full_name", value: search },
+      ]));
     }
 
     const { data, count, error } = await builder;

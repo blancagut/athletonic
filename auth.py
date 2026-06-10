@@ -75,7 +75,7 @@ def require_auth():
 
 def is_admin(user=None) -> bool:
     """
-    Check if the given user (or current user) has the 'admin' role,
+    Check if the given user (or current user) has an admin role,
     based on the public.profiles table.
     """
     if user is None:
@@ -83,4 +83,4 @@ def is_admin(user=None) -> bool:
     if user is None:
         return False
     profile = get_profile(user.id)
-    return bool(profile and profile.get("role") == "admin")
+    return bool(profile and profile.get("role") in {"admin", "super_admin"})

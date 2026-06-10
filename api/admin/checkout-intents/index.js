@@ -1,7 +1,7 @@
 const { handleError, json, methodNotAllowed, requireEnv } = require("../../_lib/http");
 const { requireAdmin } = require("../../_lib/auth");
 const { getSupabaseAdmin } = require("../../_lib/supabase");
-const { getQuery, getPagination } = require("../../_lib/admin");
+const { getQuery, getPagination, normalizeSearchTerm } = require("../../_lib/admin");
 
 const LIST_SELECT =
   "id, email, user_id, subtotal, currency, status, notes, created_at, updated_at";
@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
       builder = builder.eq("status", status);
     }
 
-    const search = String(query.search || "").trim();
+    const search = normalizeSearchTerm(query.search);
     if (search) {
       builder = builder.ilike("email", `%${search}%`);
     }

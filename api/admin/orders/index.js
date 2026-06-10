@@ -1,7 +1,7 @@
 const { handleError, json, methodNotAllowed, requireEnv } = require("../../_lib/http");
 const { requireAdmin } = require("../../_lib/auth");
 const { getSupabaseAdmin } = require("../../_lib/supabase");
-const { getQuery, getPagination } = require("../../_lib/admin");
+const { buildIlikeOr, getQuery, getPagination, normalizeSearchTerm } = require("../../_lib/admin");
 
 const LIST_SELECT = `
   id,
@@ -51,12 +51,12 @@ module.exports = async function handler(req, res) {
       builder = builder.eq("order_status", status);
     }
 
-    const search = String(query.search || "").trim();
+    const search = normalizeSearchTerm(query.search);
     if (search) {
-      const upper = search.toUpperCase();
-      builder = builder.or(
-        `order_reference.ilike.%${upper}%,customer_email.ilike.%${search}%`
-      );
+      builder = builder.or(buildIlikeOr([
+        { column: "order_reference", value: search.toUpperCase() },
+        { column: "customer_email", value: search },
+      ]));
     }
 
     const { data, count, error } = await builder;

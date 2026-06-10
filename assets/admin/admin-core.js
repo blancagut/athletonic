@@ -102,6 +102,9 @@ export function statusBadge(status) {
   return `<span class="admin-badge s-${escapeHtml(status || "")}">${safe}</span>`;
 }
 
+// SINGLE SOURCE OF TRUTH for shopper role naming.
+// DB/role value = 'user'; human label = 'Customer'; 'user' is internal only.
+// Never store 'customer' as a role (DB constraint allows only user|admin|super_admin).
 const ROLE_LABELS = {
   user: "Customer",
   admin: "Admin",

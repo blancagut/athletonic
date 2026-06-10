@@ -117,7 +117,7 @@ module.exports = async function handler(req, res) {
         order_id: orderId,
         status: eventStatus,
         message,
-        created_by: ctx.profile.email || "admin",
+        created_by: ctx.user.email || ctx.profile.email || "admin",
       });
 
       await logAudit(ctx, "order.update", "order", orderId, patch);

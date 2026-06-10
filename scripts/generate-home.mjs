@@ -4,6 +4,7 @@ import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mj
 
 const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
 const SUPABASE_PUBLIC_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
+const SITE_ORIGIN = `https://${ATHLETONIC_SOURCE_OF_TRUTH.marketplace.domain}`;
 const DB_PATH = ATHLETONIC_SOURCE_OF_TRUTH.sourcePolicy.productDataSource;
 const brandNames = Object.fromEntries(
   ATHLETONIC_SOURCE_OF_TRUTH.brands.map((brand) => [brand.slug, brand.name])
@@ -673,6 +674,8 @@ function productsForSection(section) {
     const image = imageByProductId.get(row.id);
     if (!image) continue;
     row.image = image.url;
+    row.imageWidth = Number(image.width || 0) || 640;
+    row.imageHeight = Number(image.height || 0) || row.imageWidth;
 
     const nameKey = canonicalName(row.name, row.brand);
     const currentImageKey = imageKey(row.image);
@@ -708,9 +711,24 @@ function html(value) {
     .replaceAll('"', "&quot;");
 }
 
+function canonicalUrl(pathname = "/") {
+  const cleanPath = String(pathname || "/").startsWith("/")
+    ? String(pathname || "/")
+    : `/${pathname}`;
+  return `${SITE_ORIGIN}${cleanPath}`;
+}
+
+function canonicalLink(pathname = "/") {
+  return `<link rel="canonical" href="${html(canonicalUrl(pathname))}" />`;
+}
+
 function money(value, currency) {
   const symbol = currency === "USD" ? "$" : `${currency} `;
   return `${symbol}${Number(value).toFixed(2)}`;
+}
+
+function cleanGeneratedText(value) {
+  return String(value).replace(/[ \t]+$/gm, "").replace(/\n*$/, "\n");
 }
 
 function readJsonFile(url, fallback) {
@@ -747,7 +765,7 @@ function productCard(product, pathPrefix = "./") {
   return `
           <article class="product-card" data-product-id="${html(product.id)}" data-category="${html(product.sectionId)}" data-search="${html(searchText)}">
             <a class="product-image" href="${pdpHref}">
-              <img src="${html(product.image)}" alt="${html(name)}" loading="lazy" />
+              <img src="${html(product.image)}" alt="${html(name)}" width="${html(product.imageWidth || 640)}" height="${html(product.imageHeight || product.imageWidth || 640)}" loading="lazy" decoding="async" />
             </a>
             <div class="product-body">
               <span>${html(brand)}</span>
@@ -778,6 +796,7 @@ function productCard(product, pathPrefix = "./") {
                 data-cart-price="${html(product.price)}"
                 data-cart-currency="${html(product.currency)}"
                 data-cart-image="${html(product.image)}"
+                aria-label="Add ${html(name)} to cart"
               >Add to cart</button>
             </div>
           </article>`;
@@ -809,12 +828,36 @@ const activeDealsByProductId = new Map(
     .map((offer) => [String(offer.product_id), offer])
 );
 
+function activeDealForPrice(productId, currentPriceCents) {
+  const deal = activeDealsByProductId.get(String(productId));
+  if (!deal) return null;
+
+  const salePriceCents = Number(deal.sale_price_cents || 0);
+  const originalPriceCents = Number(currentPriceCents || deal.original_price_cents || 0);
+  if (
+    !Number.isFinite(salePriceCents) ||
+    !Number.isFinite(originalPriceCents) ||
+    salePriceCents <= 0 ||
+    originalPriceCents <= 0 ||
+    salePriceCents >= originalPriceCents
+  ) {
+    return null;
+  }
+
+  return {
+    sale_price_cents: Math.round(salePriceCents),
+    original_price_cents: Math.round(originalPriceCents),
+    discount_percent: Number(deal.discount_percent || 0),
+    expires_at: deal.expires_at,
+    reason: deal.reason || "Limited-time Athletonic offer",
+  };
+}
+
 for (const product of allCuratedProducts) {
-  const deal = activeDealsByProductId.get(String(product.id));
+  const deal = activeDealForPrice(product.id, Math.round(Number(product.price || 0) * 100));
   if (!deal) continue;
-  const originalPrice = Number(product.price || 0);
+  const originalPrice = Number(deal.original_price_cents || 0) / 100;
   const salePrice = Number(deal.sale_price_cents || 0) / 100;
-  if (!salePrice || salePrice >= originalPrice) continue;
   product.price = salePrice;
   product.deal = {
     discount_percent: Number(deal.discount_percent || 0),
@@ -864,6 +907,7 @@ const SECTION_PAGE_HREFS = {
 // Resolve a section id to its real category page when that page exists on disk;
 // otherwise fall back to the in-page anchor so no nav link 404s.
 function sectionHref(id, pathPrefix = "./") {
+  if (!id) return `${pathPrefix}pages/catalog.html`;
   const page = SECTION_PAGE_HREFS[id];
   if (page && existsSync(new URL(`../${page}`, import.meta.url))) {
     return `${pathPrefix}${page}`;
@@ -908,6 +952,49 @@ function navToggleButton() {
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>`;
+}
+
+function mobileBottomNav(pathPrefix = "./") {
+  const dealsHref = existsSync(new URL("../pages/daily-deals.html", import.meta.url))
+    ? `${pathPrefix}pages/daily-deals.html`
+    : `${pathPrefix}#protein`;
+  return `<nav class="mobile-bottom-nav" aria-label="Mobile store navigation">
+      <a href="${html(pathPrefix)}" aria-label="Home">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m3 11 9-8 9 8"></path>
+          <path d="M5 10v10h14V10"></path>
+          <path d="M9 20v-6h6v6"></path>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a href="#department-nav" aria-label="Categories">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 6h16"></path>
+          <path d="M4 12h16"></path>
+          <path d="M4 18h16"></path>
+        </svg>
+        <span>Categories</span>
+      </a>
+      <a href="${html(dealsHref)}" aria-label="Deals">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 12v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-7"></path>
+          <path d="M2 7h20v5H2z"></path>
+          <path d="M12 7v13"></path>
+          <path d="M12 7H7.5A2.5 2.5 0 1 1 10 4.5c0 1.5 2 2.5 2 2.5z"></path>
+          <path d="M12 7h4.5A2.5 2.5 0 1 0 14 4.5c0 1.5-2 2.5-2 2.5z"></path>
+        </svg>
+        <span>Deals</span>
+      </a>
+      <button type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart-drawer" aria-expanded="false" aria-label="Open cart">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="8" cy="21" r="1"></circle>
+          <circle cx="19" cy="21" r="1"></circle>
+          <path d="M2.05 2.05h2l2.65 12.4a2 2 0 0 0 2 1.6h8.95a2 2 0 0 0 1.95-1.57l1.25-5.48H5.45"></path>
+        </svg>
+        <span>Cart</span>
+        <span class="mobile-bottom-count" data-cart-count hidden>0</span>
+      </button>
+    </nav>`;
 }
 
 const sectionNav = departmentNavHtml("./");
@@ -1090,7 +1177,7 @@ function renderFooter(pathPrefix = "./") {
   const legal = `
       <div class="footer-legal">
         <a class="footer-legal-brand" href="${pathPrefix}" aria-label="Athletonic home">
-          <img src="${pathPrefix}assets/logo.png" alt="Athletonic" />
+          <img src="${pathPrefix}assets/logo.png" alt="Athletonic" width="1536" height="1024" decoding="async" />
         </a>
         <ul class="footer-legal-links">
             ${legalLinks}
@@ -1114,20 +1201,21 @@ const page = `<!doctype html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Athletonic.com</title>
+    <title>Athletonic | Performance Supplements, Recovery &amp; Training Gear</title>
     <meta
       name="description"
       content="Athletonic.com is a performance store for supplements, sports nutrition, hydration, recovery, apparel, and fitness essentials."
     />
+    ${canonicalLink("/")}
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body class="home-body">
     <a id="top" tabindex="-1" aria-hidden="true"></a>
     <header class="market-header">
       <div class="header-main">
         ${navToggleButton()}
         <a class="brand" href="./" aria-label="Athletonic home">
-          <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" />
+          <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" width="1536" height="1024" decoding="async" />
         </a>
 
         <form class="market-search" action="./pages/catalog.html" method="get" data-catalog-search>
@@ -1139,13 +1227,13 @@ const page = `<!doctype html>
             name="q"
             type="search"
             aria-label="Search Athletonic"
-            placeholder="Search protein, creatine, hydration, apparel, recovery..."
+            placeholder="Search products, brands..."
           />
           <button type="submit">Search</button>
         </form>
 
         <div class="header-actions" aria-label="Account and cart">
-          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog">
+          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-panel" aria-expanded="false" aria-label="Open account panel">
             <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="12" r="10"></circle>
               <circle cx="12" cy="10" r="3"></circle>
@@ -1153,7 +1241,7 @@ const page = `<!doctype html>
             </svg>
             <span class="header-action-label" data-account-label>Guest</span>
           </button>
-          <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-label="Open cart">
+          <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart-drawer" aria-expanded="false" aria-label="Open cart">
             <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="8" cy="21" r="1"></circle>
               <circle cx="19" cy="21" r="1"></circle>
@@ -1169,7 +1257,7 @@ const page = `<!doctype html>
     </header>
 
     <div class="drawer-overlay" data-drawer-overlay hidden></div>
-    <aside class="account-panel" data-account-panel hidden aria-hidden="true" aria-labelledby="account-title">
+    <aside class="account-panel" id="account-panel" data-account-panel hidden role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="account-title">
       <div class="drawer-header">
         <div>
           <p class="drawer-eyebrow">Account</p>
@@ -1191,7 +1279,7 @@ const page = `<!doctype html>
       </form>
     </aside>
 
-    <aside class="cart-drawer" data-cart-drawer hidden aria-hidden="true" aria-labelledby="cart-title">
+    <aside class="cart-drawer" id="cart-drawer" data-cart-drawer hidden role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="cart-title">
       <div class="drawer-header">
         <div>
           <p class="drawer-eyebrow">Checkout</p>
@@ -1223,7 +1311,7 @@ const page = `<!doctype html>
 
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow"><img class="eyebrow-logo" src="./assets/logo.png" alt="Athletonic" /></p>
+          <p class="eyebrow">Performance store</p>
           <h1>Build your training stack in one store.</h1>
           <p>
             Supplements, hydration, wellness, recovery devices, footwear,
@@ -1236,12 +1324,16 @@ const page = `<!doctype html>
         </div>
 
         <div class="hero-deal" id="catalog-summary">
-          <span class="deal-label">Catalog snapshot</span>
+          <span class="deal-label">Performance stack</span>
           <img
             src="https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-ON-2-GSW-2270g-bundle_Image_01_1.png"
             alt="Gold Standard 100% Whey Protein"
+            width="640"
+            height="512"
+            fetchpriority="high"
+            decoding="async"
           />
-          <h2>${totalProducts} curated products</h2>
+          <h2>Performance essentials</h2>
           <p>Protein, creatine, pre-workout, hydration, recovery, apparel, footwear, and accessories.</p>
           <strong>Sold through Athletonic</strong>
         </div>
@@ -1288,6 +1380,7 @@ ${productSections}
     </main>
 
 ${renderFooter("./")}
+${mobileBottomNav("./")}
     <script>
       window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
       window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
@@ -1297,7 +1390,7 @@ ${renderFooter("./")}
 </html>
 `;
 
-writeFileSync(new URL("../index.html", import.meta.url), page);
+writeFileSync(new URL("../index.html", import.meta.url), cleanGeneratedText(page));
 console.log(
   `Generated ${totalProducts} products across ${populatedSections.length} sections.`
 );
@@ -1322,6 +1415,8 @@ writeFileSync(
         sku: product.sku ?? null,
         url: product.url ?? null,
         image: product.image ?? null,
+        image_width: product.imageWidth || 640,
+        image_height: product.imageHeight || product.imageWidth || 640,
         price_cents: Math.round(Number(product.price || 0) * 100),
         compare_at_price_cents: product.deal?.original_price
           ? Math.round(Number(product.deal.original_price) * 100)
@@ -1355,10 +1450,37 @@ writeFileSync(
 // deny-list, not a forbidden junk/service name, and not served from a blocked
 // reseller domain. Only search/card fields are stored (no descriptions/HTML).
 // ---------------------------------------------------------------------------
+const indexAccessoryNamePattern =
+  /\b(bottle|shaker|bag|belt|strap|wrap|mouthguard|mouth guard|key chain|towel|mat|grip|grips|hat|beanie|sock|socks|glove|gloves|guard|guards|lace|laces)\b|\bcap\b(?!\s+sleeve)/i;
+const indexFootwearNamePattern =
+  /\b(shoe|shoes|sneaker|sneakers|boot|boots|cleat|cleats|slide|slides|sandal|sandals|loafer|loafers|pegasus|foamposite|metcon|romaleos|infinityrn|vomero|dunk)\b|\bair\s+max\b|\bjordan\s*\d+\b|\b(trail|tree|golf)\s+runner(s)?\b/i;
+const indexApparelNamePattern =
+  /\b(jersey|shirt|tee|t-shirt|hoodie|shorts|pants|leggings|jacket|bra|tank|sweatshirt|sweatpants|dress|skirt|polo|rashguard|singlet|compression|tights|crewneck|pullover|parka)\b/i;
+
+function categoryFromProductName(name) {
+  const value = String(name ?? "");
+  if (indexAccessoryNamePattern.test(value)) return "accessories";
+  if (indexApparelNamePattern.test(value)) return "apparel";
+  if (indexFootwearNamePattern.test(value)) return "shoes";
+  return "";
+}
+
+function normalizedIndexUrl(value) {
+  try {
+    const url = new URL(String(value ?? ""));
+    url.hash = "";
+    url.searchParams.sort();
+    return url.toString();
+  } catch {
+    return String(value ?? "").trim();
+  }
+}
+
 function categoryForRow(row) {
   const dept = String(row.store_department ?? "");
   const coll = String(row.store_collection ?? "");
   const key = `${dept}/${coll}`;
+  const nameCategory = categoryFromProductName(row.name);
   const map = {
     "sports_nutrition/protein": "protein",
     "sports_nutrition/mass_gainers": "protein",
@@ -1381,11 +1503,18 @@ function categoryForRow(row) {
     "apparel_accessories/bags_bottles": "accessories",
     "sports_gear/fight_gear": "training-gear",
   };
-  if (map[key]) return map[key];
+  if (map[key]) {
+    if (map[key] === "apparel" && (nameCategory === "shoes" || nameCategory === "accessories")) {
+      return nameCategory;
+    }
+    if (map[key] === "accessories" && nameCategory === "apparel") return "apparel";
+    if (map[key] === "training-gear" && nameCategory === "shoes") return "shoes";
+    return map[key];
+  }
   if (dept === "vitamins_health") return "vitamins";
   if (dept === "womens_wellness") return "vitamins";
   if (dept === "supplements" || dept === "wellness_goals") return "vitamins";
-  return "";
+  return nameCategory;
 }
 
 const sectionTitleById = Object.fromEntries(
@@ -1441,10 +1570,13 @@ function buildSearchIndex() {
 
   const MAX_RECORDS = 50000;
   const records = [];
+  const seenProductUrls = new Set();
   for (const row of rows) {
     if (records.length >= MAX_RECORDS) break;
     const domain = sourceDomain(row.url);
     if (!domain || blockedSourceDomains.has(domain)) continue;
+    const normalizedUrl = normalizedIndexUrl(row.url);
+    if (!normalizedUrl || seenProductUrls.has(normalizedUrl)) continue;
     const image = imageByProductId.get(row.id);
     if (!image || isBlockedImage(image.url)) continue;
 
@@ -1462,17 +1594,30 @@ function buildSearchIndex() {
       section_id: category,
       url: row.url ?? null,
       image: image.url,
+      image_width: Number(image.width || 0) || 640,
+      image_height: Number(image.height || 0) || Number(image.width || 0) || 640,
       price_cents: Math.round(Number(row.price || 0) * 100),
       search: [name, brandLabel, sectionTitle, category]
         .filter(Boolean)
         .join(" ")
         .toLowerCase(),
     };
+    const deal = activeDealForPrice(id, record.price_cents);
+    if (deal) {
+      record.price_cents = deal.sale_price_cents;
+      record.compare_at_price_cents = deal.original_price_cents;
+      record.deal = {
+        discount_percent: deal.discount_percent,
+        expires_at: deal.expires_at,
+        reason: deal.reason,
+      };
+    }
     // Currency is USD (US-only store) and availability is always true here, so
     // both are omitted to keep the index small; the client defaults them. Every
     // indexed product now has a generated on-site PDP (product/<id>.html), so
     // catalogCardHtml always links on-site instead of the external brand url.
     record.has_pdp = true;
+    seenProductUrls.add(normalizedUrl);
     records.push(record);
   }
   return records;
@@ -1495,6 +1640,33 @@ writeFileSync(
 console.log(
   `Generated search index with ${searchIndexRecords.length} products in /data/search-index.json.`
 );
+
+function indexRecordToProduct(record) {
+  return {
+    id: record.id,
+    brand: record.brand_slug,
+    name: record.name,
+    displayName: record.name,
+    displayLabel: sectionTitleById[record.section_id] ?? "Athletonic catalog",
+    image: record.image,
+    imageWidth: record.image_width || 640,
+    imageHeight: record.image_height || record.image_width || 640,
+    price: (Number(record.price_cents) || 0) / 100,
+    currency: "USD",
+    sectionId: record.section_id,
+    sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
+    store_collection: record.section_id,
+    url: record.url || null,
+    deal: record.deal
+      ? {
+          discount_percent: record.deal.discount_percent,
+          original_price: (Number(record.compare_at_price_cents) || 0) / 100,
+          expires_at: record.deal.expires_at,
+          reason: record.deal.reason,
+        }
+      : null,
+  };
+}
 
 function fetchPdpData(productIds) {
   const ids = productIds
@@ -1592,7 +1764,7 @@ function renderPdpHeader(pathPrefix) {
       <div class="header-main">
         ${navToggleButton()}
         <a class="brand" href="${pathPrefix}" aria-label="Athletonic home">
-          <img class="brand-logo" src="${pathPrefix}assets/logo.png" alt="Athletonic" />
+          <img class="brand-logo" src="${pathPrefix}assets/logo.png" alt="Athletonic" width="1536" height="1024" decoding="async" />
         </a>
         <div class="pdp-header-search">
           <form class="market-search" action="${pathPrefix}pages/catalog.html" method="get" data-catalog-search>
@@ -1610,7 +1782,7 @@ function renderPdpHeader(pathPrefix) {
           </form>
         </div>
         <div class="header-actions" aria-label="Account and cart">
-          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog">
+          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-panel" aria-expanded="false" aria-label="Open account panel">
             <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="12" r="10"></circle>
               <circle cx="12" cy="10" r="3"></circle>
@@ -1618,7 +1790,7 @@ function renderPdpHeader(pathPrefix) {
             </svg>
             <span class="header-action-label" data-account-label>Guest</span>
           </button>
-          <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-label="Open cart">
+          <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart-drawer" aria-expanded="false" aria-label="Open cart">
             <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="8" cy="21" r="1"></circle>
               <circle cx="19" cy="21" r="1"></circle>
@@ -1636,7 +1808,7 @@ function renderPdpHeader(pathPrefix) {
 function renderDrawers() {
   return `
     <div class="drawer-overlay" data-drawer-overlay hidden></div>
-    <aside class="account-panel" data-account-panel hidden aria-hidden="true" aria-labelledby="account-title">
+    <aside class="account-panel" id="account-panel" data-account-panel hidden role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="account-title">
       <div class="drawer-header">
         <div>
           <p class="drawer-eyebrow">Account</p>
@@ -1658,7 +1830,7 @@ function renderDrawers() {
       </form>
     </aside>
 
-    <aside class="cart-drawer" data-cart-drawer hidden aria-hidden="true" aria-labelledby="cart-title">
+    <aside class="cart-drawer" id="cart-drawer" data-cart-drawer hidden role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="cart-title">
       <div class="drawer-header">
         <div>
           <p class="drawer-eyebrow">Checkout</p>
@@ -1800,12 +1972,9 @@ ${relatedProducts.map((product) => productCard(product, pathPrefix)).join("\n")}
         <nav class="pdp-breadcrumb" aria-label="Breadcrumb">
           <a href="${pathPrefix}">Home</a>
           <span aria-hidden="true">›</span>
-          <a href="${html(
-            resolveSiteHref(
-              SECTION_PAGE_HREFS[curated.sectionId] ?? `#${curated.sectionId}`,
-              pathPrefix
-            )
-          )}">${html(curated.sectionTitle || "Catalog")}</a>
+          <a href="${html(sectionHref(curated.sectionId, pathPrefix))}">${html(
+            curated.sectionTitle || "Catalog"
+          )}</a>
           <span aria-hidden="true">›</span>
           <span class="pdp-breadcrumb-current">${html(name)}</span>
         </nav>`;
@@ -1819,6 +1988,7 @@ ${relatedProducts.map((product) => productCard(product, pathPrefix)).join("\n")}
     <meta name="description" content="${html(
       `${name} by ${brand}. Buy directly on Athletonic, a performance store for sports nutrition, hydration, recovery, apparel, and training gear.`
     )}" />
+    ${canonicalLink(`/product/${curated.id}.html`)}
     <meta property="og:title" content="${html(`${name} — ${brand}`)}" />
     <meta property="og:type" content="product" />
     <meta property="og:image" content="${html(images[0] || "")}" />
@@ -1897,6 +2067,7 @@ ${relatedHtml}
     </main>
 
 ${renderFooter(pathPrefix)}
+${mobileBottomNav(pathPrefix)}
     <script>
       window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
       window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
@@ -2059,7 +2230,7 @@ const catalogDirectoryGroups = [
       {
         label: "All products",
         href: "pages/catalog.html",
-        description: `${totalProducts} curated products across performance categories.`,
+        description: "Supplements, apparel, recovery, and training essentials.",
       },
       {
         label: "Best sellers",
@@ -2114,7 +2285,7 @@ const catalogBrandItems = ATHLETONIC_SOURCE_OF_TRUTH.brands
     id: `brand-${brand.slug}`,
     label: brand.name,
     href: `pages/brands.html#brand-${brand.slug}`,
-    description: `${brandProductCounts.get(brand.slug)} curated products`,
+    description: "Shop this brand",
   }))
   .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -2124,7 +2295,7 @@ const featuredBrandItems = ATHLETONIC_SOURCE_OF_TRUTH.featuredBrandSlugs
   .map((slug) => ({
     label: brandNames[slug] ?? slug,
     href: `pages/brands.html#brand-${slug}`,
-    description: `${brandProductCounts.get(slug)} curated products`,
+    description: "Shop this brand",
   }));
 
 const brandSpotlightShelves = ATHLETONIC_SOURCE_OF_TRUTH.featuredBrandSlugs
@@ -2152,13 +2323,27 @@ const bestSellerShelf = customShelf({
   limit: 18,
 });
 
+const activeDealProducts = searchIndexRecords
+  .filter((record) => record.deal)
+  .sort((a, b) => {
+    const discountDelta =
+      Number(b.deal?.discount_percent || 0) - Number(a.deal?.discount_percent || 0);
+    if (discountDelta !== 0) return discountDelta;
+    return String(a.name).localeCompare(String(b.name));
+  })
+  .map(indexRecordToProduct);
+
+const fallbackDealProducts = allCuratedProducts.filter(
+  (product) => product.deal || Number(product.price) <= 50
+);
+
 const dailyDealsShelf = customShelf({
   eyebrow: "Deals",
   title: "Active limited-time offers",
   description:
     "Offers selected from trend signals, margin-safe discounts, and active expiration dates.",
-  products: allCuratedProducts.filter((product) => product.deal || Number(product.price) <= 50),
-  limit: 18,
+  products: activeDealProducts.length ? activeDealProducts : fallbackDealProducts,
+  limit: 30,
 });
 
 const newArrivalsShelf = customShelf({
@@ -3089,7 +3274,7 @@ const staticPages = [
     title: "Privacy Notice",
     eyebrow: "Legal",
     summary:
-      "This Privacy Notice explains how Athletonic collects, uses, and protects customer information when people browse, save carts, subscribe, or submit checkout requests.",
+      "This Privacy Notice explains how Athletonic collects, uses, protects, and reviews customer, visitor, checkout, account, and support information.",
     sections: [
       {
         heading: "Information We Collect",
@@ -3694,7 +3879,7 @@ const footerPageCopy = {
     title: "Privacy Notice",
     eyebrow: "Legal",
     summary:
-      "This Privacy Notice explains how Athletonic may collect, use, protect, and review information from customers, visitors, account users, checkout users, and support contacts.",
+      "This Privacy Notice explains how Athletonic collects, uses, protects, and reviews customer, visitor, checkout, account, and support information.",
     links: [{ label: "Email privacy request", href: "mailto:support@athletonic.com?subject=Privacy%20Request" }],
     sections: [
       {
@@ -3908,6 +4093,7 @@ function infoPage(pageInfo) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${html(pageInfo.title)} | Athletonic</title>
     <meta name="description" content="${html(pageInfo.summary)}" />
+    ${canonicalLink(`/pages/${pageInfo.slug}.html`)}
     <link rel="stylesheet" href="${pathPrefix}styles.css" />
   </head>
   <body class="info-body">
@@ -4126,7 +4312,7 @@ const commercePages = [
   {
     slug: "order-confirmation",
     title: "Order Confirmation",
-    description: "Athletonic order confirmation and payment status.",
+    description: "Athletonic order confirmation and checkout status details for customers.",
     activePage: "",
     shopLabel: "Continue shopping",
     content: orderConfirmationContent,
@@ -4143,6 +4329,7 @@ function commercePage(pageInfo) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${html(pageInfo.title)} | Athletonic</title>
     <meta name="description" content="${html(pageInfo.description)}" />
+    ${canonicalLink(`/pages/${pageInfo.slug}.html`)}
     <link rel="stylesheet" href="${pathPrefix}styles.css" />
   </head>
   <body class="info-body commerce-body">
@@ -4186,7 +4373,7 @@ for (const product of allCuratedProducts) {
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
   const pageHtml = productPage(product, fullRow, imageList, peers);
-  writeFileSync(new URL(`${product.id}.html`, pdpDir), pageHtml);
+  writeFileSync(new URL(`${product.id}.html`, pdpDir), cleanGeneratedText(pageHtml));
   pdpCount += 1;
 }
 
@@ -4206,22 +4393,6 @@ for (const record of searchIndexRecords) {
     indexRecordsBySection.set(record.section_id, []);
   }
   indexRecordsBySection.get(record.section_id).push(record);
-}
-
-function indexRecordToProduct(record) {
-  return {
-    id: record.id,
-    brand: record.brand_slug,
-    name: record.name,
-    displayName: record.name,
-    image: record.image,
-    price: (Number(record.price_cents) || 0) / 100,
-    currency: "USD",
-    sectionId: record.section_id,
-    sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
-    store_collection: "",
-    url: record.url || null,
-  };
 }
 
 const nonCuratedRecords = searchIndexRecords.filter(
@@ -4245,7 +4416,7 @@ for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
       .slice(0, 4)
       .map(indexRecordToProduct);
     const pageHtml = productPage(product, fullRow, imageList, peers);
-    writeFileSync(new URL(`${record.id}.html`, pdpDir), pageHtml);
+    writeFileSync(new URL(`${record.id}.html`, pdpDir), cleanGeneratedText(pageHtml));
     extraPdpCount += 1;
   }
 }
@@ -4261,16 +4432,54 @@ mkdirSync(pagesDir, { recursive: true });
 
 let staticPageCount = 0;
 for (const pageInfo of staticPages) {
-  writeFileSync(new URL(`${pageInfo.slug}.html`, pagesDir), infoPage(pageInfo));
+  writeFileSync(
+    new URL(`${pageInfo.slug}.html`, pagesDir),
+    cleanGeneratedText(infoPage(pageInfo))
+  );
   staticPageCount += 1;
 }
 
 let commercePageCount = 0;
 for (const pageInfo of commercePages) {
-  writeFileSync(new URL(`${pageInfo.slug}.html`, pagesDir), commercePage(pageInfo));
+  writeFileSync(
+    new URL(`${pageInfo.slug}.html`, pagesDir),
+    cleanGeneratedText(commercePage(pageInfo))
+  );
   commercePageCount += 1;
 }
 
 console.log(
   `Generated ${staticPageCount} footer pages and ${commercePageCount} commerce pages in /pages/.`
+);
+
+const sitemapLastModified = new Date().toISOString().slice(0, 10);
+const sitemapEntries = [
+  "/",
+  ...staticPages.map((pageInfo) => `/pages/${pageInfo.slug}.html`),
+];
+const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapEntries
+  .map(
+    (pathname) => `  <url>
+    <loc>${html(canonicalUrl(pathname))}</loc>
+    <lastmod>${sitemapLastModified}</lastmod>
+  </url>`
+  )
+  .join("\n")}
+</urlset>
+`;
+writeFileSync(new URL("../sitemap.xml", import.meta.url), cleanGeneratedText(sitemapXml));
+
+const robotsTxt = `User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /pages/admin/
+
+Sitemap: ${canonicalUrl("/sitemap.xml")}
+`;
+writeFileSync(new URL("../robots.txt", import.meta.url), cleanGeneratedText(robotsTxt));
+
+console.log(
+  `Generated robots.txt and sitemap.xml with ${sitemapEntries.length} indexable URLs.`
 );
