@@ -202,24 +202,24 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Black">Black</option>
-                <option value="Olympic Blue">Olympic Blue</option>
-                <option value="Red">Red</option>
-                <option value="Milspec Green">Milspec Green</option>
-                <option value="Pink">Pink</option>
-                <option value="Purple">Purple</option>
-                <option value="Grey">Grey</option>
+                <option value="Black" >Black</option>
+                <option value="Olympic Blue" >Olympic Blue</option>
+                <option value="Red" >Red</option>
+                <option value="Milspec Green" >Milspec Green</option>
+                <option value="Pink" >Pink</option>
+                <option value="Purple" >Purple</option>
+                <option value="Grey" >Grey</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
+                <option value="S" >S</option>
+                <option value="M" >M</option>
+                <option value="L" >L</option>
+                <option value="XL" >XL</option>
+                <option value="2XL" >2XL</option>
               </select>
             </label>
           </div>
@@ -233,9 +233,13 @@
               data-cart-brand="Iron Bull Strength"
               data-cart-name="Unleash 10mm Double Prong Power Belt - IPF Approved"
               data-cart-price="75"
+              data-cart-price-cents="7500"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0268/4682/2569/products/10mmDoubleProngPowerBelt-Black_1.webp"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -288,11 +292,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16345"
+                data-cart-product-id="16345"
                 data-cart-brand="Inno Supps"
                 data-cart-name="2 Bottle Max Mane Special Offer"
                 data-cart-price="139.98"
+                data-cart-price-cents="13998"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/ScreenShot2022-08-31at3.01.37PM.png"
+                data-cart-variant-id="40681505292424"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2 Bottle Max Mane Special Offer to cart"
               >Add to cart</button>
             </div>
@@ -311,18 +321,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="10880"
-                data-cart-brand="TRX Training"
-                data-cart-name="Tejara Mat: 6mm"
-                data-cart-price="139"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/14.png"
-                aria-label="Add Tejara Mat: 6mm to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/10880.html" aria-label="View options for Tejara Mat: 6mm">View options</a>
             </div>
           </article>
 
@@ -344,11 +343,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4582"
+                data-cart-product-id="4582"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Limited Edition Cymbiotika Bag"
                 data-cart-price="100"
+                data-cart-price-cents="10000"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/BeigeBagPNG_58b3ff63-7eb9-4e2d-a2bf-54af496e2a96.png"
+                data-cart-variant-id="44710960955439"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Limited Edition Cymbiotika Bag to cart"
               >Add to cart</button>
             </div>
@@ -372,11 +377,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4586"
+                data-cart-product-id="4586"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Yoga Mat"
                 data-cart-price="98"
+                data-cart-price-cents="9800"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/mat1.png"
+                data-cart-variant-id="43410461360175"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Yoga Mat to cart"
               >Add to cart</button>
             </div>
@@ -605,7 +616,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -615,7 +626,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"42162774409385","title":"Black / S","sku":"plb-s-b","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Black","Size":"S"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"42162774442153","title":"Black / M","sku":"plb-m-b","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Black","Size":"M"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1021,"deal":null},{"variant_id":"42162774474921","title":"Black / L","sku":"plb-l-b","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Black","Size":"L"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"42162774507689","title":"Black / XL","sku":"plb-xl-b","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1247,"deal":null},{"variant_id":"42162774540457","title":"Black / 2XL","sku":"plb-xxl-b","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1361,"deal":null},{"variant_id":"42162774573225","title":"Olympic Blue / S","sku":"plb-s-blu","option_values":[{"position":1,"name":"Color","value":"Olympic Blue"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Olympic Blue","Size":"S"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"42162774605993","title":"Olympic Blue / M","sku":"plb-m-blu","option_values":[{"position":1,"name":"Color","value":"Olympic Blue"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Olympic Blue","Size":"M"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1021,"deal":null},{"variant_id":"42162774638761","title":"Olympic Blue / L","sku":"plb-l-blu","option_values":[{"position":1,"name":"Color","value":"Olympic Blue"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Olympic Blue","Size":"L"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"42162774671529","title":"Olympic Blue / XL","sku":"plb-xl-blu","option_values":[{"position":1,"name":"Color","value":"Olympic Blue"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Olympic Blue","Size":"XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1247,"deal":null},{"variant_id":"42162774704297","title":"Olympic Blue / 2XL","sku":"plb-xxl-blu","option_values":[{"position":1,"name":"Color","value":"Olympic Blue"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Olympic Blue","Size":"2XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1361,"deal":null},{"variant_id":"42162774737065","title":"Red / S","sku":"plb-s-r","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Red","Size":"S"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"42162774769833","title":"Red / M","sku":"plb-m-r","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Red","Size":"M"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1021,"deal":null},{"variant_id":"42162774802601","title":"Red / L","sku":"plb-l-r","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Red","Size":"L"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"42162774835369","title":"Red / XL","sku":"plb-xl-r","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Red","Size":"XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1247,"deal":null},{"variant_id":"42162774868137","title":"Red / 2XL","sku":"plb-xxl-r","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Red","Size":"2XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1361,"deal":null},{"variant_id":"42162774900905","title":"Milspec Green / S","sku":"plb-s-g","option_values":[{"position":1,"name":"Color","value":"Milspec Green"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Milspec Green","Size":"S"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"42162774933673","title":"Milspec Green / M","sku":"plb-m-g","option_values":[{"position":1,"name":"Color","value":"Milspec Green"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Milspec Green","Size":"M"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1021,"deal":null},{"variant_id":"42162774966441","title":"Milspec Green / L","sku":"plb-l-g","option_values":[{"position":1,"name":"Color","value":"Milspec Green"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Milspec Green","Size":"L"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"42162774999209","title":"Milspec Green / XL","sku":"plb-xl-g","option_values":[{"position":1,"name":"Color","value":"Milspec Green"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Milspec Green","Size":"XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1247,"deal":null},{"variant_id":"42162775031977","title":"Milspec Green / 2XL","sku":"plb-xxl-g","option_values":[{"position":1,"name":"Color","value":"Milspec Green"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Milspec Green","Size":"2XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1361,"deal":null},{"variant_id":"42162775064745","title":"Pink / S","sku":"plb-s-pi","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Pink","Size":"S"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"42162775097513","title":"Pink / M","sku":"plb-m-pi","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Pink","Size":"M"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1021,"deal":null},{"variant_id":"42162775130281","title":"Pink / L","sku":"plb-l-pi","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Pink","Size":"L"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"42162775163049","title":"Pink / XL","sku":"plb-xl-pi","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Pink","Size":"XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1247,"deal":null},{"variant_id":"42162775195817","title":"Pink / 2XL","sku":"plb-xxl-pi","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Pink","Size":"2XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1361,"deal":null},{"variant_id":"42162775228585","title":"Purple / S","sku":"plb-s-pu","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Purple","Size":"S"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"42162775261353","title":"Purple / M","sku":"plb-m-pu","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Purple","Size":"M"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1021,"deal":null},{"variant_id":"42162775294121","title":"Purple / L","sku":"plb-l-pu","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Purple","Size":"L"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"42162775326889","title":"Purple / XL","sku":"plb-xl-pu","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Purple","Size":"XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1247,"deal":null},{"variant_id":"42162775359657","title":"Purple / 2XL","sku":"plb-xxl-pu","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Purple","Size":"2XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1361,"deal":null},{"variant_id":"42162775392425","title":"Grey / S","sku":"plb-s-gra","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Grey","Size":"S"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"42162775425193","title":"Grey / M","sku":"plb-m-gra","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Grey","Size":"M"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1021,"deal":null},{"variant_id":"42162775457961","title":"Grey / L","sku":"plb-l-gra","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Grey","Size":"L"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"42162775490729","title":"Grey / XL","sku":"plb-xl-gra","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Grey","Size":"XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1247,"deal":null},{"variant_id":"42162775523497","title":"Grey / 2XL","sku":"plb-xxl-gra","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Grey","Size":"2XL"},"price_cents":7500,"regular_price_cents":7500,"compare_at_price_cents":9000,"currency":"USD","available":true,"weight_grams":1361,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -628,9 +641,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -642,76 +653,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

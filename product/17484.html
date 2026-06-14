@@ -180,22 +180,22 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Blue">Blue</option>
-                <option value="Purple">Purple</option>
-                <option value="Brown">Brown</option>
-                <option value="Black">Black</option>
+                <option value="Blue" >Blue</option>
+                <option value="Purple" >Purple</option>
+                <option value="Brown" >Brown</option>
+                <option value="Black" >Black</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="X-Small">X-Small</option>
-                <option value="Small">Small</option>
-                <option value="Medium">Medium</option>
-                <option value="Large">Large</option>
-                <option value="X-Large">X-Large</option>
-                <option value="XX-Large">XX-Large</option>
+                <option value="X-Small" >X-Small</option>
+                <option value="Small" >Small</option>
+                <option value="Medium" >Medium</option>
+                <option value="Large" >Large</option>
+                <option value="X-Large" >X-Large</option>
+                <option value="XX-Large" disabled>XX-Large (sold out)</option>
               </select>
             </label>
           </div>
@@ -209,9 +209,13 @@
               data-cart-brand="Hayabusa"
               data-cart-name="Ranked Long Sleeve Rash Guard"
               data-cart-price="69.99"
+              data-cart-price-cents="6999"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/2010/3389/products/Arrow_Rashguard_Blue_LS_3QFr2.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -260,11 +264,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="19687"
+                data-cart-product-id="19687"
                 data-cart-brand="Century Martial Arts"
                 data-cart-name="5' X 10' x 8&quot; Stacking Crash Pad"
                 data-cart-price="1095"
+                data-cart-price-cents="109500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0552/0841/1293/products/5-x-10-x-8-stacking-crash-pad-916444.jpg"
+                data-cart-variant-id="43519118311581"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 5' X 10' x 8&quot; Stacking Crash Pad to cart"
               >Add to cart</button>
             </div>
@@ -288,11 +298,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="18675"
+                data-cart-product-id="18675"
                 data-cart-brand="Rival Boxing"
                 data-cart-name="Pro Free Standing Heavy Bag 230lb/104kg - 3XL"
                 data-cart-price="999.95"
+                data-cart-price-cents="99995"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/ProFreeStandingHeavyBag230lb.webp"
+                data-cart-variant-id="39411954352318"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Pro Free Standing Heavy Bag 230lb/104kg - 3XL to cart"
               >Add to cart</button>
             </div>
@@ -316,11 +332,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="19657"
+                data-cart-product-id="19657"
                 data-cart-brand="Century Martial Arts"
                 data-cart-name="2&quot; Foam Underlayment for Mats"
                 data-cart-price="975"
+                data-cart-price-cents="97500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0552/0841/1293/files/15499_1.jpg"
+                data-cart-variant-id="43989819687069"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2&quot; Foam Underlayment for Mats to cart"
               >Add to cart</button>
             </div>
@@ -344,11 +366,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="18677"
+                data-cart-product-id="18677"
                 data-cart-brand="Rival Boxing"
                 data-cart-name="Pro Bounce Back Heavy Bag 130lb/59kg"
                 data-cart-price="829.95"
+                data-cart-price-cents="82995"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/ProBounceBackHeavyBag130lb.webp"
+                data-cart-variant-id="39411953729726"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Pro Bounce Back Heavy Bag 130lb/59kg to cart"
               >Add to cart</button>
             </div>
@@ -577,7 +605,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -587,7 +615,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"37799665402038","title":"Blue / X-Small","sku":"ARGLS-BL-XS","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"X-Small"}],"selected_options":{"Color":"Blue","Size":"X-Small"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799665467574","title":"Blue / Small","sku":"ARGLS-BL-S","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Blue","Size":"Small"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665500342","title":"Blue / Medium","sku":"ARGLS-BL-M","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Blue","Size":"Medium"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799665533110","title":"Blue / Large","sku":"ARGLS-BL-L","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Blue","Size":"Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799665434806","title":"Blue / X-Large","sku":"ARGLS-BL-XL","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"X-Large"}],"selected_options":{"Color":"Blue","Size":"X-Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799665565878","title":"Blue / XX-Large","sku":"ARGLS-BL-XXL","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"XX-Large"}],"selected_options":{"Color":"Blue","Size":"XX-Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665598646","title":"Purple / X-Small","sku":"ARGLS-PU-XS","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"X-Small"}],"selected_options":{"Color":"Purple","Size":"X-Small"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799665664182","title":"Purple / Small","sku":"ARGLS-PU-S","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Purple","Size":"Small"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665696950","title":"Purple / Medium","sku":"ARGLS-PU-M","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Purple","Size":"Medium"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665729718","title":"Purple / Large","sku":"ARGLS-PU-L","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Purple","Size":"Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665631414","title":"Purple / X-Large","sku":"ARGLS-PU-XL","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"X-Large"}],"selected_options":{"Color":"Purple","Size":"X-Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665762486","title":"Purple / XX-Large","sku":"ARGLS-PU-XXL","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"XX-Large"}],"selected_options":{"Color":"Purple","Size":"XX-Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665795254","title":"Brown / X-Small","sku":"ARGLS-BR-XS","option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"X-Small"}],"selected_options":{"Color":"Brown","Size":"X-Small"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799665860790","title":"Brown / Small","sku":"ARGLS-BR-S","option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Brown","Size":"Small"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665893558","title":"Brown / Medium","sku":"ARGLS-BR-M","option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Brown","Size":"Medium"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665926326","title":"Brown / Large","sku":"ARGLS-BR-L","option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Brown","Size":"Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665828022","title":"Brown / X-Large","sku":"ARGLS-BR-XL","option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"X-Large"}],"selected_options":{"Color":"Brown","Size":"X-Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665959094","title":"Brown / XX-Large","sku":"ARGLS-BR-XXL","option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"XX-Large"}],"selected_options":{"Color":"Brown","Size":"XX-Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799665991862","title":"Black / X-Small","sku":"ARGLS-B-XS","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"X-Small"}],"selected_options":{"Color":"Black","Size":"X-Small"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799666057398","title":"Black / Small","sku":"ARGLS-B-S","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black","Size":"Small"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799666090166","title":"Black / Medium","sku":"ARGLS-B-M","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black","Size":"Medium"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":454,"deal":null},{"variant_id":"37799666122934","title":"Black / Large","sku":"ARGLS-B-L","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black","Size":"Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799666024630","title":"Black / X-Large","sku":"ARGLS-B-XL","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"X-Large"}],"selected_options":{"Color":"Black","Size":"X-Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null},{"variant_id":"37799666155702","title":"Black / XX-Large","sku":"ARGLS-B-XXL","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XX-Large"}],"selected_options":{"Color":"Black","Size":"XX-Large"},"price_cents":6999,"regular_price_cents":6999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":454,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -600,9 +630,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -614,76 +642,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

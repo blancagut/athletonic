@@ -176,11 +176,11 @@
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="YXS">YXS</option>
-                <option value="YS">YS</option>
-                <option value="YM">YM</option>
-                <option value="YL">YL</option>
-                <option value="YXL">YXL</option>
+                <option value="YXS" disabled>YXS (sold out)</option>
+                <option value="YS" >YS</option>
+                <option value="YM" >YM</option>
+                <option value="YL" >YL</option>
+                <option value="YXL" >YXL</option>
               </select>
             </label>
           </div>
@@ -194,9 +194,13 @@
               data-cart-brand="soccer_post"
               data-cart-name="Nike Youth Dri-Fit Park 26 Pant Kp - Midnight Navy"
               data-cart-price="36.99"
+              data-cart-price-cents="3699"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/HM7212-410_PHSFH001.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -260,11 +264,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="12623"
+                data-cart-product-id="12623"
                 data-cart-brand="Bear KompleX"
                 data-cart-name="Strength Deep Pec Fly (Ships in 4-6 weeks)"
                 data-cart-price="1995"
+                data-cart-price-cents="199500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/Untitled_design_45_750baa40-961c-4760-853a-74d90c9a1acf.png"
+                data-cart-variant-id="61694853022066"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Strength Deep Pec Fly (Ships in 4-6 weeks) to cart"
               >Add to cart</button>
             </div>
@@ -288,11 +298,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="12625"
+                data-cart-product-id="12625"
                 data-cart-brand="Bear KompleX"
                 data-cart-name="Strength Linked Hip Abduction (Ships in 4-6 weeks)"
                 data-cart-price="1995"
+                data-cart-price-cents="199500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/MADETOORDER-2025-10-02T075639.493.png"
+                data-cart-variant-id="61694833295730"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Strength Linked Hip Abduction (Ships in 4-6 weeks) to cart"
               >Add to cart</button>
             </div>
@@ -316,11 +332,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="10765"
+                data-cart-product-id="10765"
                 data-cart-brand="Iron Bull Strength"
                 data-cart-name="Hex Dumbbell Set With Rack - 5-50LB + 3-Tier"
                 data-cart-price="1875"
+                data-cart-price-cents="187500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0268/4682/2569/files/5-50lb-dumbbells-set-and-rack-3-tier.webp"
+                data-cart-variant-id="44579885187241"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Hex Dumbbell Set With Rack - 5-50LB + 3-Tier to cart"
               >Add to cart</button>
             </div>
@@ -335,22 +357,11 @@
               <h3><a class="product-card-link" href="../product/10806.html">Rubber Hex Dumbbells &amp; Sets (LB)</a></h3>
               <p>Athletonic catalog</p>
               <div class="product-price-line">
-                <strong>$1650.00</strong>
+                <strong>$1950.00</strong>
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="10806"
-                data-cart-brand="Iron Bull Strength"
-                data-cart-name="Rubber Hex Dumbbells &amp; Sets (LB)"
-                data-cart-price="1650"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0268/4682/2569/files/Hex-Dumbbells_19bb4fc1-b834-4896-9fb1-04b59ad4e7c5.webp"
-                aria-label="Add Rubber Hex Dumbbells &amp; Sets (LB) to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/10806.html" aria-label="View options for Rubber Hex Dumbbells &amp; Sets (LB)">View options</a>
             </div>
           </article>
         </div>
@@ -577,7 +588,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -587,7 +598,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"46866496749746","title":"YXS","sku":"NIKE-HM7212-410-YXS","option_values":[{"position":1,"name":"Size","value":"YXS"}],"selected_options":{"Size":"YXS"},"price_cents":3699,"regular_price_cents":3699,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":907,"deal":null},{"variant_id":"46866496782514","title":"YS","sku":"NIKE-HM7212-410-YS","option_values":[{"position":1,"name":"Size","value":"YS"}],"selected_options":{"Size":"YS"},"price_cents":3699,"regular_price_cents":3699,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"46866496815282","title":"YM","sku":"NIKE-HM7212-410-YM","option_values":[{"position":1,"name":"Size","value":"YM"}],"selected_options":{"Size":"YM"},"price_cents":3699,"regular_price_cents":3699,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"46866496848050","title":"YL","sku":"NIKE-HM7212-410-YL","option_values":[{"position":1,"name":"Size","value":"YL"}],"selected_options":{"Size":"YL"},"price_cents":3699,"regular_price_cents":3699,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":907,"deal":null},{"variant_id":"46866496880818","title":"YXL","sku":"NIKE-HM7212-410-YXL","option_values":[{"position":1,"name":"Size","value":"YXL"}],"selected_options":{"Size":"YXL"},"price_cents":3699,"regular_price_cents":3699,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":907,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -600,9 +613,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -614,76 +625,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

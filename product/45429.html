@@ -269,28 +269,28 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Black">Black</option>
-                <option value="Iron">Iron</option>
-                <option value="Navy">Navy</option>
-                <option value="OD Green">OD Green</option>
-                <option value="Light Grey">Light Grey</option>
-                <option value="Dark Olive">Dark Olive</option>
-                <option value="Resin">Resin</option>
-                <option value="Stone">Stone</option>
-                <option value="Pine">Pine</option>
-                <option value="Fog">Fog</option>
+                <option value="Black" >Black</option>
+                <option value="Iron" >Iron</option>
+                <option value="Navy" >Navy</option>
+                <option value="OD Green" >OD Green</option>
+                <option value="Light Grey" >Light Grey</option>
+                <option value="Dark Olive" >Dark Olive</option>
+                <option value="Resin" >Resin</option>
+                <option value="Stone" >Stone</option>
+                <option value="Pine" >Pine</option>
+                <option value="Fog" >Fog</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="XXL">XXL</option>
+                <option value="XS" >XS</option>
+                <option value="S" >S</option>
+                <option value="M" >M</option>
+                <option value="L" >L</option>
+                <option value="XL" >XL</option>
+                <option value="XXL" >XXL</option>
               </select>
             </label>
           </div>
@@ -304,9 +304,13 @@
               data-cart-brand="Ten Thousand"
               data-cart-name="Interval Pant - Regular"
               data-cart-price="138"
+              data-cart-price-cents="13800"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0251/7377/files/Interval-Pant_Black_419_Front_CS_1.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -359,18 +363,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="45363"
-                data-cart-brand="Ten Thousand"
-                data-cart-name="Interval Pant - Regular"
-                data-cart-price="82"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0251/7377/files/Interval-Pant_Black_419_Front_CS_1.png"
-                aria-label="Add Interval Pant - Regular to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/45363.html" aria-label="View options for Interval Pant - Regular">View options</a>
             </div>
           </article>
 
@@ -387,18 +380,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="45403"
-                data-cart-brand="Ten Thousand"
-                data-cart-name="A—L Boxer"
-                data-cart-price="48"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0251/7377/files/A-LBoxer_Black_Front.jpg"
-                aria-label="Add A—L Boxer to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/45403.html" aria-label="View options for A—L Boxer">View options</a>
             </div>
           </article>
 
@@ -415,18 +397,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="48098"
-                data-cart-brand="Allbirds"
-                data-cart-name="Laces - Verdant Green - Round"
-                data-cart-price="4"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/1104/4168/files/A12742_25Q4_Laces-Round-Verdant-Green_PDP_BUNDLE.png"
-                aria-label="Add Laces - Verdant Green - Round to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/48098.html" aria-label="View options for Laces - Verdant Green - Round">View options</a>
             </div>
           </article>
 
@@ -448,11 +419,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="14058"
+                data-cart-product-id="14058"
                 data-cart-brand="Goli"
                 data-cart-name="Nutrition Supergreens Gummies - Unit = Case of 48"
                 data-cart-price="481.75"
+                data-cart-price-cents="48175"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0070/0173/5241/files/sg-1pack-shop_e1eb520b-06e0-412e-9b26-98b36aa4cb61.jpg"
+                data-cart-variant-id="40659051413700"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Nutrition Supergreens Gummies - Unit = Case of 48 to cart"
               >Add to cart</button>
             </div>
@@ -681,7 +658,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -691,7 +668,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"42030129053783","title":"Black / XS","sku":"TTPT003V2-BLK-RE-XS","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030129086551","title":"Black / S","sku":"TTPT003V2-BLK-RE-S","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Black","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129119319","title":"Black / M","sku":"TTPT003V2-BLK-RE-M","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Black","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129152087","title":"Black / L","sku":"TTPT003V2-BLK-RE-L","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Black","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129184855","title":"Black / XL","sku":"TTPT003V2-BLK-RE-XL","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030129217623","title":"Black / XXL","sku":"TTPT003V2-BLK-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Black","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030129250391","title":"Iron / XS","sku":"TTPT003V2-IRON-RE-XS","option_values":[{"position":1,"name":"Color","value":"Iron"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Iron","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129283159","title":"Iron / S","sku":"TTPT003V2-IRON-RE-S","option_values":[{"position":1,"name":"Color","value":"Iron"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Iron","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129315927","title":"Iron / M","sku":"TTPT003V2-IRON-RE-M","option_values":[{"position":1,"name":"Color","value":"Iron"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Iron","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129348695","title":"Iron / L","sku":"TTPT003V2-IRON-RE-L","option_values":[{"position":1,"name":"Color","value":"Iron"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Iron","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129381463","title":"Iron / XL","sku":"TTPT003V2-IRON-RE-XL","option_values":[{"position":1,"name":"Color","value":"Iron"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Iron","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129414231","title":"Iron / XXL","sku":"TTPT003V2-IRON-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Iron"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Iron","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129643607","title":"Navy / XS","sku":"TTPT003V2-NVY-RE-XS","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Navy","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129676375","title":"Navy / S","sku":"TTPT003V2-NVY-RE-S","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Navy","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129709143","title":"Navy / M","sku":"TTPT003V2-NVY-RE-M","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Navy","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129741911","title":"Navy / L","sku":"TTPT003V2-NVY-RE-L","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Navy","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129774679","title":"Navy / XL","sku":"TTPT003V2-NVY-RE-XL","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Navy","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129807447","title":"Navy / XXL","sku":"TTPT003V2-NVY-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Navy","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129446999","title":"OD Green / XS","sku":"TTPT003V2-ODGREEN-RE-XS","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"OD Green","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129479767","title":"OD Green / S","sku":"TTPT003V2-ODGREEN-RE-S","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"OD Green","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129512535","title":"OD Green / M","sku":"TTPT003V2-ODGREEN-RE-M","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"OD Green","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129545303","title":"OD Green / L","sku":"TTPT003V2-ODGREEN-RE-L","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"OD Green","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129578071","title":"OD Green / XL","sku":"TTPT003V2-ODGREEN-RE-XL","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"OD Green","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030129610839","title":"OD Green / XXL","sku":"TTPT003V2-ODGREEN-RE-XXL","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"OD Green","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030129840215","title":"Light Grey / XS","sku":"TTPT003V2-LTGRY-RE-XS","option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Light Grey","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129872983","title":"Light Grey / S","sku":"TTPT003V2-LTGRY-RE-S","option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Light Grey","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030129905751","title":"Light Grey / M","sku":"TTPT003V2-LTGRY-RE-M","option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Light Grey","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030129938519","title":"Light Grey / L","sku":"TTPT003V2-LTGRY-RE-L","option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Light Grey","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030129971287","title":"Light Grey / XL","sku":"TTPT003V2-LTGRY-RE-XL","option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Light Grey","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130004055","title":"Light Grey / XXL","sku":"TTPT003V2-LTGRY-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Light Grey","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130233431","title":"Dark Olive / XS","sku":"TTPT003V2-DKOLV-RE-XS","option_values":[{"position":1,"name":"Color","value":"Dark Olive"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Dark Olive","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130266199","title":"Dark Olive / S","sku":"TTPT003V2-DKOLV-RE-S","option_values":[{"position":1,"name":"Color","value":"Dark Olive"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Dark Olive","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030130298967","title":"Dark Olive / M","sku":"TTPT003V2-DKOLV-RE-M","option_values":[{"position":1,"name":"Color","value":"Dark Olive"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Dark Olive","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030130331735","title":"Dark Olive / L","sku":"TTPT003V2-DKOLV-RE-L","option_values":[{"position":1,"name":"Color","value":"Dark Olive"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Dark Olive","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130364503","title":"Dark Olive / XL","sku":"TTPT003V2-DKOLV-RE-XL","option_values":[{"position":1,"name":"Color","value":"Dark Olive"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Dark Olive","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130397271","title":"Dark Olive / XXL","sku":"TTPT003V2-DKOLV-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Dark Olive"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Dark Olive","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42088386986071","title":"Resin / XS","sku":"TTPT003V2-RESIN-RE-XS","option_values":[{"position":1,"name":"Color","value":"Resin"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Resin","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42088387018839","title":"Resin / S","sku":"TTPT003V2-RESIN-RE-S","option_values":[{"position":1,"name":"Color","value":"Resin"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Resin","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42088387051607","title":"Resin / M","sku":"TTPT003V2-RESIN-RE-M","option_values":[{"position":1,"name":"Color","value":"Resin"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Resin","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42088387084375","title":"Resin / L","sku":"TTPT003V2-RESIN-RE-L","option_values":[{"position":1,"name":"Color","value":"Resin"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Resin","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42088387117143","title":"Resin / XL","sku":"TTPT003V2-RESIN-RE-XL","option_values":[{"position":1,"name":"Color","value":"Resin"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Resin","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42088387149911","title":"Resin / XXL","sku":"TTPT003V2-RESIN-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Resin"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Resin","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130036823","title":"Stone / XS","sku":"TTPT003V2-SLEET-RE-XS","option_values":[{"position":1,"name":"Color","value":"Stone"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Stone","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130069591","title":"Stone / S","sku":"TTPT003V2-SLEET-RE-S","option_values":[{"position":1,"name":"Color","value":"Stone"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Stone","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030130102359","title":"Stone / M","sku":"TTPT003V2-SLEET-RE-M","option_values":[{"position":1,"name":"Color","value":"Stone"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Stone","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130135127","title":"Stone / L","sku":"TTPT003V2-SLEET-RE-L","option_values":[{"position":1,"name":"Color","value":"Stone"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Stone","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130167895","title":"Stone / XL","sku":"TTPT003V2-SLEET-RE-XL","option_values":[{"position":1,"name":"Color","value":"Stone"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Stone","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030130200663","title":"Stone / XXL","sku":"TTPT003V2-SLEET-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Stone"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Stone","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42088387182679","title":"Pine / XS","sku":"TTPT003V2-DEPFRST-RE-XS","option_values":[{"position":1,"name":"Color","value":"Pine"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Pine","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42088387215447","title":"Pine / S","sku":"TTPT003V2-DEPFRST-RE-S","option_values":[{"position":1,"name":"Color","value":"Pine"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Pine","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42088387248215","title":"Pine / M","sku":"TTPT003V2-DEPFRST-RE-M","option_values":[{"position":1,"name":"Color","value":"Pine"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Pine","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42088387280983","title":"Pine / L","sku":"TTPT003V2-DEPFRST-RE-L","option_values":[{"position":1,"name":"Color","value":"Pine"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Pine","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42088387313751","title":"Pine / XL","sku":"TTPT003V2-DEPFRST-RE-XL","option_values":[{"position":1,"name":"Color","value":"Pine"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Pine","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42088387346519","title":"Pine / XXL","sku":"TTPT003V2-DEPFRST-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Pine"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Pine","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42031152431191","title":"Fog / XS","sku":"TTPT003V2-LNDNFG-RE-XS","option_values":[{"position":1,"name":"Color","value":"Fog"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Fog","Size":"XS"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":363,"deal":null},{"variant_id":"42031152463959","title":"Fog / S","sku":"TTPT003V2-LNDNFG-RE-S","option_values":[{"position":1,"name":"Color","value":"Fog"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Fog","Size":"S"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":363,"deal":null},{"variant_id":"42031152496727","title":"Fog / M","sku":"TTPT003V2-LNDNFG-RE-M","option_values":[{"position":1,"name":"Color","value":"Fog"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Fog","Size":"M"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":363,"deal":null},{"variant_id":"42031152529495","title":"Fog / L","sku":"TTPT003V2-LNDNFG-RE-L","option_values":[{"position":1,"name":"Color","value":"Fog"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Fog","Size":"L"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":386,"deal":null},{"variant_id":"42031152562263","title":"Fog / XL","sku":"TTPT003V2-LNDNFG-RE-XL","option_values":[{"position":1,"name":"Color","value":"Fog"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Fog","Size":"XL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":386,"deal":null},{"variant_id":"42031152595031","title":"Fog / XXL","sku":"TTPT003V2-LNDNFG-RE-XXL","option_values":[{"position":1,"name":"Color","value":"Fog"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Fog","Size":"XXL"},"price_cents":13800,"regular_price_cents":13800,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":363,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -704,9 +683,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -718,76 +695,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

@@ -198,22 +198,22 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Voltage">Voltage</option>
-                <option value="Black">Black</option>
-                <option value="Primal Green OUT OF STOCK-">Primal Green OUT OF STOCK-</option>
-                <option value="White OUT OF STOCK-">White OUT OF STOCK-</option>
+                <option value="Voltage" >Voltage</option>
+                <option value="Black" >Black</option>
+                <option value="Primal Green OUT OF STOCK-" disabled>Primal Green OUT OF STOCK- (sold out)</option>
+                <option value="White OUT OF STOCK-" disabled>White OUT OF STOCK- (sold out)</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="XS">XS</option>
-                <option value="Small">Small</option>
-                <option value="Medium">Medium</option>
-                <option value="Large">Large</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
+                <option value="XS" >XS</option>
+                <option value="Small" >Small</option>
+                <option value="Medium" >Medium</option>
+                <option value="Large" >Large</option>
+                <option value="XL" >XL</option>
+                <option value="2XL" >2XL</option>
               </select>
             </label>
           </div>
@@ -227,9 +227,13 @@
               data-cart-brand="1st Phorm"
               data-cart-name="Women's Genesis Long Sleeve"
               data-cart-price="42"
+              data-cart-price-cents="4200"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Womens_Shirts_GenesisLongSleeve_Voltage_0002_1.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -292,11 +296,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16345"
+                data-cart-product-id="16345"
                 data-cart-brand="Inno Supps"
                 data-cart-name="2 Bottle Max Mane Special Offer"
                 data-cart-price="139.98"
+                data-cart-price-cents="13998"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/ScreenShot2022-08-31at3.01.37PM.png"
+                data-cart-variant-id="40681505292424"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2 Bottle Max Mane Special Offer to cart"
               >Add to cart</button>
             </div>
@@ -315,18 +325,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="10880"
-                data-cart-brand="TRX Training"
-                data-cart-name="Tejara Mat: 6mm"
-                data-cart-price="139"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/14.png"
-                aria-label="Add Tejara Mat: 6mm to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/10880.html" aria-label="View options for Tejara Mat: 6mm">View options</a>
             </div>
           </article>
 
@@ -348,11 +347,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4582"
+                data-cart-product-id="4582"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Limited Edition Cymbiotika Bag"
                 data-cart-price="100"
+                data-cart-price-cents="10000"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/BeigeBagPNG_58b3ff63-7eb9-4e2d-a2bf-54af496e2a96.png"
+                data-cart-variant-id="44710960955439"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Limited Edition Cymbiotika Bag to cart"
               >Add to cart</button>
             </div>
@@ -376,11 +381,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4586"
+                data-cart-product-id="4586"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Yoga Mat"
                 data-cart-price="98"
+                data-cart-price-cents="9800"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/mat1.png"
+                data-cart-variant-id="43410461360175"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Yoga Mat to cart"
               >Add to cart</button>
             </div>
@@ -609,7 +620,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -619,7 +630,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"43911426998358","title":"Voltage / XS","sku":"19320","option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Voltage","Size":"XS"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"43911427031126","title":"Voltage / Small","sku":"19321","option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Voltage","Size":"Small"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"43911427063894","title":"Voltage / Medium","sku":"19322","option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Voltage","Size":"Medium"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"43911427096662","title":"Voltage / Large","sku":"19323","option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Voltage","Size":"Large"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"43911427129430","title":"Voltage / XL","sku":"19324","option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Voltage","Size":"XL"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"43911427162198","title":"Voltage / 2XL","sku":"19325","option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Voltage","Size":"2XL"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"40272070672470","title":"Black / XS","sku":"1420","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"40272070705238","title":"Black / Small","sku":"1421","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black","Size":"Small"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":227,"deal":null},{"variant_id":"40272070738006","title":"Black / Medium","sku":"1422","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black","Size":"Medium"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":227,"deal":null},{"variant_id":"40272070770774","title":"Black / Large","sku":"1423","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black","Size":"Large"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"40272070803542","title":"Black / XL","sku":"1424","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":227,"deal":null},{"variant_id":"40272070836310","title":"Black / 2XL","sku":"1425","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":227,"deal":null},{"variant_id":"43444125728854","title":"Primal Green OUT OF STOCK- / XS","sku":"18062","option_values":[{"position":1,"name":"Color","value":"Primal Green OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Primal Green OUT OF STOCK-","Size":"XS"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"43444125761622","title":"Primal Green OUT OF STOCK- / Small","sku":"18063","option_values":[{"position":1,"name":"Color","value":"Primal Green OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Primal Green OUT OF STOCK-","Size":"Small"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"43444125794390","title":"Primal Green OUT OF STOCK- / Medium","sku":"18064","option_values":[{"position":1,"name":"Color","value":"Primal Green OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Primal Green OUT OF STOCK-","Size":"Medium"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"43444125827158","title":"Primal Green OUT OF STOCK- / Large","sku":"18065","option_values":[{"position":1,"name":"Color","value":"Primal Green OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Primal Green OUT OF STOCK-","Size":"Large"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"43444125859926","title":"Primal Green OUT OF STOCK- / XL","sku":"18066","option_values":[{"position":1,"name":"Color","value":"Primal Green OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Primal Green OUT OF STOCK-","Size":"XL"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"43444125892694","title":"Primal Green OUT OF STOCK- / 2XL","sku":"18067","option_values":[{"position":1,"name":"Color","value":"Primal Green OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Primal Green OUT OF STOCK-","Size":"2XL"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"40272070475862","title":"White OUT OF STOCK- / XS","sku":"1408","option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"XS"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"40272070508630","title":"White OUT OF STOCK- / Small","sku":"1409","option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Small"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"40272070541398","title":"White OUT OF STOCK- / Medium","sku":"1410","option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Medium"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"40272070574166","title":"White OUT OF STOCK- / Large","sku":"1411","option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Large"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"40272070606934","title":"White OUT OF STOCK- / XL","sku":"1412","option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"XL"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null},{"variant_id":"40272070639702","title":"White OUT OF STOCK- / 2XL","sku":"1413","option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"2XL"},"price_cents":4200,"regular_price_cents":4200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":227,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -632,9 +645,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -646,76 +657,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

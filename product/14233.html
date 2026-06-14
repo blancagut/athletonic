@@ -181,9 +181,13 @@
               data-cart-brand="Quest Nutrition"
               data-cart-name="Protein Shake Variety Pack"
               data-cart-price="65.99"
+              data-cart-price-cents="6599"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1463/8084/files/qst-shakes-protein-shake-variety-pack_1_de4d9b52-bf58-4c4e-93d6-c2554a5ddf78.jpg"
-              data-cart-variant=""
+              data-cart-variant="6-item set"
+              data-cart-variant-id="40192026738762"
+              data-cart-sku="QST-SHAKES-1"
+              data-cart-selected-options='{"Pack Size":"6-item set"}'
 
             >Add to cart</button>
           </div>
@@ -234,11 +238,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="490"
+                data-cart-product-id="490"
                 data-cart-brand="RAW Nutrition"
                 data-cart-name="Protein Shake"
                 data-cart-price="49.99"
+                data-cart-price-cents="4999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Web_Assets_1_7d6513cc-a341-473a-bd35-1f5e30e25749.png"
+                data-cart-variant-id="52718543798590"
+                data-cart-sku="RAW-PRO-RTD-CHOC-330"
+                data-cart-selected-options='{"Flavor":"Chocolate"}'
+                data-cart-variant="Chocolate"
                 aria-label="Add Protein Shake to cart"
               >Add to cart</button>
             </div>
@@ -257,18 +267,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="465"
-                data-cart-brand="RAW Nutrition"
-                data-cart-name="Protein Bars"
-                data-cart-price="15.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/bar_12pack-doublefudge.png"
-                aria-label="Add Protein Bars to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/465.html" aria-label="View options for Protein Bars">View options</a>
             </div>
           </article>
 
@@ -290,11 +289,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5729"
+                data-cart-product-id="5729"
                 data-cart-brand="Soylent"
                 data-cart-name="complete meal powder - original"
                 data-cart-price="80"
+                data-cart-price-cents="8000"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0003/5933/3902/files/Resize_01_052721_SDC_US_Powder_Original_Hero.png"
+                data-cart-variant-id="31317121237103"
+                data-cart-sku="01ORG010207"
+                data-cart-selected-options='{}'
+                data-cart-variant="Default Title"
                 aria-label="Add complete meal powder - original to cart"
               >Add to cart</button>
             </div>
@@ -318,11 +323,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="2530"
+                data-cart-product-id="2530"
                 data-cart-brand="Redcon1"
                 data-cart-name="MRE Meal Replacement (7 LB)"
                 data-cart-price="79.99"
+                data-cart-price-cents="7999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1304/0433/products/MRE_BANANA-NUT-BREAD_FLV.png"
+                data-cart-variant-id="31815274364976"
+                data-cart-sku="RC1-MREBNB"
+                data-cart-selected-options='{"Flavor":"Banana Nut Bread"}'
+                data-cart-variant="Banana Nut Bread"
                 aria-label="Add MRE Meal Replacement (7 LB) to cart"
               >Add to cart</button>
             </div>
@@ -551,7 +562,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -561,7 +572,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"40192026738762","title":"6-item set","sku":"QST-SHAKES-1","option_values":[{"position":1,"name":"Pack Size","value":"6-item set"}],"selected_options":{"Pack Size":"6-item set"},"price_cents":6599,"regular_price_cents":6599,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -574,9 +587,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -588,76 +599,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

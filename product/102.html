@@ -181,9 +181,13 @@
               data-cart-brand="Gorilla Mind"
               data-cart-name="Gorilla Mode + HydroPrime Glycerol Bundle"
               data-cart-price="94.98"
+              data-cart-price-cents="9498"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/gorilla-modehydroprime_1.png"
-              data-cart-variant=""
+              data-cart-variant="Default Title"
+              data-cart-variant-id="42850511716397"
+              data-cart-sku=""
+              data-cart-selected-options='{}'
 
             >Add to cart</button>
           </div>
@@ -250,11 +254,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5628"
+                data-cart-product-id="5628"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="999.99"
+                data-cart-price-cents="99999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8-WOD_1.jpg"
+                data-cart-variant-id="50987013669197"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -278,11 +288,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5704"
+                data-cart-product-id="5704"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="830.76"
+                data-cart-price-cents="83076"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8-WOD_1.jpg"
+                data-cart-variant-id="51337398059341"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -306,11 +322,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5701"
+                data-cart-product-id="5701"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="799.99"
+                data-cart-price-cents="79999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8_1.jpg"
+                data-cart-variant-id="51337399697741"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -334,11 +356,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5698"
+                data-cart-product-id="5698"
                 data-cart-brand="Compex"
                 data-cart-name="SP 6.0 EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="779.99"
+                data-cart-price-cents="77999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP6_1.jpg"
+                data-cart-variant-id="51337400779085"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 6.0 EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -567,7 +595,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -577,7 +605,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"42850511716397","title":"Default Title","sku":null,"option_values":[],"selected_options":{},"price_cents":9498,"regular_price_cents":9498,"compare_at_price_cents":9998,"currency":"USD","available":true,"weight_grams":0,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -590,9 +620,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -604,76 +632,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

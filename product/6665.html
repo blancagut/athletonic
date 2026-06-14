@@ -195,15 +195,15 @@
               <span class="pdp-variant-label">Flavor</span>
               <select data-pdp-variant data-variant-name="Flavor" required>
                 <option value="" disabled selected>Select Flavor…</option>
-                <option value="Vanilla">Vanilla</option>
-                <option value="Fudge Chocolate">Fudge Chocolate</option>
-                <option value="Cinnamon Roll">Cinnamon Roll</option>
-                <option value="Peanut Buttеr">Peanut Buttеr</option>
-                <option value="Blueberry Muffin">Blueberry Muffin</option>
-                <option value="Banana French Toast">Banana French Toast</option>
-                <option value="Chocolate Peanut Butter">Chocolate Peanut Butter</option>
-                <option value="Milk N' Cookies">Milk N' Cookies</option>
-                <option value="Strawberry">Strawberry</option>
+                <option value="Vanilla" >Vanilla</option>
+                <option value="Fudge Chocolate" >Fudge Chocolate</option>
+                <option value="Cinnamon Roll" >Cinnamon Roll</option>
+                <option value="Peanut Buttеr" >Peanut Buttеr</option>
+                <option value="Blueberry Muffin" >Blueberry Muffin</option>
+                <option value="Banana French Toast" >Banana French Toast</option>
+                <option value="Chocolate Peanut Butter" >Chocolate Peanut Butter</option>
+                <option value="Milk N' Cookies" >Milk N' Cookies</option>
+                <option value="Strawberry" >Strawberry</option>
               </select>
             </label>
           </div>
@@ -217,9 +217,13 @@
               data-cart-brand="Bare Performance"
               data-cart-name="Whey Protein"
               data-cart-price="49.99"
+              data-cart-price-cents="4999"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1103/4864/files/BPNWPC_VN-8_JR_RENDER.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -275,11 +279,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="15044"
+                data-cart-product-id="15044"
                 data-cart-brand="Inno Supps"
                 data-cart-name="6 Bottles of Clean Vegan Protein"
                 data-cart-price="247.42"
+                data-cart-price-cents="24742"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVPLemonSugarCookie6x.webp"
+                data-cart-variant-id="45003774820488"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 6 Bottles of Clean Vegan Protein to cart"
               >Add to cart</button>
             </div>
@@ -303,11 +313,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16336"
+                data-cart-product-id="16336"
                 data-cart-brand="Inno Supps"
                 data-cart-name="6 Bottles of Clean Vegan Protein"
                 data-cart-price="247.42"
+                data-cart-price-cents="24742"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVPLemonSugarCookie6x.webp"
+                data-cart-variant-id="40759478648968"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 6 Bottles of Clean Vegan Protein to cart"
               >Add to cart</button>
             </div>
@@ -331,11 +347,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16141"
+                data-cart-product-id="16141"
                 data-cart-brand="Inno Supps"
                 data-cart-name="6 Bottles of Plant-powered Protein for Kids"
                 data-cart-price="224.94"
+                data-cart-price-cents="22494"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/6xVeganGUMMIEScopy.webp"
+                data-cart-variant-id="41202346721416"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 6 Bottles of Plant-powered Protein for Kids to cart"
               >Add to cart</button>
             </div>
@@ -359,11 +381,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16157"
+                data-cart-product-id="16157"
                 data-cart-brand="Inno Supps"
                 data-cart-name="6 Bottles of Power Up Protein for Kids"
                 data-cart-price="224.94"
+                data-cart-price-cents="22494"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/6xWheyGUMMIEScopy.webp"
+                data-cart-variant-id="41169063248008"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 6 Bottles of Power Up Protein for Kids to cart"
               >Add to cart</button>
             </div>
@@ -592,7 +620,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -602,7 +630,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"32564500791376","title":"Vanilla","sku":"150001","option_values":[{"position":1,"name":"Flavor","value":"Vanilla"}],"selected_options":{"Flavor":"Vanilla"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"32692173176912","title":"Fudge Chocolate","sku":"150007","option_values":[{"position":1,"name":"Flavor","value":"Fudge Chocolate"}],"selected_options":{"Flavor":"Fudge Chocolate"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1179,"deal":null},{"variant_id":"41094674758","title":"Cinnamon Roll","sku":"150000","option_values":[{"position":1,"name":"Flavor","value":"Cinnamon Roll"}],"selected_options":{"Flavor":"Cinnamon Roll"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1089,"deal":null},{"variant_id":"43720897396908","title":"Peanut Buttеr","sku":"150024","option_values":[{"position":1,"name":"Flavor","value":"Peanut Buttеr"}],"selected_options":{"Flavor":"Peanut Buttеr"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1225,"deal":null},{"variant_id":"28634741932112","title":"Blueberry Muffin","sku":"150004","option_values":[{"position":1,"name":"Flavor","value":"Blueberry Muffin"}],"selected_options":{"Flavor":"Blueberry Muffin"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"43636545945772","title":"Banana French Toast","sku":"150023","option_values":[{"position":1,"name":"Flavor","value":"Banana French Toast"}],"selected_options":{"Flavor":"Banana French Toast"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1134,"deal":null},{"variant_id":"28009387425872","title":"Chocolate Peanut Butter","sku":"150003","option_values":[{"position":1,"name":"Flavor","value":"Chocolate Peanut Butter"}],"selected_options":{"Flavor":"Chocolate Peanut Butter"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1315,"deal":null},{"variant_id":"32692174979152","title":"Milk N' Cookies","sku":"150008","option_values":[{"position":1,"name":"Flavor","value":"Milk N' Cookies"}],"selected_options":{"Flavor":"Milk N' Cookies"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1179,"deal":null},{"variant_id":"42247260602540","title":"Strawberry","sku":"150013","option_values":[{"position":1,"name":"Flavor","value":"Strawberry"}],"selected_options":{"Flavor":"Strawberry"},"price_cents":4999,"regular_price_cents":4999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":1089,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -615,9 +645,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -629,76 +657,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

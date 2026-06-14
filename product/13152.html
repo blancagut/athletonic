@@ -182,23 +182,23 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Black Heather">Black Heather</option>
-                <option value="Olive">Olive</option>
-                <option value="Athletic Heather">Athletic Heather</option>
-                <option value="Heather Kelly">Heather Kelly</option>
+                <option value="Black Heather" >Black Heather</option>
+                <option value="Olive" >Olive</option>
+                <option value="Athletic Heather" >Athletic Heather</option>
+                <option value="Heather Kelly" >Heather Kelly</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
-                <option value="3XL">3XL</option>
-                <option value="4XL">4XL</option>
+                <option value="S" >S</option>
+                <option value="M" >M</option>
+                <option value="L" >L</option>
+                <option value="XL" >XL</option>
+                <option value="2XL" >2XL</option>
+                <option value="3XL" >3XL</option>
+                <option value="4XL" >4XL</option>
               </select>
             </label>
           </div>
@@ -212,9 +212,13 @@
               data-cart-brand="jym"
               data-cart-name="Men's JYM Army Logo Tee"
               data-cart-price="29.99"
+              data-cart-price-cents="2999"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-staple-t-shirt-black-heather-front-67e4611694bfb.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -321,18 +325,7 @@ This product is made especially for you as soon as you place an order, which is 
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12726"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Half Zip Dress - Harborside"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/harborside-dress.png"
-                aria-label="Add Half Zip Dress - Harborside to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12726.html" aria-label="View options for Half Zip Dress - Harborside">View options</a>
             </div>
           </article>
 
@@ -349,18 +342,7 @@ This product is made especially for you as soon as you place an order, which is 
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12946"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Texas License Plate Shirt"
-                data-cart-price="25"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/LicensePlateFront.png"
-                aria-label="Add Texas License Plate Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12946.html" aria-label="View options for Texas License Plate Shirt">View options</a>
             </div>
           </article>
 
@@ -377,18 +359,7 @@ This product is made especially for you as soon as you place an order, which is 
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14324"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Body Building Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/COREOLYMPIA2.png"
-                aria-label="Add Body Building Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14324.html" aria-label="View options for Body Building Shirt">View options</a>
             </div>
           </article>
 
@@ -405,18 +376,7 @@ This product is made especially for you as soon as you place an order, which is 
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14392"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Spartan Helmet Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/front1.jpg"
-                aria-label="Add Spartan Helmet Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14392.html" aria-label="View options for Spartan Helmet Shirt">View options</a>
             </div>
           </article>
         </div>
@@ -643,7 +603,7 @@ This product is made especially for you as soon as you place an order, which is 
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -653,7 +613,9 @@ This product is made especially for you as soon as you place an order, which is 
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"45018018840751","title":"Black Heather / S","sku":"POD_1017699_8923","option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Black Heather","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":130,"deal":null},{"variant_id":"45018018873519","title":"Black Heather / M","sku":"POD_1017699_8924","option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Black Heather","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":142,"deal":null},{"variant_id":"45018018906287","title":"Black Heather / L","sku":"POD_1017699_8925","option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Black Heather","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":164,"deal":null},{"variant_id":"45018018939055","title":"Black Heather / XL","sku":"POD_1017699_8926","option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black Heather","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"45018018971823","title":"Black Heather / 2XL","sku":"POD_1017699_8927","option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black Heather","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":201,"deal":null},{"variant_id":"45018019004591","title":"Black Heather / 3XL","sku":"POD_1017699_8928","option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Black Heather","Size":"3XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":213,"deal":null},{"variant_id":"45018019037359","title":"Black Heather / 4XL","sku":"POD_1017699_8929","option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"4XL"}],"selected_options":{"Color":"Black Heather","Size":"4XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":255,"deal":null},{"variant_id":"45018019102895","title":"Olive / S","sku":"POD_1017699_21302","option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Olive","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":130,"deal":null},{"variant_id":"45018019135663","title":"Olive / M","sku":"POD_1017699_21303","option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Olive","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":142,"deal":null},{"variant_id":"45018019168431","title":"Olive / L","sku":"POD_1017699_21304","option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Olive","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":164,"deal":null},{"variant_id":"45018019201199","title":"Olive / XL","sku":"POD_1017699_21305","option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Olive","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"45018019233967","title":"Olive / 2XL","sku":"POD_1017699_21306","option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Olive","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":201,"deal":null},{"variant_id":"45018019266735","title":"Olive / 3XL","sku":"POD_1017699_21307","option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Olive","Size":"3XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":213,"deal":null},{"variant_id":"45018019299503","title":"Olive / 4XL","sku":"POD_1017699_21308","option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"4XL"}],"selected_options":{"Color":"Olive","Size":"4XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":255,"deal":null},{"variant_id":"45018019365039","title":"Athletic Heather / S","sku":"POD_1017699_6948","option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Athletic Heather","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":130,"deal":null},{"variant_id":"45018019397807","title":"Athletic Heather / M","sku":"POD_1017699_6949","option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Athletic Heather","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":142,"deal":null},{"variant_id":"45018019430575","title":"Athletic Heather / L","sku":"POD_1017699_6950","option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Athletic Heather","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":164,"deal":null},{"variant_id":"45018019463343","title":"Athletic Heather / XL","sku":"POD_1017699_6951","option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Athletic Heather","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"45018019496111","title":"Athletic Heather / 2XL","sku":"POD_1017699_6952","option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Athletic Heather","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":201,"deal":null},{"variant_id":"45018019528879","title":"Athletic Heather / 3XL","sku":"POD_1017699_6953","option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Athletic Heather","Size":"3XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":213,"deal":null},{"variant_id":"45018019561647","title":"Athletic Heather / 4XL","sku":"POD_1017699_6954","option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"4XL"}],"selected_options":{"Color":"Athletic Heather","Size":"4XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":255,"deal":null},{"variant_id":"46615538991279","title":"Heather Kelly / S","sku":"POD_1017699_18643","option_values":[{"position":1,"name":"Color","value":"Heather Kelly"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Heather Kelly","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":130,"deal":null},{"variant_id":"46615539024047","title":"Heather Kelly / M","sku":"POD_1017699_18644","option_values":[{"position":1,"name":"Color","value":"Heather Kelly"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Heather Kelly","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":142,"deal":null},{"variant_id":"46615539056815","title":"Heather Kelly / L","sku":"POD_1017699_18645","option_values":[{"position":1,"name":"Color","value":"Heather Kelly"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Heather Kelly","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":164,"deal":null},{"variant_id":"46615539089583","title":"Heather Kelly / XL","sku":"POD_1017699_18646","option_values":[{"position":1,"name":"Color","value":"Heather Kelly"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Heather Kelly","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"46615539122351","title":"Heather Kelly / 2XL","sku":"POD_1017699_18647","option_values":[{"position":1,"name":"Color","value":"Heather Kelly"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Heather Kelly","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":201,"deal":null},{"variant_id":"46615539155119","title":"Heather Kelly / 3XL","sku":"POD_1017699_18648","option_values":[{"position":1,"name":"Color","value":"Heather Kelly"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Heather Kelly","Size":"3XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":213,"deal":null},{"variant_id":"46615539187887","title":"Heather Kelly / 4XL","sku":"POD_1017699_18649","option_values":[{"position":1,"name":"Color","value":"Heather Kelly"},{"position":2,"name":"Size","value":"4XL"}],"selected_options":{"Color":"Heather Kelly","Size":"4XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":255,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -666,9 +628,7 @@ This product is made especially for you as soon as you place an order, which is 
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -680,76 +640,87 @@ This product is made especially for you as soon as you place an order, which is 
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

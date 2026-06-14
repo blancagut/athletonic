@@ -182,15 +182,15 @@
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="2C">2C</option>
-                <option value="3C">3C</option>
-                <option value="4C">4C</option>
-                <option value="5C">5C</option>
-                <option value="6C">6C</option>
-                <option value="7C">7C</option>
-                <option value="8C">8C</option>
-                <option value="9C">9C</option>
-                <option value="10C">10C</option>
+                <option value="2C" disabled>2C (sold out)</option>
+                <option value="3C" >3C</option>
+                <option value="4C" >4C</option>
+                <option value="5C" >5C</option>
+                <option value="6C" >6C</option>
+                <option value="7C" >7C</option>
+                <option value="8C" >8C</option>
+                <option value="9C" >9C</option>
+                <option value="10C" >10C</option>
               </select>
             </label>
           </div>
@@ -204,9 +204,13 @@
               data-cart-brand="Nike"
               data-cart-name="Jordan 6 Retro &quot;Cap and Gown&quot;"
               data-cart-price="80"
+              data-cart-price-cents="8000"
               data-cart-currency="USD"
               data-cart-image="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/51747f8a-0575-4eac-8eb1-2b5d9a6b847a/jordan-6-retro-cap-and-gown-baby-toddler-shoes-D7qbtIwc.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -255,11 +259,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16345"
+                data-cart-product-id="16345"
                 data-cart-brand="Inno Supps"
                 data-cart-name="2 Bottle Max Mane Special Offer"
                 data-cart-price="139.98"
+                data-cart-price-cents="13998"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/ScreenShot2022-08-31at3.01.37PM.png"
+                data-cart-variant-id="40681505292424"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2 Bottle Max Mane Special Offer to cart"
               >Add to cart</button>
             </div>
@@ -278,18 +288,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="10880"
-                data-cart-brand="TRX Training"
-                data-cart-name="Tejara Mat: 6mm"
-                data-cart-price="139"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/14.png"
-                aria-label="Add Tejara Mat: 6mm to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/10880.html" aria-label="View options for Tejara Mat: 6mm">View options</a>
             </div>
           </article>
 
@@ -311,11 +310,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4582"
+                data-cart-product-id="4582"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Limited Edition Cymbiotika Bag"
                 data-cart-price="100"
+                data-cart-price-cents="10000"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/BeigeBagPNG_58b3ff63-7eb9-4e2d-a2bf-54af496e2a96.png"
+                data-cart-variant-id="44710960955439"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Limited Edition Cymbiotika Bag to cart"
               >Add to cart</button>
             </div>
@@ -339,11 +344,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4586"
+                data-cart-product-id="4586"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Yoga Mat"
                 data-cart-price="98"
+                data-cart-price-cents="9800"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/mat1.png"
+                data-cart-variant-id="43410461360175"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Yoga Mat to cart"
               >Add to cart</button>
             </div>
@@ -572,7 +583,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -582,7 +593,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"47b6e20f-6998-57b1-b620-20fabee1632c","title":"2C","sku":"1006020290","option_values":[{"position":1,"name":"Size","value":"2C"}],"selected_options":{"Size":"2C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"d80ac8c2-54c9-5af7-bfe0-5577b59de00d","title":"3C","sku":"1006019313","option_values":[{"position":1,"name":"Size","value":"3C"}],"selected_options":{"Size":"3C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"bfcfd6e2-a8bf-5b58-b3a6-24c26e42b2f9","title":"4C","sku":"1006020058","option_values":[{"position":1,"name":"Size","value":"4C"}],"selected_options":{"Size":"4C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"68f1a27f-51e2-509e-a32f-b0855770d702","title":"5C","sku":"1006020441","option_values":[{"position":1,"name":"Size","value":"5C"}],"selected_options":{"Size":"5C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"d17b2718-7345-5cd7-9d27-6c1fd09d44a1","title":"6C","sku":"1006020934","option_values":[{"position":1,"name":"Size","value":"6C"}],"selected_options":{"Size":"6C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"6bea6ed0-39d2-5145-8a16-dcd4b88bedac","title":"7C","sku":"1006019478","option_values":[{"position":1,"name":"Size","value":"7C"}],"selected_options":{"Size":"7C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"3bfac8db-b2ef-55d1-96aa-988d266bd640","title":"8C","sku":"1006020348","option_values":[{"position":1,"name":"Size","value":"8C"}],"selected_options":{"Size":"8C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"def93232-658f-5a84-bcfb-a3c8a9144962","title":"9C","sku":"1006021014","option_values":[{"position":1,"name":"Size","value":"9C"}],"selected_options":{"Size":"9C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"04664fa4-4b1d-5ca7-aa70-3a355affe3e5","title":"10C","sku":"1006020841","option_values":[{"position":1,"name":"Size","value":"10C"}],"selected_options":{"Size":"10C"},"price_cents":8000,"regular_price_cents":8000,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -595,9 +608,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -609,76 +620,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

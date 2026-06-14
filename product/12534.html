@@ -184,23 +184,23 @@
               <span class="pdp-variant-label">SIZE</span>
               <select data-pdp-variant data-variant-name="SIZE" required>
                 <option value="" disabled selected>Select SIZE…</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
-                <option value="3XL">3XL</option>
+                <option value="S" >S</option>
+                <option value="M" >M</option>
+                <option value="L" >L</option>
+                <option value="XL" disabled>XL (sold out)</option>
+                <option value="2XL" >2XL</option>
+                <option value="3XL" >3XL</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">COLOR</span>
               <select data-pdp-variant data-variant-name="COLOR" required>
                 <option value="" disabled selected>Select COLOR…</option>
-                <option value="BLACK">BLACK</option>
-                <option value="MILITARY GREEN">MILITARY GREEN</option>
-                <option value="PINK">PINK</option>
-                <option value="WHITE">WHITE</option>
-                <option value="Rocky Gray">Rocky Gray</option>
+                <option value="BLACK" >BLACK</option>
+                <option value="MILITARY GREEN" >MILITARY GREEN</option>
+                <option value="PINK" >PINK</option>
+                <option value="WHITE" >WHITE</option>
+                <option value="Rocky Gray" >Rocky Gray</option>
               </select>
             </label>
           </div>
@@ -214,9 +214,13 @@
               data-cart-brand="Bear KompleX"
               data-cart-name="Original Motto: Lift Heavy. Move Fast. Stay Deadly. Men's T-Shirt"
               data-cart-price="32"
+              data-cart-price-cents="3200"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/liftheavy_black_8363150c-d6ab-4c39-8546-973a41488ba8.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -262,18 +266,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12726"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Half Zip Dress - Harborside"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/harborside-dress.png"
-                aria-label="Add Half Zip Dress - Harborside to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12726.html" aria-label="View options for Half Zip Dress - Harborside">View options</a>
             </div>
           </article>
 
@@ -290,18 +283,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12946"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Texas License Plate Shirt"
-                data-cart-price="25"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/LicensePlateFront.png"
-                aria-label="Add Texas License Plate Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12946.html" aria-label="View options for Texas License Plate Shirt">View options</a>
             </div>
           </article>
 
@@ -318,18 +300,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14324"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Body Building Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/COREOLYMPIA2.png"
-                aria-label="Add Body Building Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14324.html" aria-label="View options for Body Building Shirt">View options</a>
             </div>
           </article>
 
@@ -346,18 +317,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14392"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Spartan Helmet Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/front1.jpg"
-                aria-label="Add Spartan Helmet Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14392.html" aria-label="View options for Spartan Helmet Shirt">View options</a>
             </div>
           </article>
         </div>
@@ -584,7 +544,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -594,7 +554,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"61813803843954","title":"S / BLACK","sku":"CMBT.LIFTHEAVY..S.BLACK.0958","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"S","COLOR":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813803876722","title":"S / MILITARY GREEN","sku":"TS|LIFH|S|MIGR|4025","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"S","COLOR":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813803909490","title":"S / PINK","sku":"TS|LIFH|S|PI|4024","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"PINK"}],"selected_options":{"SIZE":"S","COLOR":"PINK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813803942258","title":"S / WHITE","sku":"CMBT.LIFTHEAVY..S.WHITE.0961","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"WHITE"}],"selected_options":{"SIZE":"S","COLOR":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813803975026","title":"S / Rocky Gray","sku":"TS|ORIM|S|ROGR|4622","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"Rocky Gray"}],"selected_options":{"SIZE":"S","COLOR":"Rocky Gray"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804007794","title":"M / BLACK","sku":"CMBT.LIFTHEAVY..M.BLACK.0964","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"M","COLOR":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804040562","title":"M / MILITARY GREEN","sku":"TS|LIFH|M|MIGR|4027","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"M","COLOR":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804073330","title":"M / PINK","sku":"TS|LIFH|M|PI|4026","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"PINK"}],"selected_options":{"SIZE":"M","COLOR":"PINK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804106098","title":"M / WHITE","sku":"CMBT.LIFTHEAVY..M.WHITE.0967","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"WHITE"}],"selected_options":{"SIZE":"M","COLOR":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804138866","title":"M / Rocky Gray","sku":"TS|ORIM|M|ROGR|4623","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"Rocky Gray"}],"selected_options":{"SIZE":"M","COLOR":"Rocky Gray"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804171634","title":"L / BLACK","sku":"CMBT.LIFTHEAVY..L.BLACK.0970","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"L","COLOR":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804204402","title":"L / MILITARY GREEN","sku":"TS|LIFH|L|MIGR|4029","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"L","COLOR":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804237170","title":"L / PINK","sku":"TS|LIFH|L|PI|4028","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"PINK"}],"selected_options":{"SIZE":"L","COLOR":"PINK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804269938","title":"L / Rocky Gray","sku":"TS|ORIM|L|ROGR|4624","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"Rocky Gray"}],"selected_options":{"SIZE":"L","COLOR":"Rocky Gray"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804302706","title":"XL / BLACK","sku":"CMBT.LIFTHEAVY..XL.BLACK.0975","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"XL","COLOR":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804335474","title":"XL / MILITARY GREEN","sku":"TS|LIFH|XL|MIGR|4031","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"XL","COLOR":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804368242","title":"XL / PINK","sku":"TS|LIFH|XL|PI|4030","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"PINK"}],"selected_options":{"SIZE":"XL","COLOR":"PINK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804401010","title":"XL / Rocky Gray","sku":"TS|ORIM|XL|ROGR|4625","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"Rocky Gray"}],"selected_options":{"SIZE":"XL","COLOR":"Rocky Gray"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804433778","title":"2XL / BLACK","sku":"CMBT.LIFTHEAVY..2XL.BLACK.0980","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"2XL","COLOR":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804466546","title":"2XL / MILITARY GREEN","sku":"TS|LIFH|2X|MIGR|4033","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"2XL","COLOR":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804499314","title":"2XL / PINK","sku":"TS|LIFH|2X|PI|4032","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"PINK"}],"selected_options":{"SIZE":"2XL","COLOR":"PINK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804695922","title":"2XL / WHITE","sku":"GRA|ORIM|2XL|WHI|10676","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"WHITE"}],"selected_options":{"SIZE":"2XL","COLOR":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804532082","title":"2XL / Rocky Gray","sku":"TS|ORIM|2X|ROGR|4626","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"Rocky Gray"}],"selected_options":{"SIZE":"2XL","COLOR":"Rocky Gray"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804564850","title":"3XL / BLACK","sku":"CMBT.LIFTHEAVY..3XL.BLACK.0985","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"3XL","COLOR":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813804597618","title":"3XL / MILITARY GREEN","sku":"TS|LIFH|3X|MIGR|4035","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"3XL","COLOR":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804630386","title":"3XL / PINK","sku":"TS|LIFH|3X|PI|4034","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"PINK"}],"selected_options":{"SIZE":"3XL","COLOR":"PINK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804728690","title":"3XL / WHITE","sku":"GRA|ORIM|3XL|WHI|10677","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"WHITE"}],"selected_options":{"SIZE":"3XL","COLOR":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813804663154","title":"3XL / Rocky Gray","sku":"TS|ORIM|3X|ROGR|4627","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"Rocky Gray"}],"selected_options":{"SIZE":"3XL","COLOR":"Rocky Gray"},"price_cents":3200,"regular_price_cents":3200,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -607,9 +569,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -621,76 +581,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

@@ -216,25 +216,25 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Blue Jay">Blue Jay</option>
-                <option value="Camo">Camo</option>
-                <option value="Midnight Grey">Midnight Grey</option>
-                <option value="Black Camo">Black Camo</option>
-                <option value="Black">Black</option>
-                <option value="Combat Khaki">Combat Khaki</option>
-                <option value="Navy">Navy</option>
+                <option value="Camo" disabled>Camo (sold out)</option>
+                <option value="Midnight Grey" disabled>Midnight Grey (sold out)</option>
+                <option value="Black Camo" disabled>Black Camo (sold out)</option>
+                <option value="Black" disabled>Black (sold out)</option>
+                <option value="Combat Khaki" disabled>Combat Khaki (sold out)</option>
+                <option value="Navy" disabled>Navy (sold out)</option>
+                <option value="Blue Jay" >Blue Jay</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="Small">Small</option>
-                <option value="Medium">Medium</option>
-                <option value="Large">Large</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
-                <option value="3XL">3XL</option>
+                <option value="Small" >Small</option>
+                <option value="Medium" >Medium</option>
+                <option value="Large" >Large</option>
+                <option value="XL" >XL</option>
+                <option value="2XL" >2XL</option>
+                <option value="3XL" >3XL</option>
               </select>
             </label>
           </div>
@@ -248,9 +248,13 @@
               data-cart-brand="1st Phorm"
               data-cart-name="Element Short - 9&quot; Inseam - Unlined"
               data-cart-price="65"
+              data-cart-price-cents="6500"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_elementshort9__lined_camo_0003_35dd03bf-a16b-402f-837d-9295372f9904.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -310,18 +314,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12726"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Half Zip Dress - Harborside"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/harborside-dress.png"
-                aria-label="Add Half Zip Dress - Harborside to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12726.html" aria-label="View options for Half Zip Dress - Harborside">View options</a>
             </div>
           </article>
 
@@ -338,18 +331,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12946"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Texas License Plate Shirt"
-                data-cart-price="25"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/LicensePlateFront.png"
-                aria-label="Add Texas License Plate Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12946.html" aria-label="View options for Texas License Plate Shirt">View options</a>
             </div>
           </article>
 
@@ -366,18 +348,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14324"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Body Building Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/COREOLYMPIA2.png"
-                aria-label="Add Body Building Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14324.html" aria-label="View options for Body Building Shirt">View options</a>
             </div>
           </article>
 
@@ -394,18 +365,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14392"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Spartan Helmet Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/front1.jpg"
-                aria-label="Add Spartan Helmet Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14392.html" aria-label="View options for Spartan Helmet Shirt">View options</a>
             </div>
           </article>
         </div>
@@ -632,7 +592,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -642,7 +602,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"44193362444374","title":"Camo / Small","sku":"19656","option_values":[{"position":1,"name":"Color","value":"Camo"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Camo","Size":"Small"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"44193362477142","title":"Camo / Medium","sku":"19657","option_values":[{"position":1,"name":"Color","value":"Camo"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Camo","Size":"Medium"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"44193362509910","title":"Camo / Large","sku":"19658","option_values":[{"position":1,"name":"Color","value":"Camo"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Camo","Size":"Large"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"44193362542678","title":"Camo / XL","sku":"19659","option_values":[{"position":1,"name":"Color","value":"Camo"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Camo","Size":"XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"44193362575446","title":"Camo / 2XL","sku":"19660","option_values":[{"position":1,"name":"Color","value":"Camo"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Camo","Size":"2XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"44193362608214","title":"Camo / 3XL","sku":"19661","option_values":[{"position":1,"name":"Color","value":"Camo"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Camo","Size":"3XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"43549509615702","title":"Midnight Grey / Small","sku":"16708","option_values":[{"position":1,"name":"Color","value":"Midnight Grey"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Midnight Grey","Size":"Small"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"43549509648470","title":"Midnight Grey / Medium","sku":"16709","option_values":[{"position":1,"name":"Color","value":"Midnight Grey"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Midnight Grey","Size":"Medium"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"43549509681238","title":"Midnight Grey / Large","sku":"16710","option_values":[{"position":1,"name":"Color","value":"Midnight Grey"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Midnight Grey","Size":"Large"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"43549509714006","title":"Midnight Grey / XL","sku":"16711","option_values":[{"position":1,"name":"Color","value":"Midnight Grey"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Midnight Grey","Size":"XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"43549509746774","title":"Midnight Grey / 2XL","sku":"16712","option_values":[{"position":1,"name":"Color","value":"Midnight Grey"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Midnight Grey","Size":"2XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"43549509779542","title":"Midnight Grey / 3XL","sku":"16713","option_values":[{"position":1,"name":"Color","value":"Midnight Grey"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Midnight Grey","Size":"3XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42275598893142","title":"Black Camo / Small","sku":"16074","option_values":[{"position":1,"name":"Color","value":"Black Camo"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black Camo","Size":"Small"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42275598925910","title":"Black Camo / Medium","sku":"16075","option_values":[{"position":1,"name":"Color","value":"Black Camo"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black Camo","Size":"Medium"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42275598958678","title":"Black Camo / Large","sku":"16076","option_values":[{"position":1,"name":"Color","value":"Black Camo"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black Camo","Size":"Large"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42275598991446","title":"Black Camo / XL","sku":"16077","option_values":[{"position":1,"name":"Color","value":"Black Camo"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black Camo","Size":"XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42275599024214","title":"Black Camo / 2XL","sku":"16078","option_values":[{"position":1,"name":"Color","value":"Black Camo"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black Camo","Size":"2XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42275599056982","title":"Black Camo / 3XL","sku":"16079","option_values":[{"position":1,"name":"Color","value":"Black Camo"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Black Camo","Size":"3XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713503895638","title":"Black / Small","sku":"14125","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black","Size":"Small"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713503928406","title":"Black / Medium","sku":"14126","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black","Size":"Medium"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713503961174","title":"Black / Large","sku":"14127","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black","Size":"Large"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713503993942","title":"Black / XL","sku":"14128","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713504026710","title":"Black / 2XL","sku":"14129","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713504059478","title":"Black / 3XL","sku":"14130","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Black","Size":"3XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713504092246","title":"Combat Khaki / Small","sku":"13954","option_values":[{"position":1,"name":"Color","value":"Combat Khaki"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Combat Khaki","Size":"Small"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713504125014","title":"Combat Khaki / Medium","sku":"13955","option_values":[{"position":1,"name":"Color","value":"Combat Khaki"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Combat Khaki","Size":"Medium"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713504157782","title":"Combat Khaki / Large","sku":"13956","option_values":[{"position":1,"name":"Color","value":"Combat Khaki"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Combat Khaki","Size":"Large"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713504190550","title":"Combat Khaki / XL","sku":"13957","option_values":[{"position":1,"name":"Color","value":"Combat Khaki"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Combat Khaki","Size":"XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713504223318","title":"Combat Khaki / 2XL","sku":"13958","option_values":[{"position":1,"name":"Color","value":"Combat Khaki"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Combat Khaki","Size":"2XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"41713504256086","title":"Combat Khaki / 3XL","sku":"13959","option_values":[{"position":1,"name":"Color","value":"Combat Khaki"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Combat Khaki","Size":"3XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42506292658262","title":"Navy / Small","sku":"16455","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Navy","Size":"Small"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42506292691030","title":"Navy / Medium","sku":"16456","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Navy","Size":"Medium"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42506292723798","title":"Navy / Large","sku":"16457","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Navy","Size":"Large"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42506292756566","title":"Navy / XL","sku":"16458","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Navy","Size":"XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42506292789334","title":"Navy / 2XL","sku":"16459","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Navy","Size":"2XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"42506292822102","title":"Navy / 3XL","sku":"16460","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Navy","Size":"3XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":318,"deal":null},{"variant_id":"44425874440278","title":"Blue Jay / Small","sku":"19662","option_values":[{"position":1,"name":"Color","value":"Blue Jay"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Blue Jay","Size":"Small"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"44425874473046","title":"Blue Jay / Medium","sku":"19663","option_values":[{"position":1,"name":"Color","value":"Blue Jay"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Blue Jay","Size":"Medium"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"44425874505814","title":"Blue Jay / Large","sku":"19664","option_values":[{"position":1,"name":"Color","value":"Blue Jay"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Blue Jay","Size":"Large"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"44425874538582","title":"Blue Jay / XL","sku":"19665","option_values":[{"position":1,"name":"Color","value":"Blue Jay"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Blue Jay","Size":"XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"44425874571350","title":"Blue Jay / 2XL","sku":"19666","option_values":[{"position":1,"name":"Color","value":"Blue Jay"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Blue Jay","Size":"2XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null},{"variant_id":"44425874604118","title":"Blue Jay / 3XL","sku":"19667","option_values":[{"position":1,"name":"Color","value":"Blue Jay"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Blue Jay","Size":"3XL"},"price_cents":6500,"regular_price_cents":6500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":318,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -655,9 +617,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -669,76 +629,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

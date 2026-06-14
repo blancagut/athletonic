@@ -40,6 +40,8 @@ function buildLineItems(items, currency) {
       name: item.variant ? `${item.name} - ${item.variant}` : item.name,
       metadata: {
         product_id: item.product_id,
+        variant_id: item.variant_id || "",
+        sku: item.sku || "",
         brand: item.brand,
       },
     };
@@ -82,6 +84,8 @@ module.exports = async function handler(req, res) {
 
     const checkoutCart = items.map((item) => ({
       id: item.product_id,
+      variant_id: item.variant_id || null,
+      sku: item.sku || null,
       brand: item.brand,
       name: item.name,
       variant: item.variant || null,

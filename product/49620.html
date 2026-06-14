@@ -180,22 +180,22 @@
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="XXS">XXS</option>
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="S Tall">S Tall</option>
-                <option value="M">M</option>
-                <option value="M Tall">M Tall</option>
-                <option value="L">L</option>
-                <option value="L Tall">L Tall</option>
-                <option value="XL">XL</option>
-                <option value="XL Tall">XL Tall</option>
-                <option value="2XL">2XL</option>
-                <option value="2XL Tall">2XL Tall</option>
-                <option value="3XL">3XL</option>
-                <option value="3XL Tall">3XL Tall</option>
-                <option value="4XL">4XL</option>
-                <option value="4XL Tall">4XL Tall</option>
+                <option value="XXS" disabled>XXS (sold out)</option>
+                <option value="XS" >XS</option>
+                <option value="S" >S</option>
+                <option value="S Tall" disabled>S Tall (sold out)</option>
+                <option value="M" >M</option>
+                <option value="M Tall" disabled>M Tall (sold out)</option>
+                <option value="L" >L</option>
+                <option value="L Tall" disabled>L Tall (sold out)</option>
+                <option value="XL" disabled>XL (sold out)</option>
+                <option value="XL Tall" disabled>XL Tall (sold out)</option>
+                <option value="2XL" >2XL</option>
+                <option value="2XL Tall" disabled>2XL Tall (sold out)</option>
+                <option value="3XL" disabled>3XL (sold out)</option>
+                <option value="3XL Tall" disabled>3XL Tall (sold out)</option>
+                <option value="4XL" disabled>4XL (sold out)</option>
+                <option value="4XL Tall" disabled>4XL Tall (sold out)</option>
               </select>
             </label>
           </div>
@@ -209,9 +209,13 @@
               data-cart-brand="Nike"
               data-cart-name="ACG &quot;Dolomiti&quot;"
               data-cart-price="125"
+              data-cart-price-cents="12500"
               data-cart-currency="USD"
               data-cart-image="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/82a2e7dd-4c1c-43cd-818c-6fc8cbd35d8b/acg-dolomiti-vest-BDyDtGMU.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -255,18 +259,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12726"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Half Zip Dress - Harborside"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/harborside-dress.png"
-                aria-label="Add Half Zip Dress - Harborside to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12726.html" aria-label="View options for Half Zip Dress - Harborside">View options</a>
             </div>
           </article>
 
@@ -283,18 +276,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12946"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Texas License Plate Shirt"
-                data-cart-price="25"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/LicensePlateFront.png"
-                aria-label="Add Texas License Plate Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12946.html" aria-label="View options for Texas License Plate Shirt">View options</a>
             </div>
           </article>
 
@@ -311,18 +293,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14324"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Body Building Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/COREOLYMPIA2.png"
-                aria-label="Add Body Building Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14324.html" aria-label="View options for Body Building Shirt">View options</a>
             </div>
           </article>
 
@@ -339,18 +310,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14392"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Spartan Helmet Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/front1.jpg"
-                aria-label="Add Spartan Helmet Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14392.html" aria-label="View options for Spartan Helmet Shirt">View options</a>
             </div>
           </article>
         </div>
@@ -577,7 +537,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -587,7 +547,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"019580f6-2c6d-52b2-8826-309cd914cf67","title":"XXS","sku":"1005928285","option_values":[{"position":1,"name":"Size","value":"XXS"}],"selected_options":{"Size":"XXS"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"3524bbe1-6ddb-541b-b3e0-e9166187bca0","title":"XS","sku":"1005928371","option_values":[{"position":1,"name":"Size","value":"XS"}],"selected_options":{"Size":"XS"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"8679e203-089a-5a27-8454-909a62d8ec2f","title":"S","sku":"1005927564","option_values":[{"position":1,"name":"Size","value":"S"}],"selected_options":{"Size":"S"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"bf5750df-9376-5e83-a659-db5d5cdad7f9","title":"S Tall","sku":"1005926704","option_values":[{"position":1,"name":"Size","value":"S Tall"}],"selected_options":{"Size":"S Tall"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"f2cf0705-e34a-5259-83bb-022d3b51eccd","title":"M","sku":"1005926721","option_values":[{"position":1,"name":"Size","value":"M"}],"selected_options":{"Size":"M"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"47ea3bcd-dd7c-5829-b468-9a15347382e0","title":"M Tall","sku":"1005926805","option_values":[{"position":1,"name":"Size","value":"M Tall"}],"selected_options":{"Size":"M Tall"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"047ff2b3-a6b6-53be-b5f6-d5f6131ea9c0","title":"L","sku":"1005928192","option_values":[{"position":1,"name":"Size","value":"L"}],"selected_options":{"Size":"L"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"4eeaf7d6-7da9-5756-990f-357849d18693","title":"L Tall","sku":"1005927657","option_values":[{"position":1,"name":"Size","value":"L Tall"}],"selected_options":{"Size":"L Tall"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"db4146d2-2ebf-520b-bfe7-47170ba78c9a","title":"XL","sku":"1005927498","option_values":[{"position":1,"name":"Size","value":"XL"}],"selected_options":{"Size":"XL"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"d59d694a-4694-55ba-8fb7-7072cf1c74af","title":"XL Tall","sku":"1005926642","option_values":[{"position":1,"name":"Size","value":"XL Tall"}],"selected_options":{"Size":"XL Tall"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"c2f9fbed-a073-501d-9277-e0ad57d6d797","title":"2XL","sku":"1005927566","option_values":[{"position":1,"name":"Size","value":"2XL"}],"selected_options":{"Size":"2XL"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"782562c6-21e2-5ce9-af78-1631fa89567f","title":"2XL Tall","sku":"1005926904","option_values":[{"position":1,"name":"Size","value":"2XL Tall"}],"selected_options":{"Size":"2XL Tall"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42031b7c-c81b-578e-9aa8-48e8179589fa","title":"3XL","sku":"1005928196","option_values":[{"position":1,"name":"Size","value":"3XL"}],"selected_options":{"Size":"3XL"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"7e1732e5-c1df-5e5c-bb94-047bce53420b","title":"3XL Tall","sku":"1005928942","option_values":[{"position":1,"name":"Size","value":"3XL Tall"}],"selected_options":{"Size":"3XL Tall"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"68b71b40-efc4-5a84-8f31-7ec20968ccbd","title":"4XL","sku":"1005928757","option_values":[{"position":1,"name":"Size","value":"4XL"}],"selected_options":{"Size":"4XL"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"3f9a0111-9222-58aa-a58c-83c306c5c52f","title":"4XL Tall","sku":"1005928203","option_values":[{"position":1,"name":"Size","value":"4XL Tall"}],"selected_options":{"Size":"4XL Tall"},"price_cents":12500,"regular_price_cents":12500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -600,9 +562,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -614,76 +574,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

@@ -182,25 +182,25 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Purple">Purple</option>
-                <option value="Black">Black</option>
-                <option value="Blue">Blue</option>
-                <option value="Orange">Orange</option>
-                <option value="Pink">Pink</option>
-                <option value="Red">Red</option>
-                <option value="White">White</option>
-                <option value="Yellow">Yellow</option>
+                <option value="Purple" >Purple</option>
+                <option value="Black" >Black</option>
+                <option value="Blue" >Blue</option>
+                <option value="Orange" >Orange</option>
+                <option value="Pink" >Pink</option>
+                <option value="Red" >Red</option>
+                <option value="White" >White</option>
+                <option value="Yellow" >Yellow</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="120">120</option>
-                <option value="150">150</option>
-                <option value="180">180</option>
-                <option value="210">210</option>
-                <option value="200">200</option>
+                <option value="120" >120</option>
+                <option value="150" >150</option>
+                <option value="180" >180</option>
+                <option value="210" >210</option>
+                <option value="200" disabled>200 (sold out)</option>
               </select>
             </label>
           </div>
@@ -214,9 +214,13 @@
               data-cart-brand="Rival Boxing"
               data-cart-name="Mexican Handwraps"
               data-cart-price="9.95"
+              data-cart-price-cents="995"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-26-D-WEB-PRODUCT-MEX_HANDWRAPS-BLACK.webp"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -273,11 +277,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="19687"
+                data-cart-product-id="19687"
                 data-cart-brand="Century Martial Arts"
                 data-cart-name="5' X 10' x 8&quot; Stacking Crash Pad"
                 data-cart-price="1095"
+                data-cart-price-cents="109500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0552/0841/1293/products/5-x-10-x-8-stacking-crash-pad-916444.jpg"
+                data-cart-variant-id="43519118311581"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 5' X 10' x 8&quot; Stacking Crash Pad to cart"
               >Add to cart</button>
             </div>
@@ -301,11 +311,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="18675"
+                data-cart-product-id="18675"
                 data-cart-brand="Rival Boxing"
                 data-cart-name="Pro Free Standing Heavy Bag 230lb/104kg - 3XL"
                 data-cart-price="999.95"
+                data-cart-price-cents="99995"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/ProFreeStandingHeavyBag230lb.webp"
+                data-cart-variant-id="39411954352318"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Pro Free Standing Heavy Bag 230lb/104kg - 3XL to cart"
               >Add to cart</button>
             </div>
@@ -329,11 +345,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="19657"
+                data-cart-product-id="19657"
                 data-cart-brand="Century Martial Arts"
                 data-cart-name="2&quot; Foam Underlayment for Mats"
                 data-cart-price="975"
+                data-cart-price-cents="97500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0552/0841/1293/files/15499_1.jpg"
+                data-cart-variant-id="43989819687069"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2&quot; Foam Underlayment for Mats to cart"
               >Add to cart</button>
             </div>
@@ -357,11 +379,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="18677"
+                data-cart-product-id="18677"
                 data-cart-brand="Rival Boxing"
                 data-cart-name="Pro Bounce Back Heavy Bag 130lb/59kg"
                 data-cart-price="829.95"
+                data-cart-price-cents="82995"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/ProBounceBackHeavyBag130lb.webp"
+                data-cart-variant-id="39411953729726"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Pro Bounce Back Heavy Bag 130lb/59kg to cart"
               >Add to cart</button>
             </div>
@@ -590,7 +618,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -600,7 +628,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"43100782690494","title":"Purple / 120","sku":"RHWM-Purple-120","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"120"}],"selected_options":{"Color":"Purple","Size":"120"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43100782723262","title":"Purple / 150","sku":"RHWM-Purple-150","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"150"}],"selected_options":{"Color":"Purple","Size":"150"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":84,"deal":null},{"variant_id":"43100782362814","title":"Purple / 180","sku":"RHWM-Purple-180","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"180"}],"selected_options":{"Color":"Purple","Size":"180"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":100,"deal":null},{"variant_id":"43100782657726","title":"Purple / 210","sku":"RHWM-Purple-210","option_values":[{"position":1,"name":"Color","value":"Purple"},{"position":2,"name":"Size","value":"210"}],"selected_options":{"Color":"Purple","Size":"210"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":110,"deal":null},{"variant_id":"39411832488126","title":"Black / 120","sku":"RHWM-Black-120","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"120"}],"selected_options":{"Color":"Black","Size":"120"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"39411832717502","title":"Black / 150","sku":"RHWM-Black-150","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"150"}],"selected_options":{"Color":"Black","Size":"150"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":84,"deal":null},{"variant_id":"39411832946878","title":"Black / 180","sku":"RHWM-Black-180","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"180"}],"selected_options":{"Color":"Black","Size":"180"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":100,"deal":null},{"variant_id":"39411832422590","title":"Black / 200","sku":"RHWM-Black-200","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"200"}],"selected_options":{"Color":"Black","Size":"200"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"39411832815806","title":"Black / 210","sku":"RHWM-Black-210","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"210"}],"selected_options":{"Color":"Black","Size":"210"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":110,"deal":null},{"variant_id":"39411832520894","title":"Blue / 120","sku":"RHWM-Blue-120","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"120"}],"selected_options":{"Color":"Blue","Size":"120"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"39411832586430","title":"Blue / 150","sku":"RHWM-Blue-150","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"150"}],"selected_options":{"Color":"Blue","Size":"150"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":84,"deal":null},{"variant_id":"39411832750270","title":"Blue / 180","sku":"RHWM-Blue-180","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"180"}],"selected_options":{"Color":"Blue","Size":"180"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":100,"deal":null},{"variant_id":"39411832389822","title":"Blue / 200","sku":"RHWM-Blue-200","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"200"}],"selected_options":{"Color":"Blue","Size":"200"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"39411832258750","title":"Blue / 210","sku":"RHWM-Blue-210","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"210"}],"selected_options":{"Color":"Blue","Size":"210"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":110,"deal":null},{"variant_id":"39411832193214","title":"Orange / 120","sku":"RHWM-Orange-120","option_values":[{"position":1,"name":"Color","value":"Orange"},{"position":2,"name":"Size","value":"120"}],"selected_options":{"Color":"Orange","Size":"120"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"39411832225982","title":"Orange / 150","sku":"RHWM-Orange-150","option_values":[{"position":1,"name":"Color","value":"Orange"},{"position":2,"name":"Size","value":"150"}],"selected_options":{"Color":"Orange","Size":"150"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":85,"deal":null},{"variant_id":"39411832291518","title":"Orange / 180","sku":"RHWM-Orange-180","option_values":[{"position":1,"name":"Color","value":"Orange"},{"position":2,"name":"Size","value":"180"}],"selected_options":{"Color":"Orange","Size":"180"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":100,"deal":null},{"variant_id":"39411832455358","title":"Orange / 200","sku":"RHWM-Orange-200","option_values":[{"position":1,"name":"Color","value":"Orange"},{"position":2,"name":"Size","value":"200"}],"selected_options":{"Color":"Orange","Size":"200"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"39411832619198","title":"Orange / 210","sku":"RHWM-Orange-210","option_values":[{"position":1,"name":"Color","value":"Orange"},{"position":2,"name":"Size","value":"210"}],"selected_options":{"Color":"Orange","Size":"210"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":110,"deal":null},{"variant_id":"39411832783038","title":"Pink / 120","sku":"RHWM-Pink-120","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"120"}],"selected_options":{"Color":"Pink","Size":"120"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"39411832848574","title":"Pink / 150","sku":"RHWM-Pink-150","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"150"}],"selected_options":{"Color":"Pink","Size":"150"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":84,"deal":null},{"variant_id":"39411832324286","title":"Pink / 180","sku":"RHWM-Pink-180","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"180"}],"selected_options":{"Color":"Pink","Size":"180"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":100,"deal":null},{"variant_id":"42412934725822","title":"Pink / 200","sku":"RHWM-Pink-200","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"200"}],"selected_options":{"Color":"Pink","Size":"200"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"39411832684734","title":"Pink / 210","sku":"RHWM-Pink-210","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"210"}],"selected_options":{"Color":"Pink","Size":"210"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":110,"deal":null},{"variant_id":"39411832357054","title":"Red / 120","sku":"RHWM-Red-120","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"120"}],"selected_options":{"Color":"Red","Size":"120"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"39411832881342","title":"Red / 150","sku":"RHWM-Red-150","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"150"}],"selected_options":{"Color":"Red","Size":"150"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":84,"deal":null},{"variant_id":"39411832979646","title":"Red / 180","sku":"RHWM-Red-180","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"180"}],"selected_options":{"Color":"Red","Size":"180"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":100,"deal":null},{"variant_id":"39411832553662","title":"Red / 200","sku":"RHWM-Red-200","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"200"}],"selected_options":{"Color":"Red","Size":"200"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"39411832914110","title":"Red / 210","sku":"RHWM-Red-210","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size","value":"210"}],"selected_options":{"Color":"Red","Size":"210"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":110,"deal":null},{"variant_id":"39411832127678","title":"White / 120","sku":"RHWM-White-120","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"120"}],"selected_options":{"Color":"White","Size":"120"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"39411832651966","title":"White / 150","sku":"RHWM-White-150","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"150"}],"selected_options":{"Color":"White","Size":"150"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":90,"deal":null},{"variant_id":"39411833012414","title":"White / 180","sku":"RHWM-White-180","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"180"}],"selected_options":{"Color":"White","Size":"180"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":100,"deal":null},{"variant_id":"39411832160446","title":"White / 210","sku":"RHWM-White-210","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"210"}],"selected_options":{"Color":"White","Size":"210"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":110,"deal":null},{"variant_id":"39411833045182","title":"Yellow / 120","sku":"RHWM-Yellow-120","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size","value":"120"}],"selected_options":{"Color":"Yellow","Size":"120"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"39411832094910","title":"Yellow / 150","sku":"RHWM-Yellow-150","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size","value":"150"}],"selected_options":{"Color":"Yellow","Size":"150"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":84,"deal":null},{"variant_id":"39411833077950","title":"Yellow / 180","sku":"RHWM-Yellow-180","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size","value":"180"}],"selected_options":{"Color":"Yellow","Size":"180"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":100,"deal":null},{"variant_id":"39411833110718","title":"Yellow / 210","sku":"RHWM-Yellow-210","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size","value":"210"}],"selected_options":{"Color":"Yellow","Size":"210"},"price_cents":995,"regular_price_cents":995,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -613,9 +643,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -627,76 +655,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

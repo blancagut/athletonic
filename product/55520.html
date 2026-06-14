@@ -198,23 +198,23 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Black">Black</option>
-                <option value="Blue">Blue</option>
-                <option value="Pink">Pink</option>
-                <option value="Red">Red</option>
-                <option value="Yellow">Yellow</option>
-                <option value="White">White</option>
+                <option value="Black" >Black</option>
+                <option value="Blue" >Blue</option>
+                <option value="Pink" >Pink</option>
+                <option value="Red" >Red</option>
+                <option value="Yellow" >Yellow</option>
+                <option value="White" >White</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size Glove</span>
               <select data-pdp-variant data-variant-name="Size Glove" required>
                 <option value="" disabled selected>Select Size Glove…</option>
-                <option value="8 oz.">8 oz.</option>
-                <option value="10 oz.">10 oz.</option>
-                <option value="12 oz.">12 oz.</option>
-                <option value="14 oz.">14 oz.</option>
-                <option value="16 oz.">16 oz.</option>
+                <option value="8 oz." >8 oz.</option>
+                <option value="10 oz." >10 oz.</option>
+                <option value="12 oz." >12 oz.</option>
+                <option value="14 oz." >14 oz.</option>
+                <option value="16 oz." >16 oz.</option>
               </select>
             </label>
           </div>
@@ -228,9 +228,13 @@
               data-cart-brand="Fairtex"
               data-cart-name="Universal Gloves - BGV1 Breathable"
               data-cart-price="89.9"
+              data-cart-price-cents="8990"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_breatheble_red_website_1_1_5_x1024_c07d1e67-2a9b-4b28-b4b4-d75294c04fce.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -287,11 +291,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16345"
+                data-cart-product-id="16345"
                 data-cart-brand="Inno Supps"
                 data-cart-name="2 Bottle Max Mane Special Offer"
                 data-cart-price="139.98"
+                data-cart-price-cents="13998"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/ScreenShot2022-08-31at3.01.37PM.png"
+                data-cart-variant-id="40681505292424"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2 Bottle Max Mane Special Offer to cart"
               >Add to cart</button>
             </div>
@@ -310,18 +320,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="10880"
-                data-cart-brand="TRX Training"
-                data-cart-name="Tejara Mat: 6mm"
-                data-cart-price="139"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/14.png"
-                aria-label="Add Tejara Mat: 6mm to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/10880.html" aria-label="View options for Tejara Mat: 6mm">View options</a>
             </div>
           </article>
 
@@ -343,11 +342,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4582"
+                data-cart-product-id="4582"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Limited Edition Cymbiotika Bag"
                 data-cart-price="100"
+                data-cart-price-cents="10000"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/BeigeBagPNG_58b3ff63-7eb9-4e2d-a2bf-54af496e2a96.png"
+                data-cart-variant-id="44710960955439"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Limited Edition Cymbiotika Bag to cart"
               >Add to cart</button>
             </div>
@@ -371,11 +376,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4586"
+                data-cart-product-id="4586"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Yoga Mat"
                 data-cart-price="98"
+                data-cart-price-cents="9800"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/mat1.png"
+                data-cart-variant-id="43410461360175"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Yoga Mat to cart"
               >Add to cart</button>
             </div>
@@ -604,7 +615,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -614,7 +625,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"47529861447972","title":"Black / 8 oz.","sku":"BGV1 Breath Black 8 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Black","Size Glove":"8 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861415204","title":"Black / 10 oz.","sku":"BGV1 Breath Black 10 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Black","Size Glove":"10 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861382436","title":"Black / 12 oz.","sku":"BGV1 Breath Black 12 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Black","Size Glove":"12 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861513508","title":"Black / 14 oz.","sku":"BGV1 Breath Black 14 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Black","Size Glove":"14 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861480740","title":"Black / 16 oz.","sku":"BGV1 Breath Black 16 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Black","Size Glove":"16 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861611812","title":"Blue / 8 oz.","sku":"BGV1 Breath Blue 8 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Blue","Size Glove":"8 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861579044","title":"Blue / 10 oz.","sku":"BGV1 Breath Blue 10 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Blue","Size Glove":"10 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861546276","title":"Blue / 12 oz.","sku":"BGV1 Breath Blue 12 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Blue","Size Glove":"12 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861677348","title":"Blue / 14 oz.","sku":"BGV1 Breath Blue 14 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Blue","Size Glove":"14 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861644580","title":"Blue / 16 oz.","sku":"BGV1 Breath Blue 16 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Blue","Size Glove":"16 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861808420","title":"Pink / 8 oz.","sku":"BGV1 Breath Pink 8 oz","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Pink","Size Glove":"8 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861775652","title":"Pink / 10 oz.","sku":"BGV1 Breath Pink 10 oz","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Pink","Size Glove":"10 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":false,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861742884","title":"Pink / 12 oz.","sku":"BGV1 Breath Pink 12 oz","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Pink","Size Glove":"12 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":false,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861710116","title":"Pink / 14 oz.","sku":"BGV1 Breath Pink 14 oz","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Pink","Size Glove":"14 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":false,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861841188","title":"Pink / 16 oz.","sku":"BGV1 Breath Pink 16 oz","option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Pink","Size Glove":"16 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":false,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861972260","title":"Red / 8 oz.","sku":"BGV1 Breath Red 8 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Red","Size Glove":"8 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861939492","title":"Red / 10 oz.","sku":"BGV1 Breath Red 10 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Red","Size Glove":"10 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861906724","title":"Red / 12 oz.","sku":"BGV1 Breath Red 12 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Red","Size Glove":"12 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529861873956","title":"Red / 14 oz.","sku":"BGV1 Breath Red 14 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Red","Size Glove":"14 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862005028","title":"Red / 16 oz.","sku":"BGV1 Breath Red 16 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Red","Size Glove":"16 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862168868","title":"Yellow / 8 oz.","sku":"BGV1 Breath Yellow 8 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"8 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862136100","title":"Yellow / 10 oz.","sku":"BGV1 Breath Yellow 10 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"10 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862103332","title":"Yellow / 12 oz.","sku":"BGV1 Breath Yellow 12 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"12 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862070564","title":"Yellow / 14 oz.","sku":"BGV1 Breath Yellow 14 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"14 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862037796","title":"Yellow / 16 oz.","sku":"BGV1 Breath Yellow 16 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"16 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":false,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862299940","title":"White / 8 oz.","sku":"BGV1 Breath White 8 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"White","Size Glove":"8 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862267172","title":"White / 10 oz.","sku":"BGV1 Breath White 10 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"White","Size Glove":"10 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862234404","title":"White / 12 oz.","sku":"BGV1 Breath White 12 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"White","Size Glove":"12 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862201636","title":"White / 14 oz.","sku":"BGV1 Breath White 14 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"White","Size Glove":"14 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}},{"variant_id":"47529862332708","title":"White / 16 oz.","sku":"BGV1 Breath White 16 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"White","Size Glove":"16 oz."},"price_cents":8990,"regular_price_cents":11900,"compare_at_price_cents":11900,"currency":"USD","available":true,"weight_grams":3000,"deal":{"scope":"product","discount_percent":0,"expires_at":"2026-06-21T01:00:12.494Z","reason":"Manual offer: Fairtex BGV1BR breathable gloves marked from $119.00 to $89.90."}}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -627,9 +640,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -641,76 +652,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

@@ -182,25 +182,25 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Black">Black</option>
-                <option value="Heather Grey">Heather Grey</option>
-                <option value="Blue">Blue</option>
-                <option value="Burgundy">Burgundy</option>
-                <option value="Heather Off-White">Heather Off-White</option>
-                <option value="Khaki Green">Khaki Green</option>
-                <option value="Lavender">Lavender</option>
+                <option value="Black" >Black</option>
+                <option value="Heather Grey" >Heather Grey</option>
+                <option value="Blue" >Blue</option>
+                <option value="Burgundy" >Burgundy</option>
+                <option value="Heather Off-White" >Heather Off-White</option>
+                <option value="Khaki Green" >Khaki Green</option>
+                <option value="Lavender" >Lavender</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
+                <option value="XS" >XS</option>
+                <option value="S" >S</option>
+                <option value="M" >M</option>
+                <option value="L" >L</option>
+                <option value="XL" >XL</option>
+                <option value="2XL" >2XL</option>
               </select>
             </label>
           </div>
@@ -214,9 +214,13 @@
               data-cart-brand="Rival Boxing"
               data-cart-name="T-Shirt with spandex"
               data-cart-price="24.95"
+              data-cart-price-cents="2495"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-2025-CORPO_TSHIRT_BLACK_2x_1.webp"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -268,11 +272,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="19687"
+                data-cart-product-id="19687"
                 data-cart-brand="Century Martial Arts"
                 data-cart-name="5' X 10' x 8&quot; Stacking Crash Pad"
                 data-cart-price="1095"
+                data-cart-price-cents="109500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0552/0841/1293/products/5-x-10-x-8-stacking-crash-pad-916444.jpg"
+                data-cart-variant-id="43519118311581"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 5' X 10' x 8&quot; Stacking Crash Pad to cart"
               >Add to cart</button>
             </div>
@@ -296,11 +306,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="18675"
+                data-cart-product-id="18675"
                 data-cart-brand="Rival Boxing"
                 data-cart-name="Pro Free Standing Heavy Bag 230lb/104kg - 3XL"
                 data-cart-price="999.95"
+                data-cart-price-cents="99995"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/ProFreeStandingHeavyBag230lb.webp"
+                data-cart-variant-id="39411954352318"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Pro Free Standing Heavy Bag 230lb/104kg - 3XL to cart"
               >Add to cart</button>
             </div>
@@ -324,11 +340,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="19657"
+                data-cart-product-id="19657"
                 data-cart-brand="Century Martial Arts"
                 data-cart-name="2&quot; Foam Underlayment for Mats"
                 data-cart-price="975"
+                data-cart-price-cents="97500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0552/0841/1293/files/15499_1.jpg"
+                data-cart-variant-id="43989819687069"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2&quot; Foam Underlayment for Mats to cart"
               >Add to cart</button>
             </div>
@@ -352,11 +374,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="18677"
+                data-cart-product-id="18677"
                 data-cart-brand="Rival Boxing"
                 data-cart-name="Pro Bounce Back Heavy Bag 130lb/59kg"
                 data-cart-price="829.95"
+                data-cart-price-cents="82995"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/ProBounceBackHeavyBag130lb.webp"
+                data-cart-variant-id="39411953729726"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Pro Bounce Back Heavy Bag 130lb/59kg to cart"
               >Add to cart</button>
             </div>
@@ -585,7 +613,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -595,7 +623,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"43573373403326","title":"Black / XS","sku":"RAP-TS-CORPO-02-Black-XS","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43573373436094","title":"Black / S","sku":"RAP-TS-CORPO-02-Black-S","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Black","Size":"S"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":152,"deal":null},{"variant_id":"43573373468862","title":"Black / M","sku":"RAP-TS-CORPO-02-Black-M","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Black","Size":"M"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":156,"deal":null},{"variant_id":"43573373501630","title":"Black / L","sku":"RAP-TS-CORPO-02-Black-L","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Black","Size":"L"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":172,"deal":null},{"variant_id":"43573373534398","title":"Black / XL","sku":"RAP-TS-CORPO-02-Black-XL","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"43573373567166","title":"Black / 2XL","sku":"RAP-TS-CORPO-02-Black-2XL","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43573373599934","title":"Heather Grey / XS","sku":"RAP-TS-CORPO-02-Heather Grey-XS","option_values":[{"position":1,"name":"Color","value":"Heather Grey"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Heather Grey","Size":"XS"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43573373632702","title":"Heather Grey / S","sku":"RAP-TS-CORPO-02-Heather Grey-S","option_values":[{"position":1,"name":"Color","value":"Heather Grey"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Heather Grey","Size":"S"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":152,"deal":null},{"variant_id":"43573373665470","title":"Heather Grey / M","sku":"RAP-TS-CORPO-02-Heather Grey-M","option_values":[{"position":1,"name":"Color","value":"Heather Grey"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Heather Grey","Size":"M"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":156,"deal":null},{"variant_id":"43573373698238","title":"Heather Grey / L","sku":"RAP-TS-CORPO-02-Heather Grey-L","option_values":[{"position":1,"name":"Color","value":"Heather Grey"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Heather Grey","Size":"L"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":172,"deal":null},{"variant_id":"43573373731006","title":"Heather Grey / XL","sku":"RAP-TS-CORPO-02-Heather Grey-XL","option_values":[{"position":1,"name":"Color","value":"Heather Grey"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Heather Grey","Size":"XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":179,"deal":null},{"variant_id":"43573373763774","title":"Heather Grey / 2XL","sku":"RAP-TS-CORPO-02-Heather Grey-2XL","option_values":[{"position":1,"name":"Color","value":"Heather Grey"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Heather Grey","Size":"2XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":152,"deal":null},{"variant_id":"43573373960382","title":"Blue / XS","sku":"RAP-TS-CORPO-02-Blue-XS","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Blue","Size":"XS"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43573373796542","title":"Blue / S","sku":"RAP-TS-CORPO-02-Blue-S","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Blue","Size":"S"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":152,"deal":null},{"variant_id":"43573373829310","title":"Blue / M","sku":"RAP-TS-CORPO-02-Blue-M","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Blue","Size":"M"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":156,"deal":null},{"variant_id":"43573373862078","title":"Blue / L","sku":"RAP-TS-CORPO-02-Blue-L","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Blue","Size":"L"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":172,"deal":null},{"variant_id":"43573373894846","title":"Blue / XL","sku":"RAP-TS-CORPO-02-Blue-XL","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Blue","Size":"XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":179,"deal":null},{"variant_id":"43573373927614","title":"Blue / 2XL","sku":"RAP-TS-CORPO-02-Blue-2XL","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Blue","Size":"2XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43573373993150","title":"Burgundy / XS","sku":"RAP-TS-CORPO-02-Burgundy-XS","option_values":[{"position":1,"name":"Color","value":"Burgundy"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Burgundy","Size":"XS"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43573374025918","title":"Burgundy / S","sku":"RAP-TS-CORPO-02-Burgundy-S","option_values":[{"position":1,"name":"Color","value":"Burgundy"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Burgundy","Size":"S"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":152,"deal":null},{"variant_id":"43573374058686","title":"Burgundy / M","sku":"RAP-TS-CORPO-02-Burgundy-M","option_values":[{"position":1,"name":"Color","value":"Burgundy"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Burgundy","Size":"M"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":156,"deal":null},{"variant_id":"43573374091454","title":"Burgundy / L","sku":"RAP-TS-CORPO-02-Burgundy-L","option_values":[{"position":1,"name":"Color","value":"Burgundy"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Burgundy","Size":"L"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"43573374124222","title":"Burgundy / XL","sku":"RAP-TS-CORPO-02-Burgundy-XL","option_values":[{"position":1,"name":"Color","value":"Burgundy"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Burgundy","Size":"XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":179,"deal":null},{"variant_id":"43573374156990","title":"Burgundy / 2XL","sku":"RAP-TS-CORPO-02-Burgundy-2XL","option_values":[{"position":1,"name":"Color","value":"Burgundy"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Burgundy","Size":"2XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43625552281790","title":"Heather Off-White / XS","sku":"RAP-TS-CORPO-02-Off-White-XS","option_values":[{"position":1,"name":"Color","value":"Heather Off-White"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Heather Off-White","Size":"XS"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"43573374222526","title":"Heather Off-White / S","sku":"RAP-TS-CORPO-02-Off-White-S","option_values":[{"position":1,"name":"Color","value":"Heather Off-White"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Heather Off-White","Size":"S"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":152,"deal":null},{"variant_id":"43573374255294","title":"Heather Off-White / M","sku":"RAP-TS-CORPO-02-Off-White-M","option_values":[{"position":1,"name":"Color","value":"Heather Off-White"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Heather Off-White","Size":"M"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":156,"deal":null},{"variant_id":"43573374288062","title":"Heather Off-White / L","sku":"RAP-TS-CORPO-02-Off-White-L","option_values":[{"position":1,"name":"Color","value":"Heather Off-White"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Heather Off-White","Size":"L"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":172,"deal":null},{"variant_id":"43573374320830","title":"Heather Off-White / XL","sku":"RAP-TS-CORPO-02-Off-White-XL","option_values":[{"position":1,"name":"Color","value":"Heather Off-White"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Heather Off-White","Size":"XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":179,"deal":null},{"variant_id":"43573374353598","title":"Heather Off-White / 2XL","sku":"RAP-TS-CORPO-02-Off-White-2XL","option_values":[{"position":1,"name":"Color","value":"Heather Off-White"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Heather Off-White","Size":"2XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":152,"deal":null},{"variant_id":"43573374550206","title":"Khaki Green / XS","sku":"RAP-TS-CORPO-02-Khaki Green-XS","option_values":[{"position":1,"name":"Color","value":"Khaki Green"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Khaki Green","Size":"XS"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"43573374386366","title":"Khaki Green / S","sku":"RAP-TS-CORPO-02-Khaki Green-S","option_values":[{"position":1,"name":"Color","value":"Khaki Green"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Khaki Green","Size":"S"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":152,"deal":null},{"variant_id":"43573374419134","title":"Khaki Green / M","sku":"RAP-TS-CORPO-02-Khaki Green-M","option_values":[{"position":1,"name":"Color","value":"Khaki Green"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Khaki Green","Size":"M"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":156,"deal":null},{"variant_id":"43573374451902","title":"Khaki Green / L","sku":"RAP-TS-CORPO-02-Khaki Green-L","option_values":[{"position":1,"name":"Color","value":"Khaki Green"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Khaki Green","Size":"L"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":172,"deal":null},{"variant_id":"43573374484670","title":"Khaki Green / XL","sku":"RAP-TS-CORPO-02-Khaki Green-XL","option_values":[{"position":1,"name":"Color","value":"Khaki Green"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Khaki Green","Size":"XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":179,"deal":null},{"variant_id":"43573374517438","title":"Khaki Green / 2XL","sku":"RAP-TS-CORPO-02-Khaki Green-2XL","option_values":[{"position":1,"name":"Color","value":"Khaki Green"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Khaki Green","Size":"2XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"45817810518206","title":"Lavender / 2XL","sku":"RAP-TS-CORPO-02-Lavender-2XL","option_values":[{"position":1,"name":"Color","value":"Lavender"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Lavender","Size":"2XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"45817810550974","title":"Lavender / S","sku":"RAP-TS-CORPO-02-Lavender-S","option_values":[{"position":1,"name":"Color","value":"Lavender"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Lavender","Size":"S"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"45817810616510","title":"Lavender / XS","sku":"RAP-TS-CORPO-02-Lavender-XS","option_values":[{"position":1,"name":"Color","value":"Lavender"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Lavender","Size":"XS"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"45817810682046","title":"Lavender / M","sku":"RAP-TS-CORPO-02-Lavender-M","option_values":[{"position":1,"name":"Color","value":"Lavender"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Lavender","Size":"M"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"45817810714814","title":"Lavender / L","sku":"RAP-TS-CORPO-02-Lavender-L","option_values":[{"position":1,"name":"Color","value":"Lavender"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Lavender","Size":"L"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"45817810780350","title":"Lavender / XL","sku":"RAP-TS-CORPO-02-Lavender-XL","option_values":[{"position":1,"name":"Color","value":"Lavender"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Lavender","Size":"XL"},"price_cents":2495,"regular_price_cents":2495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -608,9 +638,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -622,76 +650,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

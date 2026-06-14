@@ -209,23 +209,23 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Black">Black</option>
-                <option value="Navy">Navy</option>
-                <option value="Admiral Blue">Admiral Blue</option>
-                <option value="Medium Grey">Medium Grey</option>
-                <option value="OD Green">OD Green</option>
+                <option value="Black" >Black</option>
+                <option value="Navy" >Navy</option>
+                <option value="Admiral Blue" >Admiral Blue</option>
+                <option value="Medium Grey" >Medium Grey</option>
+                <option value="OD Green" >OD Green</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="XXL">XXL</option>
+                <option value="XS" >XS</option>
+                <option value="S" >S</option>
+                <option value="M" disabled>M (sold out)</option>
+                <option value="L" disabled>L (sold out)</option>
+                <option value="XL" disabled>XL (sold out)</option>
+                <option value="XXL" disabled>XXL (sold out)</option>
               </select>
             </label>
           </div>
@@ -239,9 +239,13 @@
               data-cart-brand="Ten Thousand"
               data-cart-name="Midweight Tech Hoodie"
               data-cart-price="76"
+              data-cart-price-cents="7600"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0251/7377/files/MidWeightTechHoodie_Black_Front_6259_v01.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -285,18 +289,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12726"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Half Zip Dress - Harborside"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/harborside-dress.png"
-                aria-label="Add Half Zip Dress - Harborside to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12726.html" aria-label="View options for Half Zip Dress - Harborside">View options</a>
             </div>
           </article>
 
@@ -313,18 +306,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12946"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Texas License Plate Shirt"
-                data-cart-price="25"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/LicensePlateFront.png"
-                aria-label="Add Texas License Plate Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12946.html" aria-label="View options for Texas License Plate Shirt">View options</a>
             </div>
           </article>
 
@@ -341,18 +323,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14324"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Body Building Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/COREOLYMPIA2.png"
-                aria-label="Add Body Building Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14324.html" aria-label="View options for Body Building Shirt">View options</a>
             </div>
           </article>
 
@@ -369,18 +340,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14392"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Spartan Helmet Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/front1.jpg"
-                aria-label="Add Spartan Helmet Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14392.html" aria-label="View options for Spartan Helmet Shirt">View options</a>
             </div>
           </article>
         </div>
@@ -607,7 +567,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -617,7 +577,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"42030094352471","title":"Black / XS","sku":"TTKT015-BLK-XS","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030094385239","title":"Black / S","sku":"TTKT015-BLK-S","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Black","Size":"S"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030094418007","title":"Black / M","sku":"TTKT015-BLK-M","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Black","Size":"M"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094450775","title":"Black / L","sku":"TTKT015-BLK-L","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Black","Size":"L"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094483543","title":"Black / XL","sku":"TTKT015-BLK-XL","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094516311","title":"Black / XXL","sku":"TTKT015-BLK-XXL","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Black","Size":"XXL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094549079","title":"Navy / XS","sku":"TTKT015-NVY-XS","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Navy","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030094581847","title":"Navy / S","sku":"TTKT015-NVY-S","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Navy","Size":"S"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030094614615","title":"Navy / M","sku":"TTKT015-NVY-M","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Navy","Size":"M"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094647383","title":"Navy / L","sku":"TTKT015-NVY-L","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Navy","Size":"L"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094680151","title":"Navy / XL","sku":"TTKT015-NVY-XL","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Navy","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094712919","title":"Navy / XXL","sku":"TTKT015-NVY-XXL","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Navy","Size":"XXL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094745687","title":"Admiral Blue / XS","sku":"TTKT015-ADMRLBL-XS","option_values":[{"position":1,"name":"Color","value":"Admiral Blue"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Admiral Blue","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030094778455","title":"Admiral Blue / S","sku":"TTKT015-ADMRLBL-S","option_values":[{"position":1,"name":"Color","value":"Admiral Blue"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Admiral Blue","Size":"S"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094811223","title":"Admiral Blue / M","sku":"TTKT015-ADMRLBL-M","option_values":[{"position":1,"name":"Color","value":"Admiral Blue"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Admiral Blue","Size":"M"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094843991","title":"Admiral Blue / L","sku":"TTKT015-ADMRLBL-L","option_values":[{"position":1,"name":"Color","value":"Admiral Blue"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Admiral Blue","Size":"L"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094876759","title":"Admiral Blue / XL","sku":"TTKT015-ADMRLBL-XL","option_values":[{"position":1,"name":"Color","value":"Admiral Blue"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Admiral Blue","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094909527","title":"Admiral Blue / XXL","sku":"TTKT015-ADMRLBL-XXL","option_values":[{"position":1,"name":"Color","value":"Admiral Blue"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Admiral Blue","Size":"XXL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030094942295","title":"Medium Grey / XS","sku":"TTKT015-FRMGRY-XS","option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Medium Grey","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030094975063","title":"Medium Grey / S","sku":"TTKT015-FRMGRY-S","option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Medium Grey","Size":"S"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030095007831","title":"Medium Grey / M","sku":"TTKT015-FRMGRY-M","option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Medium Grey","Size":"M"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030095040599","title":"Medium Grey / L","sku":"TTKT015-FRMGRY-L","option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Medium Grey","Size":"L"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030095073367","title":"Medium Grey / XL","sku":"TTKT015-FRMGRY-XL","option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Medium Grey","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030095106135","title":"Medium Grey / XXL","sku":"TTKT015-FRMGRY-XXL","option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Medium Grey","Size":"XXL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030095138903","title":"OD Green / XS","sku":"TTKT015-ODGREEN-XS","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"OD Green","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030095171671","title":"OD Green / S","sku":"TTKT015-ODGREEN-S","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"OD Green","Size":"S"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"42030095204439","title":"OD Green / M","sku":"TTKT015-ODGREEN-M","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"OD Green","Size":"M"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030095237207","title":"OD Green / L","sku":"TTKT015-ODGREEN-L","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"OD Green","Size":"L"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030095269975","title":"OD Green / XL","sku":"TTKT015-ODGREEN-XL","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"OD Green","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null},{"variant_id":"42030095302743","title":"OD Green / XXL","sku":"TTKT015-ODGREEN-XXL","option_values":[{"position":1,"name":"Color","value":"OD Green"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"OD Green","Size":"XXL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_price_cents":15800,"currency":"USD","available":false,"weight_grams":0,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -630,9 +592,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -644,76 +604,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

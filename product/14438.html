@@ -192,14 +192,14 @@
               <span class="pdp-variant-label">Flavor</span>
               <select data-pdp-variant data-variant-name="Flavor" required>
                 <option value="" disabled selected>Select Flavor…</option>
-                <option value="Chocolate Peanut Butter Cup">Chocolate Peanut Butter Cup</option>
-                <option value="Chocolate Mint Cookie">Chocolate Mint Cookie</option>
-                <option value="Frosted Cinnamon Bun">Frosted Cinnamon Bun</option>
-                <option value="Vanilla Cake">Vanilla Cake</option>
-                <option value="Chocolate Decadence">Chocolate Decadence</option>
-                <option value="Strawberry Shortcake">Strawberry Shortcake</option>
-                <option value="Cappuccino">Cappuccino</option>
-                <option value="Lemon Pound Cake">Lemon Pound Cake</option>
+                <option value="Chocolate Peanut Butter Cup" disabled>Chocolate Peanut Butter Cup (sold out)</option>
+                <option value="Chocolate Mint Cookie" >Chocolate Mint Cookie</option>
+                <option value="Frosted Cinnamon Bun" disabled>Frosted Cinnamon Bun (sold out)</option>
+                <option value="Vanilla Cake" disabled>Vanilla Cake (sold out)</option>
+                <option value="Chocolate Decadence" >Chocolate Decadence</option>
+                <option value="Strawberry Shortcake" disabled>Strawberry Shortcake (sold out)</option>
+                <option value="Cappuccino" disabled>Cappuccino (sold out)</option>
+                <option value="Lemon Pound Cake" disabled>Lemon Pound Cake (sold out)</option>
               </select>
             </label>
           </div>
@@ -213,9 +213,13 @@
               data-cart-brand="Core Nutritionals"
               data-cart-name="Iso 2lb"
               data-cart-price="59.99"
+              data-cart-price-cents="5999"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/ISO_CPBC_FRONT.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -314,11 +318,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="12735"
+                data-cart-product-id="12735"
                 data-cart-brand="Bear KompleX"
                 data-cart-name="LUMYHEALTH Full Body Red Light Therapy Bag – Infrared Recovery System (660nm + 850nm)"
                 data-cart-price="1499"
+                data-cart-price-cents="149900"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/1_afa9620e-1567-42a1-b726-0906684c9da1.jpg"
+                data-cart-variant-id="61489896915314"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add LUMYHEALTH Full Body Red Light Therapy Bag – Infrared Recovery System (660nm + 850nm) to cart"
               >Add to cart</button>
             </div>
@@ -337,18 +347,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="5546"
-                data-cart-brand="Hyperice"
-                data-cart-name="Normatec 3 Full Body"
-                data-cart-price="1349"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0786/1852/5910/files/normatec-3-full-body-pdp-1.png"
-                aria-label="Add Normatec 3 Full Body to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/5546.html" aria-label="View options for Normatec 3 Full Body">View options</a>
             </div>
           </article>
 
@@ -365,18 +364,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="5561"
-                data-cart-brand="Hyperice"
-                data-cart-name="Normatec 3 Lower Body"
-                data-cart-price="999"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0786/1852/5910/files/normatec-3-lower-body-pdp-1.png"
-                aria-label="Add Normatec 3 Lower Body to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/5561.html" aria-label="View options for Normatec 3 Lower Body">View options</a>
             </div>
           </article>
 
@@ -393,18 +381,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="5577"
-                data-cart-brand="Hyperice"
-                data-cart-name="Normatec Elite Legs"
-                data-cart-price="999"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0786/1852/5910/files/normatec-elite-legs-pdp-1.png"
-                aria-label="Add Normatec Elite Legs to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/5577.html" aria-label="View options for Normatec Elite Legs">View options</a>
             </div>
           </article>
         </div>
@@ -631,7 +608,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -641,7 +618,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"39517214212272","title":"Chocolate Peanut Butter Cup","sku":"672975315122","option_values":[{"position":1,"name":"Flavor","value":"Chocolate Peanut Butter Cup"}],"selected_options":{"Flavor":"Chocolate Peanut Butter Cup"},"price_cents":5999,"regular_price_cents":5999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":953,"deal":null},{"variant_id":"39517214539952","title":"Chocolate Mint Cookie","sku":"672975315719","option_values":[{"position":1,"name":"Flavor","value":"Chocolate Mint Cookie"}],"selected_options":{"Flavor":"Chocolate Mint Cookie"},"price_cents":5999,"regular_price_cents":5999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":953,"deal":null},{"variant_id":"39517214572720","title":"Frosted Cinnamon Bun","sku":"672975315726","option_values":[{"position":1,"name":"Flavor","value":"Frosted Cinnamon Bun"}],"selected_options":{"Flavor":"Frosted Cinnamon Bun"},"price_cents":5999,"regular_price_cents":5999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":953,"deal":null},{"variant_id":"39517214474416","title":"Vanilla Cake","sku":"672975315160","option_values":[{"position":1,"name":"Flavor","value":"Vanilla Cake"}],"selected_options":{"Flavor":"Vanilla Cake"},"price_cents":5999,"regular_price_cents":5999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":953,"deal":null},{"variant_id":"39517214146736","title":"Chocolate Decadence","sku":"672975315115","option_values":[{"position":1,"name":"Flavor","value":"Chocolate Decadence"}],"selected_options":{"Flavor":"Chocolate Decadence"},"price_cents":5999,"regular_price_cents":5999,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":953,"deal":null},{"variant_id":"39517214343344","title":"Strawberry Shortcake","sku":"672975315153","option_values":[{"position":1,"name":"Flavor","value":"Strawberry Shortcake"}],"selected_options":{"Flavor":"Strawberry Shortcake"},"price_cents":5999,"regular_price_cents":5999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":953,"deal":null},{"variant_id":"41919199346864","title":"Cappuccino","sku":"850016858382","option_values":[{"position":1,"name":"Flavor","value":"Cappuccino"}],"selected_options":{"Flavor":"Cappuccino"},"price_cents":5999,"regular_price_cents":5999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":953,"deal":null},{"variant_id":"41825270464688","title":"Lemon Pound Cake","sku":"658580070946","option_values":[{"position":1,"name":"Flavor","value":"Lemon Pound Cake"}],"selected_options":{"Flavor":"Lemon Pound Cake"},"price_cents":5999,"regular_price_cents":5999,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":953,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -654,9 +633,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -668,76 +645,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

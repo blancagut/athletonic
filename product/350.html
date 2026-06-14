@@ -201,14 +201,14 @@
               <span class="pdp-variant-label">Flavor</span>
               <select data-pdp-variant data-variant-name="Flavor" required>
                 <option value="" disabled selected>Select Flavor…</option>
-                <option value="Arctic Snow Cone">Arctic Snow Cone</option>
-                <option value="Frozen Bombsicle">Frozen Bombsicle</option>
-                <option value="Frost Bitten Citrus">Frost Bitten Citrus</option>
-                <option value="Tropical Tundra Frost">Tropical Tundra Frost</option>
-                <option value="Cherry Bomb Frost">Cherry Bomb Frost</option>
-                <option value="Fruit Punch">Fruit Punch</option>
-                <option value="Electric Sour Apple">Electric Sour Apple</option>
-                <option value="Orange Cream">Orange Cream</option>
+                <option value="Arctic Snow Cone" >Arctic Snow Cone</option>
+                <option value="Frozen Bombsicle" >Frozen Bombsicle</option>
+                <option value="Frost Bitten Citrus" disabled>Frost Bitten Citrus (sold out)</option>
+                <option value="Tropical Tundra Frost" disabled>Tropical Tundra Frost (sold out)</option>
+                <option value="Cherry Bomb Frost" >Cherry Bomb Frost</option>
+                <option value="Fruit Punch" disabled>Fruit Punch (sold out)</option>
+                <option value="Electric Sour Apple" disabled>Electric Sour Apple (sold out)</option>
+                <option value="Orange Cream" disabled>Orange Cream (sold out)</option>
               </select>
             </label>
           </div>
@@ -222,9 +222,13 @@
               data-cart-brand="Cellucor"
               data-cart-name="C4 Ultimate Energy Carbonated"
               data-cart-price="27.99"
+              data-cart-price-cents="2799"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2659_Amazon_UltFrost_PDP_InventoryAssets_FrostBittenCitrus_ProductRenders_November2024_Front_DTC_1_1_06b752d5-6821-467d-87c6-da2a28eaad7d.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -283,11 +287,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5628"
+                data-cart-product-id="5628"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="999.99"
+                data-cart-price-cents="99999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8-WOD_1.jpg"
+                data-cart-variant-id="50987013669197"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -311,11 +321,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5704"
+                data-cart-product-id="5704"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="830.76"
+                data-cart-price-cents="83076"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8-WOD_1.jpg"
+                data-cart-variant-id="51337398059341"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -339,11 +355,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5701"
+                data-cart-product-id="5701"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="799.99"
+                data-cart-price-cents="79999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8_1.jpg"
+                data-cart-variant-id="51337399697741"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -367,11 +389,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5698"
+                data-cart-product-id="5698"
                 data-cart-brand="Compex"
                 data-cart-name="SP 6.0 EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="779.99"
+                data-cart-price-cents="77999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP6_1.jpg"
+                data-cart-variant-id="51337400779085"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 6.0 EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -600,7 +628,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -610,7 +638,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"42684435824702","title":"12 Pack / 16oz / Arctic Snow Cone","sku":"187396","option_values":[{"position":1,"name":"Size","value":"12 Pack"},{"position":2,"name":"Serving Size","value":"16oz"},{"position":3,"name":"Flavor","value":"Arctic Snow Cone"}],"selected_options":{"Size":"12 Pack","Serving Size":"16oz","Flavor":"Arctic Snow Cone"},"price_cents":2799,"regular_price_cents":2799,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":5897,"deal":null},{"variant_id":"42714395672638","title":"12 Pack / 16oz / Frozen Bombsicle","sku":"187510","option_values":[{"position":1,"name":"Size","value":"12 Pack"},{"position":2,"name":"Serving Size","value":"16oz"},{"position":3,"name":"Flavor","value":"Frozen Bombsicle"}],"selected_options":{"Size":"12 Pack","Serving Size":"16oz","Flavor":"Frozen Bombsicle"},"price_cents":2799,"regular_price_cents":2799,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":5897,"deal":null},{"variant_id":"41496573575230","title":"12 Pack / 16oz / Frost Bitten Citrus","sku":"170948","option_values":[{"position":1,"name":"Size","value":"12 Pack"},{"position":2,"name":"Serving Size","value":"16oz"},{"position":3,"name":"Flavor","value":"Frost Bitten Citrus"}],"selected_options":{"Size":"12 Pack","Serving Size":"16oz","Flavor":"Frost Bitten Citrus"},"price_cents":2799,"regular_price_cents":2799,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":5897,"deal":null},{"variant_id":"42684435857470","title":"12 Pack / 16oz / Tropical Tundra Frost","sku":"170950","option_values":[{"position":1,"name":"Size","value":"12 Pack"},{"position":2,"name":"Serving Size","value":"16oz"},{"position":3,"name":"Flavor","value":"Tropical Tundra Frost"}],"selected_options":{"Size":"12 Pack","Serving Size":"16oz","Flavor":"Tropical Tundra Frost"},"price_cents":2799,"regular_price_cents":2799,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":5897,"deal":null},{"variant_id":"42684435890238","title":"12 Pack / 16oz / Cherry Bomb Frost","sku":"187400","option_values":[{"position":1,"name":"Size","value":"12 Pack"},{"position":2,"name":"Serving Size","value":"16oz"},{"position":3,"name":"Flavor","value":"Cherry Bomb Frost"}],"selected_options":{"Size":"12 Pack","Serving Size":"16oz","Flavor":"Cherry Bomb Frost"},"price_cents":2799,"regular_price_cents":2799,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":5897,"deal":null},{"variant_id":"42684435923006","title":"12 Pack / 16oz / Fruit Punch","sku":"187397","option_values":[{"position":1,"name":"Size","value":"12 Pack"},{"position":2,"name":"Serving Size","value":"16oz"},{"position":3,"name":"Flavor","value":"Fruit Punch"}],"selected_options":{"Size":"12 Pack","Serving Size":"16oz","Flavor":"Fruit Punch"},"price_cents":2799,"regular_price_cents":2799,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":5897,"deal":null},{"variant_id":"42684435955774","title":"12 Pack / 16oz / Electric Sour Apple","sku":"132981","option_values":[{"position":1,"name":"Size","value":"12 Pack"},{"position":2,"name":"Serving Size","value":"16oz"},{"position":3,"name":"Flavor","value":"Electric Sour Apple"}],"selected_options":{"Size":"12 Pack","Serving Size":"16oz","Flavor":"Electric Sour Apple"},"price_cents":2799,"regular_price_cents":2799,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":5897,"deal":null},{"variant_id":"42684435791934","title":"12 Pack / 16oz / Orange Cream","sku":"130750","option_values":[{"position":1,"name":"Size","value":"12 Pack"},{"position":2,"name":"Serving Size","value":"16oz"},{"position":3,"name":"Flavor","value":"Orange Cream"}],"selected_options":{"Size":"12 Pack","Serving Size":"16oz","Flavor":"Orange Cream"},"price_cents":2799,"regular_price_cents":2799,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":5897,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -623,9 +653,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -637,76 +665,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

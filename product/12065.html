@@ -265,23 +265,23 @@
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
+                <option value="S" >S</option>
+                <option value="M" >M</option>
+                <option value="L" >L</option>
+                <option value="XL" >XL</option>
+                <option value="2XL" >2XL</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">COLOR</span>
               <select data-pdp-variant data-variant-name="COLOR" required>
                 <option value="" disabled selected>Select COLOR…</option>
-                <option value="PINEAPPLE EXPRESS">PINEAPPLE EXPRESS</option>
-                <option value="AZTEC WESTERN">AZTEC WESTERN</option>
-                <option value="SHOOTER PARADISE">SHOOTER PARADISE</option>
-                <option value="MINT DCU CAMO">MINT DCU CAMO</option>
-                <option value="DINOSAUR WORLD">DINOSAUR WORLD</option>
-                <option value="WINTER DUCK CAMO">WINTER DUCK CAMO</option>
+                <option value="PINEAPPLE EXPRESS" >PINEAPPLE EXPRESS</option>
+                <option value="AZTEC WESTERN" >AZTEC WESTERN</option>
+                <option value="SHOOTER PARADISE" >SHOOTER PARADISE</option>
+                <option value="MINT DCU CAMO" >MINT DCU CAMO</option>
+                <option value="DINOSAUR WORLD" >DINOSAUR WORLD</option>
+                <option value="WINTER DUCK CAMO" >WINTER DUCK CAMO</option>
               </select>
             </label>
           </div>
@@ -295,9 +295,13 @@
               data-cart-brand="Bear KompleX"
               data-cart-name="Men's Lounge Sweat Shorts - 5.5&quot;"
               data-cart-price="44.99"
+              data-cart-price-cents="4499"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/dinosaursweatsidej1-621843_396b4a8e-6a31-4e11-bfcd-aaf0bfe2bd64.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -359,18 +363,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12726"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Half Zip Dress - Harborside"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/harborside-dress.png"
-                aria-label="Add Half Zip Dress - Harborside to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12726.html" aria-label="View options for Half Zip Dress - Harborside">View options</a>
             </div>
           </article>
 
@@ -387,18 +380,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12946"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Texas License Plate Shirt"
-                data-cart-price="25"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/LicensePlateFront.png"
-                aria-label="Add Texas License Plate Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12946.html" aria-label="View options for Texas License Plate Shirt">View options</a>
             </div>
           </article>
 
@@ -415,18 +397,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14324"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Body Building Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/COREOLYMPIA2.png"
-                aria-label="Add Body Building Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14324.html" aria-label="View options for Body Building Shirt">View options</a>
             </div>
           </article>
 
@@ -443,18 +414,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14392"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Spartan Helmet Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/front1.jpg"
-                aria-label="Add Spartan Helmet Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14392.html" aria-label="View options for Spartan Helmet Shirt">View options</a>
             </div>
           </article>
         </div>
@@ -681,7 +641,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -691,7 +651,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"61814016967026","title":"S / PINEAPPLE EXPRESS","sku":"SHO|MENL|S|PINE|8118","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"COLOR","value":"PINEAPPLE EXPRESS"}],"selected_options":{"Size":"S","COLOR":"PINEAPPLE EXPRESS"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814016999794","title":"S / AZTEC WESTERN","sku":"SHO|MENL|S|AZTW|8119","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"COLOR","value":"AZTEC WESTERN"}],"selected_options":{"Size":"S","COLOR":"AZTEC WESTERN"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017032562","title":"S / SHOOTER PARADISE","sku":"SHO|MENL|S|SHOP|8117","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"COLOR","value":"SHOOTER PARADISE"}],"selected_options":{"Size":"S","COLOR":"SHOOTER PARADISE"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017065330","title":"S / MINT DCU CAMO","sku":"PREL|MIDC|S|5091","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"COLOR","value":"MINT DCU CAMO"}],"selected_options":{"Size":"S","COLOR":"MINT DCU CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017098098","title":"S / DINOSAUR WORLD","sku":"PREL|DIWO|S|4526","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"COLOR","value":"DINOSAUR WORLD"}],"selected_options":{"Size":"S","COLOR":"DINOSAUR WORLD"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017130866","title":"S / WINTER DUCK CAMO","sku":"PREL|DUCA|S|5096","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"COLOR","value":"WINTER DUCK CAMO"}],"selected_options":{"Size":"S","COLOR":"WINTER DUCK CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017163634","title":"M / PINEAPPLE EXPRESS","sku":"SHO|MENL|M|PINE|8121","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"COLOR","value":"PINEAPPLE EXPRESS"}],"selected_options":{"Size":"M","COLOR":"PINEAPPLE EXPRESS"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017196402","title":"M / AZTEC WESTERN","sku":"SHO|MENL|M|AZTW|8122","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"COLOR","value":"AZTEC WESTERN"}],"selected_options":{"Size":"M","COLOR":"AZTEC WESTERN"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017229170","title":"M / SHOOTER PARADISE","sku":"SHO|MENL|M|SHOP|8120","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"COLOR","value":"SHOOTER PARADISE"}],"selected_options":{"Size":"M","COLOR":"SHOOTER PARADISE"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017261938","title":"M / MINT DCU CAMO","sku":"PREL|MIDC|M|5092","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"COLOR","value":"MINT DCU CAMO"}],"selected_options":{"Size":"M","COLOR":"MINT DCU CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017294706","title":"M / DINOSAUR WORLD","sku":"PREL|DIWO|M|4535","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"COLOR","value":"DINOSAUR WORLD"}],"selected_options":{"Size":"M","COLOR":"DINOSAUR WORLD"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017327474","title":"M / WINTER DUCK CAMO","sku":"PREL|DUCA|M|5097","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"COLOR","value":"WINTER DUCK CAMO"}],"selected_options":{"Size":"M","COLOR":"WINTER DUCK CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61814017360242","title":"L / PINEAPPLE EXPRESS","sku":"SHO|MENL|L|PINE|8124","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"COLOR","value":"PINEAPPLE EXPRESS"}],"selected_options":{"Size":"L","COLOR":"PINEAPPLE EXPRESS"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017393010","title":"L / AZTEC WESTERN","sku":"SHO|MENL|L|AZTW|8125","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"COLOR","value":"AZTEC WESTERN"}],"selected_options":{"Size":"L","COLOR":"AZTEC WESTERN"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017425778","title":"L / SHOOTER PARADISE","sku":"SHO|MENL|L|SHOP|8123","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"COLOR","value":"SHOOTER PARADISE"}],"selected_options":{"Size":"L","COLOR":"SHOOTER PARADISE"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017458546","title":"L / MINT DCU CAMO","sku":"PREL|MIDC|L|5093","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"COLOR","value":"MINT DCU CAMO"}],"selected_options":{"Size":"L","COLOR":"MINT DCU CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61814017491314","title":"L / DINOSAUR WORLD","sku":"PREL|DIWO|L|4536","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"COLOR","value":"DINOSAUR WORLD"}],"selected_options":{"Size":"L","COLOR":"DINOSAUR WORLD"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017524082","title":"L / WINTER DUCK CAMO","sku":"PREL|DUCA|L|5098","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"COLOR","value":"WINTER DUCK CAMO"}],"selected_options":{"Size":"L","COLOR":"WINTER DUCK CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61814017556850","title":"XL / PINEAPPLE EXPRESS","sku":"SHO|MENL|XL|PINE|8127","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"COLOR","value":"PINEAPPLE EXPRESS"}],"selected_options":{"Size":"XL","COLOR":"PINEAPPLE EXPRESS"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017589618","title":"XL / AZTEC WESTERN","sku":"SHO|MENL|XL|AZTW|8128","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"COLOR","value":"AZTEC WESTERN"}],"selected_options":{"Size":"XL","COLOR":"AZTEC WESTERN"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017622386","title":"XL / SHOOTER PARADISE","sku":"SHO|MENL|XL|SHOP|8126","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"COLOR","value":"SHOOTER PARADISE"}],"selected_options":{"Size":"XL","COLOR":"SHOOTER PARADISE"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017655154","title":"XL / MINT DCU CAMO","sku":"PREL|MIDC|XL|5094","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"COLOR","value":"MINT DCU CAMO"}],"selected_options":{"Size":"XL","COLOR":"MINT DCU CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017687922","title":"XL / DINOSAUR WORLD","sku":"PREL|DIWO|XL|4537","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"COLOR","value":"DINOSAUR WORLD"}],"selected_options":{"Size":"XL","COLOR":"DINOSAUR WORLD"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017720690","title":"XL / WINTER DUCK CAMO","sku":"PREL|DUCA|XL|5099","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"COLOR","value":"WINTER DUCK CAMO"}],"selected_options":{"Size":"XL","COLOR":"WINTER DUCK CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017753458","title":"2XL / PINEAPPLE EXPRESS","sku":"SHO|MENL|2XL|PINE|8130","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"COLOR","value":"PINEAPPLE EXPRESS"}],"selected_options":{"Size":"2XL","COLOR":"PINEAPPLE EXPRESS"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017786226","title":"2XL / AZTEC WESTERN","sku":"SHO|MENL|2XL|AZTW|8131","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"COLOR","value":"AZTEC WESTERN"}],"selected_options":{"Size":"2XL","COLOR":"AZTEC WESTERN"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017818994","title":"2XL / SHOOTER PARADISE","sku":"SHO|MENL|2XL|SHOP|8129","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"COLOR","value":"SHOOTER PARADISE"}],"selected_options":{"Size":"2XL","COLOR":"SHOOTER PARADISE"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017851762","title":"2XL / MINT DCU CAMO","sku":"PREL|MIDC|2X|5095","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"COLOR","value":"MINT DCU CAMO"}],"selected_options":{"Size":"2XL","COLOR":"MINT DCU CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017884530","title":"2XL / DINOSAUR WORLD","sku":"PREL|DIWO|2X|4538","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"COLOR","value":"DINOSAUR WORLD"}],"selected_options":{"Size":"2XL","COLOR":"DINOSAUR WORLD"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61814017917298","title":"2XL / WINTER DUCK CAMO","sku":"PREL|DUCA|2X|5100","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"COLOR","value":"WINTER DUCK CAMO"}],"selected_options":{"Size":"2XL","COLOR":"WINTER DUCK CAMO"},"price_cents":4499,"regular_price_cents":4499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -704,9 +666,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -718,76 +678,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

@@ -187,13 +187,13 @@
               <span class="pdp-variant-label">Flavor</span>
               <select data-pdp-variant data-variant-name="Flavor" required>
                 <option value="" disabled selected>Select Flavor…</option>
-                <option value="🫐Blue Razz">🫐Blue Razz</option>
-                <option value="🩸Panther's Blood">🩸Panther's Blood</option>
-                <option value="🍉Watermelon">🍉Watermelon</option>
-                <option value="🍹Raspberry Mojito">🍹Raspberry Mojito</option>
-                <option value="🍑Peach Rings">🍑Peach Rings</option>
-                <option value="🍊Orange Burst">🍊Orange Burst</option>
-                <option value="🍧Bomb Popsicle">🍧Bomb Popsicle</option>
+                <option value="🫐Blue Razz" >🫐Blue Razz</option>
+                <option value="🩸Panther's Blood" >🩸Panther's Blood</option>
+                <option value="🍉Watermelon" >🍉Watermelon</option>
+                <option value="🍹Raspberry Mojito" >🍹Raspberry Mojito</option>
+                <option value="🍑Peach Rings" >🍑Peach Rings</option>
+                <option value="🍊Orange Burst" >🍊Orange Burst</option>
+                <option value="🍧Bomb Popsicle" >🍧Bomb Popsicle</option>
               </select>
             </label>
           </div>
@@ -207,9 +207,13 @@
               data-cart-brand="Huge Supplements"
               data-cart-name="Wrecked Pre Workout - Strongest Pre-Workout"
               data-cart-price="54.95"
+              data-cart-price-cents="5495"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0549/2663/9272/files/WreckedBlueRazz.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -261,11 +265,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5628"
+                data-cart-product-id="5628"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="999.99"
+                data-cart-price-cents="99999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8-WOD_1.jpg"
+                data-cart-variant-id="50987013669197"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -289,11 +299,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5704"
+                data-cart-product-id="5704"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="830.76"
+                data-cart-price-cents="83076"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8-WOD_1.jpg"
+                data-cart-variant-id="51337398059341"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 WOD EDITION EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -317,11 +333,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5701"
+                data-cart-product-id="5701"
                 data-cart-brand="Compex"
                 data-cart-name="SP 8.0 EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="799.99"
+                data-cart-price-cents="79999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP8_1.jpg"
+                data-cart-variant-id="51337399697741"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 8.0 EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -345,11 +367,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="5698"
+                data-cart-product-id="5698"
                 data-cart-brand="Compex"
                 data-cart-name="SP 6.0 EMS MUSCLE STIMULATOR WITH TENS"
                 data-cart-price="779.99"
+                data-cart-price-cents="77999"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0840/9985/8765/files/Compex-EMS-SP6_1.jpg"
+                data-cart-variant-id="51337400779085"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add SP 6.0 EMS MUSCLE STIMULATOR WITH TENS to cart"
               >Add to cart</button>
             </div>
@@ -578,7 +606,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -588,7 +616,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"43942681837736","title":"🫐Blue Razz","sku":"0129","option_values":[{"position":1,"name":"Flavor","value":"🫐Blue Razz"}],"selected_options":{"Flavor":"🫐Blue Razz"},"price_cents":5495,"regular_price_cents":5495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":862,"deal":null},{"variant_id":"52402550210728","title":"🩸Panther's Blood","sku":"0131","option_values":[{"position":1,"name":"Flavor","value":"🩸Panther's Blood"}],"selected_options":{"Flavor":"🩸Panther's Blood"},"price_cents":5495,"regular_price_cents":5495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":862,"deal":null},{"variant_id":"50058904305832","title":"🍉Watermelon","sku":"0178","option_values":[{"position":1,"name":"Flavor","value":"🍉Watermelon"}],"selected_options":{"Flavor":"🍉Watermelon"},"price_cents":5495,"regular_price_cents":5495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":862,"deal":null},{"variant_id":"40116036337832","title":"🍹Raspberry Mojito","sku":"0040","option_values":[{"position":1,"name":"Flavor","value":"🍹Raspberry Mojito"}],"selected_options":{"Flavor":"🍹Raspberry Mojito"},"price_cents":5495,"regular_price_cents":5495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":862,"deal":null},{"variant_id":"39288707809448","title":"🍑Peach Rings","sku":"0032","option_values":[{"position":1,"name":"Flavor","value":"🍑Peach Rings"}],"selected_options":{"Flavor":"🍑Peach Rings"},"price_cents":5495,"regular_price_cents":5495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":862,"deal":null},{"variant_id":"44019220873384","title":"🍊Orange Burst","sku":"0130","option_values":[{"position":1,"name":"Flavor","value":"🍊Orange Burst"}],"selected_options":{"Flavor":"🍊Orange Burst"},"price_cents":5495,"regular_price_cents":5495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":862,"deal":null},{"variant_id":"40116048134312","title":"🍧Bomb Popsicle","sku":"0041","option_values":[{"position":1,"name":"Flavor","value":"🍧Bomb Popsicle"}],"selected_options":{"Flavor":"🍧Bomb Popsicle"},"price_cents":5495,"regular_price_cents":5495,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":862,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -601,9 +631,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -615,76 +643,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

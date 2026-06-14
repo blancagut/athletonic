@@ -180,24 +180,24 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Grey">Grey</option>
-                <option value="White">White</option>
-                <option value="Black">Black</option>
-                <option value="Navy">Navy</option>
-                <option value="White/Teal">White/Teal</option>
-                <option value="Grey/Pink">Grey/Pink</option>
+                <option value="Grey" >Grey</option>
+                <option value="White" >White</option>
+                <option value="Black" >Black</option>
+                <option value="Navy" >Navy</option>
+                <option value="White/Teal" >White/Teal</option>
+                <option value="Grey/Pink" >Grey/Pink</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="A0">A0</option>
-                <option value="A1">A1</option>
-                <option value="A2">A2</option>
-                <option value="A3">A3</option>
-                <option value="A4">A4</option>
-                <option value="A5">A5</option>
+                <option value="A0" >A0</option>
+                <option value="A1" >A1</option>
+                <option value="A2" >A2</option>
+                <option value="A3" >A3</option>
+                <option value="A4" >A4</option>
+                <option value="A5" >A5</option>
               </select>
             </label>
           </div>
@@ -211,9 +211,13 @@
               data-cart-brand="Hayabusa"
               data-cart-name="Lightweight Jiu-Jitsu Gi"
               data-cart-price="149"
+              data-cart-price-cents="14900"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/2010/3389/products/HayabusaLightWeightJiuJitsu_Navy_3QFront.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -262,11 +266,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="19687"
+                data-cart-product-id="19687"
                 data-cart-brand="Century Martial Arts"
                 data-cart-name="5' X 10' x 8&quot; Stacking Crash Pad"
                 data-cart-price="1095"
+                data-cart-price-cents="109500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0552/0841/1293/products/5-x-10-x-8-stacking-crash-pad-916444.jpg"
+                data-cart-variant-id="43519118311581"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 5' X 10' x 8&quot; Stacking Crash Pad to cart"
               >Add to cart</button>
             </div>
@@ -290,11 +300,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="18675"
+                data-cart-product-id="18675"
                 data-cart-brand="Rival Boxing"
                 data-cart-name="Pro Free Standing Heavy Bag 230lb/104kg - 3XL"
                 data-cart-price="999.95"
+                data-cart-price-cents="99995"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/ProFreeStandingHeavyBag230lb.webp"
+                data-cart-variant-id="39411954352318"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Pro Free Standing Heavy Bag 230lb/104kg - 3XL to cart"
               >Add to cart</button>
             </div>
@@ -318,11 +334,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="19657"
+                data-cart-product-id="19657"
                 data-cart-brand="Century Martial Arts"
                 data-cart-name="2&quot; Foam Underlayment for Mats"
                 data-cart-price="975"
+                data-cart-price-cents="97500"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0552/0841/1293/files/15499_1.jpg"
+                data-cart-variant-id="43989819687069"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2&quot; Foam Underlayment for Mats to cart"
               >Add to cart</button>
             </div>
@@ -346,11 +368,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="18677"
+                data-cart-product-id="18677"
                 data-cart-brand="Rival Boxing"
                 data-cart-name="Pro Bounce Back Heavy Bag 130lb/59kg"
                 data-cart-price="829.95"
+                data-cart-price-cents="82995"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/ProBounceBackHeavyBag130lb.webp"
+                data-cart-variant-id="39411953729726"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Pro Bounce Back Heavy Bag 130lb/59kg to cart"
               >Add to cart</button>
             </div>
@@ -579,7 +607,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -589,7 +617,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"12361090072689","title":"Grey / A0","sku":"HLWJJG-GA0","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"A0"}],"selected_options":{"Color":"Grey","Size":"A0"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":2268,"deal":null},{"variant_id":"43222135756","title":"Grey / A1","sku":"HLWJJG-GA1","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"A1"}],"selected_options":{"Color":"Grey","Size":"A1"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":2722,"deal":null},{"variant_id":"43222136076","title":"Grey / A2","sku":"HLWJJG-GA2","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"A2"}],"selected_options":{"Color":"Grey","Size":"A2"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3175,"deal":null},{"variant_id":"43222136396","title":"Grey / A3","sku":"HLWJJG-GA3","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"A3"}],"selected_options":{"Color":"Grey","Size":"A3"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":4082,"deal":null},{"variant_id":"43222136716","title":"Grey / A4","sku":"HLWJJG-GA4","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"A4"}],"selected_options":{"Color":"Grey","Size":"A4"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3175,"deal":null},{"variant_id":"12361090105457","title":"Grey / A5","sku":"HLWJJG-GA5","option_values":[{"position":1,"name":"Color","value":"Grey"},{"position":2,"name":"Size","value":"A5"}],"selected_options":{"Color":"Grey","Size":"A5"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":3175,"deal":null},{"variant_id":"12361089515633","title":"White / A0","sku":"HLWJJG-WA0","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"A0"}],"selected_options":{"Color":"White","Size":"A0"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":2268,"deal":null},{"variant_id":"43222136012","title":"White / A1","sku":"HLWJJG-WA1","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"A1"}],"selected_options":{"Color":"White","Size":"A1"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":2722,"deal":null},{"variant_id":"43222136332","title":"White / A2","sku":"HLWJJG-WA2","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"A2"}],"selected_options":{"Color":"White","Size":"A2"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":3175,"deal":null},{"variant_id":"43222136652","title":"White / A3","sku":"HLWJJG-WA3","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"A3"}],"selected_options":{"Color":"White","Size":"A3"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":4082,"deal":null},{"variant_id":"43222136908","title":"White / A4","sku":"HLWJJG-WA4","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"A4"}],"selected_options":{"Color":"White","Size":"A4"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":3175,"deal":null},{"variant_id":"12361089974385","title":"White / A5","sku":"HLWJJG-WA5","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size","value":"A5"}],"selected_options":{"Color":"White","Size":"A5"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":3175,"deal":null},{"variant_id":"12361089319025","title":"Black / A0","sku":"HLWJJG-BA0","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"A0"}],"selected_options":{"Color":"Black","Size":"A0"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":2268,"deal":null},{"variant_id":"43222135948","title":"Black / A1","sku":"HLWJJG-BA1","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"A1"}],"selected_options":{"Color":"Black","Size":"A1"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":2722,"deal":null},{"variant_id":"43222136204","title":"Black / A2","sku":"HLWJJG-BA2","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"A2"}],"selected_options":{"Color":"Black","Size":"A2"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":3175,"deal":null},{"variant_id":"43222136588","title":"Black / A3","sku":"HLWJJG-BA3","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"A3"}],"selected_options":{"Color":"Black","Size":"A3"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":4082,"deal":null},{"variant_id":"43222136844","title":"Black / A4","sku":"HLWJJG-BA4","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"A4"}],"selected_options":{"Color":"Black","Size":"A4"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3175,"deal":null},{"variant_id":"12361089351793","title":"Black / A5","sku":"HLWJJG-BA5","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"A5"}],"selected_options":{"Color":"Black","Size":"A5"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3175,"deal":null},{"variant_id":"31214381793393","title":"Navy / A0","sku":"HLWJJG-NV-A0","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"A0"}],"selected_options":{"Color":"Navy","Size":"A0"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":2268,"deal":null},{"variant_id":"31214381826161","title":"Navy / A1","sku":"HLWJJG-NV-A1","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"A1"}],"selected_options":{"Color":"Navy","Size":"A1"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":2722,"deal":null},{"variant_id":"31214381858929","title":"Navy / A2","sku":"HLWJJG-NV-A2","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"A2"}],"selected_options":{"Color":"Navy","Size":"A2"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":3175,"deal":null},{"variant_id":"31214381891697","title":"Navy / A3","sku":"HLWJJG-NV-A3","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"A3"}],"selected_options":{"Color":"Navy","Size":"A3"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":4082,"deal":null},{"variant_id":"31214381924465","title":"Navy / A4","sku":"HLWJJG-NV-A4","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"A4"}],"selected_options":{"Color":"Navy","Size":"A4"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3175,"deal":null},{"variant_id":"31214381957233","title":"Navy / A5","sku":"HLWJJG-NV-A5","option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"A5"}],"selected_options":{"Color":"Navy","Size":"A5"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":3175,"deal":null},{"variant_id":"31214383857777","title":"White/Teal / A0","sku":"HLWJJG-WT-A0","option_values":[{"position":1,"name":"Color","value":"White/Teal"},{"position":2,"name":"Size","value":"A0"}],"selected_options":{"Color":"White/Teal","Size":"A0"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":1202,"deal":null},{"variant_id":"31214383988849","title":"White/Teal / A1","sku":"HLWJJG-WT-A1","option_values":[{"position":1,"name":"Color","value":"White/Teal"},{"position":2,"name":"Size","value":"A1"}],"selected_options":{"Color":"White/Teal","Size":"A1"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":2722,"deal":null},{"variant_id":"31214384021617","title":"White/Teal / A2","sku":"HLWJJG-WT-A2","option_values":[{"position":1,"name":"Color","value":"White/Teal"},{"position":2,"name":"Size","value":"A2"}],"selected_options":{"Color":"White/Teal","Size":"A2"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3175,"deal":null},{"variant_id":"31214384087153","title":"White/Teal / A3","sku":"HLWJJG-WT-A3","option_values":[{"position":1,"name":"Color","value":"White/Teal"},{"position":2,"name":"Size","value":"A3"}],"selected_options":{"Color":"White/Teal","Size":"A3"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":4082,"deal":null},{"variant_id":"31214384119921","title":"White/Teal / A4","sku":"HLWJJG-WT-A4","option_values":[{"position":1,"name":"Color","value":"White/Teal"},{"position":2,"name":"Size","value":"A4"}],"selected_options":{"Color":"White/Teal","Size":"A4"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3175,"deal":null},{"variant_id":"31214386479217","title":"Grey/Pink / A0","sku":"HLWJJG-GP-A0","option_values":[{"position":1,"name":"Color","value":"Grey/Pink"},{"position":2,"name":"Size","value":"A0"}],"selected_options":{"Color":"Grey/Pink","Size":"A0"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":1202,"deal":null},{"variant_id":"31214386511985","title":"Grey/Pink / A1","sku":"HLWJJG-GP-A1","option_values":[{"position":1,"name":"Color","value":"Grey/Pink"},{"position":2,"name":"Size","value":"A1"}],"selected_options":{"Color":"Grey/Pink","Size":"A1"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":1293,"deal":null},{"variant_id":"31214386544753","title":"Grey/Pink / A2","sku":"HLWJJG-GP-A2","option_values":[{"position":1,"name":"Color","value":"Grey/Pink"},{"position":2,"name":"Size","value":"A2"}],"selected_options":{"Color":"Grey/Pink","Size":"A2"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":3175,"deal":null},{"variant_id":"31214386577521","title":"Grey/Pink / A3","sku":"HLWJJG-GP-A3","option_values":[{"position":1,"name":"Color","value":"Grey/Pink"},{"position":2,"name":"Size","value":"A3"}],"selected_options":{"Color":"Grey/Pink","Size":"A3"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":4082,"deal":null},{"variant_id":"31214386610289","title":"Grey/Pink / A4","sku":"HLWJJG-GP-A4","option_values":[{"position":1,"name":"Color","value":"Grey/Pink"},{"position":2,"name":"Size","value":"A4"}],"selected_options":{"Color":"Grey/Pink","Size":"A4"},"price_cents":14900,"regular_price_cents":14900,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3175,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -602,9 +632,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -616,76 +644,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

@@ -120,6 +120,35 @@
     }
   }
 
+  function parseDatasetJson(value, fallback) {
+    if (!value) return fallback;
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        ? parsed
+        : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function normalizeSelectedOptions(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    const out = {};
+    Object.keys(value).sort().forEach((key) => {
+      const cleanKey = String(key || "").trim();
+      const cleanValue = String(value[key] || "").trim();
+      if (cleanKey && cleanValue) out[cleanKey] = cleanValue;
+    });
+    return out;
+  }
+
+  function selectedOptionsLabel(options) {
+    return Object.keys(options || {})
+      .map((key) => key + ": " + options[key])
+      .join(" / ");
+  }
+
   function normalizeCartItem(item) {
     if (!item || typeof item !== "object") return null;
 
@@ -131,21 +160,31 @@
       rawId.includes("::") && !item.variant
         ? rawId.slice(rawId.indexOf("::") + 2)
         : item.variant;
-    const variant = String(storedVariant || "").trim();
+    const variantId = String(item.variantId || item.variant_id || "").trim();
+    const selectedOptions = normalizeSelectedOptions(item.selectedOptions || item.selected_options);
+    const variant = selectedOptionsLabel(selectedOptions) || String(storedVariant || "").trim();
     const quantity =
       item.quantity == null ? 1 : Math.floor(Number(item.quantity));
     if (!Number.isFinite(quantity) || quantity < 1) return null;
 
     const price = Number(item.price);
     const currency = String(item.currency || "USD").toUpperCase();
+    const id = variantId
+      ? productId + "::" + variantId
+      : variant
+        ? productId + "::" + variant
+        : productId;
     return {
-      id: variant ? productId + "::" + variant : productId,
+      id,
       productId,
+      variantId,
+      sku: String(item.sku || ""),
       brand: String(item.brand || ""),
       name: String(item.name || ""),
       price: Number.isFinite(price) && price > 0 ? price : 0,
       currency: /^[A-Z]{3}$/.test(currency) ? currency : "USD",
       image: String(item.image || ""),
+      selectedOptions,
       variant,
       quantity,
     };
@@ -406,14 +445,19 @@
 
   /**
    * Adds a product to the cart.
-   * @param {object} payload - { id, brand, name, price, currency, image, variant? }
+   * @param {object} payload - { id, brand, name, price, currency, image, variantId?, selectedOptions? }
    */
   function addItem(payload) {
     if (!payload || !payload.id) return;
     const quantity = normalizeAddQuantity(payload.quantity);
-    const cartId = payload.variant
-      ? payload.id + "::" + payload.variant
-      : String(payload.id);
+    const selectedOptions = normalizeSelectedOptions(payload.selectedOptions);
+    const variant = selectedOptionsLabel(selectedOptions) || String(payload.variant || "").trim();
+    const variantId = String(payload.variantId || payload.variant_id || "").trim();
+    const cartId = variantId
+      ? payload.id + "::" + variantId
+      : variant
+        ? payload.id + "::" + variant
+        : String(payload.id);
     const existing = cart.find((cartItem) => cartItem.id === cartId);
     if (existing) {
       existing.quantity += quantity;
@@ -423,12 +467,15 @@
       cart.push({
         id: cartId,
         productId: String(payload.id),
+        variantId,
+        sku: String(payload.sku || ""),
         brand: payload.brand || "",
         name: payload.name || "",
         price: Number.isFinite(price) && price > 0 ? price : 0,
         currency: /^[A-Z]{3}$/.test(currency) ? currency : "USD",
         image: payload.image || "",
-        variant: payload.variant || "",
+        selectedOptions,
+        variant,
         quantity,
       });
     }
@@ -446,6 +493,9 @@
       price: Number(button.dataset.cartPrice || 0),
       currency: button.dataset.cartCurrency || "USD",
       image: button.dataset.cartImage,
+      variantId: button.dataset.cartVariantId || "",
+      sku: button.dataset.cartSku || "",
+      selectedOptions: parseDatasetJson(button.dataset.cartSelectedOptions, {}),
       variant: button.dataset.cartVariant || "",
     });
   }
@@ -472,6 +522,10 @@
       email,
       cart: cart.map((item) => ({
         productId: item.productId || item.id,
+        variant_id: item.variantId || "",
+        variantId: item.variantId || "",
+        sku: item.sku || "",
+        selected_options: item.selectedOptions || {},
         variant: item.variant || "",
         quantity: item.quantity,
       })),
@@ -1018,19 +1072,26 @@
       dealNote = '<p class="product-deal-note">' +
         esc(dealText + ends) + "</p>";
     }
-    var actionHtml = variantOffer
-      ? '<a class="add-cart-button product-options-button" href="' + esc(href) +
-          '" aria-label="View eligible options for ' + esc(p.name || "product") +
-        '">View options</a>'
-      : '<button class="add-cart-button" type="button" data-add-to-cart' +
-          ' data-cart-id="' + esc(p.id) + '"' +
-          ' data-cart-brand="' + esc(p.brand || "") + '"' +
-          ' data-cart-name="' + esc(p.name || "") + '"' +
-          ' data-cart-price="' + esc(priceStr) + '"' +
-          ' data-cart-currency="' + esc(currency) + '"' +
-          ' data-cart-image="' + esc(p.image || "") + '"' +
-          ' aria-label="Add ' + esc(p.name || "product") + ' to cart"' +
-        '>Add to cart</button>';
+    var purchasable = p.purchasable !== false && p.ready_for_sale !== false;
+    var mustChooseOptions = Boolean(p.requires_variant_selection || variantOffer);
+    var actionHtml = !purchasable
+      ? '<button class="add-cart-button" type="button" disabled aria-disabled="true">Unavailable</button>'
+      : mustChooseOptions
+        ? '<a class="add-cart-button product-options-button" href="' + esc(href) +
+            '" aria-label="View options for ' + esc(p.name || "product") +
+          '">View options</a>'
+        : '<button class="add-cart-button" type="button" data-add-to-cart' +
+            ' data-cart-id="' + esc(p.id) + '"' +
+            ' data-cart-product-id="' + esc(p.id) + '"' +
+            ' data-cart-variant-id="' + esc(p.default_variant_id || "") + '"' +
+            ' data-cart-brand="' + esc(p.brand || "") + '"' +
+            ' data-cart-name="' + esc(p.name || "") + '"' +
+            ' data-cart-price="' + esc(priceStr) + '"' +
+            ' data-cart-price-cents="' + esc(String(Math.round(price * 100))) + '"' +
+            ' data-cart-currency="' + esc(currency) + '"' +
+            ' data-cart-image="' + esc(p.image || "") + '"' +
+            ' aria-label="Add ' + esc(p.name || "product") + ' to cart"' +
+          '>Add to cart</button>';
     return (
       '<article class="product-card" data-product-id="' + esc(p.id) +
         '" data-category="' + esc(p.section_id || "") + '">' +

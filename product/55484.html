@@ -183,26 +183,26 @@
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Baby Pink">Baby Pink</option>
-                <option value="Black">Black</option>
-                <option value="Blue">Blue</option>
-                <option value="Gray">Gray</option>
-                <option value="Red">Red</option>
-                <option value="Yellow">Yellow</option>
-                <option value="White">White</option>
-                <option value="Pink/White Screen">Pink/White Screen</option>
-                <option value="Pink/Black Screen">Pink/Black Screen</option>
+                <option value="Baby Pink" >Baby Pink</option>
+                <option value="Black" >Black</option>
+                <option value="Blue" >Blue</option>
+                <option value="Gray" >Gray</option>
+                <option value="Red" >Red</option>
+                <option value="Yellow" >Yellow</option>
+                <option value="White" >White</option>
+                <option value="Pink/White Screen" >Pink/White Screen</option>
+                <option value="Pink/Black Screen" >Pink/Black Screen</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Size Glove</span>
               <select data-pdp-variant data-variant-name="Size Glove" required>
                 <option value="" disabled selected>Select Size Glove…</option>
-                <option value="8 oz.">8 oz.</option>
-                <option value="10 oz.">10 oz.</option>
-                <option value="12 oz.">12 oz.</option>
-                <option value="14 oz.">14 oz.</option>
-                <option value="16 oz.">16 oz.</option>
+                <option value="8 oz." >8 oz.</option>
+                <option value="10 oz." >10 oz.</option>
+                <option value="12 oz." >12 oz.</option>
+                <option value="14 oz." >14 oz.</option>
+                <option value="16 oz." >16 oz.</option>
               </select>
             </label>
           </div>
@@ -216,9 +216,13 @@
               data-cart-brand="Fairtex"
               data-cart-name="Microfiber Gloves"
               data-cart-price="101.25"
+              data-cart-price-cents="10125"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/BGV14_RED_c0a76023-addd-48fd-ad7e-c5fbd735af14.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -269,11 +273,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16345"
+                data-cart-product-id="16345"
                 data-cart-brand="Inno Supps"
                 data-cart-name="2 Bottle Max Mane Special Offer"
                 data-cart-price="139.98"
+                data-cart-price-cents="13998"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/ScreenShot2022-08-31at3.01.37PM.png"
+                data-cart-variant-id="40681505292424"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2 Bottle Max Mane Special Offer to cart"
               >Add to cart</button>
             </div>
@@ -292,18 +302,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="10880"
-                data-cart-brand="TRX Training"
-                data-cart-name="Tejara Mat: 6mm"
-                data-cart-price="139"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/14.png"
-                aria-label="Add Tejara Mat: 6mm to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/10880.html" aria-label="View options for Tejara Mat: 6mm">View options</a>
             </div>
           </article>
 
@@ -325,11 +324,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4582"
+                data-cart-product-id="4582"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Limited Edition Cymbiotika Bag"
                 data-cart-price="100"
+                data-cart-price-cents="10000"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/BeigeBagPNG_58b3ff63-7eb9-4e2d-a2bf-54af496e2a96.png"
+                data-cart-variant-id="44710960955439"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Limited Edition Cymbiotika Bag to cart"
               >Add to cart</button>
             </div>
@@ -353,11 +358,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4586"
+                data-cart-product-id="4586"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Yoga Mat"
                 data-cart-price="98"
+                data-cart-price-cents="9800"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/mat1.png"
+                data-cart-variant-id="43410461360175"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Yoga Mat to cart"
               >Add to cart</button>
             </div>
@@ -586,7 +597,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -596,7 +607,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"49688734040356","title":"Baby Pink / 8 oz.","sku":"BGV14 Baby Pink 8 oz","option_values":[{"position":1,"name":"Color","value":"Baby Pink"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Baby Pink","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925717796","title":"Baby Pink / 10 oz.","sku":"BGV14 Baby Pink 10 oz","option_values":[{"position":1,"name":"Color","value":"Baby Pink"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Baby Pink","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925750564","title":"Baby Pink / 12 oz.","sku":"BGV14 Baby Pink 12 oz","option_values":[{"position":1,"name":"Color","value":"Baby Pink"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Baby Pink","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925783332","title":"Baby Pink / 14 oz.","sku":"BGV14 Baby Pink 14 oz","option_values":[{"position":1,"name":"Color","value":"Baby Pink"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Baby Pink","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925816100","title":"Baby Pink / 16 oz.","sku":"BGV14 Baby Pink 16 oz","option_values":[{"position":1,"name":"Color","value":"Baby Pink"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Baby Pink","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925848868","title":"Black / 8 oz.","sku":"BGV14 Black 8 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Black","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925881636","title":"Black / 10 oz.","sku":"BGV14 Black 10 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Black","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925914404","title":"Black / 12 oz.","sku":"BGV14 Black 12 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Black","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925947172","title":"Black / 14 oz.","sku":"BGV14 Black 14 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Black","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038925979940","title":"Black / 16 oz.","sku":"BGV14 Black 16 oz","option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Black","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926012708","title":"Blue / 8 oz.","sku":"BGV14 Blue 8 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Blue","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926045476","title":"Blue / 10 oz.","sku":"BGV14 Blue 10 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Blue","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926078244","title":"Blue / 12 oz.","sku":"BGV14 Blue 12 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Blue","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926111012","title":"Blue / 14 oz.","sku":"BGV14 Blue 14 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Blue","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926143780","title":"Blue / 16 oz.","sku":"BGV14 Blue 16 oz","option_values":[{"position":1,"name":"Color","value":"Blue"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Blue","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926176548","title":"Gray / 8 oz.","sku":"BGV14 Gray 8 oz","option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Gray","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926209316","title":"Gray / 10 oz.","sku":"BGV14 Gray 10 oz","option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Gray","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926242084","title":"Gray / 12 oz.","sku":"BGV14 Gray 12 oz","option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Gray","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926274852","title":"Gray / 14 oz.","sku":"BGV14 Gray 14 oz","option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Gray","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926307620","title":"Gray / 16 oz.","sku":"BGV14 Gray 16 oz","option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Gray","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926340388","title":"Red / 8 oz.","sku":"BGV14 Red 8 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Red","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926373156","title":"Red / 10 oz.","sku":"BGV14 Red 10 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Red","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926405924","title":"Red / 12 oz.","sku":"BGV14 Red 12 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Red","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926438692","title":"Red / 14 oz.","sku":"BGV14 Red 14 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Red","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926471460","title":"Red / 16 oz.","sku":"BGV14 Red 16 oz","option_values":[{"position":1,"name":"Color","value":"Red"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Red","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926504228","title":"Yellow / 8 oz.","sku":"BGV14 Yellow 8 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926536996","title":"Yellow / 10 oz.","sku":"BGV14 Yellow 10 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926569764","title":"Yellow / 12 oz.","sku":"BGV14 Yellow 12 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926602532","title":"Yellow / 14 oz.","sku":"BGV14 Yellow 14 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926635300","title":"Yellow / 16 oz.","sku":"BGV14 Yellow 16 oz","option_values":[{"position":1,"name":"Color","value":"Yellow"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Yellow","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926668068","title":"White / 8 oz.","sku":"BGV14 White 8 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"White","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926700836","title":"White / 10 oz.","sku":"BGV14 White 10 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"White","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926733604","title":"White / 12 oz.","sku":"BGV14 White 12 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"White","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926766372","title":"White / 14 oz.","sku":"BGV14 White 14 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"White","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926799140","title":"White / 16 oz.","sku":"BGV14 White 16 oz","option_values":[{"position":1,"name":"Color","value":"White"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"White","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926831908","title":"Pink/White Screen / 8 oz.","sku":"BGV14 Pink/White Screen 8 oz","option_values":[{"position":1,"name":"Color","value":"Pink/White Screen"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Pink/White Screen","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926864676","title":"Pink/White Screen / 10 oz.","sku":"BGV14 Pink/White Screen 10 oz","option_values":[{"position":1,"name":"Color","value":"Pink/White Screen"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Pink/White Screen","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926897444","title":"Pink/White Screen / 12 oz.","sku":"BGV14 Pink/White Screen 12 oz","option_values":[{"position":1,"name":"Color","value":"Pink/White Screen"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Pink/White Screen","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926930212","title":"Pink/White Screen / 14 oz.","sku":"BGV14 Pink/White Screen 14 oz","option_values":[{"position":1,"name":"Color","value":"Pink/White Screen"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Pink/White Screen","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926962980","title":"Pink/White Screen / 16 oz.","sku":"BGV14 Pink/White Screen 16 oz","option_values":[{"position":1,"name":"Color","value":"Pink/White Screen"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Pink/White Screen","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038926995748","title":"Pink/Black Screen / 8 oz.","sku":"BGV14 Pink/Black Screen 8 oz","option_values":[{"position":1,"name":"Color","value":"Pink/Black Screen"},{"position":2,"name":"Size Glove","value":"8 oz."}],"selected_options":{"Color":"Pink/Black Screen","Size Glove":"8 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038927028516","title":"Pink/Black Screen / 10 oz.","sku":"BGV14 Pink/Black Screen 10 oz","option_values":[{"position":1,"name":"Color","value":"Pink/Black Screen"},{"position":2,"name":"Size Glove","value":"10 oz."}],"selected_options":{"Color":"Pink/Black Screen","Size Glove":"10 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038927061284","title":"Pink/Black Screen / 12 oz.","sku":"BGV14 Pink/Black Screen 12 oz","option_values":[{"position":1,"name":"Color","value":"Pink/Black Screen"},{"position":2,"name":"Size Glove","value":"12 oz."}],"selected_options":{"Color":"Pink/Black Screen","Size Glove":"12 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038927094052","title":"Pink/Black Screen / 14 oz.","sku":"BGV14 Pink/Black Screen 14 oz","option_values":[{"position":1,"name":"Color","value":"Pink/Black Screen"},{"position":2,"name":"Size Glove","value":"14 oz."}],"selected_options":{"Color":"Pink/Black Screen","Size Glove":"14 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null},{"variant_id":"51038927126820","title":"Pink/Black Screen / 16 oz.","sku":"BGV14 Pink/Black Screen 16 oz","option_values":[{"position":1,"name":"Color","value":"Pink/Black Screen"},{"position":2,"name":"Size Glove","value":"16 oz."}],"selected_options":{"Color":"Pink/Black Screen","Size Glove":"16 oz."},"price_cents":10125,"regular_price_cents":10125,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":3000,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -609,9 +622,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -623,76 +634,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

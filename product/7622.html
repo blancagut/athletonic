@@ -175,8 +175,8 @@
           <h1 class="pdp-title">Kids Sleep</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="1399" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$13.99</strong>
-            <span class="pdp-compare" data-pdp-compare hidden></span>
-            <span class="pdp-discount" data-pdp-discount hidden>Limited offer</span>
+            <span class="pdp-compare" data-pdp-compare >$17.99</span>
+            <span class="pdp-discount" data-pdp-discount >Limited offer</span>
           </div>
           <p class="pdp-availability">In stock · Sold by Athletonic</p>
 
@@ -187,9 +187,9 @@
               <span class="pdp-variant-label">Amount</span>
               <select data-pdp-variant data-variant-name="Amount" required>
                 <option value="" disabled selected>Select Amount…</option>
-                <option value="25 Servings">25 Servings</option>
-                <option value="35 Servings">35 Servings</option>
-                <option value="30 Serving Pouch">30 Serving Pouch</option>
+                <option value="25 Servings" >25 Servings</option>
+                <option value="35 Servings" >35 Servings</option>
+                <option value="30 Serving Pouch" >30 Serving Pouch</option>
               </select>
             </label>
           </div>
@@ -203,9 +203,13 @@
               data-cart-brand="OLLY"
               data-cart-name="Kids Sleep"
               data-cart-price="13.99"
+              data-cart-price-cents="1399"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0108/2900/4864/files/9a02f6beaf3d340ff867094af1d4f58f7159ae65.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -258,11 +262,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="6373"
+                data-cart-product-id="6373"
                 data-cart-brand="Manta Sleep"
                 data-cart-name="Manta SOUND Sleep Mask DUO"
                 data-cart-price="287"
+                data-cart-price-cents="28700"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1582/3265/files/S-BB-DUO.png"
+                data-cart-variant-id="46050081570969"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Manta SOUND Sleep Mask DUO to cart"
               >Add to cart</button>
             </div>
@@ -286,11 +296,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="6380"
+                data-cart-product-id="6380"
                 data-cart-brand="Manta Sleep"
                 data-cart-name="Manta SOUND Sleep Mask DUO"
                 data-cart-price="287"
+                data-cart-price-cents="28700"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1582/3265/files/S-BB-DUO.png"
+                data-cart-variant-id="45563279671449"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Manta SOUND Sleep Mask DUO to cart"
               >Add to cart</button>
             </div>
@@ -314,11 +330,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="6370"
+                data-cart-product-id="6370"
                 data-cart-brand="Manta Sleep"
                 data-cart-name="Manta PRO Sleep Mask DUO - 10th Anniversary Edition"
                 data-cart-price="161"
+                data-cart-price-cents="16100"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1582/3265/files/P-Buybox-DUO_afd9e7a8-ba95-453c-a429-02c9d1cef28b.png"
+                data-cart-variant-id="46414330167449"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Manta PRO Sleep Mask DUO - 10th Anniversary Edition to cart"
               >Add to cart</button>
             </div>
@@ -342,11 +364,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="6381"
+                data-cart-product-id="6381"
                 data-cart-brand="Manta Sleep"
                 data-cart-name="Manta SOUND Sleep Mask"
                 data-cart-price="159"
+                data-cart-price-cents="15900"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1582/3265/files/SOUND-2.png"
+                data-cart-variant-id="46050048639129"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Manta SOUND Sleep Mask to cart"
               >Add to cart</button>
             </div>
@@ -575,7 +603,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -585,7 +613,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"29274227998784","title":"25 Servings","sku":"6206","option_values":[{"position":1,"name":"Amount","value":"25 Servings"}],"selected_options":{"Amount":"25 Servings"},"price_cents":1399,"regular_price_cents":1399,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"39516623044683","title":"35 Servings","sku":"700362","option_values":[{"position":1,"name":"Amount","value":"35 Servings"}],"selected_options":{"Amount":"35 Servings"},"price_cents":1799,"regular_price_cents":1799,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null},{"variant_id":"31865735446603","title":"30 Serving Pouch","sku":"700286","option_values":[{"position":1,"name":"Amount","value":"30 Serving Pouch"}],"selected_options":{"Amount":"30 Serving Pouch"},"price_cents":1499,"regular_price_cents":1499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":0,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -598,9 +628,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -612,76 +640,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

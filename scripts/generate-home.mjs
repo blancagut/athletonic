@@ -783,6 +783,40 @@ function productCard(product, pathPrefix = "./") {
     .join(" ")
     .toLowerCase();
   const pdpHref = `${pathPrefix}product/${html(product.id)}.html`;
+  const purchasable = product.purchasable !== false && product.readyForSale !== false;
+  const requiresVariantSelection = Boolean(product.requiresVariantSelection || product.requires_variant_selection || variantOffer);
+  const defaultVariant = product.defaultVariant ||
+    (product.defaultVariantId || product.default_variant_id
+      ? { variant_id: product.defaultVariantId || product.default_variant_id, selected_options: {}, title: "" }
+      : null);
+  const defaultVariantOptions = defaultVariant?.selected_options
+    ? JSON.stringify(defaultVariant.selected_options).replace(/'/g, "&#39;")
+    : "{}";
+  const directAddAttrs = defaultVariant
+    ? `
+                data-cart-variant-id="${html(defaultVariant.variant_id)}"
+                data-cart-sku="${html(defaultVariant.sku || "")}"
+                data-cart-selected-options='${defaultVariantOptions}'
+                data-cart-variant="${html(defaultVariant.title || "")}"`
+    : "";
+  const actionHtml = !purchasable
+    ? `<button class="add-cart-button" type="button" disabled aria-disabled="true">Unavailable</button>`
+    : requiresVariantSelection
+      ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View options for ${html(name)}">View options</a>`
+      : `<button
+                class="add-cart-button"
+                type="button"
+                data-add-to-cart
+                data-cart-id="${html(product.id)}"
+                data-cart-product-id="${html(product.id)}"
+                data-cart-brand="${html(brand)}"
+                data-cart-name="${html(name)}"
+                data-cart-price="${html(product.price)}"
+                data-cart-price-cents="${html(Math.round(Number(product.price || 0) * 100))}"
+                data-cart-currency="${html(product.currency)}"
+                data-cart-image="${html(product.image)}"${directAddAttrs}
+                aria-label="Add ${html(name)} to cart"
+              >Add to cart</button>`;
   return `
           <article class="product-card" data-product-id="${html(product.id)}" data-category="${html(product.sectionId)}" data-search="${html(searchText)}">
             <a class="product-image" href="${pdpHref}">
@@ -807,22 +841,7 @@ function productCard(product, pathPrefix = "./") {
                     )}</p>`
                   : ""
               }
-              ${
-                variantOffer
-                  ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View eligible options for ${html(name)}">View options</a>`
-                  : `<button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="${html(product.id)}"
-                data-cart-brand="${html(brand)}"
-                data-cart-name="${html(name)}"
-                data-cart-price="${html(product.price)}"
-                data-cart-currency="${html(product.currency)}"
-                data-cart-image="${html(product.image)}"
-                aria-label="Add ${html(name)} to cart"
-              >Add to cart</button>`
-              }
+              ${actionHtml}
             </div>
           </article>`;
 }
@@ -943,6 +962,220 @@ function variantDealSummary(offers) {
   };
 }
 
+function centsFromPrice(value) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) && number > 0 ? Math.round(number * 100) : 0;
+}
+
+function normalizeOptionKey(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function cleanOptionValue(value) {
+  const text = String(value || "").trim();
+  return /^default title$/i.test(text) ? "" : text;
+}
+
+function optionNamesForRow(row) {
+  const parsedOptions = safeParseJson(row?.options, []);
+  const names = Array.isArray(parsedOptions)
+    ? parsedOptions
+        .map((option, index) => String(option?.name || `Option ${index + 1}`).trim())
+        .filter(Boolean)
+    : [];
+  return [
+    names[0] || "Option 1",
+    names[1] || "Option 2",
+    names[2] || "Option 3",
+  ];
+}
+
+function optionValuesForVariant(variant, optionNames) {
+  return [variant.option1, variant.option2, variant.option3]
+    .map((value, index) => ({
+      position: index + 1,
+      name: optionNames[index] || `Option ${index + 1}`,
+      value: cleanOptionValue(value),
+    }))
+    .filter((entry) => entry.value);
+}
+
+function optionObjectFromValues(optionValues) {
+  return Object.fromEntries(
+    optionValues.map((entry) => [entry.name, entry.value])
+  );
+}
+
+function variantMatchesOffer(optionValues, offer) {
+  const selected = new Map(
+    optionValues.map((entry) => [normalizeOptionKey(entry.name), normalizeOptionKey(entry.value)])
+  );
+  return Object.entries(offer.option_match || {}).every(([name, allowed]) => {
+    const selectedValue = selected.get(normalizeOptionKey(name));
+    return Array.isArray(allowed) && allowed
+      .map(normalizeOptionKey)
+      .includes(selectedValue);
+  });
+}
+
+function pricedVariant(productId, variant, optionValues) {
+  const basePriceCents = centsFromPrice(variant.price);
+  const compareAtCents = centsFromPrice(variant.compare_at_price);
+  let priceCents = basePriceCents;
+  let regularPriceCents = basePriceCents;
+  let comparePriceCents = compareAtCents > basePriceCents ? compareAtCents : null;
+  let appliedDeal = null;
+
+  const productDeal = activeDealForPrice(productId, basePriceCents);
+  if (productDeal) {
+    priceCents = productDeal.sale_price_cents;
+    regularPriceCents = Math.max(productDeal.original_price_cents, basePriceCents);
+    comparePriceCents = regularPriceCents;
+    appliedDeal = {
+      scope: "product",
+      discount_percent: productDeal.discount_percent,
+      expires_at: productDeal.expires_at,
+      reason: productDeal.reason,
+    };
+  }
+
+  const variantOffer = activeVariantDealsForProduct(productId).find((offer) =>
+    variantMatchesOffer(optionValues, offer)
+  );
+  if (variantOffer) {
+    priceCents = variantOffer.sale_price_cents;
+    regularPriceCents = Math.max(variantOffer.original_price_cents, basePriceCents);
+    comparePriceCents = regularPriceCents;
+    appliedDeal = {
+      scope: "variant",
+      discount_percent: variantOffer.discount_percent,
+      expires_at: variantOffer.expires_at,
+      reason: variantOffer.reason,
+      option_match: variantOffer.option_match,
+    };
+  }
+
+  return {
+    price_cents: priceCents,
+    regular_price_cents: regularPriceCents,
+    compare_at_price_cents: comparePriceCents,
+    deal: appliedDeal,
+  };
+}
+
+function mandatoryOptionBlockers(row, availableVariants) {
+  const text = [
+    row?.brand,
+    row?.name,
+    row?.store_collection,
+    row?.category_normalized,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const optionNames = new Set();
+  const optionValues = [];
+  for (const variant of availableVariants) {
+    for (const entry of variant.option_values || []) {
+      optionNames.add(normalizeOptionKey(entry.name));
+      optionValues.push(entry.value);
+    }
+  }
+  const optionText = `${[...optionNames].join(" ")} ${optionValues.join(" ")}`.toLowerCase();
+  const blockers = [];
+  const hasSize = /\b(size|size glove|shoe size|waist|inseam)\b/.test(optionText) ||
+    /\b(xs|small|medium|large|xl|xxl|one size|\d{1,2}(\.\d)?\s*(oz|us|w|m)?\b)/i.test(optionText);
+  const hasOunces = /\b(\d{1,2}\s*(oz|ounce|ounces)|size glove)\b/i.test(optionText);
+
+  if (/\b(glove|gloves)\b/.test(text) && /\b(boxing|muay|kickboxing|mma|fight|fairtex|twins|hayabusa|raja)\b/.test(text) && !hasOunces) {
+    blockers.push("missing_glove_ounces");
+  }
+  if (/\b(shoe|shoes|sneaker|sneakers|boot|boots|cleat|cleats|slide|slides|sandal|sandals|pegasus|metcon|romaleos|vomero|dunk)\b/i.test(text) && !hasSize) {
+    blockers.push("missing_footwear_size");
+  }
+  if (/\b(jersey|shirt|tee|t-shirt|hoodie|shorts|pants|leggings|jacket|bra|tank|sweatshirt|sweatpants|polo|rashguard|compression|tights|pullover)\b/i.test(text) && !hasSize) {
+    blockers.push("missing_apparel_size");
+  }
+  return blockers;
+}
+
+function buildVariantState(productId, row, variantRows = []) {
+  const optionNames = optionNamesForRow(row);
+  const variants = variantRows
+    .filter((variant) => variant && variant.variant_id)
+    .map((variant) => {
+      const optionValues = optionValuesForVariant(variant, optionNames);
+      const pricing = pricedVariant(productId, variant, optionValues);
+      const available = Number(variant.available) === 1 && pricing.regular_price_cents > 0;
+      return {
+        variant_id: String(variant.variant_id),
+        title: String(variant.title || optionValues.map((entry) => entry.value).join(" / ") || "Default"),
+        sku: variant.sku ? String(variant.sku) : null,
+        option_values: optionValues,
+        selected_options: optionObjectFromValues(optionValues),
+        price_cents: pricing.price_cents,
+        regular_price_cents: pricing.regular_price_cents,
+        compare_at_price_cents: pricing.compare_at_price_cents,
+        currency: row?.currency || "USD",
+        available,
+        weight_grams: Number.isInteger(Number(variant.weight_grams))
+          ? Number(variant.weight_grams)
+          : null,
+        deal: pricing.deal,
+      };
+    });
+
+  const availableVariants = variants.filter((variant) => variant.available);
+  const hasVariantRows = variants.length > 0;
+  const blockers = [];
+  if (hasVariantRows && availableVariants.length === 0) blockers.push("zero_available_variants");
+  blockers.push(...mandatoryOptionBlockers(row, availableVariants));
+
+  const basePriceCents = centsFromPrice(row?.price);
+  const readyForSale = hasVariantRows
+    ? availableVariants.length > 0 && blockers.length === 0
+    : basePriceCents > 0 && Number(row?.available ?? 1) === 1;
+  const requiresVariantSelection = readyForSale && availableVariants.length > 1;
+  const defaultVariant = readyForSale && availableVariants.length === 1
+    ? availableVariants[0]
+    : null;
+  const prices = availableVariants.map((variant) => variant.price_cents).filter((price) => price > 0);
+  const priceMinCents = prices.length ? Math.min(...prices) : basePriceCents;
+  const priceMaxCents = prices.length ? Math.max(...prices) : basePriceCents;
+
+  const optionMap = new Map();
+  for (const variant of variants) {
+    for (const entry of variant.option_values) {
+      const key = entry.name;
+      if (!optionMap.has(key)) {
+        optionMap.set(key, new Map());
+      }
+      const values = optionMap.get(key);
+      const current = values.get(entry.value) || { value: entry.value, available: false };
+      current.available = current.available || variant.available;
+      values.set(entry.value, current);
+    }
+  }
+
+  return {
+    ready_for_sale: readyForSale,
+    purchasable: readyForSale,
+    blockers,
+    has_variants: hasVariantRows,
+    requires_variant_selection: requiresVariantSelection,
+    default_variant_id: defaultVariant?.variant_id || null,
+    default_variant: defaultVariant,
+    price_min_cents: priceMinCents,
+    price_max_cents: priceMaxCents,
+    options: [...optionMap.entries()].map(([name, values], index) => ({
+      position: index + 1,
+      name,
+      values: [...values.values()],
+    })),
+    variants,
+  };
+}
+
 for (const product of allCuratedProducts) {
   const deal = activeDealForPrice(product.id, Math.round(Number(product.price || 0) * 100));
   if (!deal) continue;
@@ -955,6 +1188,28 @@ for (const product of allCuratedProducts) {
     expires_at: deal.expires_at,
     reason: deal.reason || "Limited-time Athletonic offer",
   };
+}
+
+const curatedVariantData = fetchPdpData(allCuratedProducts.map((product) => product.id));
+for (const product of allCuratedProducts) {
+  const numericId = Number(product.id);
+  const row = curatedVariantData.rowsById.get(numericId);
+  const state = buildVariantState(
+    product.id,
+    row,
+    curatedVariantData.variantsById.get(numericId) || []
+  );
+  product.readyForSale = state.ready_for_sale;
+  product.purchasable = state.purchasable;
+  product.readyBlockers = state.blockers;
+  product.requiresVariantSelection = state.requires_variant_selection;
+  product.defaultVariantId = state.default_variant_id;
+  product.defaultVariant = state.default_variant;
+  product.priceMinCents = state.price_min_cents;
+  product.priceMaxCents = state.price_max_cents;
+  if (state.price_min_cents > 0) {
+    product.price = state.price_min_cents / 100;
+  }
 }
 
 const hydratedProductsBySectionId = new Map();
@@ -1542,6 +1797,8 @@ writeFileSync(
 // ---------------------------------------------------------------------------
 const indexAccessoryNamePattern =
   /\b(bottle|shaker|bag|belt|strap|wrap|mouthguard|mouth guard|key chain|towel|mat|grip|grips|hat|beanie|sock|socks|glove|gloves|guard|guards|lace|laces)\b|\bcap\b(?!\s+sleeve)/i;
+const indexCombatNamePattern =
+  /\b(boxing|muay|kickboxing|mma|fight|fairtex|twins|hayabusa|raja|top king|shin guard|headgear|punching bag|boxing glove|boxing gloves)\b/i;
 const indexFootwearNamePattern =
   /\b(shoe|shoes|sneaker|sneakers|boot|boots|cleat|cleats|slide|slides|sandal|sandals|loafer|loafers|pegasus|foamposite|metcon|romaleos|infinityrn|vomero|dunk)\b|\bair\s+max\b|\bjordan\s*\d+\b|\b(trail|tree|golf)\s+runner(s)?\b/i;
 const indexApparelNamePattern =
@@ -1549,6 +1806,7 @@ const indexApparelNamePattern =
 
 function categoryFromProductName(name) {
   const value = String(name ?? "");
+  if (indexCombatNamePattern.test(value)) return "training-gear";
   if (indexAccessoryNamePattern.test(value)) return "accessories";
   if (indexApparelNamePattern.test(value)) return "apparel";
   if (indexFootwearNamePattern.test(value)) return "shoes";
@@ -1719,6 +1977,106 @@ function buildSearchIndex() {
 }
 
 const searchIndexRecords = buildSearchIndex();
+const publicCatalogData = fetchPdpData(searchIndexRecords.map((record) => record.id));
+const checkoutCatalogProducts = [];
+const readinessCounts = {
+  total_public_products: searchIndexRecords.length,
+  ready_for_sale: 0,
+  requires_variant_selection: 0,
+  direct_add_ready: 0,
+  not_ready: 0,
+  blockers: {},
+};
+
+for (const record of searchIndexRecords) {
+  const numericId = Number(record.id);
+  const row = publicCatalogData.rowsById.get(numericId);
+  const variants = publicCatalogData.variantsById.get(numericId) || [];
+  const state = buildVariantState(record.id, row, variants);
+  const defaultVariant = state.default_variant || null;
+  const productPriceCents = state.price_min_cents || record.price_cents;
+
+  record.available = state.ready_for_sale;
+  record.purchasable = state.purchasable;
+  record.ready_for_sale = state.ready_for_sale;
+  record.ready_blockers = state.blockers;
+  record.requires_variant_selection = state.requires_variant_selection;
+  record.default_variant_id = state.default_variant_id;
+  record.price_min_cents = state.price_min_cents || record.price_cents;
+  record.price_max_cents = state.price_max_cents || record.price_cents;
+  if (state.ready_for_sale && state.price_min_cents > 0) {
+    record.price_cents = state.price_min_cents;
+  }
+
+  if (state.ready_for_sale) {
+    readinessCounts.ready_for_sale += 1;
+    if (state.requires_variant_selection) readinessCounts.requires_variant_selection += 1;
+    else readinessCounts.direct_add_ready += 1;
+  } else {
+    readinessCounts.not_ready += 1;
+    for (const blocker of state.blockers) {
+      readinessCounts.blockers[blocker] = (readinessCounts.blockers[blocker] || 0) + 1;
+    }
+  }
+
+  checkoutCatalogProducts.push({
+    id: record.id,
+    external_product_id: row?.product_id ? String(row.product_id) : null,
+    brand_slug: record.brand_slug,
+    brand: record.brand,
+    name: record.name,
+    sku: defaultVariant?.sku || null,
+    url: row?.url || record.url || null,
+    image: record.image || null,
+    image_width: record.image_width || 640,
+    image_height: record.image_height || record.image_width || 640,
+    price_cents: productPriceCents,
+    price_min_cents: state.price_min_cents || productPriceCents,
+    price_max_cents: state.price_max_cents || productPriceCents,
+    compare_at_price_cents: record.compare_at_price_cents || null,
+    currency: row?.currency || ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+    available: state.ready_for_sale,
+    purchasable: state.purchasable,
+    ready_for_sale: state.ready_for_sale,
+    ready_blockers: state.blockers,
+    has_variants: state.has_variants,
+    requires_variant_selection: state.requires_variant_selection,
+    default_variant_id: state.default_variant_id,
+    section_id: record.section_id,
+    section_title: sectionTitleById[record.section_id] ?? "Athletonic catalog",
+    options: state.options,
+    variants: state.variants,
+    deal: record.deal || null,
+    variant_offers: activeVariantDealsForProduct(record.id),
+  });
+}
+
+writeFileSync(
+  new URL("athletonic-catalog.json", commerceCatalogDir),
+  JSON.stringify(
+    {
+      schema_version: 2,
+      generated_at: new Date().toISOString(),
+      currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+      readiness: readinessCounts,
+      products: checkoutCatalogProducts,
+    },
+    null,
+    0
+  )
+);
+writeFileSync(
+  new URL("catalog-readiness.json", commerceCatalogDir),
+  JSON.stringify(
+    {
+      generated_at: new Date().toISOString(),
+      ...readinessCounts,
+    },
+    null,
+    2
+  )
+);
+
 writeFileSync(
   new URL("search-index.json", commerceCatalogDir),
   JSON.stringify(
@@ -1752,6 +2110,13 @@ function indexRecordToProduct(record) {
     sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
     store_collection: record.section_id,
     url: record.url || null,
+    purchasable: record.purchasable,
+    readyForSale: record.ready_for_sale,
+    readyBlockers: record.ready_blockers || [],
+    requiresVariantSelection: record.requires_variant_selection,
+    defaultVariantId: record.default_variant_id || null,
+    priceMinCents: record.price_min_cents || null,
+    priceMaxCents: record.price_max_cents || null,
     deal: record.deal
       ? {
           discount_percent: record.deal.discount_percent,
@@ -1768,7 +2133,9 @@ function fetchPdpData(productIds) {
   const ids = productIds
     .map((id) => Number(id))
     .filter((id) => Number.isInteger(id) && id > 0);
-  if (ids.length === 0) return { rowsById: new Map(), imagesById: new Map() };
+  if (ids.length === 0) {
+    return { rowsById: new Map(), imagesById: new Map(), variantsById: new Map() };
+  }
 
   // Batch DB reads in chunks so large id sets (the full ~34.5k catalog) do not
   // build oversized SQL strings or overflow sqlite3's stdout buffer (ENOBUFS),
@@ -1776,12 +2143,14 @@ function fetchPdpData(productIds) {
   const BATCH = 3000;
   const rowsById = new Map();
   const imagesById = new Map();
+  const variantsById = new Map();
 
   for (let i = 0; i < ids.length; i += BATCH) {
     const chunk = ids.slice(i, i + BATCH);
 
     const rows = runQuery(`
-      select id, brand, name, handle, description_html, price, compare_at_price,
+      select id, product_id, brand, name, handle, description_html, price, compare_at_price,
+             available,
              currency, options, tags, store_collection, category_normalized, url
       from products
       where id in (${chunk.join(",")});
@@ -1802,12 +2171,26 @@ function fetchPdpData(productIds) {
       }
       imagesById.get(image.product_row_id).push(image);
     }
+
+    const variants = runQuery(`
+      select product_row_id, variant_id, title, sku, option1, option2, option3,
+             price, compare_at_price, available, weight_grams
+      from variants
+      where product_row_id in (${chunk.join(",")})
+      order by product_row_id asc, id asc;
+    `);
+    for (const variant of variants) {
+      if (!variantsById.has(variant.product_row_id)) {
+        variantsById.set(variant.product_row_id, []);
+      }
+      variantsById.get(variant.product_row_id).push(variant);
+    }
   }
 
   for (const list of imagesById.values()) {
     list.sort((a, b) => productImageScore(a) - productImageScore(b));
   }
-  return { rowsById, imagesById };
+  return { rowsById, imagesById, variantsById };
 }
 
 function safeParseJson(raw, fallback) {
@@ -1954,7 +2337,7 @@ function renderDrawers() {
     </aside>`;
 }
 
-function productPage(curated, fullRow, imageList, relatedProducts) {
+function productPage(curated, fullRow, imageList, relatedProducts, variantRows = []) {
   const pathPrefix = "../";
   const brand = brandNames[curated.brand] ?? curated.brand;
   const name = curated.displayName ?? curated.name;
@@ -1968,13 +2351,17 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
   const productDealLabel = discountPct >= 1 ? `−${discountPct}%` : "Limited offer";
   const variantDeals = activeVariantDealsForProduct(curated.id);
   const pdpVariantOffer = variantDealSummary(variantDeals);
-  const displayPrice = pdpVariantOffer
-    ? Number(pdpVariantOffer.sale_price_cents || 0) / 100
+  const variantState = buildVariantState(curated.id, fullRow, variantRows);
+  const readyForSale = variantState.ready_for_sale;
+  const defaultVariant = variantState.default_variant;
+  const displayPrice = variantState.price_min_cents
+    ? Number(variantState.price_min_cents) / 100
     : price;
-  const displayCompareAt = pdpVariantOffer
-    ? Number(pdpVariantOffer.original_price_cents || 0) / 100
-    : compareAt;
-  const displayOnSale = displayCompareAt > 0 && displayCompareAt > displayPrice;
+  const displayCompareAt =
+    variantState.price_max_cents && variantState.price_max_cents > variantState.price_min_cents
+      ? Number(variantState.price_max_cents) / 100
+      : compareAt;
+  const displayOnSale = displayCompareAt > 0 && displayCompareAt > displayPrice && !pdpVariantOffer;
   const displayDiscountPct = displayOnSale
     ? Math.round(((displayCompareAt - displayPrice) / displayCompareAt) * 100)
     : 0;
@@ -1982,6 +2369,7 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
     ? `−${displayDiscountPct}%`
     : "Limited offer";
   const variantDealsJson = JSON.stringify(variantDeals).replace(/</g, "\\u003c");
+  const pdpVariantsJson = JSON.stringify(variantState.variants).replace(/</g, "\\u003c");
   const variantOfferNote = pdpVariantOffer
     ? `<p class="pdp-variant-deal-note" data-pdp-variant-deal-note>${html(
         pdpVariantOffer.note || "Select eligible options for this offer."
@@ -2003,16 +2391,9 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
   }
   if (images.length === 0 && curated.image) images.push(curated.image);
 
-  const options = safeParseJson(fullRow?.options, []);
-  const variantOptions = Array.isArray(options)
-    ? options.filter(
-        (opt) =>
-          opt &&
-          typeof opt === "object" &&
-          Array.isArray(opt.values) &&
-          opt.values.filter((v) => v != null && String(v).trim() !== "").length > 1
-      )
-    : [];
+  const variantOptions = variantState.options.filter(
+    (opt) => Array.isArray(opt.values) && opt.values.length > 1
+  );
 
   const description = sanitizeDescriptionHtml(fullRow?.description_html);
 
@@ -2058,10 +2439,12 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
               <select data-pdp-variant data-variant-name="${html(opt.name || `Option ${idx + 1}`)}" required>
                 <option value="" disabled selected>Select ${html(opt.name || "option")}…</option>
                 ${opt.values
-                  .filter((v) => v != null && String(v).trim() !== "")
+                  .filter((entry) => entry && entry.value != null && String(entry.value).trim() !== "")
                   .map(
-                    (val) =>
-                      `<option value="${html(val)}">${html(val)}</option>`
+                    (entry) =>
+                      `<option value="${html(entry.value)}" ${
+                        entry.available ? "" : "disabled"
+                      }>${html(entry.value)}${entry.available ? "" : " (sold out)"}</option>`
                   )
                   .join("\n                ")}
               </select>
@@ -2153,14 +2536,22 @@ ${variantSelectorsHtml}
               data-cart-id="${html(curated.id)}"
               data-cart-brand="${html(brand)}"
               data-cart-name="${html(name)}"
-              data-cart-price="${html(pdpVariantOffer ? displayPrice : price)}"
+              data-cart-price="${html(displayPrice)}"
+              data-cart-price-cents="${html(Math.round(displayPrice * 100))}"
               data-cart-currency="${html(currency)}"
               data-cart-image="${html(images[0] || curated.image || "")}"
-              data-cart-variant=""
-              ${variantOptions.length ? "disabled" : ""}
-            >${variantOptions.length ? "Select options" : "Add to cart"}</button>
+              data-cart-variant="${html(defaultVariant?.title || "")}"
+              data-cart-variant-id="${html(defaultVariant?.variant_id || "")}"
+              data-cart-sku="${html(defaultVariant?.sku || "")}"
+              data-cart-selected-options='${JSON.stringify(defaultVariant?.selected_options || {}).replace(/'/g, "&#39;")}'
+              ${!readyForSale || variantOptions.length ? "disabled" : ""}
+            >${!readyForSale ? "Unavailable" : variantOptions.length ? "Select options" : "Add to cart"}</button>
           </div>
-          <p class="pdp-cta-note" data-pdp-cta-note></p>
+          <p class="pdp-cta-note" data-pdp-cta-note>${html(
+            !readyForSale && variantState.blockers.length
+              ? "This product is not ready for checkout yet."
+              : ""
+          )}</p>
           ${officialLinkHtml}
 
           ${
@@ -2211,7 +2602,7 @@ ${mobileBottomNav(pathPrefix)}
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -2221,7 +2612,9 @@ ${mobileBottomNav(pathPrefix)}
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = ${variantDealsJson};
+        var variants = ${pdpVariantsJson};
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -2234,9 +2627,7 @@ ${mobileBottomNav(pathPrefix)}
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -2248,76 +2639,87 @@ ${mobileBottomNav(pathPrefix)}
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }
@@ -4570,7 +4972,11 @@ ${renderFooter(pathPrefix)}
 }
 
 const curatedIds = allCuratedProducts.map((p) => p.id);
-const { rowsById: pdpRowsById, imagesById: pdpImagesById } = fetchPdpData(curatedIds);
+const {
+  rowsById: pdpRowsById,
+  imagesById: pdpImagesById,
+  variantsById: pdpVariantsById,
+} = fetchPdpData(curatedIds);
 
 // Group curated products by section to compute "related" lists
 const sectionProductsBySection = new Map();
@@ -4588,10 +4994,11 @@ let pdpCount = 0;
 for (const product of allCuratedProducts) {
   const fullRow = pdpRowsById.get(product.id);
   const imageList = pdpImagesById.get(product.id) || [];
+  const variantRows = pdpVariantsById.get(product.id) || [];
   const peers = (sectionProductsBySection.get(product.sectionId) || [])
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
-  const pageHtml = productPage(product, fullRow, imageList, peers);
+  const pageHtml = productPage(product, fullRow, imageList, peers, variantRows);
   writeFileSync(new URL(`${product.id}.html`, pdpDir), cleanGeneratedText(pageHtml));
   pdpCount += 1;
 }
@@ -4623,18 +5030,23 @@ const PDP_BATCH = 3000;
 for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
   const batch = nonCuratedRecords.slice(i, i + PDP_BATCH);
   const batchIds = batch.map((record) => record.id);
-  const { rowsById: batchRows, imagesById: batchImages } = fetchPdpData(batchIds);
+  const {
+    rowsById: batchRows,
+    imagesById: batchImages,
+    variantsById: batchVariants,
+  } = fetchPdpData(batchIds);
 
   for (const record of batch) {
     const numericId = Number(record.id);
     const fullRow = batchRows.get(numericId);
     const imageList = batchImages.get(numericId) || [];
+    const variantRows = batchVariants.get(numericId) || [];
     const product = indexRecordToProduct(record);
     const peers = (indexRecordsBySection.get(record.section_id) || [])
       .filter((peer) => peer.id !== record.id)
       .slice(0, 4)
       .map(indexRecordToProduct);
-    const pageHtml = productPage(product, fullRow, imageList, peers);
+    const pageHtml = productPage(product, fullRow, imageList, peers, variantRows);
     writeFileSync(new URL(`${record.id}.html`, pdpDir), cleanGeneratedText(pageHtml));
     extraPdpCount += 1;
   }

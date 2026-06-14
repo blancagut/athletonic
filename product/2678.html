@@ -203,23 +203,23 @@
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
-                <option value="3XL">3XL</option>
+                <option value="XS" >XS</option>
+                <option value="S" >S</option>
+                <option value="M" >M</option>
+                <option value="L" >L</option>
+                <option value="XL" >XL</option>
+                <option value="2XL" >2XL</option>
+                <option value="3XL" >3XL</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Gold">Gold</option>
-                <option value="Black">Black</option>
-                <option value="Gray">Gray</option>
-                <option value="Burnt Red">Burnt Red</option>
+                <option value="Gold" >Gold</option>
+                <option value="Black" >Black</option>
+                <option value="Gray" >Gray</option>
+                <option value="Burnt Red" >Burnt Red</option>
               </select>
             </label>
           </div>
@@ -233,9 +233,13 @@
               data-cart-brand="Alpha Lion"
               data-cart-name="Legacy Mesh Shorts - &quot;Varsity&quot;"
               data-cart-price="45"
+              data-cart-price-cents="4500"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/2321/6571/files/LegacyMeshShort-Varsity-Gold-Front.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -279,18 +283,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12726"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Half Zip Dress - Harborside"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/harborside-dress.png"
-                aria-label="Add Half Zip Dress - Harborside to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12726.html" aria-label="View options for Half Zip Dress - Harborside">View options</a>
             </div>
           </article>
 
@@ -307,18 +300,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12946"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Texas License Plate Shirt"
-                data-cart-price="25"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/LicensePlateFront.png"
-                aria-label="Add Texas License Plate Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12946.html" aria-label="View options for Texas License Plate Shirt">View options</a>
             </div>
           </article>
 
@@ -335,18 +317,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14324"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Body Building Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/COREOLYMPIA2.png"
-                aria-label="Add Body Building Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14324.html" aria-label="View options for Body Building Shirt">View options</a>
             </div>
           </article>
 
@@ -363,18 +334,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14392"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Spartan Helmet Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/front1.jpg"
-                aria-label="Add Spartan Helmet Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14392.html" aria-label="View options for Spartan Helmet Shirt">View options</a>
             </div>
           </article>
         </div>
@@ -601,7 +561,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -611,7 +571,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"40247211851838","title":"XS / Gold","sku":"AL_APP_SV_YE_W23_XS","option_values":[{"position":1,"name":"Size","value":"XS"},{"position":2,"name":"Color","value":"Gold"}],"selected_options":{"Size":"XS","Color":"Gold"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247211753534","title":"XS / Black","sku":"AL_APP_SV_BK_W23_XS","option_values":[{"position":1,"name":"Size","value":"XS"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"XS","Color":"Black"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":349,"deal":null},{"variant_id":"40247211786302","title":"XS / Gray","sku":"AL_APP_SV_CH_W23_XS","option_values":[{"position":1,"name":"Size","value":"XS"},{"position":2,"name":"Color","value":"Gray"}],"selected_options":{"Size":"XS","Color":"Gray"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":349,"deal":null},{"variant_id":"40247211819070","title":"XS / Burnt Red","sku":"AL_APP_SV_RD_W23_XS","option_values":[{"position":1,"name":"Size","value":"XS"},{"position":2,"name":"Color","value":"Burnt Red"}],"selected_options":{"Size":"XS","Color":"Burnt Red"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":349,"deal":null},{"variant_id":"40247211982910","title":"S / Gold","sku":"AL_APP_SV_YE_W23_S","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"Color","value":"Gold"}],"selected_options":{"Size":"S","Color":"Gold"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247211884606","title":"S / Black","sku":"AL_APP_SV_BK_W23_S","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"S","Color":"Black"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247211917374","title":"S / Gray","sku":"AL_APP_SV_CH_W23_S","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"Color","value":"Gray"}],"selected_options":{"Size":"S","Color":"Gray"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247211950142","title":"S / Burnt Red","sku":"AL_APP_SV_RD_W23_S","option_values":[{"position":1,"name":"Size","value":"S"},{"position":2,"name":"Color","value":"Burnt Red"}],"selected_options":{"Size":"S","Color":"Burnt Red"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212113982","title":"M / Gold","sku":"AL_APP_SV_YE_W23_M","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"Color","value":"Gold"}],"selected_options":{"Size":"M","Color":"Gold"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212015678","title":"M / Black","sku":"AL_APP_SV_BK_W23_M","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"M","Color":"Black"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212048446","title":"M / Gray","sku":"AL_APP_SV_CH_W23_M","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"Color","value":"Gray"}],"selected_options":{"Size":"M","Color":"Gray"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212081214","title":"M / Burnt Red","sku":"AL_APP_SV_RD_W23_M","option_values":[{"position":1,"name":"Size","value":"M"},{"position":2,"name":"Color","value":"Burnt Red"}],"selected_options":{"Size":"M","Color":"Burnt Red"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212245054","title":"L / Gold","sku":"AL_APP_SV_YE_W23_L","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"Color","value":"Gold"}],"selected_options":{"Size":"L","Color":"Gold"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212146750","title":"L / Black","sku":"AL_APP_SV_BK_W23_L","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"L","Color":"Black"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212179518","title":"L / Gray","sku":"AL_APP_SV_CH_W23_L","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"Color","value":"Gray"}],"selected_options":{"Size":"L","Color":"Gray"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212212286","title":"L / Burnt Red","sku":"AL_APP_SV_RD_W23_L","option_values":[{"position":1,"name":"Size","value":"L"},{"position":2,"name":"Color","value":"Burnt Red"}],"selected_options":{"Size":"L","Color":"Burnt Red"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212376126","title":"XL / Gold","sku":"AL_APP_SV_YE_W23_XL","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"Color","value":"Gold"}],"selected_options":{"Size":"XL","Color":"Gold"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212277822","title":"XL / Black","sku":"AL_APP_SV_BK_W23_XL","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"XL","Color":"Black"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212310590","title":"XL / Gray","sku":"AL_APP_SV_CH_W23_XL","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"Color","value":"Gray"}],"selected_options":{"Size":"XL","Color":"Gray"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212343358","title":"XL / Burnt Red","sku":"AL_APP_SV_RD_W23_XL","option_values":[{"position":1,"name":"Size","value":"XL"},{"position":2,"name":"Color","value":"Burnt Red"}],"selected_options":{"Size":"XL","Color":"Burnt Red"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212507198","title":"2XL / Gold","sku":"AL_APP_SV_YE_W23_2XL","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"Color","value":"Gold"}],"selected_options":{"Size":"2XL","Color":"Gold"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212408894","title":"2XL / Black","sku":"AL_APP_SV_BK_W23_2XL","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"2XL","Color":"Black"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212441662","title":"2XL / Gray","sku":"AL_APP_SV_CH_W23_2XL","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"Color","value":"Gray"}],"selected_options":{"Size":"2XL","Color":"Gray"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212474430","title":"2XL / Burnt Red","sku":"AL_APP_SV_RD_W23_2XL","option_values":[{"position":1,"name":"Size","value":"2XL"},{"position":2,"name":"Color","value":"Burnt Red"}],"selected_options":{"Size":"2XL","Color":"Burnt Red"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212638270","title":"3XL / Gold","sku":"AL_APP_SV_YE_W23_3XL","option_values":[{"position":1,"name":"Size","value":"3XL"},{"position":2,"name":"Color","value":"Gold"}],"selected_options":{"Size":"3XL","Color":"Gold"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212539966","title":"3XL / Black","sku":"AL_APP_SV_BK_W23_3XL","option_values":[{"position":1,"name":"Size","value":"3XL"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"3XL","Color":"Black"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212572734","title":"3XL / Gray","sku":"AL_APP_SV_CH_W23_3XL","option_values":[{"position":1,"name":"Size","value":"3XL"},{"position":2,"name":"Color","value":"Gray"}],"selected_options":{"Size":"3XL","Color":"Gray"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null},{"variant_id":"40247212605502","title":"3XL / Burnt Red","sku":"AL_APP_SV_RD_W23_3XL","option_values":[{"position":1,"name":"Size","value":"3XL"},{"position":2,"name":"Color","value":"Burnt Red"}],"selected_options":{"Size":"3XL","Color":"Burnt Red"},"price_cents":4500,"regular_price_cents":4500,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":349,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -624,9 +586,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -638,76 +598,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

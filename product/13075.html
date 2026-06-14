@@ -186,21 +186,21 @@
               <span class="pdp-variant-label">Size</span>
               <select data-pdp-variant data-variant-name="Size" required>
                 <option value="" disabled selected>Select Size…</option>
-                <option value="X-Small">X-Small</option>
-                <option value="Small">Small</option>
-                <option value="Medium">Medium</option>
-                <option value="Large">Large</option>
+                <option value="X-Small" >X-Small</option>
+                <option value="Small" >Small</option>
+                <option value="Medium" disabled>Medium (sold out)</option>
+                <option value="Large" >Large</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">Color</span>
               <select data-pdp-variant data-variant-name="Color" required>
                 <option value="" disabled selected>Select Color…</option>
-                <option value="Black">Black</option>
-                <option value="Tan">Tan</option>
-                <option value="Purple">Purple</option>
-                <option value="Grey">Grey</option>
-                <option value="Green">Green</option>
+                <option value="Black" >Black</option>
+                <option value="Tan" >Tan</option>
+                <option value="Purple" >Purple</option>
+                <option value="Grey" >Grey</option>
+                <option value="Green" >Green</option>
               </select>
             </label>
           </div>
@@ -214,9 +214,13 @@
               data-cart-brand="Bear KompleX"
               data-cart-name="2-Hole Hand Grips"
               data-cart-price="39.98"
+              data-cart-price-cents="3998"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/2HoleBlackFront.png"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -282,11 +286,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="16345"
+                data-cart-product-id="16345"
                 data-cart-brand="Inno Supps"
                 data-cart-name="2 Bottle Max Mane Special Offer"
                 data-cart-price="139.98"
+                data-cart-price-cents="13998"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/ScreenShot2022-08-31at3.01.37PM.png"
+                data-cart-variant-id="40681505292424"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add 2 Bottle Max Mane Special Offer to cart"
               >Add to cart</button>
             </div>
@@ -305,18 +315,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="10880"
-                data-cart-brand="TRX Training"
-                data-cart-name="Tejara Mat: 6mm"
-                data-cart-price="139"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/14.png"
-                aria-label="Add Tejara Mat: 6mm to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/10880.html" aria-label="View options for Tejara Mat: 6mm">View options</a>
             </div>
           </article>
 
@@ -338,11 +337,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4582"
+                data-cart-product-id="4582"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Limited Edition Cymbiotika Bag"
                 data-cart-price="100"
+                data-cart-price-cents="10000"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/BeigeBagPNG_58b3ff63-7eb9-4e2d-a2bf-54af496e2a96.png"
+                data-cart-variant-id="44710960955439"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Limited Edition Cymbiotika Bag to cart"
               >Add to cart</button>
             </div>
@@ -366,11 +371,17 @@
                 type="button"
                 data-add-to-cart
                 data-cart-id="4586"
+                data-cart-product-id="4586"
                 data-cart-brand="Cymbiotika"
                 data-cart-name="Yoga Mat"
                 data-cart-price="98"
+                data-cart-price-cents="9800"
                 data-cart-currency="USD"
                 data-cart-image="https://cdn.shopify.com/s/files/1/1824/8017/files/mat1.png"
+                data-cart-variant-id="43410461360175"
+                data-cart-sku=""
+                data-cart-selected-options='{}'
+                data-cart-variant=""
                 aria-label="Add Yoga Mat to cart"
               >Add to cart</button>
             </div>
@@ -599,7 +610,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -609,7 +620,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"3972646213","title":"X-Small / Black","sku":"Xsmall_2hole_black","option_values":[{"position":1,"name":"Size","value":"X-Small"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"X-Small","Color":"Black"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":68,"deal":null},{"variant_id":"3972646405","title":"Small / Black","sku":"Small_2hole_Black","option_values":[{"position":1,"name":"Size","value":"Small"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"Small","Color":"Black"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":68,"deal":null},{"variant_id":"3972646533","title":"Medium / Black","sku":"Medium_2hole_Black","option_values":[{"position":1,"name":"Size","value":"Medium"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"Medium","Color":"Black"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":68,"deal":null},{"variant_id":"3972646661","title":"Large / Black","sku":"Large_2hole_Black","option_values":[{"position":1,"name":"Size","value":"Large"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"Large","Color":"Black"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":68,"deal":null},{"variant_id":"6533947781","title":"Large / Tan","sku":"Large_2hole_Tan","option_values":[{"position":1,"name":"Size","value":"Large"},{"position":2,"name":"Color","value":"Tan"}],"selected_options":{"Size":"Large","Color":"Tan"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":68,"deal":null},{"variant_id":"6534040261","title":"Medium / Tan","sku":"Medium_2hole_Tan","option_values":[{"position":1,"name":"Size","value":"Medium"},{"position":2,"name":"Color","value":"Tan"}],"selected_options":{"Size":"Medium","Color":"Tan"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":74,"deal":null},{"variant_id":"6534064581","title":"Small / Tan","sku":"Small_2hole_Tan","option_values":[{"position":1,"name":"Size","value":"Small"},{"position":2,"name":"Color","value":"Tan"}],"selected_options":{"Size":"Small","Color":"Tan"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":68,"deal":null},{"variant_id":"6534082117","title":"X-Small / Tan","sku":"Xsmall_2hole_Tan","option_values":[{"position":1,"name":"Size","value":"X-Small"},{"position":2,"name":"Color","value":"Tan"}],"selected_options":{"Size":"X-Small","Color":"Tan"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":68,"deal":null},{"variant_id":"6734141189","title":"X-Small / Purple","sku":"Grip_Xsmall_2hole_Purple","option_values":[{"position":1,"name":"Size","value":"X-Small"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"X-Small","Color":"Purple"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":68,"deal":null},{"variant_id":"6734143109","title":"Small / Purple","sku":"Grip_Small_2hole_Purple","option_values":[{"position":1,"name":"Size","value":"Small"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"Small","Color":"Purple"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":68,"deal":null},{"variant_id":"6734144133","title":"Medium / Purple","sku":"Grip_Medium_2hole_Purple","option_values":[{"position":1,"name":"Size","value":"Medium"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"Medium","Color":"Purple"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":68,"deal":null},{"variant_id":"6734152133","title":"Large / Purple","sku":"Grip_Large_2hole_Purple","option_values":[{"position":1,"name":"Size","value":"Large"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"Large","Color":"Purple"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":68,"deal":null},{"variant_id":"7964056517","title":"X-Small / Grey","sku":"Grip_XSmall_2hole_Grey","option_values":[{"position":1,"name":"Size","value":"X-Small"},{"position":2,"name":"Color","value":"Grey"}],"selected_options":{"Size":"X-Small","Color":"Grey"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":91,"deal":null},{"variant_id":"7964085125","title":"Small / Grey","sku":"Grip_Small_2hole Grey","option_values":[{"position":1,"name":"Size","value":"Small"},{"position":2,"name":"Color","value":"Grey"}],"selected_options":{"Size":"Small","Color":"Grey"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":91,"deal":null},{"variant_id":"7964091845","title":"Large / Grey","sku":"Grip_Large_2hole_Grey","option_values":[{"position":1,"name":"Size","value":"Large"},{"position":2,"name":"Color","value":"Grey"}],"selected_options":{"Size":"Large","Color":"Grey"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":77,"deal":null},{"variant_id":"7964145989","title":"Medium / Grey","sku":"Grip_Medium_2hole_Grey","option_values":[{"position":1,"name":"Size","value":"Medium"},{"position":2,"name":"Color","value":"Grey"}],"selected_options":{"Size":"Medium","Color":"Grey"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":77,"deal":null},{"variant_id":"11289376581","title":"X-Small / Green","sku":"Grip_Xsmall_2hole_Yellow","option_values":[{"position":1,"name":"Size","value":"X-Small"},{"position":2,"name":"Color","value":"Green"}],"selected_options":{"Size":"X-Small","Color":"Green"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":68,"deal":null},{"variant_id":"11289380421","title":"Small / Green","sku":"Grip_Small_2hole_Yellow","option_values":[{"position":1,"name":"Size","value":"Small"},{"position":2,"name":"Color","value":"Green"}],"selected_options":{"Size":"Small","Color":"Green"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":68,"deal":null},{"variant_id":"11289388997","title":"Medium / Green","sku":"Grip_Medium_2hole_Yellow","option_values":[{"position":1,"name":"Size","value":"Medium"},{"position":2,"name":"Color","value":"Green"}],"selected_options":{"Size":"Medium","Color":"Green"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":68,"deal":null},{"variant_id":"11289396549","title":"Large / Green","sku":"Grip_Large_2hole_Yellow","option_values":[{"position":1,"name":"Size","value":"Large"},{"position":2,"name":"Color","value":"Green"}],"selected_options":{"Size":"Large","Color":"Green"},"price_cents":3998,"regular_price_cents":3998,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":68,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -622,9 +635,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -636,76 +647,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

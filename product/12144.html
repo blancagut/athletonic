@@ -184,24 +184,24 @@
               <span class="pdp-variant-label">SIZE</span>
               <select data-pdp-variant data-variant-name="SIZE" required>
                 <option value="" disabled selected>Select SIZE…</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-                <option value="2XL">2XL</option>
-                <option value="3XL">3XL</option>
+                <option value="S" >S</option>
+                <option value="M" >M</option>
+                <option value="L" disabled>L (sold out)</option>
+                <option value="XL" disabled>XL (sold out)</option>
+                <option value="2XL" disabled>2XL (sold out)</option>
+                <option value="3XL" >3XL</option>
               </select>
             </label>
             <label class="pdp-variant">
               <span class="pdp-variant-label">COLOR</span>
               <select data-pdp-variant data-variant-name="COLOR" required>
                 <option value="" disabled selected>Select COLOR…</option>
-                <option value="BLACK">BLACK</option>
-                <option value="GRAY">GRAY</option>
-                <option value="MILITARY GREEN">MILITARY GREEN</option>
-                <option value="TAHITI BLUE">TAHITI BLUE</option>
-                <option value="RED">RED</option>
-                <option value="GRAY / BLACK">GRAY / BLACK</option>
+                <option value="BLACK" >BLACK</option>
+                <option value="GRAY" >GRAY</option>
+                <option value="MILITARY GREEN" >MILITARY GREEN</option>
+                <option value="TAHITI BLUE" >TAHITI BLUE</option>
+                <option value="RED" disabled>RED (sold out)</option>
+                <option value="GRAY / BLACK" disabled>GRAY / BLACK (sold out)</option>
               </select>
             </label>
           </div>
@@ -215,9 +215,13 @@
               data-cart-brand="Bear KompleX"
               data-cart-name="Bend Don't Break Barbell Skull Men's T-Shirt"
               data-cart-price="24.99"
+              data-cart-price-cents="2499"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/benddon_tbreakmilgrnfront.jpg"
               data-cart-variant=""
+              data-cart-variant-id=""
+              data-cart-sku=""
+              data-cart-selected-options='{}'
               disabled
             >Select options</button>
           </div>
@@ -274,18 +278,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12726"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Half Zip Dress - Harborside"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/harborside-dress.png"
-                aria-label="Add Half Zip Dress - Harborside to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12726.html" aria-label="View options for Half Zip Dress - Harborside">View options</a>
             </div>
           </article>
 
@@ -302,18 +295,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="12946"
-                data-cart-brand="Bear KompleX"
-                data-cart-name="Texas License Plate Shirt"
-                data-cart-price="25"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/LicensePlateFront.png"
-                aria-label="Add Texas License Plate Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/12946.html" aria-label="View options for Texas License Plate Shirt">View options</a>
             </div>
           </article>
 
@@ -330,18 +312,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14324"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Body Building Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/COREOLYMPIA2.png"
-                aria-label="Add Body Building Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14324.html" aria-label="View options for Body Building Shirt">View options</a>
             </div>
           </article>
 
@@ -358,18 +329,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="14392"
-                data-cart-brand="Core Nutritionals"
-                data-cart-name="Spartan Helmet Shirt"
-                data-cart-price="21.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2440/0931/files/front1.jpg"
-                aria-label="Add Spartan Helmet Shirt to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/14392.html" aria-label="View options for Spartan Helmet Shirt">View options</a>
             </div>
           </article>
         </div>
@@ -596,7 +556,7 @@
           });
         });
 
-        // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
+        // Variants: gate Add to Cart on a real, available variant_id.
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
@@ -606,7 +566,9 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variants = [{"variant_id":"61813919940978","title":"S / BLACK","sku":"TS|BEND|S|BL|4421","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"S","COLOR":"BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813919973746","title":"S / GRAY","sku":"TS|BEND|S|GR|4420","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"GRAY"}],"selected_options":{"SIZE":"S","COLOR":"GRAY"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813920006514","title":"S / MILITARY GREEN","sku":"TS|BEND|S|MIGR|4422","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"S","COLOR":"MILITARY GREEN"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920039282","title":"S / TAHITI BLUE","sku":"TS|BEND|S|TABL|4551","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"TAHITI BLUE"}],"selected_options":{"SIZE":"S","COLOR":"TAHITI BLUE"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813920072050","title":"S / RED","sku":"TS|BEND|S|RE|4423","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"RED"}],"selected_options":{"SIZE":"S","COLOR":"RED"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920104818","title":"S / GRAY / BLACK","sku":"TS|BEND|S|GR|4424","option_values":[{"position":1,"name":"SIZE","value":"S"},{"position":2,"name":"COLOR","value":"GRAY / BLACK"}],"selected_options":{"SIZE":"S","COLOR":"GRAY / BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920137586","title":"M / BLACK","sku":"TS|BEND|M|BL|4426","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"M","COLOR":"BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920170354","title":"M / GRAY","sku":"TS|BEND|M|GR|4425","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"GRAY"}],"selected_options":{"SIZE":"M","COLOR":"GRAY"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813920203122","title":"M / MILITARY GREEN","sku":"TS|BEND|M|MIGR|4427","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"M","COLOR":"MILITARY GREEN"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813920235890","title":"M / TAHITI BLUE","sku":"TS|BEND|M|TABL|4552","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"TAHITI BLUE"}],"selected_options":{"SIZE":"M","COLOR":"TAHITI BLUE"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813920268658","title":"M / RED","sku":"TS|BEND|M|RE|4428","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"RED"}],"selected_options":{"SIZE":"M","COLOR":"RED"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920301426","title":"M / GRAY / BLACK","sku":"TS|BEND|M|GR|4429","option_values":[{"position":1,"name":"SIZE","value":"M"},{"position":2,"name":"COLOR","value":"GRAY / BLACK"}],"selected_options":{"SIZE":"M","COLOR":"GRAY / BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920334194","title":"L / BLACK","sku":"TS|BEND|L|BL|4431","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"L","COLOR":"BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920366962","title":"L / GRAY","sku":"TS|BEND|L|GR|4430","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"GRAY"}],"selected_options":{"SIZE":"L","COLOR":"GRAY"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920399730","title":"L / MILITARY GREEN","sku":"TS|BEND|L|MIGR|4432","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"L","COLOR":"MILITARY GREEN"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920432498","title":"L / TAHITI BLUE","sku":"TS|BEND|L|TABL|4553","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"TAHITI BLUE"}],"selected_options":{"SIZE":"L","COLOR":"TAHITI BLUE"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920465266","title":"L / RED","sku":"TS|BEND|L|RE|4433","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"RED"}],"selected_options":{"SIZE":"L","COLOR":"RED"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920498034","title":"L / GRAY / BLACK","sku":"TS|BEND|L|GR|4434","option_values":[{"position":1,"name":"SIZE","value":"L"},{"position":2,"name":"COLOR","value":"GRAY / BLACK"}],"selected_options":{"SIZE":"L","COLOR":"GRAY / BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920530802","title":"XL / BLACK","sku":"TS|BEND|XL|BL|4436","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"XL","COLOR":"BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920563570","title":"XL / GRAY","sku":"TS|BEND|XL|GR|4435","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"GRAY"}],"selected_options":{"SIZE":"XL","COLOR":"GRAY"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920596338","title":"XL / MILITARY GREEN","sku":"TS|BEND|XL|MIGR|4437","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"XL","COLOR":"MILITARY GREEN"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920629106","title":"XL / TAHITI BLUE","sku":"TS|BEND|XL|TABL|4554","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"TAHITI BLUE"}],"selected_options":{"SIZE":"XL","COLOR":"TAHITI BLUE"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920661874","title":"XL / RED","sku":"TS|BEND|XL|RE|4438","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"RED"}],"selected_options":{"SIZE":"XL","COLOR":"RED"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920694642","title":"XL / GRAY / BLACK","sku":"TS|BEND|XL|GR|4439","option_values":[{"position":1,"name":"SIZE","value":"XL"},{"position":2,"name":"COLOR","value":"GRAY / BLACK"}],"selected_options":{"SIZE":"XL","COLOR":"GRAY / BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920727410","title":"2XL / BLACK","sku":"TS|BEND|2X|BL|4441","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"2XL","COLOR":"BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920760178","title":"2XL / GRAY","sku":"TS|BEND|2X|GR|4440","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"GRAY"}],"selected_options":{"SIZE":"2XL","COLOR":"GRAY"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920792946","title":"2XL / MILITARY GREEN","sku":"TS|BEND|2X|MIGR|4442","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"2XL","COLOR":"MILITARY GREEN"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920825714","title":"2XL / TAHITI BLUE","sku":"TS|BEND|2X|TABL|4555","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"TAHITI BLUE"}],"selected_options":{"SIZE":"2XL","COLOR":"TAHITI BLUE"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920858482","title":"2XL / RED","sku":"TS|BEND|2X|RE|4443","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"RED"}],"selected_options":{"SIZE":"2XL","COLOR":"RED"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920891250","title":"2XL / GRAY / BLACK","sku":"TS|BEND|2X|GR|4444","option_values":[{"position":1,"name":"SIZE","value":"2XL"},{"position":2,"name":"COLOR","value":"GRAY / BLACK"}],"selected_options":{"SIZE":"2XL","COLOR":"GRAY / BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920924018","title":"3XL / BLACK","sku":"TS|BEND|3X|BL|4446","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"BLACK"}],"selected_options":{"SIZE":"3XL","COLOR":"BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813920956786","title":"3XL / GRAY","sku":"TS|BEND|3X|GR|4445","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"GRAY"}],"selected_options":{"SIZE":"3XL","COLOR":"GRAY"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813920989554","title":"3XL / MILITARY GREEN","sku":"TS|BEND|3X|MIGR|4447","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"MILITARY GREEN"}],"selected_options":{"SIZE":"3XL","COLOR":"MILITARY GREEN"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813921022322","title":"3XL / TAHITI BLUE","sku":"TS|BEND|3X|TABL|4556","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"TAHITI BLUE"}],"selected_options":{"SIZE":"3XL","COLOR":"TAHITI BLUE"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":true,"weight_grams":170,"deal":null},{"variant_id":"61813921055090","title":"3XL / RED","sku":"TS|BEND|3X|RE|4448","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"RED"}],"selected_options":{"SIZE":"3XL","COLOR":"RED"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null},{"variant_id":"61813921087858","title":"3XL / GRAY / BLACK","sku":"TS|BEND|3X|GR|4449","option_values":[{"position":1,"name":"SIZE","value":"3XL"},{"position":2,"name":"COLOR","value":"GRAY / BLACK"}],"selected_options":{"SIZE":"3XL","COLOR":"GRAY / BLACK"},"price_cents":2499,"regular_price_cents":2499,"compare_at_price_cents":null,"currency":"USD","available":false,"weight_grams":170,"deal":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartPriceCents = addBtn ? addBtn.dataset.cartPriceCents : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
 
@@ -619,9 +581,7 @@
           return symbol + (Number(cents || 0) / 100).toFixed(2);
         }
 
-        function discountLabel(deal) {
-          var original = Number(deal && deal.original_price_cents || 0);
-          var sale = Number(deal && deal.sale_price_cents || 0);
+        function discountLabelFromCents(original, sale) {
           var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
           return pct >= 1 ? "−" + pct + "%" : "Limited offer";
         }
@@ -633,76 +593,87 @@
           }, {});
         }
 
-        function eligibleLabel() {
-          return variantDeals.map(function (deal) {
-            return Object.keys(deal.option_match || {}).map(function (name) {
-              return name + ": " + (deal.option_match[name] || []).join(" or ");
-            }).join(", ");
-          }).join("; ");
-        }
-
-        function matchingVariantDeal() {
+        function matchingVariant() {
           var selected = selectedOptions();
-          return variantDeals.find(function (deal) {
-            return Object.keys(deal.option_match || {}).every(function (name) {
-              var allowed = deal.option_match[name] || [];
-              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+          return variants.find(function (variant) {
+            var options = variant.selected_options || {};
+            return Object.keys(selected).every(function (name) {
+              return normalize(options[name]) === normalize(selected[name]);
             });
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
-          if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+        function setDisplayVariant(variant) {
+          if (!variant || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(variant.price_cents);
           if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              compareEl.textContent = formatMoneyFromCents(variant.compare_at_price_cents);
+              compareEl.hidden = false;
+            } else {
+              compareEl.textContent = "";
+              compareEl.hidden = true;
+            }
           }
           if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
+            if (variant.compare_at_price_cents && variant.compare_at_price_cents > variant.price_cents) {
+              discountEl.textContent = discountLabelFromCents(variant.compare_at_price_cents, variant.price_cents);
+              discountEl.hidden = false;
+            } else {
+              discountEl.textContent = "";
+              discountEl.hidden = true;
+            }
           }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
-        }
-
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
+          if (addBtn) {
+            addBtn.dataset.cartVariantId = variant.variant_id || "";
+            addBtn.dataset.cartSku = variant.sku || "";
+            addBtn.dataset.cartVariant = variant.title || "";
+            addBtn.dataset.cartSelectedOptions = JSON.stringify(variant.selected_options || {});
+            addBtn.dataset.cartPrice = (Number(variant.price_cents || 0) / 100).toFixed(2);
+            addBtn.dataset.cartPriceCents = String(variant.price_cents || "");
+          }
         }
 
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
-            addBtn.disabled = false;
+            addBtn.disabled = addBtn.textContent === "Unavailable";
             return;
           }
           if (allChosen) {
-            var parts = selects.map(function (s) { return s.value; });
-            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
-            if (variantDeals.length && !selectedDeal) {
+            var variant = matchingVariant();
+            if (!variant) {
               addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
+              addBtn.textContent = "Unavailable";
               addBtn.dataset.cartPrice = baseCartPrice;
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              addBtn.dataset.cartPriceCents = baseCartPriceCents;
+              addBtn.dataset.cartVariantId = "";
+              addBtn.dataset.cartSelectedOptions = "{}";
+              if (note) note.textContent = "This option combination is not available.";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
-            if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            setDisplayVariant(variant);
+            if (!variant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Sold out";
+              if (note) note.textContent = "This variant is sold out.";
+              return;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
+            if (variantDealNote && variant.deal && variant.deal.scope === "variant") {
+              variantDealNote.textContent = "Offer applied to this variant.";
+            }
+            if (note) note.textContent = variant.deal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
-            if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
-            }
+            addBtn.dataset.cartVariantId = "";
+            addBtn.dataset.cartSelectedOptions = "{}";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartPriceCents = baseCartPriceCents;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }
