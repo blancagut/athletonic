@@ -166,11 +166,13 @@
         <div class="pdp-info">
           <p class="pdp-brand">rdx_sports</p>
           <h1 class="pdp-title">RDX B2 Gym Barbell Bar Foam Wrap Pad</h1>
-          <div class="pdp-price-row">
-            <strong class="pdp-price">$29.99</strong>
-
+          <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="2999" data-base-compare-cents="" data-currency="USD">
+            <strong class="pdp-price" data-pdp-price>$29.99</strong>
+            <span class="pdp-compare" data-pdp-compare hidden></span>
+            <span class="pdp-discount" data-pdp-discount hidden>Limited offer</span>
           </div>
           <p class="pdp-availability">In stock · Sold by Athletonic</p>
+
 
           <div class="pdp-cta-row">
             <button
@@ -561,6 +563,75 @@
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
+        var priceEl = document.querySelector("[data-pdp-price]");
+        var compareEl = document.querySelector("[data-pdp-compare]");
+        var discountEl = document.querySelector("[data-pdp-discount]");
+        var priceRow = document.querySelector("[data-pdp-price-row]");
+        var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
+        var variantDeals = [];
+        var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
+        var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+
+        function normalize(value) {
+          return String(value || "").trim().toLowerCase();
+        }
+
+        function formatMoneyFromCents(cents) {
+          var symbol = currency === "USD" ? "$" : currency + " ";
+          return symbol + (Number(cents || 0) / 100).toFixed(2);
+        }
+
+        function discountLabel(deal) {
+          var original = Number(deal && deal.original_price_cents || 0);
+          var sale = Number(deal && deal.sale_price_cents || 0);
+          var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
+          return pct >= 1 ? "−" + pct + "%" : "Limited offer";
+        }
+
+        function selectedOptions() {
+          return selects.reduce(function (acc, select) {
+            acc[select.dataset.variantName || "Option"] = select.value;
+            return acc;
+          }, {});
+        }
+
+        function eligibleLabel() {
+          return variantDeals.map(function (deal) {
+            return Object.keys(deal.option_match || {}).map(function (name) {
+              return name + ": " + (deal.option_match[name] || []).join(" or ");
+            }).join(", ");
+          }).join("; ");
+        }
+
+        function matchingVariantDeal() {
+          var selected = selectedOptions();
+          return variantDeals.find(function (deal) {
+            return Object.keys(deal.option_match || {}).every(function (name) {
+              var allowed = deal.option_match[name] || [];
+              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+            });
+          }) || null;
+        }
+
+        function setDisplayDeal(deal) {
+          if (!deal || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+          if (compareEl) {
+            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
+            compareEl.hidden = false;
+          }
+          if (discountEl) {
+            discountEl.textContent = discountLabel(deal);
+            discountEl.hidden = false;
+          }
+          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+        }
+
+        if (variantDeals.length) {
+          setDisplayDeal(variantDeals[0]);
+        }
+
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
@@ -570,12 +641,31 @@
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (variantDeals.length && !selectedDeal) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Offer not available";
+              addBtn.dataset.cartPrice = baseCartPrice;
+              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
+              setDisplayDeal(variantDeals[0]);
+              return;
+            }
+            if (selectedDeal) {
+              setDisplayDeal(selectedDeal);
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = "";
+            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            if (variantDeals.length) {
+              addBtn.dataset.cartPrice = baseCartPrice;
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
+              setDisplayDeal(variantDeals[0]);
+            }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }

@@ -751,11 +751,32 @@ function productCard(product, pathPrefix = "./") {
   const name = product.displayName ?? product.name;
   const label = product.displayLabel ?? collectionLabel(product.store_collection);
   const deal = product.deal;
+  const variantOffer = product.variantOffer;
+  const displayPrice = variantOffer
+    ? Number(variantOffer.sale_price_cents || 0) / 100
+    : Number(product.price || 0);
+  const displayCompare = variantOffer
+    ? Number(variantOffer.original_price_cents || 0) / 100
+    : Number(deal?.original_price || 0);
+  const displayDiscount = variantOffer
+    ? Number(variantOffer.discount_percent || 0)
+    : Number(deal?.discount_percent || 0);
+  const offerNote = variantOffer
+    ? variantOffer.note || "Select eligible options for this offer."
+    : deal
+      ? `${displayDiscount > 0 ? `${displayDiscount}% off` : "Limited offer"}`
+    : "";
   const dealEnds = deal?.expires_at
     ? new Intl.DateTimeFormat("en-US", {
         month: "short",
         day: "numeric",
       }).format(new Date(deal.expires_at))
+    : "";
+  const variantOfferEnds = variantOffer?.expires_at
+    ? new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(new Date(variantOffer.expires_at))
     : "";
   const searchText = [brand, name, label, product.sectionTitle, product.sectionEyebrow]
     .filter(Boolean)
@@ -772,21 +793,24 @@ function productCard(product, pathPrefix = "./") {
               <h3><a class="product-card-link" href="${pdpHref}">${html(name)}</a></h3>
               <p>${html(label)}</p>
               <div class="product-price-line">
-                <strong>${html(money(product.price, product.currency))}</strong>
+                <strong>${html(money(displayPrice, product.currency))}</strong>
                 ${
-                  deal?.original_price
-                    ? `<span>${html(money(deal.original_price, product.currency))}</span>`
+                  displayCompare > displayPrice
+                    ? `<span>${html(money(displayCompare, product.currency))}</span>`
                     : ""
                 }
               </div>
               ${
-                deal
+                deal || variantOffer
                   ? `<p class="product-deal-note">${html(
-                      `${deal.discount_percent}% off${dealEnds ? ` through ${dealEnds}` : ""}`
+                      `${offerNote}${variantOfferEnds ? ` through ${variantOfferEnds}` : dealEnds ? ` through ${dealEnds}` : ""}`
                     )}</p>`
                   : ""
               }
-              <button
+              ${
+                variantOffer
+                  ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View eligible options for ${html(name)}">View options</a>`
+                  : `<button
                 class="add-cart-button"
                 type="button"
                 data-add-to-cart
@@ -797,7 +821,8 @@ function productCard(product, pathPrefix = "./") {
                 data-cart-currency="${html(product.currency)}"
                 data-cart-image="${html(product.image)}"
                 aria-label="Add ${html(name)} to cart"
-              >Add to cart</button>
+              >Add to cart</button>`
+              }
             </div>
           </article>`;
 }
@@ -828,12 +853,60 @@ const activeDealsByProductId = new Map(
     .map((offer) => [String(offer.product_id), offer])
 );
 
+const activeVariantDealsByProductId = new Map();
+for (const offer of Array.isArray(dealsState.variant_offers) ? dealsState.variant_offers : []) {
+  const expiresAt = Date.parse(offer.expires_at || "");
+  if (offer.product_id == null || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+    continue;
+  }
+  const salePriceCents = Number(offer.sale_price_cents || 0);
+  const originalPriceCents = Number(offer.original_price_cents || 0);
+  if (
+    !Number.isFinite(salePriceCents) ||
+    !Number.isFinite(originalPriceCents) ||
+    salePriceCents <= 0 ||
+    originalPriceCents <= 0 ||
+    salePriceCents >= originalPriceCents
+  ) {
+    continue;
+  }
+  const productId = String(offer.product_id);
+  const match = offer.option_match && typeof offer.option_match === "object"
+    ? offer.option_match
+    : {};
+  const normalizedMatch = Object.fromEntries(
+    Object.entries(match)
+      .map(([key, value]) => [
+        String(key),
+        Array.isArray(value) ? value.map(String) : [String(value)],
+      ])
+      .filter(([key, values]) => key.trim() && values.some((value) => value.trim()))
+  );
+  if (Object.keys(normalizedMatch).length === 0) continue;
+  const publicOffer = {
+    product_id: productId,
+    original_price_cents: Math.round(originalPriceCents),
+    sale_price_cents: Math.round(salePriceCents),
+    discount_percent: Number(offer.discount_percent || 0),
+    starts_at: offer.starts_at || null,
+    expires_at: offer.expires_at,
+    reason: offer.reason || "Limited-time Athletonic variant offer",
+    note: offer.note || "",
+    option_match: normalizedMatch,
+  };
+  const current = activeVariantDealsByProductId.get(productId) || [];
+  current.push(publicOffer);
+  activeVariantDealsByProductId.set(productId, current);
+}
+
 function activeDealForPrice(productId, currentPriceCents) {
   const deal = activeDealsByProductId.get(String(productId));
   if (!deal) return null;
 
   const salePriceCents = Number(deal.sale_price_cents || 0);
-  const originalPriceCents = Number(currentPriceCents || deal.original_price_cents || 0);
+  const listedOriginalPriceCents = Number(deal.original_price_cents || 0);
+  const productOriginalPriceCents = Number(currentPriceCents || 0);
+  const originalPriceCents = Math.max(listedOriginalPriceCents, productOriginalPriceCents);
   if (
     !Number.isFinite(salePriceCents) ||
     !Number.isFinite(originalPriceCents) ||
@@ -850,6 +923,23 @@ function activeDealForPrice(productId, currentPriceCents) {
     discount_percent: Number(deal.discount_percent || 0),
     expires_at: deal.expires_at,
     reason: deal.reason || "Limited-time Athletonic offer",
+  };
+}
+
+function activeVariantDealsForProduct(productId) {
+  return activeVariantDealsByProductId.get(String(productId)) || [];
+}
+
+function variantDealSummary(offers) {
+  const first = Array.isArray(offers) ? offers[0] : null;
+  if (!first) return null;
+  return {
+    original_price_cents: first.original_price_cents,
+    sale_price_cents: first.sale_price_cents,
+    discount_percent: first.discount_percent,
+    expires_at: first.expires_at,
+    reason: first.reason,
+    note: first.note || "Select eligible options for this offer.",
   };
 }
 
@@ -1612,6 +1702,11 @@ function buildSearchIndex() {
         reason: deal.reason,
       };
     }
+    const variantOffer = variantDealSummary(activeVariantDealsForProduct(id));
+    if (variantOffer) {
+      record.variant_offer = variantOffer;
+      record.requires_variant_selection = true;
+    }
     // Currency is USD (US-only store) and availability is always true here, so
     // both are omitted to keep the index small; the client defaults them. Every
     // indexed product now has a generated on-site PDP (product/<id>.html), so
@@ -1665,6 +1760,7 @@ function indexRecordToProduct(record) {
           reason: record.deal.reason,
         }
       : null,
+    variantOffer: record.variant_offer || null,
   };
 }
 
@@ -1869,6 +1965,28 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
   const discountPct = onSale
     ? Math.round(((compareAt - price) / compareAt) * 100)
     : 0;
+  const productDealLabel = discountPct >= 1 ? `−${discountPct}%` : "Limited offer";
+  const variantDeals = activeVariantDealsForProduct(curated.id);
+  const pdpVariantOffer = variantDealSummary(variantDeals);
+  const displayPrice = pdpVariantOffer
+    ? Number(pdpVariantOffer.sale_price_cents || 0) / 100
+    : price;
+  const displayCompareAt = pdpVariantOffer
+    ? Number(pdpVariantOffer.original_price_cents || 0) / 100
+    : compareAt;
+  const displayOnSale = displayCompareAt > 0 && displayCompareAt > displayPrice;
+  const displayDiscountPct = displayOnSale
+    ? Math.round(((displayCompareAt - displayPrice) / displayCompareAt) * 100)
+    : 0;
+  const displayDealLabel = displayDiscountPct >= 1
+    ? `−${displayDiscountPct}%`
+    : "Limited offer";
+  const variantDealsJson = JSON.stringify(variantDeals).replace(/</g, "\\u003c");
+  const variantOfferNote = pdpVariantOffer
+    ? `<p class="pdp-variant-deal-note" data-pdp-variant-deal-note>${html(
+        pdpVariantOffer.note || "Select eligible options for this offer."
+      )}</p>`
+    : "";
 
   // Build image list: curated.image first (already best on home), then rest deduped
   const seen = new Set();
@@ -2008,17 +2126,23 @@ ${galleryHtml}
         <div class="pdp-info">
           <p class="pdp-brand">${html(brand)}</p>
           <h1 class="pdp-title">${html(name)}</h1>
-          <div class="pdp-price-row">
-            <strong class="pdp-price">${html(money(price, currency))}</strong>
-            ${
-              onSale
-                ? `<span class="pdp-compare">${html(
-                    money(compareAt, currency)
-                  )}</span><span class="pdp-discount">−${discountPct}%</span>`
-                : ""
-            }
+          <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="${html(
+            Math.round(price * 100)
+          )}" data-base-compare-cents="${html(
+            compareAt > 0 ? Math.round(compareAt * 100) : ""
+          )}" data-currency="${html(currency)}">
+            <strong class="pdp-price" data-pdp-price>${html(
+              money(displayPrice, currency)
+            )}</strong>
+            <span class="pdp-compare" data-pdp-compare ${
+              displayOnSale ? "" : "hidden"
+            }>${html(displayOnSale ? money(displayCompareAt, currency) : "")}</span>
+            <span class="pdp-discount" data-pdp-discount ${
+              displayOnSale ? "" : "hidden"
+            }>${html(pdpVariantOffer ? displayDealLabel : productDealLabel)}</span>
           </div>
           <p class="pdp-availability">In stock · Sold by Athletonic</p>
+${variantOfferNote}
 ${variantSelectorsHtml}
           <div class="pdp-cta-row">
             <button
@@ -2029,7 +2153,7 @@ ${variantSelectorsHtml}
               data-cart-id="${html(curated.id)}"
               data-cart-brand="${html(brand)}"
               data-cart-name="${html(name)}"
-              data-cart-price="${html(price)}"
+              data-cart-price="${html(pdpVariantOffer ? displayPrice : price)}"
               data-cart-currency="${html(currency)}"
               data-cart-image="${html(images[0] || curated.image || "")}"
               data-cart-variant=""
@@ -2091,6 +2215,75 @@ ${mobileBottomNav(pathPrefix)}
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
         var selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
+        var priceEl = document.querySelector("[data-pdp-price]");
+        var compareEl = document.querySelector("[data-pdp-compare]");
+        var discountEl = document.querySelector("[data-pdp-discount]");
+        var priceRow = document.querySelector("[data-pdp-price-row]");
+        var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
+        var variantDeals = ${variantDealsJson};
+        var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
+        var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+
+        function normalize(value) {
+          return String(value || "").trim().toLowerCase();
+        }
+
+        function formatMoneyFromCents(cents) {
+          var symbol = currency === "USD" ? "$" : currency + " ";
+          return symbol + (Number(cents || 0) / 100).toFixed(2);
+        }
+
+        function discountLabel(deal) {
+          var original = Number(deal && deal.original_price_cents || 0);
+          var sale = Number(deal && deal.sale_price_cents || 0);
+          var pct = original > sale ? Math.round(((original - sale) / original) * 100) : 0;
+          return pct >= 1 ? "−" + pct + "%" : "Limited offer";
+        }
+
+        function selectedOptions() {
+          return selects.reduce(function (acc, select) {
+            acc[select.dataset.variantName || "Option"] = select.value;
+            return acc;
+          }, {});
+        }
+
+        function eligibleLabel() {
+          return variantDeals.map(function (deal) {
+            return Object.keys(deal.option_match || {}).map(function (name) {
+              return name + ": " + (deal.option_match[name] || []).join(" or ");
+            }).join(", ");
+          }).join("; ");
+        }
+
+        function matchingVariantDeal() {
+          var selected = selectedOptions();
+          return variantDeals.find(function (deal) {
+            return Object.keys(deal.option_match || {}).every(function (name) {
+              var allowed = deal.option_match[name] || [];
+              return allowed.map(normalize).indexOf(normalize(selected[name])) !== -1;
+            });
+          }) || null;
+        }
+
+        function setDisplayDeal(deal) {
+          if (!deal || !priceEl) return;
+          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
+          if (compareEl) {
+            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
+            compareEl.hidden = false;
+          }
+          if (discountEl) {
+            discountEl.textContent = discountLabel(deal);
+            discountEl.hidden = false;
+          }
+          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+        }
+
+        if (variantDeals.length) {
+          setDisplayDeal(variantDeals[0]);
+        }
+
         function refresh() {
           if (!addBtn) return;
           var allChosen = selects.every(function (s) { return s.value !== ""; });
@@ -2100,12 +2293,31 @@ ${mobileBottomNav(pathPrefix)}
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (variantDeals.length && !selectedDeal) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Offer not available";
+              addBtn.dataset.cartPrice = baseCartPrice;
+              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
+              setDisplayDeal(variantDeals[0]);
+              return;
+            }
+            if (selectedDeal) {
+              setDisplayDeal(selectedDeal);
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
-            if (note) note.textContent = "";
+            if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            if (variantDeals.length) {
+              addBtn.dataset.cartPrice = baseCartPrice;
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
+              setDisplayDeal(variantDeals[0]);
+            }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
           }
@@ -2333,6 +2545,11 @@ const activeDealProducts = searchIndexRecords
   })
   .map(indexRecordToProduct);
 
+const activeVariantOfferProducts = searchIndexRecords
+  .filter((record) => record.variant_offer)
+  .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+  .map(indexRecordToProduct);
+
 const fallbackDealProducts = allCuratedProducts.filter(
   (product) => product.deal || Number(product.price) <= 50
 );
@@ -2342,7 +2559,9 @@ const dailyDealsShelf = customShelf({
   title: "Active limited-time offers",
   description:
     "Offers selected from trend signals, margin-safe discounts, and active expiration dates.",
-  products: activeDealProducts.length ? activeDealProducts : fallbackDealProducts,
+  products: activeDealProducts.length || activeVariantOfferProducts.length
+    ? uniqueProducts([...activeDealProducts, ...activeVariantOfferProducts], 40)
+    : fallbackDealProducts,
   limit: 30,
 });
 

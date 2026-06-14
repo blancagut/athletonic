@@ -978,8 +978,30 @@
       : null;
     var currency = p.currency || "USD";
     var label = sectionLabel(p);
+    var variantOffer = p.variant_offer || null;
+    if (variantOffer) {
+      price = (Number(variantOffer.sale_price_cents) || 0) / 100;
+      priceStr = price.toFixed(2);
+      compare = variantOffer.original_price_cents
+        ? (Number(variantOffer.original_price_cents) || 0) / 100
+        : compare;
+    }
     var dealNote = "";
-    if (p.deal && p.deal.discount_percent) {
+    if (variantOffer) {
+      var variantEnds = "";
+      if (variantOffer.expires_at) {
+        var variantDate = new Date(variantOffer.expires_at);
+        if (!isNaN(variantDate)) {
+          variantEnds = " through " + variantDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+        }
+      }
+      dealNote = '<p class="product-deal-note">' +
+        esc((variantOffer.note || "Select eligible options for this offer.") + variantEnds) +
+        "</p>";
+    } else if (p.deal) {
       var ends = "";
       if (p.deal.expires_at) {
         var d = new Date(p.deal.expires_at);
@@ -990,9 +1012,25 @@
           });
         }
       }
+      var dealText = p.deal.discount_percent
+        ? p.deal.discount_percent + "% off"
+        : "Limited offer";
       dealNote = '<p class="product-deal-note">' +
-        esc(p.deal.discount_percent + "% off" + ends) + "</p>";
+        esc(dealText + ends) + "</p>";
     }
+    var actionHtml = variantOffer
+      ? '<a class="add-cart-button product-options-button" href="' + esc(href) +
+          '" aria-label="View eligible options for ' + esc(p.name || "product") +
+        '">View options</a>'
+      : '<button class="add-cart-button" type="button" data-add-to-cart' +
+          ' data-cart-id="' + esc(p.id) + '"' +
+          ' data-cart-brand="' + esc(p.brand || "") + '"' +
+          ' data-cart-name="' + esc(p.name || "") + '"' +
+          ' data-cart-price="' + esc(priceStr) + '"' +
+          ' data-cart-currency="' + esc(currency) + '"' +
+          ' data-cart-image="' + esc(p.image || "") + '"' +
+          ' aria-label="Add ' + esc(p.name || "product") + ' to cart"' +
+        '>Add to cart</button>';
     return (
       '<article class="product-card" data-product-id="' + esc(p.id) +
         '" data-category="' + esc(p.section_id || "") + '">' +
@@ -1007,19 +1045,11 @@
             esc(p.name || "") + '</a></h3>' +
           '<p>' + esc(label) + '</p>' +
           '<div class="product-price-line">' +
-            '<strong>' + fmtPrice(p.price_cents) + '</strong>' +
+            '<strong>$' + esc(priceStr) + '</strong>' +
             (compare ? '<span>$' + compare.toFixed(2) + '</span>' : "") +
           '</div>' +
           dealNote +
-          '<button class="add-cart-button" type="button" data-add-to-cart' +
-            ' data-cart-id="' + esc(p.id) + '"' +
-            ' data-cart-brand="' + esc(p.brand || "") + '"' +
-            ' data-cart-name="' + esc(p.name || "") + '"' +
-            ' data-cart-price="' + esc(priceStr) + '"' +
-            ' data-cart-currency="' + esc(currency) + '"' +
-            ' data-cart-image="' + esc(p.image || "") + '"' +
-            ' aria-label="Add ' + esc(p.name || "product") + ' to cart"' +
-          '>Add to cart</button>' +
+          actionHtml +
         '</div>' +
       '</article>'
     );
