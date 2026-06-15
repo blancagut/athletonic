@@ -1,5 +1,12 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+} from "node:fs";
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
 
 const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
@@ -29,6 +36,20 @@ const excludedBrands = [
   "football_town",
 ];
 
+const excludedProductIds = new Set([
+  4977,
+  6837,
+  6838,
+  6839,
+  6858,
+  6865,
+  6866,
+  6867,
+  6869,
+  6872,
+  6874,
+]);
+
 const forbiddenNameFilters = [
   "soccer",
   "football",
@@ -45,6 +66,7 @@ const forbiddenNameFilters = [
   "free gifts",
   "welcome gift",
   "free welcome",
+  "wholesale",
   "prepaid",
   "tool",
   "drill",
@@ -614,6 +636,7 @@ function bestImagesForProducts(productIds) {
 function productsForSection(section) {
   const allowedSql = allowedBrands.map(sqlString).join(",");
   const excludedSql = excludedBrands.map(sqlString).join(",");
+  const excludedProductIdsSql = [...excludedProductIds].join(",");
   const forbiddenSql = notLikeAllSql("lower(p.name)", [
     ...forbiddenNameFilters,
     ...(section.nameExcludes ?? []),
@@ -637,6 +660,7 @@ function productsForSection(section) {
       and p.url is not null
       and p.brand in (${allowedSql})
       and p.brand not in (${excludedSql})
+      and p.id not in (${excludedProductIdsSql})
       and coalesce(p.store_collection, '') not like 'soccer_%'
       and ${forbiddenSql}
       ${nameIncludesSql}
@@ -722,6 +746,11 @@ function canonicalLink(pathname = "/") {
   return `<link rel="canonical" href="${html(canonicalUrl(pathname))}" />`;
 }
 
+function assetHeadLinks(pathPrefix = "./") {
+  return `<link rel="icon" href="${pathPrefix}favicon.ico" sizes="any" />
+    <link rel="manifest" href="${pathPrefix}site.webmanifest" />`;
+}
+
 function money(value, currency) {
   const symbol = currency === "USD" ? "$" : `${currency} `;
   return `${symbol}${Number(value).toFixed(2)}`;
@@ -752,6 +781,10 @@ function productCard(product, pathPrefix = "./") {
   const label = product.displayLabel ?? collectionLabel(product.store_collection);
   const deal = product.deal;
   const variantOffer = product.variantOffer;
+  const purchaseMeta = product.purchaseMeta ?? null;
+  const requiresVariantSelection =
+    Boolean(variantOffer) || Boolean(purchaseMeta?.requiresVariantSelection);
+  const cartVariant = purchaseMeta?.cartVariant ?? "";
   const displayPrice = variantOffer
     ? Number(variantOffer.sale_price_cents || 0) / 100
     : Number(product.price || 0);
@@ -808,7 +841,7 @@ function productCard(product, pathPrefix = "./") {
                   : ""
               }
               ${
-                variantOffer
+                requiresVariantSelection
                   ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View eligible options for ${html(name)}">View options</a>`
                   : `<button
                 class="add-cart-button"
@@ -820,6 +853,7 @@ function productCard(product, pathPrefix = "./") {
                 data-cart-price="${html(product.price)}"
                 data-cart-currency="${html(product.currency)}"
                 data-cart-image="${html(product.image)}"
+                data-cart-variant="${html(cartVariant)}"
                 aria-label="Add ${html(name)} to cart"
               >Add to cart</button>`
               }
@@ -1127,9 +1161,297 @@ ${productsWithSection.map((product) => productCard(product)).join("\n")}
   )
   .join("\n");
 
-const topBrands = ATHLETONIC_SOURCE_OF_TRUTH.featuredBrandSlugs.map(
-  (brandSlug) => brandNames[brandSlug] ?? brandSlug
+function isOfficialBrandUrlForSlug(slug, url) {
+  const domain = sourceDomain(url);
+  if (!domain || blockedSourceDomains.has(domain)) return false;
+  const officialDomains = officialBrandDomains[slug] ?? [];
+  return officialDomains.some(
+    (officialDomain) =>
+      domain === officialDomain || domain.endsWith(`.${officialDomain}`)
+  );
+}
+
+const knownOfficialBrandSlugs = new Set(
+  ATHLETONIC_SOURCE_OF_TRUTH.brands.map((brand) => brand.slug)
 );
+
+function defaultishValue(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return !normalized || normalized === "default" || normalized === "default title";
+}
+
+function variantLabelFromRow(row) {
+  const parts = [row.option1, row.option2, row.option3]
+    .map((value) => String(value ?? "").trim())
+    .filter((value) => !defaultishValue(value));
+  if (parts.length) return parts.join(" / ");
+
+  const title = String(row.title ?? "").trim();
+  if (!defaultishValue(title)) return title;
+  return "";
+}
+
+function purchaseMetaByProductId(productIds) {
+  const ids = uniqueProducts(
+    productIds
+      .map((id) => ({ id: Number(id) }))
+      .filter((row) => Number.isInteger(row.id) && row.id > 0),
+    productIds.length || 1
+  ).map((row) => Number(row.id));
+  const meta = new Map();
+  if (!ids.length) return meta;
+
+  const BATCH = 500;
+  for (let i = 0; i < ids.length; i += BATCH) {
+    const chunk = ids.slice(i, i + BATCH);
+    const rows = runQuery(`
+      select
+        p.id,
+        p.options,
+        v.variant_id,
+        v.title,
+        v.option1,
+        v.option2,
+        v.option3,
+        coalesce(v.available, 0) as variant_available
+      from products p
+      left join variants v on v.product_row_id = p.id
+      where p.id in (${chunk.join(",")})
+      order by p.id asc, v.id asc;
+    `);
+
+    const grouped = new Map();
+    for (const row of rows) {
+      if (!grouped.has(row.id)) grouped.set(row.id, []);
+      grouped.get(row.id).push(row);
+    }
+
+    for (const [productId, group] of grouped.entries()) {
+      const options = safeParseJson(group[0]?.options, []);
+      const availableVariants = group.filter((row) => Number(row.variant_available) === 1);
+      const meaningfulOptions = Array.isArray(options)
+        ? options
+            .map((option) => ({
+              name: option?.name || "",
+              values: Array.isArray(option?.values)
+                ? option.values
+                    .map((value) => String(value ?? "").trim())
+                    .filter((value) => !defaultishValue(value))
+                : [],
+            }))
+            .filter((option) => option.values.length > 0)
+        : [];
+
+      const requiresVariantSelection = availableVariants.length > 1;
+      const cartVariant =
+        availableVariants.length === 1 ? variantLabelFromRow(availableVariants[0]) : "";
+
+      meta.set(String(productId), {
+        hasAvailablePurchase: availableVariants.length > 0,
+        requiresVariantSelection,
+        cartVariant,
+      });
+    }
+  }
+
+  return meta;
+}
+
+function applyPurchaseMeta(products = [], purchaseMeta = new Map()) {
+  return products
+    .map((product) => ({
+      ...product,
+      purchaseMeta:
+        purchaseMeta.get(String(product.id)) ?? {
+          hasAvailablePurchase: true,
+          requiresVariantSelection: false,
+          cartVariant: "",
+        },
+    }))
+    .filter((product) => product.purchaseMeta.hasAvailablePurchase);
+}
+
+function sortDealsFirst(products = []) {
+  return [...products].sort((a, b) => {
+    const aDiscount = Number(a.deal?.discount_percent || a.variantOffer?.discount_percent || 0);
+    const bDiscount = Number(b.deal?.discount_percent || b.variantOffer?.discount_percent || 0);
+    if (bDiscount !== aDiscount) return bDiscount - aDiscount;
+    return String(a.displayName ?? a.name).localeCompare(String(b.displayName ?? b.name));
+  });
+}
+
+function latestOfficialProducts(limit = 12) {
+  const rows = runQuery(`
+    select
+      p.id,
+      p.brand,
+      p.name,
+      p.store_collection,
+      p.store_department,
+      p.price,
+      coalesce(p.currency, 'USD') currency,
+      p.url,
+      p.scraped_at
+    from products p
+    join images i on i.product_row_id = p.id and i.url is not null
+    where p.available = 1
+      and p.price is not null
+      and p.price between 8 and 500
+      and p.url is not null
+      and lower(p.name) not like '%test%'
+      and lower(p.name) not like '%sample%'
+      and lower(p.name) not like '%gift%'
+      and lower(p.name) not like '%au%'
+    group by p.id
+    order by datetime(p.scraped_at) desc
+    limit 120;
+  `);
+  const imageByProductId = bestImagesForProducts(rows.map((row) => row.id));
+  const out = [];
+  const seen = new Set();
+  for (const row of rows) {
+    if (!knownOfficialBrandSlugs.has(row.brand)) continue;
+    if (!isOfficialBrandUrlForSlug(row.brand, row.url)) continue;
+    const image = imageByProductId.get(row.id);
+    if (!image) continue;
+    const sectionId = categoryForRow(row);
+    if (!sectionId) continue;
+    const key = String(row.id);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      id: String(row.id),
+      brand: row.brand,
+      name: cleanProductName(row.name, row.brand),
+      displayName: cleanProductName(row.name, row.brand),
+      displayLabel: sectionTitleById[sectionId] ?? collectionLabel(row.store_collection),
+      image: image.url,
+      imageWidth: Number(image.width || 0) || 640,
+      imageHeight: Number(image.height || 0) || Number(image.width || 0) || 640,
+      price: Number(row.price || 0),
+      currency: row.currency || "USD",
+      sectionId,
+      sectionTitle: sectionTitleById[sectionId] ?? collectionLabel(row.store_collection),
+      sectionEyebrow: "New arrivals",
+      store_collection: row.store_collection || sectionId,
+      url: row.url || null,
+    });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+function renderHomeHero(slides = []) {
+  if (!slides.length) {
+    return `
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Performance store</p>
+          <h1>Build your training stack in one store.</h1>
+          <p>
+            Supplements, hydration, wellness, recovery devices, footwear,
+            apparel, bottles, bags, and gym accessories from fitness-first brands.
+          </p>
+          <div class="hero-actions">
+            <a href="${sectionHref("protein")}">Shop products</a>
+            <a href="./pages/daily-deals.html">See deals</a>
+          </div>
+        </div>
+      </section>`;
+  }
+
+  return `
+      <section class="hero hero-slider" data-hero-slider>
+        ${slides
+          .map((product, index) => {
+            const brand = brandNames[product.brand] ?? product.brand;
+            const compare = Number(product.deal?.original_price || 0);
+            const heroTitle = `${brand} ${product.displayLabel || "offer"}`.trim();
+            const note = product.variantOffer
+              ? product.variantOffer.note || "Select options for this offer."
+              : product.deal
+                ? `${Number(product.deal.discount_percent || 0)}% off${product.deal.expires_at ? ` through ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(product.deal.expires_at))}` : ""}`
+                : "Real catalog offer";
+            return `
+        <article class="hero-slide${index === 0 ? " is-active" : ""}" data-hero-slide>
+          <div class="hero-copy">
+            <p class="eyebrow">Offer ${index + 1}</p>
+            <h1>${html(heroTitle)}</h1>
+            <p>${html(`${product.displayName ?? product.name} • ${note}`)}</p>
+            <div class="hero-actions">
+              <a href="./product/${html(product.id)}.html">Shop offer</a>
+              <a href="./pages/daily-deals.html">Today's deals</a>
+            </div>
+          </div>
+
+          <div class="hero-deal">
+            <span class="deal-label">${html(product.displayLabel || "Offer")}</span>
+            <img
+              src="${html(product.image)}"
+              alt="${html(product.displayName ?? product.name)}"
+              width="${html(product.imageWidth || 640)}"
+              height="${html(product.imageHeight || 640)}"
+              fetchpriority="${index === 0 ? "high" : "auto"}"
+              decoding="async"
+            />
+            <h2>${html(product.displayName ?? product.name)}</h2>
+            <p>${html(`${brand} • ${note}`)}</p>
+            <strong>${html(money(product.price, product.currency || "USD"))}${
+              compare > Number(product.price || 0)
+                ? `<span>${html(money(compare, product.currency || "USD"))}</span>`
+                : ""
+            }</strong>
+          </div>
+        </article>`;
+          })
+          .join("\n")}
+        ${
+          slides.length > 1
+            ? `<div class="hero-slider-controls" aria-label="Offer slider controls">
+        ${slides
+          .map(
+            (_, index) =>
+              `<button type="button" class="hero-slider-dot${index === 0 ? " is-active" : ""}" data-hero-dot="${index}" aria-label="Show offer ${index + 1}"></button>`
+          )
+          .join("\n")}
+      </div>`
+            : ""
+        }
+      </section>`;
+}
+
+function renderCategoryCards(cards = []) {
+  return `
+      <section class="quick-grid home-category-grid" aria-label="Main shopping categories">
+        ${cards
+          .map(
+            (card) => `
+        <article>
+          <h2>${html(card.title)}</h2>
+          <p>${html(card.description)}</p>
+          <a href="${html(card.href)}">Shop now</a>
+        </article>`
+          )
+          .join("\n")}
+      </section>`;
+}
+
+function renderShelfSection(shelf, index) {
+  const sectionId = `home-shelf-${index + 1}`;
+  return `
+      <section id="${sectionId}" class="market-section">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">${html(shelf.eyebrow)}</p>
+            <h2>${html(shelf.title)}</h2>
+          </div>
+          <p>${html(shelf.description)}</p>
+        </div>
+        <div class="product-row">
+${shelf.products.map((product) => productCard(product)).join("\n")}
+        </div>
+      </section>`;
+}
 
 // ---------------------------------------------------------------------------
 // Footer renderer — produces an enterprise-grade multi-tier footer.
@@ -1286,205 +1608,6 @@ ${legal}
     </footer>`;
 }
 
-const page = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Athletonic | Performance Supplements, Recovery &amp; Training Gear</title>
-    <meta
-      name="description"
-      content="Athletonic.com is a performance store for supplements, sports nutrition, hydration, recovery, apparel, and fitness essentials."
-    />
-    ${canonicalLink("/")}
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body class="home-body">
-    <a id="top" tabindex="-1" aria-hidden="true"></a>
-    <header class="market-header">
-      <div class="header-main">
-        ${navToggleButton()}
-        <a class="brand" href="./" aria-label="Athletonic home">
-          <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" width="1536" height="1024" decoding="async" />
-        </a>
-
-        <form class="market-search" action="./pages/catalog.html" method="get" data-catalog-search>
-          <select name="category" aria-label="Search category">
-            <option value="all">All</option>
-            ${categoryOptionsHtml}
-          </select>
-          <input
-            name="q"
-            type="search"
-            aria-label="Search Athletonic"
-            placeholder="Search products, brands..."
-          />
-          <button type="submit">Search</button>
-        </form>
-
-        <div class="header-actions" aria-label="Account and cart">
-          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-panel" aria-expanded="false" aria-label="Open account panel">
-            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"></circle>
-              <circle cx="12" cy="10" r="3"></circle>
-              <path d="M7 20.4a5.5 5.5 0 0 1 10 0"></path>
-            </svg>
-            <span class="header-action-label" data-account-label>Guest</span>
-          </button>
-          <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart-drawer" aria-expanded="false" aria-label="Open cart">
-            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="8" cy="21" r="1"></circle>
-              <circle cx="19" cy="21" r="1"></circle>
-              <path d="M2.05 2.05h2l2.65 12.4a2 2 0 0 0 2 1.6h8.95a2 2 0 0 0 1.95-1.57l1.25-5.48H5.45"></path>
-            </svg>
-            <span class="header-action-label">Cart</span>
-            <span class="cart-count" data-cart-count>0</span>
-          </button>
-        </div>
-      </div>
-
-      ${sectionNav}
-    </header>
-
-    <div class="drawer-overlay" data-drawer-overlay hidden></div>
-    <aside class="account-panel" id="account-panel" data-account-panel hidden role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="account-title">
-      <div class="drawer-header">
-        <div>
-          <p class="drawer-eyebrow">Account</p>
-          <h2 id="account-title">Guest checkout profile</h2>
-        </div>
-        <button class="drawer-close" type="button" data-account-close aria-label="Close account panel">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M18 6 6 18"></path>
-            <path d="m6 6 12 12"></path>
-          </svg>
-        </button>
-      </div>
-      <form class="account-form" data-account-form>
-        <label for="guest-email">Email for checkout updates</label>
-        <input id="guest-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
-        <button type="submit">Save email</button>
-        <p class="form-note">Guest checkout stays available. This email only connects your cart to follow-up and order communication.</p>
-        <p class="form-status" data-account-status aria-live="polite"></p>
-      </form>
-    </aside>
-
-    <aside class="cart-drawer" id="cart-drawer" data-cart-drawer hidden role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="cart-title">
-      <div class="drawer-header">
-        <div>
-          <p class="drawer-eyebrow">Checkout</p>
-          <h2 id="cart-title">Your cart</h2>
-        </div>
-        <button class="drawer-close" type="button" data-cart-close aria-label="Close cart">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M18 6 6 18"></path>
-            <path d="m6 6 12 12"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="cart-items" data-cart-items></div>
-      <p class="form-status drawer-status" data-checkout-status aria-live="polite"></p>
-      <form class="checkout-form" data-checkout-form>
-        <label for="checkout-email">Email</label>
-        <input id="checkout-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
-        <div class="cart-total">
-          <span>Subtotal</span>
-          <strong data-cart-subtotal>$0.00</strong>
-        </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
-      </form>
-    </aside>
-
-    <main>
-      <p class="search-status" id="catalog" aria-live="polite" hidden></p>
-
-      <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Performance store</p>
-          <h1>Build your training stack in one store.</h1>
-          <p>
-            Supplements, hydration, wellness, recovery devices, footwear,
-            apparel, bottles, bags, and gym accessories from fitness-first brands.
-          </p>
-          <div class="hero-actions">
-            <a href="${sectionHref("protein")}">Shop products</a>
-            <a href="./${BRANDS_PAGE_HREF}">Browse brands</a>
-          </div>
-        </div>
-
-        <div class="hero-deal" id="catalog-summary">
-          <span class="deal-label">Performance stack</span>
-          <img
-            src="https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-ON-2-GSW-2270g-bundle_Image_01_1.png"
-            alt="Gold Standard 100% Whey Protein"
-            width="640"
-            height="512"
-            fetchpriority="high"
-            decoding="async"
-          />
-          <h2>Performance essentials</h2>
-          <p>Protein, creatine, pre-workout, hydration, recovery, apparel, footwear, and accessories.</p>
-          <strong>Sold through Athletonic</strong>
-        </div>
-      </section>
-
-      <section class="quick-grid" aria-label="Shop by department">
-        <article>
-          <h2>Sports Nutrition</h2>
-          <p>Protein, creatine, pre-workout, amino acids, bars, and shakes.</p>
-          <a href="${sectionHref("protein")}">Shop nutrition</a>
-        </article>
-        <article>
-          <h2>Hydration & Wellness</h2>
-          <p>Electrolytes, vitamins, minerals, greens, gut health, and focus support.</p>
-          <a href="${sectionHref("hydration")}">See wellness</a>
-        </article>
-        <article>
-          <h2>Apparel & Footwear</h2>
-          <p>Training shoes, leggings, shorts, shirts, bags, bottles, and shakers.</p>
-          <a href="${sectionHref("apparel")}">View apparel</a>
-        </article>
-        <article>
-          <h2>Recovery</h2>
-          <p>Massage, compression, sleep masks, mobility, and post-training support.</p>
-          <a href="${sectionHref("recovery")}">View recovery</a>
-        </article>
-      </section>
-
-${productSections}
-
-      <section id="brands" class="market-section brand-section">
-        <div class="section-title">
-          <div>
-            <p class="eyebrow">Brands</p>
-            <h2>Aligned performance brands</h2>
-          </div>
-          <p>Fitness, sports nutrition, wellness, apparel, accessories, and recovery brands only.</p>
-        </div>
-
-        <div class="brand-cloud">
-          ${topBrands.map((brand) => `<span>${html(brand)}</span>`).join("\n          ")}
-        </div>
-      </section>
-    </main>
-
-${renderFooter("./")}
-${mobileBottomNav("./")}
-    <script>
-      window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
-      window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
-    </script>
-    <script src="./assets/cart.js" defer></script>
-  </body>
-</html>
-`;
-
-writeFileSync(new URL("../index.html", import.meta.url), cleanGeneratedText(page));
-console.log(
-  `Generated ${totalProducts} products across ${populatedSections.length} sections.`
-);
-
 // ---------------------------------------------------------------------------
 // Product Detail Pages (PDPs)
 // ---------------------------------------------------------------------------
@@ -1541,17 +1664,47 @@ writeFileSync(
 // reseller domain. Only search/card fields are stored (no descriptions/HTML).
 // ---------------------------------------------------------------------------
 const indexAccessoryNamePattern =
-  /\b(bottle|shaker|bag|belt|strap|wrap|mouthguard|mouth guard|key chain|towel|mat|grip|grips|hat|beanie|sock|socks|glove|gloves|guard|guards|lace|laces)\b|\bcap\b(?!\s+sleeve)/i;
+  /\b(bottle|shaker|bag|belt|strap|wrap|mouthguard|mouth guard|key chain|towel|mat|grip|grips|hat|beanie|sock|socks|glove|gloves|guard|guards|lace|laces|scarf|flag|patch|sleeve|sleeves)\b|\bcap\b(?!\s+sleeve)/i;
 const indexFootwearNamePattern =
   /\b(shoe|shoes|sneaker|sneakers|boot|boots|cleat|cleats|slide|slides|sandal|sandals|loafer|loafers|pegasus|foamposite|metcon|romaleos|infinityrn|vomero|dunk)\b|\bair\s+max\b|\bjordan\s*\d+\b|\b(trail|tree|golf)\s+runner(s)?\b/i;
 const indexApparelNamePattern =
-  /\b(jersey|shirt|tee|t-shirt|hoodie|shorts|pants|leggings|jacket|bra|tank|sweatshirt|sweatpants|dress|skirt|polo|rashguard|singlet|compression|tights|crewneck|pullover|parka)\b/i;
+  /\b(jersey|kit|shirt|tee|t-shirt|hoodie|shorts|pants|leggings|jacket|bra|tank|sweatshirt|sweatpants|dress|skirt|polo|rashguard|singlet|compression|tights|crewneck|pullover|parka|tracksuit|windbreaker)\b/i;
+const indexProteinNamePattern =
+  /\b(protein|whey|isolate|casein|mass gainer|gainer|isowhey)\b/i;
+const indexCreatineNamePattern =
+  /\bcreatine|cell-tech\b/i;
+const indexPreWorkoutNamePattern =
+  /\b(pre[-\s]?workout|vaporx5|nitraflex|pump|stim|alpha\s?test)\b/i;
+const indexHydrationNamePattern =
+  /\b(electrolyte|hydration|quench|amin\.?o\.?\s*energy|energy pouch|energy pouches)\b/i;
+const indexGreensNamePattern =
+  /\b(greens|superfood|supergreens|green superfood|green powder)\b/i;
+const indexBarsShakesNamePattern =
+  /\b(bar|bars|shake|shakes|meal replacement|snack|coffee)\b/i;
+const indexSleepNamePattern =
+  /\b(sleep|melatonin|calm|relax|stress)\b/i;
+const indexRecoveryNamePattern =
+  /\b(recovery|recover|bcaa|eaa|amino|collagen|musclebuilder|muscle builder|mobility|massage|therapy|theragun|compex)\b/i;
+const indexVitaminNamePattern =
+  /\b(vitamin|mineral|magnesium|omega|probiotic|prebiotic|multivitamin|multi-vitamin|health|wellness|immune|immunity|digestive|gut|hair|skin|nails)\b/i;
+const indexTrainingGearNamePattern =
+  /\b(dumbbell|dumbbells|kettlebell|barbell|plates?|rack|cage|bench|treadmill|walkingpad|rower|bike|trainer|machine|abductor|fly|press|curl|extension|squat|deadlift|band|bands|rope|ball|goal|cones?|ladder|hurdle|trx|wraps?|guards?|grips?)\b/i;
 
 function categoryFromProductName(name) {
   const value = String(name ?? "");
-  if (indexAccessoryNamePattern.test(value)) return "accessories";
-  if (indexApparelNamePattern.test(value)) return "apparel";
+  if (indexProteinNamePattern.test(value)) return "protein";
+  if (indexCreatineNamePattern.test(value)) return "creatine";
+  if (indexPreWorkoutNamePattern.test(value)) return "pre-workout";
+  if (indexHydrationNamePattern.test(value)) return "hydration";
+  if (indexGreensNamePattern.test(value)) return "greens";
+  if (indexBarsShakesNamePattern.test(value)) return "bars-shakes";
+  if (indexSleepNamePattern.test(value)) return "sleep";
+  if (indexRecoveryNamePattern.test(value)) return "recovery";
   if (indexFootwearNamePattern.test(value)) return "shoes";
+  if (indexApparelNamePattern.test(value)) return "apparel";
+  if (indexTrainingGearNamePattern.test(value)) return "training-gear";
+  if (indexAccessoryNamePattern.test(value)) return "accessories";
+  if (indexVitaminNamePattern.test(value)) return "vitamins";
   return "";
 }
 
@@ -1592,12 +1745,20 @@ function categoryForRow(row) {
     "apparel_accessories/shoes": "shoes",
     "apparel_accessories/bags_bottles": "accessories",
     "sports_gear/fight_gear": "training-gear",
+    "sports_gear/soccer_jerseys": "apparel",
+    "sports_gear/soccer_cleats": "shoes",
+    "sports_gear/soccer_accessories": "accessories",
   };
   if (map[key]) {
     if (map[key] === "apparel" && (nameCategory === "shoes" || nameCategory === "accessories")) {
       return nameCategory;
     }
     if (map[key] === "accessories" && nameCategory === "apparel") return "apparel";
+    if (map[key] === "accessories" && nameCategory === "shoes") return "shoes";
+    if (map[key] === "accessories" && nameCategory === "training-gear") return "training-gear";
+    if (map[key] === "greens" && nameCategory && nameCategory !== "greens") {
+      return nameCategory;
+    }
     if (map[key] === "training-gear" && nameCategory === "shoes") return "shoes";
     return map[key];
   }
@@ -1624,15 +1785,18 @@ const indexJunkNameFilters = [
   "tester",
   "test product",
   "dented",
+  "gift card",
   "free gifts",
   "welcome gift",
   "free welcome",
+  "wholesale",
   "prepaid",
   "logo print",
 ];
 
 function buildSearchIndex() {
   const forbiddenSql = notLikeAllSql("lower(p.name)", indexJunkNameFilters);
+  const excludedProductIdsSql = [...excludedProductIds].join(",");
   const sql = `
     select
       p.id,
@@ -1651,6 +1815,7 @@ function buildSearchIndex() {
       and p.price between 3 and 2000
       and p.url is not null
       and coalesce(p.currency, 'USD') = 'USD'
+      and p.id not in (${excludedProductIdsSql})
       and ${forbiddenSql}
     group by p.id
     order by coalesce(p.store_priority, 0) desc, p.price desc, p.name asc;
@@ -1675,6 +1840,7 @@ function buildSearchIndex() {
     const name = cleanProductName(row.name, row.brand);
     if (!name) continue;
     const category = categoryForRow(row);
+    if (!category) continue;
     const sectionTitle = sectionTitleById[category] ?? "Athletonic catalog";
     const record = {
       id,
@@ -2107,6 +2273,7 @@ ${relatedProducts.map((product) => productCard(product, pathPrefix)).join("\n")}
       `${name} by ${brand}. Buy directly on Athletonic, a performance store for sports nutrition, hydration, recovery, apparel, and training gear.`
     )}" />
     ${canonicalLink(`/product/${curated.id}.html`)}
+    ${assetHeadLinks(pathPrefix)}
     <meta property="og:title" content="${html(`${name} — ${brand}`)}" />
     <meta property="og:type" content="product" />
     <meta property="og:image" content="${html(images[0] || "")}" />
@@ -2572,6 +2739,411 @@ const newArrivalsShelf = customShelf({
   products: [...allCuratedProducts].reverse(),
   limit: 18,
 });
+
+const officialHomeRecords = searchIndexRecords.filter(
+  (record) =>
+    knownOfficialBrandSlugs.has(record.brand_slug) &&
+    isOfficialBrandUrlForSlug(record.brand_slug, record.url)
+);
+
+const officialHomeProducts = officialHomeRecords.map(indexRecordToProduct);
+
+const officialDealProducts = sortDealsFirst(
+  officialHomeRecords
+    .filter((record) => record.deal || record.variant_offer)
+    .map(indexRecordToProduct)
+);
+
+const proteinValueProducts = sortDealsFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      ["protein", "bars-shakes"].includes(product.sectionId) &&
+      productMatchesTerms(product, [
+        "protein",
+        "whey",
+        "isolate",
+        "casein",
+        "variety pack",
+        "bundle",
+        "multi-pack",
+        "multipack",
+        "2 bottles",
+        "3 bottles",
+      ]) &&
+      !productMatchesTerms(product, ["kids", "sample", "test"])
+  )
+);
+
+const boxingProducts = officialHomeProducts.filter(
+  (product) =>
+    product.sectionId === "training-gear" &&
+    ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "century_martial_arts", "fuji_sports"].includes(product.brand) &&
+    productMatchesTerms(product, [
+      "muay",
+      "boxing",
+      "glove",
+      "mitt",
+      "pad",
+      "headgear",
+      "shin",
+      "fairtex",
+      "hayabusa",
+      "rival",
+      "everlast",
+      "venum",
+      "sanabul",
+    ]) &&
+    !productMatchesTerms(product, ["treadmill", "walkingpad", "foldable", "hybrid"])
+);
+
+const gloveProducts = officialHomeProducts.filter(
+  (product) =>
+    product.sectionId === "training-gear" &&
+    ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "century_martial_arts", "fuji_sports"].includes(product.brand) &&
+    productMatchesTerms(product, [
+      "glove",
+      "mitt",
+      "pad",
+      "wrap",
+      "headgear",
+      "bag",
+      "shin",
+      "focus mitt",
+    ]) &&
+    !productMatchesTerms(product, ["treadmill", "walkingpad", "foldable", "hybrid"])
+);
+
+const bundleProducts = sortDealsFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      productMatchesTerms(product, [
+        "bundle",
+        "stack",
+        "duo",
+        "variety pack",
+        "multi-pack",
+        "multipack",
+        "2 bottles",
+        "3 bottles",
+        "starter stack",
+      ]) &&
+      !productMatchesTerms(product, ["test", "sample", "kids", "gift", "build a bundle"]) &&
+      Number(product.price || 0) > 0
+  )
+);
+
+const homeShelvesDraft = [
+  customShelf({
+    eyebrow: "Deals",
+    title: "Today's Deals",
+    description: "Live offers, markdowns, and active price drops from the real Athletonic catalog.",
+    products: officialDealProducts,
+    limit: 10,
+  }),
+  customShelf({
+    eyebrow: "Popular picks",
+    title: "Best Sellers",
+    description: "Top catalog picks across supplements, recovery, and training essentials.",
+    products: populatedSections.flatMap((section) => sectionProducts(section.id, 2)),
+    limit: 12,
+  }),
+  customShelf({
+    eyebrow: "Supplements",
+    title: "Top Supplements",
+    description: "Protein, hydration, vitamins, greens, and ready-to-drink staples in one shelf.",
+    sectionIds: ["protein", "hydration", "vitamins", "greens", "bars-shakes"],
+    limit: 12,
+  }),
+  customShelf({
+    eyebrow: "Protein",
+    title: "Protein Deals",
+    description: "Current protein offers, value packs, and variety picks with real catalog pricing.",
+    products: uniqueProducts(
+      [
+        ...proteinValueProducts.filter((product) => product.deal || product.variantOffer),
+        ...proteinValueProducts,
+      ],
+      12
+    ),
+    limit: 12,
+  }),
+  customShelf({
+    eyebrow: "Strength",
+    title: "Creatine & Pre-workout",
+    description: "Lift-day staples for pumps, strength, and training energy.",
+    sectionIds: ["creatine", "pre-workout"],
+    limit: 12,
+  }),
+  customShelf({
+    eyebrow: "Combat sports",
+    title: "Muay Thai & Boxing Gear",
+    description: "Real fight gear, pads, gloves, and protection from active catalog inventory.",
+    products: boxingProducts,
+    limit: 12,
+  }),
+  customShelf({
+    eyebrow: "Training gear",
+    title: "Gloves & Training Gear",
+    description: "Gloves, mitts, wraps, pads, bags, and core training equipment.",
+    products: gloveProducts,
+    limit: 12,
+  }),
+];
+
+if (bundleProducts.length >= 4) {
+  homeShelvesDraft.push(
+    customShelf({
+      eyebrow: "Value picks",
+      title: "Bundles & Multi-pack Deals",
+      description: "Only real bundles, variety packs, and multi-bottle offers with valid pricing.",
+      products: bundleProducts,
+      limit: 12,
+    })
+  );
+}
+
+const latestProductsDraft = latestOfficialProducts(12);
+if (latestProductsDraft.length >= 4) {
+  homeShelvesDraft.push(
+    customShelf({
+      eyebrow: "New arrivals",
+      title: "New Arrivals",
+      description: "Recently added products pulled from the current official catalog data.",
+      products: latestProductsDraft,
+      limit: 12,
+    })
+  );
+}
+
+const homePurchaseMeta = purchaseMetaByProductId(
+  homeShelvesDraft.flatMap((shelf) => shelf.products.map((product) => product.id))
+);
+
+const homeShelves = homeShelvesDraft
+  .map((shelf) => ({
+    ...shelf,
+    products: applyPurchaseMeta(
+      uniqueProducts(shelf.products, shelf.products.length),
+      homePurchaseMeta
+    ),
+  }))
+  .filter((shelf) => shelf.products.length >= 4);
+
+const heroSlides = (homeShelves.find((shelf) => shelf.title === "Today's Deals")?.products ?? [])
+  .slice(0, 5);
+
+const categoryCards = [
+  {
+    title: "Protein",
+    href: sectionHref("protein"),
+    description: "Whey, isolate, plant protein, and recovery shakes.",
+  },
+  {
+    title: "Creatine",
+    href: sectionHref("creatine"),
+    description: "Powders, capsules, gummies, and daily strength support.",
+  },
+  {
+    title: "Pre-workout",
+    href: sectionHref("pre-workout"),
+    description: "Pump, energy, nitric oxide, and stim-free formulas.",
+  },
+  {
+    title: "Hydration",
+    href: sectionHref("hydration"),
+    description: "Electrolytes, sticks, multipliers, and drink mixes.",
+  },
+  {
+    title: "Supplements",
+    href: "./pages/catalog.html",
+    description: "Shop sports nutrition, wellness, bars, and daily performance.",
+  },
+  {
+    title: "Boxing Gear",
+    href: sectionHref("training-gear"),
+    description: "Gloves, mitts, pads, bags, and Muay Thai essentials.",
+  },
+];
+
+const page = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Athletonic | Performance Supplements, Recovery &amp; Training Gear</title>
+    <meta
+      name="description"
+      content="Athletonic.com is a performance store for supplements, sports nutrition, hydration, recovery, apparel, and fitness essentials."
+    />
+    ${canonicalLink("/")}
+    ${assetHeadLinks("./")}
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="home-body">
+    <a id="top" tabindex="-1" aria-hidden="true"></a>
+    <header class="market-header">
+      <div class="header-main">
+        ${navToggleButton()}
+        <a class="brand" href="./" aria-label="Athletonic home">
+          <img class="brand-logo" src="./assets/logo.png" alt="Athletonic" width="1536" height="1024" decoding="async" />
+        </a>
+
+        <form class="market-search" action="./pages/catalog.html" method="get" data-catalog-search>
+          <select name="category" aria-label="Search category">
+            <option value="all">All</option>
+            ${categoryOptionsHtml}
+          </select>
+          <input
+            name="q"
+            type="search"
+            aria-label="Search Athletonic"
+            placeholder="Search products, brands..."
+          />
+          <button type="submit">Search</button>
+        </form>
+
+        <div class="header-actions" aria-label="Account and cart">
+          <button class="header-icon-button" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-panel" aria-expanded="false" aria-label="Open account panel">
+            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M7 20.4a5.5 5.5 0 0 1 10 0"></path>
+            </svg>
+            <span class="header-action-label" data-account-label>Guest</span>
+          </button>
+          <button class="header-icon-button cart-button" type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart-drawer" aria-expanded="false" aria-label="Open cart">
+            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="8" cy="21" r="1"></circle>
+              <circle cx="19" cy="21" r="1"></circle>
+              <path d="M2.05 2.05h2l2.65 12.4a2 2 0 0 0 2 1.6h8.95a2 2 0 0 0 1.95-1.57l1.25-5.48H5.45"></path>
+            </svg>
+            <span class="header-action-label">Cart</span>
+            <span class="cart-count" data-cart-count>0</span>
+          </button>
+        </div>
+      </div>
+
+      ${sectionNav}
+    </header>
+
+    <div class="drawer-overlay" data-drawer-overlay hidden></div>
+    <aside class="account-panel" id="account-panel" data-account-panel hidden role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="account-title">
+      <div class="drawer-header">
+        <div>
+          <p class="drawer-eyebrow">Account</p>
+          <h2 id="account-title">Guest checkout profile</h2>
+        </div>
+        <button class="drawer-close" type="button" data-account-close aria-label="Close account panel">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form class="account-form" data-account-form>
+        <label for="guest-email">Email for checkout updates</label>
+        <input id="guest-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        <button type="submit">Save email</button>
+        <p class="form-note">Guest checkout stays available. This email only connects your cart to follow-up and order communication.</p>
+        <p class="form-status" data-account-status aria-live="polite"></p>
+      </form>
+    </aside>
+
+    <aside class="cart-drawer" id="cart-drawer" data-cart-drawer hidden role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="cart-title">
+      <div class="drawer-header">
+        <div>
+          <p class="drawer-eyebrow">Checkout</p>
+          <h2 id="cart-title">Your cart</h2>
+        </div>
+        <button class="drawer-close" type="button" data-cart-close aria-label="Close cart">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="cart-items" data-cart-items></div>
+      <p class="form-status drawer-status" data-checkout-status aria-live="polite"></p>
+      <form class="checkout-form" data-checkout-form>
+        <label for="checkout-email">Email</label>
+        <input id="checkout-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+        <div class="cart-total">
+          <span>Subtotal</span>
+          <strong data-cart-subtotal>$0.00</strong>
+        </div>
+        <button type="submit" data-checkout-submit>Continue to secure payment</button>
+        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+      </form>
+    </aside>
+
+    <main>
+      <p class="search-status" id="catalog" aria-live="polite" hidden></p>
+
+${renderHomeHero(heroSlides)}
+${renderCategoryCards(categoryCards)}
+${homeShelves.map((shelf, index) => renderShelfSection(shelf, index)).join("\n")}
+    </main>
+
+${renderFooter("./")}
+${mobileBottomNav("./")}
+    <script>
+      window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
+      window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
+      document.addEventListener("DOMContentLoaded", function () {
+        var slider = document.querySelector("[data-hero-slider]");
+        if (!slider) return;
+        var slides = Array.from(slider.querySelectorAll("[data-hero-slide]"));
+        var dots = Array.from(slider.querySelectorAll("[data-hero-dot]"));
+        if (slides.length <= 1) return;
+        var current = 0;
+        var timer = null;
+
+        function show(index) {
+          current = (index + slides.length) % slides.length;
+          slides.forEach(function (slide, slideIndex) {
+            slide.classList.toggle("is-active", slideIndex === current);
+          });
+          dots.forEach(function (dot, dotIndex) {
+            dot.classList.toggle("is-active", dotIndex === current);
+          });
+        }
+
+        function start() {
+          stop();
+          timer = window.setInterval(function () {
+            show(current + 1);
+          }, 4800);
+        }
+
+        function stop() {
+          if (timer) window.clearInterval(timer);
+          timer = null;
+        }
+
+        dots.forEach(function (dot) {
+          dot.addEventListener("click", function () {
+            show(Number(dot.getAttribute("data-hero-dot") || 0));
+            start();
+          });
+        });
+
+        slider.addEventListener("mouseenter", stop);
+        slider.addEventListener("mouseleave", start);
+        slider.addEventListener("focusin", stop);
+        slider.addEventListener("focusout", start);
+        show(0);
+        start();
+      });
+    </script>
+    <script src="./assets/cart.js" defer></script>
+  </body>
+</html>
+`;
+
+writeFileSync(new URL("../index.html", import.meta.url), cleanGeneratedText(page));
+console.log(
+  `Generated ${totalProducts} products across ${populatedSections.length} sections.`
+);
 
 const staticPages = [
   {
@@ -4313,6 +4885,7 @@ function infoPage(pageInfo) {
     <title>${html(pageInfo.title)} | Athletonic</title>
     <meta name="description" content="${html(pageInfo.summary)}" />
     ${canonicalLink(`/pages/${pageInfo.slug}.html`)}
+    ${assetHeadLinks(pathPrefix)}
     <link rel="stylesheet" href="${pathPrefix}styles.css" />
   </head>
   <body class="info-body">
@@ -4549,6 +5122,7 @@ function commercePage(pageInfo) {
     <title>${html(pageInfo.title)} | Athletonic</title>
     <meta name="description" content="${html(pageInfo.description)}" />
     ${canonicalLink(`/pages/${pageInfo.slug}.html`)}
+    ${assetHeadLinks(pathPrefix)}
     <link rel="stylesheet" href="${pathPrefix}styles.css" />
   </head>
   <body class="info-body commerce-body">
@@ -4583,6 +5157,20 @@ for (const product of allCuratedProducts) {
 
 const pdpDir = new URL("../product/", import.meta.url);
 mkdirSync(pdpDir, { recursive: true });
+
+const expectedPdpIds = new Set([
+  ...allCuratedProducts.map((product) => String(product.id)),
+  ...searchIndexRecords.map((record) => String(record.id)),
+]);
+const stalePdpFiles = readdirSync(pdpDir)
+  .filter((name) => /^\d+\.html$/.test(name))
+  .filter((name) => !expectedPdpIds.has(name.replace(/\.html$/, "")));
+for (const name of stalePdpFiles) {
+  rmSync(new URL(name, pdpDir));
+}
+if (stalePdpFiles.length > 0) {
+  console.log(`Removed ${stalePdpFiles.length} stale product detail pages from /product/.`);
+}
 
 let pdpCount = 0;
 for (const product of allCuratedProducts) {
@@ -4689,6 +5277,39 @@ ${sitemapEntries
 </urlset>
 `;
 writeFileSync(new URL("../sitemap.xml", import.meta.url), cleanGeneratedText(sitemapXml));
+
+const webManifest = {
+  name: "Athletonic",
+  short_name: "Athletonic",
+  description:
+    "Performance supplements, recovery, apparel, footwear, and training essentials.",
+  start_url: "/",
+  scope: "/",
+  display: "standalone",
+  background_color: "#ffffff",
+  theme_color: "#0b1f3a",
+  icons: [
+    {
+      src: "/favicon.ico",
+      sizes: "32x32",
+      type: "image/x-icon",
+    },
+    {
+      src: "/assets/icon-192.png",
+      sizes: "192x192",
+      type: "image/png",
+    },
+    {
+      src: "/assets/icon-512.png",
+      sizes: "512x512",
+      type: "image/png",
+    },
+  ],
+};
+writeFileSync(
+  new URL("../site.webmanifest", import.meta.url),
+  `${JSON.stringify(webManifest, null, 2)}\n`
+);
 
 const robotsTxt = `User-agent: *
 Allow: /
