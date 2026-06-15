@@ -1079,7 +1079,7 @@
       : mustChooseOptions
         ? '<a class="add-cart-button product-options-button" href="' + esc(href) +
             '" aria-label="View options for ' + esc(p.name || "product") +
-          '">View options</a>'
+        '">Choose options</a>'
         : '<button class="add-cart-button" type="button" data-add-to-cart' +
             ' data-cart-id="' + esc(p.id) + '"' +
             ' data-cart-product-id="' + esc(p.id) + '"' +

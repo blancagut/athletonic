@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
 
 const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
@@ -802,7 +802,7 @@ function productCard(product, pathPrefix = "./") {
   const actionHtml = !purchasable
     ? `<button class="add-cart-button" type="button" disabled aria-disabled="true">Unavailable</button>`
     : requiresVariantSelection
-      ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View options for ${html(name)}">View options</a>`
+      ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="Choose options for ${html(name)}">Choose options</a>`
       : `<button
                 class="add-cart-button"
                 type="button"
@@ -971,6 +971,35 @@ function normalizeOptionKey(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+const OPTION_NAME_ALIASES = new Map([
+  ["oz", "Oz"],
+  ["ounce", "Oz"],
+  ["ounces", "Oz"],
+  ["glove size", "Oz"],
+  ["size glove", "Oz"],
+  ["weight", "Weight"],
+  ["flavor", "Flavor"],
+  ["flavour", "Flavor"],
+  ["size", "Size"],
+  ["sizing", "Size"],
+  ["color", "Color"],
+  ["colour", "Color"],
+  ["presentation", "Presentation"],
+  ["serving", "Servings"],
+  ["servings", "Servings"],
+  ["count", "Count"],
+  ["pack", "Pack"],
+  ["packs", "Pack"],
+]);
+
+function optionDisplayName(value, fallback = "Option") {
+  const key = normalizeOptionKey(value);
+  if (OPTION_NAME_ALIASES.has(key)) return OPTION_NAME_ALIASES.get(key);
+  const source = String(value || fallback).trim();
+  if (!source) return fallback;
+  return source.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function cleanOptionValue(value) {
   const text = String(value || "").trim();
   return /^default title$/i.test(text) ? "" : text;
@@ -980,7 +1009,9 @@ function optionNamesForRow(row) {
   const parsedOptions = safeParseJson(row?.options, []);
   const names = Array.isArray(parsedOptions)
     ? parsedOptions
-        .map((option, index) => String(option?.name || `Option ${index + 1}`).trim())
+        .map((option, index) =>
+          optionDisplayName(option?.name || `Option ${index + 1}`, `Option ${index + 1}`)
+        )
         .filter(Boolean)
     : [];
   return [
@@ -1063,7 +1094,7 @@ function pricedVariant(productId, variant, optionValues) {
   };
 }
 
-function mandatoryOptionBlockers(row, availableVariants) {
+function mandatoryOptionWarnings(row, availableVariants) {
   const text = [
     row?.brand,
     row?.name,
@@ -1082,21 +1113,21 @@ function mandatoryOptionBlockers(row, availableVariants) {
     }
   }
   const optionText = `${[...optionNames].join(" ")} ${optionValues.join(" ")}`.toLowerCase();
-  const blockers = [];
+  const warnings = [];
   const hasSize = /\b(size|size glove|shoe size|waist|inseam)\b/.test(optionText) ||
     /\b(xs|small|medium|large|xl|xxl|one size|\d{1,2}(\.\d)?\s*(oz|us|w|m)?\b)/i.test(optionText);
   const hasOunces = /\b(\d{1,2}\s*(oz|ounce|ounces)|size glove)\b/i.test(optionText);
 
   if (/\b(glove|gloves)\b/.test(text) && /\b(boxing|muay|kickboxing|mma|fight|fairtex|twins|hayabusa|raja)\b/.test(text) && !hasOunces) {
-    blockers.push("missing_glove_ounces");
+    warnings.push("missing_glove_ounces");
   }
   if (/\b(shoe|shoes|sneaker|sneakers|boot|boots|cleat|cleats|slide|slides|sandal|sandals|pegasus|metcon|romaleos|vomero|dunk)\b/i.test(text) && !hasSize) {
-    blockers.push("missing_footwear_size");
+    warnings.push("missing_footwear_size");
   }
   if (/\b(jersey|shirt|tee|t-shirt|hoodie|shorts|pants|leggings|jacket|bra|tank|sweatshirt|sweatpants|polo|rashguard|compression|tights|pullover)\b/i.test(text) && !hasSize) {
-    blockers.push("missing_apparel_size");
+    warnings.push("missing_apparel_size");
   }
-  return blockers;
+  return warnings;
 }
 
 function buildVariantState(productId, row, variantRows = []) {
@@ -1129,16 +1160,10 @@ function buildVariantState(productId, row, variantRows = []) {
   const hasVariantRows = variants.length > 0;
   const blockers = [];
   if (hasVariantRows && availableVariants.length === 0) blockers.push("zero_available_variants");
-  blockers.push(...mandatoryOptionBlockers(row, availableVariants));
+  const warnings = mandatoryOptionWarnings(row, availableVariants);
 
   const basePriceCents = centsFromPrice(row?.price);
-  const readyForSale = hasVariantRows
-    ? availableVariants.length > 0 && blockers.length === 0
-    : basePriceCents > 0 && Number(row?.available ?? 1) === 1;
-  const requiresVariantSelection = readyForSale && availableVariants.length > 1;
-  const defaultVariant = readyForSale && availableVariants.length === 1
-    ? availableVariants[0]
-    : null;
+  const baseAvailable = basePriceCents > 0 && Number(row?.available ?? 1) === 1;
   const prices = availableVariants.map((variant) => variant.price_cents).filter((price) => price > 0);
   const priceMinCents = prices.length ? Math.min(...prices) : basePriceCents;
   const priceMaxCents = prices.length ? Math.max(...prices) : basePriceCents;
@@ -1157,12 +1182,28 @@ function buildVariantState(productId, row, variantRows = []) {
     }
   }
 
+  const hasChoiceMatrix = [...optionMap.values()].some((values) => values.size > 1);
+  const readyForCheckout = hasVariantRows
+    ? availableVariants.length > 0 && blockers.length === 0
+    : baseAvailable;
+  const requiresVariantSelection = readyForCheckout && hasChoiceMatrix;
+  const defaultVariant = readyForCheckout && !requiresVariantSelection && availableVariants.length === 1
+    ? availableVariants[0]
+    : null;
+  const productReadyForDisplay = hasVariantRows ? variants.length > 0 : baseAvailable;
+
   return {
-    ready_for_sale: readyForSale,
-    purchasable: readyForSale,
+    available: productReadyForDisplay,
+    ready_for_sale: readyForCheckout,
+    purchasable: readyForCheckout,
     blockers,
+    warnings,
     has_variants: hasVariantRows,
     requires_variant_selection: requiresVariantSelection,
+    product_ready_for_display: productReadyForDisplay,
+    product_requires_variant_selection: requiresVariantSelection,
+    product_ready_for_checkout: readyForCheckout,
+    selected_variant_ready_for_checkout: Boolean(defaultVariant?.variant_id && defaultVariant?.available),
     default_variant_id: defaultVariant?.variant_id || null,
     default_variant: defaultVariant,
     price_min_cents: priceMinCents,
@@ -1202,6 +1243,7 @@ for (const product of allCuratedProducts) {
   product.readyForSale = state.ready_for_sale;
   product.purchasable = state.purchasable;
   product.readyBlockers = state.blockers;
+  product.readyWarnings = state.warnings;
   product.requiresVariantSelection = state.requires_variant_selection;
   product.defaultVariantId = state.default_variant_id;
   product.defaultVariant = state.default_variant;
@@ -1996,11 +2038,15 @@ for (const record of searchIndexRecords) {
   const defaultVariant = state.default_variant || null;
   const productPriceCents = state.price_min_cents || record.price_cents;
 
-  record.available = state.ready_for_sale;
+  record.available = state.available;
   record.purchasable = state.purchasable;
   record.ready_for_sale = state.ready_for_sale;
   record.ready_blockers = state.blockers;
+  record.ready_warnings = state.warnings;
   record.requires_variant_selection = state.requires_variant_selection;
+  record.product_ready_for_display = state.product_ready_for_display;
+  record.product_ready_for_checkout = state.product_ready_for_checkout;
+  record.selected_variant_ready_for_checkout = state.selected_variant_ready_for_checkout;
   record.default_variant_id = state.default_variant_id;
   record.price_min_cents = state.price_min_cents || record.price_cents;
   record.price_max_cents = state.price_max_cents || record.price_cents;
@@ -2035,12 +2081,16 @@ for (const record of searchIndexRecords) {
     price_max_cents: state.price_max_cents || productPriceCents,
     compare_at_price_cents: record.compare_at_price_cents || null,
     currency: row?.currency || ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
-    available: state.ready_for_sale,
+    available: state.available,
+    product_ready_for_display: state.product_ready_for_display,
     purchasable: state.purchasable,
     ready_for_sale: state.ready_for_sale,
     ready_blockers: state.blockers,
+    ready_warnings: state.warnings,
     has_variants: state.has_variants,
     requires_variant_selection: state.requires_variant_selection,
+    product_ready_for_checkout: state.product_ready_for_checkout,
+    selected_variant_ready_for_checkout: state.selected_variant_ready_for_checkout,
     default_variant_id: state.default_variant_id,
     section_id: record.section_id,
     section_title: sectionTitleById[record.section_id] ?? "Athletonic catalog",
@@ -2110,9 +2160,11 @@ function indexRecordToProduct(record) {
     sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
     store_collection: record.section_id,
     url: record.url || null,
+    available: record.available,
     purchasable: record.purchasable,
     readyForSale: record.ready_for_sale,
     readyBlockers: record.ready_blockers || [],
+    readyWarnings: record.ready_warnings || [],
     requiresVariantSelection: record.requires_variant_selection,
     defaultVariantId: record.default_variant_id || null,
     priceMinCents: record.price_min_cents || null,
@@ -2397,15 +2449,6 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
 
   const description = sanitizeDescriptionHtml(fullRow?.description_html);
 
-  // External brand page kept ONLY as a secondary reference (never the primary
-  // click target). The on-site PDP is the destination from search and cards.
-  const officialUrl = curated.url || fullRow?.url || "";
-  const officialLinkHtml = officialUrl
-    ? `<p class="pdp-official-link"><a href="${html(
-        officialUrl
-      )}" target="_blank" rel="noopener nofollow">View official brand page ↗</a></p>`
-    : "";
-
   const galleryHtml = `
         <div class="pdp-gallery">
           <div class="pdp-gallery-main">
@@ -2552,7 +2595,6 @@ ${variantSelectorsHtml}
               ? "This product is not ready for checkout yet."
               : ""
           )}</p>
-          ${officialLinkHtml}
 
           ${
             description
@@ -4989,6 +5031,11 @@ for (const product of allCuratedProducts) {
 
 const pdpDir = new URL("../product/", import.meta.url);
 mkdirSync(pdpDir, { recursive: true });
+for (const entry of readdirSync(pdpDir)) {
+  if (entry.endsWith(".html")) {
+    unlinkSync(new URL(entry, pdpDir));
+  }
+}
 
 let pdpCount = 0;
 for (const product of allCuratedProducts) {
