@@ -108,6 +108,67 @@ const displayOnlyFragments = [
   "plp",
 ];
 
+const combatGloveBrands = new Set([
+  "adidas",
+  "boon_sport",
+  "cleto_reyes",
+  "contender_fight_sports",
+  "engage",
+  "everlast",
+  "fairtex",
+  "fight_2_finish",
+  "fuji_sports",
+  "hayabusa",
+  "raja_boxing",
+  "rdx_sports",
+  "rival_boxing",
+  "sanabul",
+  "twins_special",
+  "venum",
+]);
+
+const boxingGloveSizeValues = ["8oz", "10oz", "12oz", "14oz", "16oz", "18oz"];
+const bagGloveSizeValues = ["S", "M", "L", "XL"];
+const fittedApparelSizeValues = ["XS", "S", "M", "L", "XL"];
+const standardApparelSizeValues = ["S", "M", "L", "XL", "2XL", "3XL"];
+const extendedApparelSizeValues = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+const mensFootwearSizeValues = [
+  "6",
+  "6.5",
+  "7",
+  "7.5",
+  "8",
+  "8.5",
+  "9",
+  "9.5",
+  "10",
+  "10.5",
+  "11",
+  "11.5",
+  "12",
+  "12.5",
+  "13",
+  "14",
+  "15",
+];
+const womensFootwearSizeValues = [
+  "5",
+  "5.5",
+  "6",
+  "6.5",
+  "7",
+  "7.5",
+  "8",
+  "8.5",
+  "9",
+  "9.5",
+  "10",
+  "10.5",
+  "11",
+];
+const womensSlideSizeValues = ["5", "6", "7", "8", "9", "10", "11"];
+const kidsFootwearSizeValues = ["1", "2", "3", "4", "5", "6", "7"];
+
 const sections = [
   {
     id: "protein",
@@ -1180,6 +1241,333 @@ function defaultishValue(value) {
   return !normalized || normalized === "default" || normalized === "default title";
 }
 
+function productBrandSlug(product) {
+  return String(product?.brand_slug ?? product?.brand ?? "").trim().toLowerCase();
+}
+
+function productSizingText(product) {
+  return [
+    product?.name,
+    product?.title,
+    product?.category,
+    product?.category_normalized,
+    product?.store_collection,
+    product?.store_department,
+    product?.sectionId,
+    product?.section_id,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function isCombatGloveProduct(product) {
+  const brand = productBrandSlug(product);
+  const text = productSizingText(product);
+  return (
+    combatGloveBrands.has(brand) &&
+    /\bgloves?\b/.test(text) &&
+    /\b(boxing|muay|bag|sparring|fight|mma|training|punch)\b/.test(text)
+  );
+}
+
+function standardGloveSizeProfile(product) {
+  if (!isCombatGloveProduct(product)) return null;
+  const text = productSizingText(product);
+  if (
+    /\bbag gloves?\b/.test(text) ||
+    /\bboxing\s*&\s*bag gloves?\b/.test(text) ||
+    /\bboxing bag gloves?\b/.test(text) ||
+    /\bpunching bag gloves?\b/.test(text) ||
+    /\bworkout bag gloves?\b/.test(text)
+  ) {
+    return { name: "Size", values: bagGloveSizeValues };
+  }
+  return { name: "Size", values: boxingGloveSizeValues };
+}
+
+function isApparelProduct(product) {
+  const text = productSizingText(product);
+  return (
+    /\bapparel\b/.test(text) ||
+    /\b(shirt|tee|t-shirt|hoodie|shorts|pants|leggings|jacket|bra|tank|dress|skirt|polo|rashguard|singlet|sweatpants|crop tee|long sleeve)\b/.test(
+      text
+    )
+  );
+}
+
+function standardApparelSizeProfile(product) {
+  if (!isApparelProduct(product)) return null;
+  const text = productSizingText(product);
+  if (
+    /\b(bra|leggings|dress|skirt|women'?s shorts|womens shorts|crop tee|crop top)\b/.test(
+      text
+    )
+  ) {
+    return { name: "Size", values: fittedApparelSizeValues };
+  }
+  if (/\b(youth|kids|kid|boys|girls)\b/.test(text)) {
+    return { name: "Size", values: ["Y-S", "Y-M", "Y-L"] };
+  }
+  if (/\b(hoodie|jacket|pants|sweatpants)\b/.test(text)) {
+    return { name: "Size", values: extendedApparelSizeValues };
+  }
+  return { name: "Size", values: standardApparelSizeValues };
+}
+
+function isFootwearProduct(product) {
+  const text = productSizingText(product);
+  return (
+    /\bshoes?\b/.test(text) ||
+    /\b(sneaker|sneakers|boot|boots|slide|slides|sandal|sandals|loafer|loafers|runner|runners|pegasus|metcon|romaleos|vomero|dunk|jordan|air max)\b/.test(
+      text
+    )
+  );
+}
+
+function standardFootwearSizeProfile(product) {
+  if (!isFootwearProduct(product)) return null;
+  const text = productSizingText(product);
+  if (/\b(women|women's|womens)\b/.test(text)) {
+    return {
+      name: "Size",
+      values: /\b(slide|slides|sandal|sandals)\b/.test(text)
+        ? womensSlideSizeValues
+        : womensFootwearSizeValues,
+    };
+  }
+  if (/\b(kids|kid|boys|girls|youth|grade school|preschool|toddler)\b/.test(text)) {
+    return { name: "Size", values: kidsFootwearSizeValues };
+  }
+  return { name: "Size", values: mensFootwearSizeValues };
+}
+
+function normalizeOptionValue(value) {
+  return String(value ?? "").trim();
+}
+
+function normalizeApparelSizeValue(value) {
+  const normalized = normalizeOptionValue(value).toLowerCase().replace(/\s+/g, " ");
+  const map = new Map([
+    ["xx-small", "XXS"],
+    ["x-small", "XS"],
+    ["xs", "XS"],
+    ["small", "S"],
+    ["s", "S"],
+    ["medium", "M"],
+    ["m", "M"],
+    ["large", "L"],
+    ["l", "L"],
+    ["x-large", "XL"],
+    ["xlarge", "XL"],
+    ["xl", "XL"],
+    ["xx-large", "2XL"],
+    ["xxlarge", "2XL"],
+    ["xxl", "2XL"],
+    ["2xl", "2XL"],
+    ["xxx-large", "3XL"],
+    ["xxxlarge", "3XL"],
+    ["xxxl", "3XL"],
+    ["3xl", "3XL"],
+    ["y-s", "Y-S"],
+    ["y-m", "Y-M"],
+    ["y-l", "Y-L"],
+  ]);
+  return map.get(normalized) || normalizeOptionValue(value);
+}
+
+function normalizeFootwearSizeValue(value) {
+  const cleaned = normalizeOptionValue(value)
+    .replace(/^us\s*/i, "")
+    .replace(/\s+/g, " ")
+    .replace(/\.0$/, "");
+  return /^\d+(?:\.5)?$/.test(cleaned) ? cleaned : normalizeOptionValue(value);
+}
+
+function isOptimumNutritionProduct(product) {
+  return productBrandSlug(product) === "optimum_nutrition";
+}
+
+function isOptimumNutritionPowderLikeProduct(product) {
+  if (!isOptimumNutritionProduct(product)) return false;
+  const text = productSizingText(product);
+  return (
+    /\b(whey|casein|protein|hydrowhey|isolate|gainer|creatine|pre-workout|amin\.?o|amino|glutamine|quench)\b/.test(
+      text
+    ) &&
+    !/\b(bundle|stack|shaker|sparkling|can|ready to drink|drink|tablets?|capsules?|gummies)\b/.test(
+      text
+    )
+  );
+}
+
+function normalizeOptimumNutritionFlavorValue(value) {
+  const normalized = normalizeOptionValue(value);
+  if (!normalized) return normalized;
+  if (/^unflavored$/i.test(normalized) || /^unflavoured$/i.test(normalized)) {
+    return "Unflavored";
+  }
+  return normalized;
+}
+
+function normalizeOptimumNutritionSizeValue(value) {
+  const normalized = normalizeOptionValue(value);
+  if (!normalized) return normalized;
+
+  let match = normalized.match(/^(\d+(?:\.\d+)?)\s*(lb|lbs)\.?$/i);
+  if (match) return `${match[1]}LB`;
+
+  match = normalized.match(/^(\d+(?:\.\d+)?)\s*kg$/i);
+  if (match) return `${match[1]}KG`;
+
+  match = normalized.match(/^(\d+(?:\.\d+)?)\s*g$/i);
+  if (match) return `${match[1]}G`;
+
+  match = normalized.match(/^(\d+(?:\.\d+)?)\s*oz\.?$/i);
+  if (match) return `${match[1]}OZ`;
+
+  match = normalized.match(/^(\d+)\s*serv(?:ing|ings)?$/i);
+  if (match) return `${match[1]} Servings`;
+
+  match = normalized.match(/^(\d+)\s*packet(s)?$/i);
+  if (match) return `${match[1]} ${Number(match[1]) === 1 ? "Packet" : "Packets"}`;
+
+  match = normalized.match(/^(\d+)\s*stick pack(s)?$/i);
+  if (match) return `${match[1]} Stick Packs`;
+
+  match = normalized.match(/^(\d+)\s*cans?$/i);
+  if (match) return `${match[1]} Cans`;
+
+  return normalized;
+}
+
+function extractOptimumNutritionNameSizeValues(product) {
+  if (!isOptimumNutritionProduct(product)) return [];
+  const name = String(product?.name ?? "").trim();
+  const out = [];
+
+  const parenMatches = [...name.matchAll(/\(([^)]+)\)/g)];
+  for (const match of parenMatches) {
+    const candidate = normalizeOptimumNutritionSizeValue(match[1]);
+    if (
+      candidate &&
+      /(?:LB|KG|G|OZ|Servings|Packet|Packets|Stick Packs|Cans)$/.test(candidate)
+    ) {
+      out.push(candidate);
+    }
+  }
+
+  return [...new Set(out)];
+}
+
+function isOunceSizeValue(value) {
+  return /^\d+\s*oz\.?$/i.test(normalizeOptionValue(value));
+}
+
+function isLetterSizeValue(value) {
+  return /^(?:XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|Y-S|Y-M|Y-L)$/i.test(
+    normalizeOptionValue(value)
+  );
+}
+
+function isSizeLikeOption(option) {
+  const name = String(option?.name ?? "").trim().toLowerCase();
+  const values = Array.isArray(option?.values)
+    ? option.values.map(normalizeOptionValue).filter((value) => !defaultishValue(value))
+    : [];
+  return (
+    /size|weight|ounce|ounces|\boz\b/.test(name) ||
+    values.some((value) => isOunceSizeValue(value) || isLetterSizeValue(value))
+  );
+}
+
+function meaningfulOption(option) {
+  if (!option || typeof option !== "object") return null;
+  const values = Array.isArray(option.values)
+    ? [...new Set(option.values.map(normalizeOptionValue).filter((value) => !defaultishValue(value)))]
+    : [];
+  if (!values.length) return null;
+  return {
+    name: String(option.name ?? "").trim() || "Option",
+    values,
+  };
+}
+
+function normalizedOptionsForProduct(product, options = []) {
+  const normalized = Array.isArray(options)
+    ? options
+        .map((option) => {
+          const normalizedOption = meaningfulOption(option);
+          if (!normalizedOption) return null;
+          const optionName = String(normalizedOption.name || "").trim();
+          const isFlavorOption = /flavor|flavours|flavors/i.test(optionName);
+          const isSizeOption = /size|serv|packet|stick|can/i.test(optionName);
+          const values = normalizedOption.values
+            .map((value) => {
+              if (isOptimumNutritionProduct(product) && isFlavorOption) {
+                return normalizeOptimumNutritionFlavorValue(value);
+              }
+              if (isOptimumNutritionProduct(product) && isSizeOption) {
+                return normalizeOptimumNutritionSizeValue(value);
+              }
+              return value;
+            })
+            .filter(Boolean);
+          return values.length
+            ? {
+                ...normalizedOption,
+                values: [...new Set(values)],
+              }
+            : null;
+        })
+        .filter(Boolean)
+    : [];
+
+  if (isOptimumNutritionPowderLikeProduct(product)) {
+    const hasSizeOption = normalized.some((option) =>
+      /size|serv|packet|stick|can/i.test(String(option.name || ""))
+    );
+    if (!hasSizeOption) {
+      const inferredSizes = extractOptimumNutritionNameSizeValues(product);
+      if (inferredSizes.length) {
+        normalized.push({
+          name: "Size",
+          values: inferredSizes,
+        });
+      }
+    }
+  }
+
+  const apparelSizeProfile = standardApparelSizeProfile(product);
+  const footwearSizeProfile = standardFootwearSizeProfile(product);
+  const gloveSizeProfile = standardGloveSizeProfile(product);
+  const sizeProfile = gloveSizeProfile || apparelSizeProfile || footwearSizeProfile;
+  if (!sizeProfile) return normalized;
+
+  const sizeOptions = normalized.filter((option) => isSizeLikeOption(option));
+  const withoutSize = normalized.filter((option) => !isSizeLikeOption(option));
+  const mergedValues = sizeOptions.flatMap((option) =>
+    option.values.map((value) =>
+      apparelSizeProfile && !gloveSizeProfile
+        ? normalizeApparelSizeValue(value)
+        : footwearSizeProfile && !gloveSizeProfile
+          ? normalizeFootwearSizeValue(value)
+          : normalizeOptionValue(value)
+    )
+  );
+  const dedupedSizeValues = [...new Set(mergedValues.filter(Boolean))];
+  const finalSizeValues = dedupedSizeValues.length
+    ? dedupedSizeValues
+    : [...sizeProfile.values];
+  return [
+    ...withoutSize,
+    {
+      name: sizeProfile.name,
+      values: finalSizeValues,
+    },
+  ];
+}
+
 function variantLabelFromRow(row) {
   const parts = [row.option1, row.option2, row.option3]
     .map((value) => String(value ?? "").trim())
@@ -1228,23 +1616,22 @@ function purchaseMetaByProductId(productIds) {
 
     for (const [productId, group] of grouped.entries()) {
       const options = safeParseJson(group[0]?.options, []);
+      const normalizedOptions = normalizedOptionsForProduct(group[0], options);
       const availableVariants = group.filter((row) => Number(row.variant_available) === 1);
-      const meaningfulOptions = Array.isArray(options)
-        ? options
-            .map((option) => ({
-              name: option?.name || "",
-              values: Array.isArray(option?.values)
-                ? option.values
-                    .map((value) => String(value ?? "").trim())
-                    .filter((value) => !defaultishValue(value))
-                : [],
-            }))
-            .filter((option) => option.values.length > 0)
-        : [];
+      const meaningfulOptions = normalizedOptions.filter(
+        (option) => Array.isArray(option.values) && option.values.length > 1
+      );
 
-      const requiresVariantSelection = availableVariants.length > 1;
+      const requiresVariantSelection =
+        Boolean(standardGloveSizeProfile(group[0])) ||
+        Boolean(standardApparelSizeProfile(group[0])) ||
+        Boolean(standardFootwearSizeProfile(group[0])) ||
+        meaningfulOptions.length > 0 ||
+        availableVariants.length > 1;
       const cartVariant =
-        availableVariants.length === 1 ? variantLabelFromRow(availableVariants[0]) : "";
+        requiresVariantSelection || availableVariants.length !== 1
+          ? ""
+          : variantLabelFromRow(availableVariants[0]);
 
       meta.set(String(productId), {
         hasAvailablePurchase: availableVariants.length > 0,
@@ -1638,6 +2025,11 @@ writeFileSync(
         available: true,
         section_id: product.sectionId,
         section_title: product.sectionTitle,
+        requires_variant_selection:
+          Boolean(product.purchaseMeta?.requiresVariantSelection) ||
+          Boolean(standardGloveSizeProfile(product)) ||
+          Boolean(standardApparelSizeProfile(product)) ||
+          Boolean(standardFootwearSizeProfile(product)),
         deal: product.deal
           ? {
               discount_percent: product.deal.discount_percent,
@@ -1885,6 +2277,20 @@ function buildSearchIndex() {
 }
 
 const searchIndexRecords = buildSearchIndex();
+const searchIndexPurchaseMeta = purchaseMetaByProductId(
+  searchIndexRecords.map((record) => record.id)
+);
+for (const record of searchIndexRecords) {
+  const purchaseMeta = searchIndexPurchaseMeta.get(String(record.id));
+  if (
+    purchaseMeta?.requiresVariantSelection ||
+    standardGloveSizeProfile(record) ||
+    standardApparelSizeProfile(record) ||
+    standardFootwearSizeProfile(record)
+  ) {
+    record.requires_variant_selection = true;
+  }
+}
 writeFileSync(
   new URL("search-index.json", commerceCatalogDir),
   JSON.stringify(
@@ -1903,6 +2309,7 @@ console.log(
 );
 
 function indexRecordToProduct(record) {
+  const requiresVariantSelection = Boolean(record.requires_variant_selection);
   return {
     id: record.id,
     brand: record.brand_slug,
@@ -1927,6 +2334,13 @@ function indexRecordToProduct(record) {
         }
       : null,
     variantOffer: record.variant_offer || null,
+    purchaseMeta: requiresVariantSelection
+      ? {
+          hasAvailablePurchase: true,
+          requiresVariantSelection: true,
+          cartVariant: "",
+        }
+      : null,
   };
 }
 
@@ -2170,15 +2584,27 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
   if (images.length === 0 && curated.image) images.push(curated.image);
 
   const options = safeParseJson(fullRow?.options, []);
-  const variantOptions = Array.isArray(options)
-    ? options.filter(
-        (opt) =>
-          opt &&
-          typeof opt === "object" &&
-          Array.isArray(opt.values) &&
-          opt.values.filter((v) => v != null && String(v).trim() !== "").length > 1
-      )
-    : [];
+  const normalizedPdpOptions = normalizedOptionsForProduct(
+    {
+      ...fullRow,
+      ...curated,
+    },
+    options
+  );
+  const variantOptions = normalizedPdpOptions.filter(
+    (opt) =>
+      opt &&
+      typeof opt === "object" &&
+      Array.isArray(opt.values) &&
+      opt.values.filter((v) => v != null && String(v).trim() !== "").length > 1
+  );
+  const fixedOptionSpecs = normalizedPdpOptions.filter(
+    (opt) =>
+      opt &&
+      typeof opt === "object" &&
+      Array.isArray(opt.values) &&
+      opt.values.length === 1
+  );
 
   const description = sanitizeDescriptionHtml(fullRow?.description_html);
 
@@ -2350,6 +2776,14 @@ ${variantSelectorsHtml}
                   ? `<div><dt>Reference</dt><dd>${html(fullRow.handle)}</dd></div>`
                   : ""
               }
+              ${fixedOptionSpecs
+                .map(
+                  (opt) =>
+                    `<div><dt>${html(opt.name || "Option")}</dt><dd>${html(
+                      opt.values[0] || ""
+                    )}</dd></div>`
+                )
+                .join("")}
             </dl>
           </section>
         </div>
