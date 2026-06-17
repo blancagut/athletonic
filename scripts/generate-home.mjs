@@ -124,6 +124,45 @@ const combatGloveBrands = new Set([
 
 const boxingGloveSizeValues = ["8oz", "10oz", "12oz", "14oz", "16oz", "18oz"];
 const bagGloveSizeValues = ["S", "M", "L", "XL"];
+const fittedApparelSizeValues = ["XS", "S", "M", "L", "XL"];
+const standardApparelSizeValues = ["S", "M", "L", "XL", "2XL", "3XL"];
+const extendedApparelSizeValues = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+const mensFootwearSizeValues = [
+  "6",
+  "6.5",
+  "7",
+  "7.5",
+  "8",
+  "8.5",
+  "9",
+  "9.5",
+  "10",
+  "10.5",
+  "11",
+  "11.5",
+  "12",
+  "12.5",
+  "13",
+  "14",
+  "15",
+];
+const womensFootwearSizeValues = [
+  "5",
+  "5.5",
+  "6",
+  "6.5",
+  "7",
+  "7.5",
+  "8",
+  "8.5",
+  "9",
+  "9.5",
+  "10",
+  "10.5",
+  "11",
+];
+const womensSlideSizeValues = ["5", "6", "7", "8", "9", "10", "11"];
+const kidsFootwearSizeValues = ["1", "2", "3", "4", "5", "6", "7"];
 
 const sections = [
   {
@@ -795,7 +834,7 @@ function collectionLabel(value) {
 function productCard(product, pathPrefix = "./") {
   const brand = brandNames[product.brand] ?? product.brand;
   const name = product.displayName ?? product.name;
-  const label = product.displayLabel ?? collectionLabel(product.store_collection);
+  const label = productCommerceLabel(product);
   const deal = product.deal;
   const variantOffer = product.variantOffer;
   const purchaseMeta = product.purchaseMeta ?? null;
@@ -814,7 +853,7 @@ function productCard(product, pathPrefix = "./") {
   const offerNote = variantOffer
     ? variantOffer.note || "Select eligible options for this offer."
     : deal
-      ? `${displayDiscount > 0 ? `${displayDiscount}% off` : "Limited offer"}`
+      ? `${displayDiscount >= 5 ? `${displayDiscount}% off` : "Limited offer"}`
     : "";
   const dealEnds = deal?.expires_at
     ? new Intl.DateTimeFormat("en-US", {
@@ -1260,8 +1299,182 @@ function standardGloveSizeProfile(product) {
   return { name: "Size", values: boxingGloveSizeValues };
 }
 
+function isApparelProduct(product) {
+  const text = productSizingText(product);
+  return (
+    /\bapparel\b/.test(text) ||
+    /\b(shirt|tee|t-shirt|hoodie|shorts|pants|leggings|jacket|bra|tank|dress|skirt|polo|rashguard|singlet|sweatpants|crop tee|long sleeve)\b/.test(
+      text
+    )
+  );
+}
+
+function standardApparelSizeProfile(product) {
+  if (!isApparelProduct(product)) return null;
+  const text = productSizingText(product);
+  if (
+    /\b(bra|leggings|dress|skirt|women'?s shorts|womens shorts|crop tee|crop top)\b/.test(
+      text
+    )
+  ) {
+    return { name: "Size", values: fittedApparelSizeValues };
+  }
+  if (
+    /\b(youth|kids|kid|boys|girls)\b/.test(text)
+  ) {
+    return { name: "Size", values: ["Y-S", "Y-M", "Y-L"] };
+  }
+  if (
+    /\b(hoodie|jacket|pants|sweatpants)\b/.test(text)
+  ) {
+    return { name: "Size", values: extendedApparelSizeValues };
+  }
+  return { name: "Size", values: standardApparelSizeValues };
+}
+
+function isFootwearProduct(product) {
+  const text = productSizingText(product);
+  return (
+    /\bshoes?\b/.test(text) ||
+    /\b(sneaker|sneakers|boot|boots|slide|slides|sandal|sandals|loafer|loafers|runner|runners|pegasus|metcon|romaleos|vomero|dunk|jordan|air max)\b/.test(
+      text
+    )
+  );
+}
+
+function standardFootwearSizeProfile(product) {
+  if (!isFootwearProduct(product)) return null;
+  const text = productSizingText(product);
+  if (/\b(women|women's|womens)\b/.test(text)) {
+    return {
+      name: "Size",
+      values: /\b(slide|slides|sandal|sandals)\b/.test(text)
+        ? womensSlideSizeValues
+        : womensFootwearSizeValues,
+    };
+  }
+  if (/\b(kids|kid|boys|girls|youth|grade school|preschool|toddler)\b/.test(text)) {
+    return { name: "Size", values: kidsFootwearSizeValues };
+  }
+  return { name: "Size", values: mensFootwearSizeValues };
+}
+
 function normalizeOptionValue(value) {
   return String(value ?? "").trim();
+}
+
+function normalizeApparelSizeValue(value) {
+  const normalized = normalizeOptionValue(value).toLowerCase().replace(/\s+/g, " ");
+  const map = new Map([
+    ["xx-small", "XXS"],
+    ["x-small", "XS"],
+    ["xs", "XS"],
+    ["small", "S"],
+    ["s", "S"],
+    ["medium", "M"],
+    ["m", "M"],
+    ["large", "L"],
+    ["l", "L"],
+    ["x-large", "XL"],
+    ["xlarge", "XL"],
+    ["xl", "XL"],
+    ["xx-large", "2XL"],
+    ["xxlarge", "2XL"],
+    ["xxl", "2XL"],
+    ["2xl", "2XL"],
+    ["xxx-large", "3XL"],
+    ["xxxlarge", "3XL"],
+    ["xxxl", "3XL"],
+    ["3xl", "3XL"],
+    ["y-s", "Y-S"],
+    ["y-m", "Y-M"],
+    ["y-l", "Y-L"],
+  ]);
+  return map.get(normalized) || normalizeOptionValue(value);
+}
+
+function normalizeFootwearSizeValue(value) {
+  const cleaned = normalizeOptionValue(value)
+    .replace(/^us\s*/i, "")
+    .replace(/\s+/g, " ")
+    .replace(/\.0$/, "");
+  return /^\d+(?:\.5)?$/.test(cleaned) ? cleaned : normalizeOptionValue(value);
+}
+
+function isOptimumNutritionProduct(product) {
+  return productBrandSlug(product) === "optimum_nutrition";
+}
+
+function isOptimumNutritionPowderLikeProduct(product) {
+  if (!isOptimumNutritionProduct(product)) return false;
+  const text = productSizingText(product);
+  return (
+    /\b(whey|casein|protein|hydrowhey|isolate|gainer|creatine|pre-workout|amin\.?o|amino|glutamine|quench)\b/.test(
+      text
+    ) &&
+    !/\b(bundle|stack|shaker|sparkling|can|ready to drink|drink|tablets?|capsules?|gummies)\b/.test(
+      text
+    )
+  );
+}
+
+function normalizeOptimumNutritionFlavorValue(value) {
+  const normalized = normalizeOptionValue(value);
+  if (!normalized) return normalized;
+  if (/^unflavored$/i.test(normalized) || /^unflavoured$/i.test(normalized)) {
+    return "Unflavored";
+  }
+  return normalized;
+}
+
+function normalizeOptimumNutritionSizeValue(value) {
+  const normalized = normalizeOptionValue(value);
+  if (!normalized) return normalized;
+
+  let match = normalized.match(/^(\d+(?:\.\d+)?)\s*(lb|lbs)\.?$/i);
+  if (match) return `${match[1]}LB`;
+
+  match = normalized.match(/^(\d+(?:\.\d+)?)\s*kg$/i);
+  if (match) return `${match[1]}KG`;
+
+  match = normalized.match(/^(\d+(?:\.\d+)?)\s*g$/i);
+  if (match) return `${match[1]}G`;
+
+  match = normalized.match(/^(\d+(?:\.\d+)?)\s*oz\.?$/i);
+  if (match) return `${match[1]}OZ`;
+
+  match = normalized.match(/^(\d+)\s*serv(?:ing|ings)?$/i);
+  if (match) return `${match[1]} Servings`;
+
+  match = normalized.match(/^(\d+)\s*packet(s)?$/i);
+  if (match) return `${match[1]} ${Number(match[1]) === 1 ? "Packet" : "Packets"}`;
+
+  match = normalized.match(/^(\d+)\s*stick pack(s)?$/i);
+  if (match) return `${match[1]} Stick Packs`;
+
+  match = normalized.match(/^(\d+)\s*cans?$/i);
+  if (match) return `${match[1]} Cans`;
+
+  return normalized;
+}
+
+function extractOptimumNutritionNameSizeValues(product) {
+  if (!isOptimumNutritionProduct(product)) return [];
+  const name = String(product?.name ?? "").trim();
+  const out = [];
+
+  const parenMatches = [...name.matchAll(/\(([^)]+)\)/g)];
+  for (const match of parenMatches) {
+    const candidate = normalizeOptimumNutritionSizeValue(match[1]);
+    if (
+      candidate &&
+      /(?:LB|KG|G|OZ|Servings|Packet|Packets|Stick Packs|Cans)$/.test(candidate)
+    ) {
+      out.push(candidate);
+    }
+  }
+
+  return [...new Set(out)];
 }
 
 function isOunceSizeValue(value) {
@@ -1269,9 +1482,7 @@ function isOunceSizeValue(value) {
 }
 
 function isLetterSizeValue(value) {
-  return /^(?:XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|Y-S|Y-M|Y-L)$/i.test(
-    normalizeOptionValue(value)
-  );
+  return /^(?:XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|Y-S|Y-M|Y-L)$/i.test(normalizeOptionValue(value));
 }
 
 function isSizeLikeOption(option) {
@@ -1299,17 +1510,75 @@ function meaningfulOption(option) {
 
 function normalizedOptionsForProduct(product, options = []) {
   const normalized = Array.isArray(options)
-    ? options.map(meaningfulOption).filter(Boolean)
+    ? options
+        .map((option) => {
+          const normalizedOption = meaningfulOption(option);
+          if (!normalizedOption) return null;
+          const optionName = String(normalizedOption.name || "").trim();
+          const isFlavorOption = /flavor|flavours|flavors/i.test(optionName);
+          const isSizeOption = /size|serv|packet|stick|can/i.test(optionName);
+          const values = normalizedOption.values
+            .map((value) => {
+              if (isOptimumNutritionProduct(product) && isFlavorOption) {
+                return normalizeOptimumNutritionFlavorValue(value);
+              }
+              if (isOptimumNutritionProduct(product) && isSizeOption) {
+                return normalizeOptimumNutritionSizeValue(value);
+              }
+              return value;
+            })
+            .filter(Boolean);
+          return values.length
+            ? {
+                ...normalizedOption,
+                values: [...new Set(values)],
+              }
+            : null;
+        })
+        .filter(Boolean)
     : [];
-  const gloveSizeProfile = standardGloveSizeProfile(product);
-  if (!gloveSizeProfile) return normalized;
 
+  if (isOptimumNutritionPowderLikeProduct(product)) {
+    const hasSizeOption = normalized.some((option) =>
+      /size|serv|packet|stick|can/i.test(String(option.name || ""))
+    );
+    if (!hasSizeOption) {
+      const inferredSizes = extractOptimumNutritionNameSizeValues(product);
+      if (inferredSizes.length) {
+        normalized.push({
+          name: "Size",
+          values: inferredSizes,
+        });
+      }
+    }
+  }
+
+  const apparelSizeProfile = standardApparelSizeProfile(product);
+  const footwearSizeProfile = standardFootwearSizeProfile(product);
+  const gloveSizeProfile = standardGloveSizeProfile(product);
+  const sizeProfile = gloveSizeProfile || apparelSizeProfile || footwearSizeProfile;
+  if (!sizeProfile) return normalized;
+
+  const sizeOptions = normalized.filter((option) => isSizeLikeOption(option));
   const withoutSize = normalized.filter((option) => !isSizeLikeOption(option));
+  const mergedValues = sizeOptions.flatMap((option) =>
+    option.values.map((value) =>
+      apparelSizeProfile && !gloveSizeProfile
+        ? normalizeApparelSizeValue(value)
+        : footwearSizeProfile && !gloveSizeProfile
+          ? normalizeFootwearSizeValue(value)
+          : normalizeOptionValue(value)
+    )
+  );
+  const dedupedSizeValues = [...new Set(mergedValues.filter(Boolean))];
+  const finalSizeValues = dedupedSizeValues.length
+    ? dedupedSizeValues
+    : [...sizeProfile.values];
   return [
     ...withoutSize,
     {
-      name: gloveSizeProfile.name,
-      values: [...gloveSizeProfile.values],
+      name: sizeProfile.name,
+      values: finalSizeValues,
     },
   ];
 }
@@ -1370,6 +1639,8 @@ function purchaseMetaByProductId(productIds) {
 
       const requiresVariantSelection =
         Boolean(standardGloveSizeProfile(group[0])) ||
+        Boolean(standardApparelSizeProfile(group[0])) ||
+        Boolean(standardFootwearSizeProfile(group[0])) ||
         meaningfulOptions.length > 0 ||
         availableVariants.length > 1;
       const cartVariant =
@@ -1472,8 +1743,8 @@ function latestOfficialProducts(limit = 12) {
   return out;
 }
 
-function renderHomeHero(slides = []) {
-  if (!slides.length) {
+function renderHomeHero(featuredOffers = []) {
+  if (!featuredOffers.length) {
     return `
       <section class="hero">
         <div class="hero-copy">
@@ -1491,38 +1762,86 @@ function renderHomeHero(slides = []) {
       </section>`;
   }
 
-  return `
-      <section class="hero hero-slider" data-hero-slider>
-        ${slides
-          .map((product, index) => {
-            const brand = brandNames[product.brand] ?? product.brand;
-            const compare = Number(product.deal?.original_price || 0);
-            const heroTitle = `${brand} ${product.displayLabel || "offer"}`.trim();
-            const note = product.variantOffer
-              ? product.variantOffer.note || "Select options for this offer."
-              : product.deal
-                ? `${Number(product.deal.discount_percent || 0)}% off${product.deal.expires_at ? ` through ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(product.deal.expires_at))}` : ""}`
-                : "Real catalog offer";
-            return `
-        <article class="hero-slide${index === 0 ? " is-active" : ""}" data-hero-slide>
-          <div class="hero-copy">
-            <p class="eyebrow">Offer ${index + 1}</p>
-            <h1>${html(heroTitle)}</h1>
-            <p>${html(`${product.displayName ?? product.name} • ${note}`)}</p>
-            <div class="hero-actions">
-              <a href="./product/${html(product.id)}.html">Shop offer</a>
-              <a href="./pages/daily-deals.html">Today's deals</a>
-            </div>
-          </div>
+  const primaryOffer = featuredOffers[0];
+  const supportingOffers = featuredOffers.slice(1, 5);
+  const primaryBrand = brandNames[primaryOffer.brand] ?? primaryOffer.brand;
+  const primaryCompare = Number(
+    primaryOffer.deal?.original_price || primaryOffer.variantOffer?.original_price || 0
+  );
+  const primaryDiscount = Number(
+    primaryOffer.deal?.discount_percent || primaryOffer.variantOffer?.discount_percent || 0
+  );
+  const primaryNote = primaryOffer.variantOffer
+    ? primaryOffer.variantOffer.note || "Select options for this offer."
+    : primaryOffer.deal
+      ? `${primaryDiscount >= 5 ? `${primaryDiscount}% off` : "Limited offer"}${
+          primaryOffer.deal.expires_at
+            ? ` through ${new Intl.DateTimeFormat("en-US", {
+                month: "short",
+                day: "numeric",
+              }).format(new Date(primaryOffer.deal.expires_at))}`
+            : ""
+        }`
+      : "Real catalog offer";
 
-          <div class="hero-deal">
-            <span class="deal-label">${html(product.displayLabel || "Offer")}</span>
+  return `
+      <section class="hero hero-offers">
+        <div class="hero-copy">
+          <p class="eyebrow">Today's Deals</p>
+          <h1>Today's Deals</h1>
+          <p>Supplements, protein value picks, strength staples, and fight gear from the live catalog.</p>
+          <div class="hero-actions">
+            <a href="./product/${html(primaryOffer.id)}.html">Shop offer</a>
+            <a href="./pages/daily-deals.html">Browse all deals</a>
+          </div>
+        </div>
+
+        <div class="hero-offer-grid">
+          <article class="hero-deal hero-deal-primary">
+            <span class="deal-label">${html(productCommerceLabel(primaryOffer) || "Offer")}</span>
+            <img
+              src="${html(primaryOffer.image)}"
+              alt="${html(primaryOffer.displayName ?? primaryOffer.name)}"
+              width="${html(primaryOffer.imageWidth || 640)}"
+              height="${html(primaryOffer.imageHeight || 640)}"
+              fetchpriority="high"
+              decoding="async"
+            />
+            <h2>${html(primaryOffer.displayName ?? primaryOffer.name)}</h2>
+            <p>${html(`${primaryBrand} • ${primaryNote}`)}</p>
+            <strong>${html(money(primaryOffer.price, primaryOffer.currency || "USD"))}${
+              primaryCompare > Number(primaryOffer.price || 0)
+                ? `<span>${html(money(primaryCompare, primaryOffer.currency || "USD"))}</span>`
+                : ""
+            }</strong>
+            <a class="hero-deal-link" href="./product/${html(primaryOffer.id)}.html">Shop deal</a>
+          </article>
+
+          ${supportingOffers
+            .map((product) => {
+              const brand = brandNames[product.brand] ?? product.brand;
+              const compare = Number(
+                product.deal?.original_price || product.variantOffer?.original_price || 0
+              );
+              const discount = Number(
+                product.deal?.discount_percent || product.variantOffer?.discount_percent || 0
+              );
+              const note = product.variantOffer
+                ? product.variantOffer.note || "Select options for this offer."
+                : product.deal
+                  ? discount >= 5
+                    ? `${discount}% off`
+                    : "Limited offer"
+                  : "Value pick";
+              return `
+          <article class="hero-deal hero-deal-compact">
+            <span class="deal-label">${html(productCommerceLabel(product) || "Offer")}</span>
             <img
               src="${html(product.image)}"
               alt="${html(product.displayName ?? product.name)}"
               width="${html(product.imageWidth || 640)}"
               height="${html(product.imageHeight || 640)}"
-              fetchpriority="${index === 0 ? "high" : "auto"}"
+              fetchpriority="auto"
               decoding="async"
             />
             <h2>${html(product.displayName ?? product.name)}</h2>
@@ -1532,22 +1851,11 @@ function renderHomeHero(slides = []) {
                 ? `<span>${html(money(compare, product.currency || "USD"))}</span>`
                 : ""
             }</strong>
-          </div>
-        </article>`;
-          })
-          .join("\n")}
-        ${
-          slides.length > 1
-            ? `<div class="hero-slider-controls" aria-label="Offer slider controls">
-        ${slides
-          .map(
-            (_, index) =>
-              `<button type="button" class="hero-slider-dot${index === 0 ? " is-active" : ""}" data-hero-dot="${index}" aria-label="Show offer ${index + 1}"></button>`
-          )
-          .join("\n")}
-      </div>`
-            : ""
-        }
+            <a class="hero-deal-link" href="./product/${html(product.id)}.html">Shop deal</a>
+          </article>`;
+            })
+            .join("\n")}
+        </div>
       </section>`;
 }
 
@@ -1771,7 +2079,9 @@ writeFileSync(
         section_title: product.sectionTitle,
         requires_variant_selection:
           Boolean(product.purchaseMeta?.requiresVariantSelection) ||
-          Boolean(standardGloveSizeProfile(product)),
+          Boolean(standardGloveSizeProfile(product)) ||
+          Boolean(standardApparelSizeProfile(product)) ||
+          Boolean(standardFootwearSizeProfile(product)),
         deal: product.deal
           ? {
               discount_percent: product.deal.discount_percent,
@@ -2026,7 +2336,9 @@ for (const record of searchIndexRecords) {
   const purchaseMeta = searchIndexPurchaseMeta.get(String(record.id));
   if (
     purchaseMeta?.requiresVariantSelection ||
-    standardGloveSizeProfile(record)
+    standardGloveSizeProfile(record) ||
+    standardApparelSizeProfile(record) ||
+    standardFootwearSizeProfile(record)
   ) {
     record.requires_variant_selection = true;
   }
@@ -2324,18 +2636,26 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
   if (images.length === 0 && curated.image) images.push(curated.image);
 
   const options = safeParseJson(fullRow?.options, []);
-  const variantOptions = normalizedOptionsForProduct(
+  const normalizedPdpOptions = normalizedOptionsForProduct(
     {
       ...fullRow,
       ...curated,
     },
     options
-  ).filter(
+  );
+  const variantOptions = normalizedPdpOptions.filter(
     (opt) =>
       opt &&
       typeof opt === "object" &&
       Array.isArray(opt.values) &&
       opt.values.filter((v) => v != null && String(v).trim() !== "").length > 1
+  );
+  const fixedOptionSpecs = normalizedPdpOptions.filter(
+    (opt) =>
+      opt &&
+      typeof opt === "object" &&
+      Array.isArray(opt.values) &&
+      opt.values.length === 1
   );
 
   const description = sanitizeDescriptionHtml(fullRow?.description_html);
@@ -2508,6 +2828,14 @@ ${variantSelectorsHtml}
                   ? `<div><dt>Reference</dt><dd>${html(fullRow.handle)}</dd></div>`
                   : ""
               }
+              ${fixedOptionSpecs
+                .map(
+                  (opt) =>
+                    `<div><dt>${html(opt.name || "Option")}</dt><dd>${html(
+                      opt.values[0] || ""
+                    )}</dd></div>`
+                )
+                .join("")}
             </dl>
           </section>
         </div>
@@ -2685,6 +3013,29 @@ function productMatchesTerms(product, terms = []) {
   return terms.some((term) => searchText.includes(term.toLowerCase()));
 }
 
+function productCommerceLabel(product) {
+  if (
+    productMatchesTerms(product, [
+      "boxing",
+      "muay",
+      "glove",
+      "mitt",
+      "punching bag",
+      "heavy bag",
+      "shin",
+      "headgear",
+    ])
+  ) {
+    return "Boxing gear";
+  }
+
+  if (productMatchesTerms(product, ["grip", "wrap", "pad", "belt", "strap"])) {
+    return "Training gear";
+  }
+
+  return product.displayLabel ?? collectionLabel(product.store_collection);
+}
+
 function uniqueProducts(products = [], limit = 14) {
   const seen = new Set();
   const out = [];
@@ -2732,12 +3083,16 @@ function customShelf({
   sectionIds = [],
   products,
   limit = 14,
+  ...rest
 }) {
+  const sourceProducts = products ?? blendedProducts(sectionIds, limit * 8);
   return {
     eyebrow,
     title,
     description,
-    products: uniqueProducts(products ?? blendedProducts(sectionIds, limit), limit),
+    products: uniqueProducts(sourceProducts, sourceProducts.length || limit),
+    limit,
+    ...rest,
   };
 }
 
@@ -2778,6 +3133,7 @@ function pickShelfProducts(
   const pool = uniquePurchasableProducts(candidates, purchaseMeta).filter(
     (product) => !usedIds.has(productIdValue(product))
   );
+  const candidateBrandCounts = buildBrandCountMap(pool);
   const chosen = [];
   const chosenIds = new Set();
   const brandCounts = new Map();
@@ -2802,22 +3158,49 @@ function pickShelfProducts(
   ];
 
   for (const pass of passes) {
-    for (const product of pool) {
-      if (chosen.length >= limit) break;
-      const id = productIdValue(product);
-      if (!id || chosenIds.has(id)) continue;
+    while (chosen.length < limit) {
+      let bestProduct = null;
+      let bestScore = Number.POSITIVE_INFINITY;
 
-      const brand = String(product?.brand ?? "").trim();
-      const sectionId = productSectionValue(product);
+      for (const product of pool) {
+        const id = productIdValue(product);
+        if (!id || chosenIds.has(id)) continue;
+
+        const brand = String(product?.brand ?? "").trim();
+        const sectionId = productSectionValue(product);
+        const shelfBrandCount = brandCounts.get(brand) ?? 0;
+        const globalBrandCount = globalBrandCounts.get(brand) ?? 0;
+        const shelfSectionCount = sectionCounts.get(sectionId) ?? 0;
+
+        if (shelfBrandCount >= pass.maxPerBrand) continue;
+        if (globalBrandCount >= pass.maxGlobalBrand) continue;
+        if (shelfSectionCount >= pass.maxPerSection) continue;
+
+        const offerStrength = Number(
+          product.deal?.discount_percent || product.variantOffer?.discount_percent || 0
+        );
+        const score =
+          shelfBrandCount * 100 +
+          globalBrandCount * 30 +
+          shelfSectionCount * 10 +
+          (candidateBrandCounts.get(brand) ?? 0) -
+          offerStrength;
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestProduct = product;
+        }
+      }
+
+      if (!bestProduct) break;
+
+      const id = productIdValue(bestProduct);
+      const brand = String(bestProduct?.brand ?? "").trim();
+      const sectionId = productSectionValue(bestProduct);
       const shelfBrandCount = brandCounts.get(brand) ?? 0;
-      const globalBrandCount = globalBrandCounts.get(brand) ?? 0;
       const shelfSectionCount = sectionCounts.get(sectionId) ?? 0;
 
-      if (shelfBrandCount >= pass.maxPerBrand) continue;
-      if (globalBrandCount >= pass.maxGlobalBrand) continue;
-      if (shelfSectionCount >= pass.maxPerSection) continue;
-
-      chosen.push(product);
+      chosen.push(bestProduct);
       chosenIds.add(id);
       if (brand) brandCounts.set(brand, shelfBrandCount + 1);
       if (sectionId) sectionCounts.set(sectionId, shelfSectionCount + 1);
@@ -2844,7 +3227,9 @@ function buildHomeShelvesWithDiversity(shelves = [], purchaseMeta = new Map()) {
       maxPerSection: shelf.maxPerSection ?? Number.POSITIVE_INFINITY,
     });
 
+    const uniqueBrands = new Set(products.map((product) => String(product?.brand ?? "").trim()).filter(Boolean));
     if (products.length < 4) continue;
+    if ((shelf.minUniqueBrands ?? 1) > uniqueBrands.size) continue;
 
     for (const product of products) {
       const id = productIdValue(product);
@@ -3033,6 +3418,63 @@ const officialDealProducts = sortDealsFirst(
     .map(indexRecordToProduct)
 );
 
+function isHomeDealCandidate(product) {
+  if (
+    productMatchesTerms(product, [
+      "book",
+      "memoir",
+      "jazz",
+      "mob",
+      "cable machine",
+      "attachment",
+      "replacement",
+      "shoe",
+      "pegasus",
+      "trail",
+      "recoverypulse",
+    ])
+  ) {
+    return false;
+  }
+
+  if (["protein", "creatine", "pre-workout", "hydration", "bars-shakes"].includes(product.sectionId)) {
+    return true;
+  }
+
+  if (product.sectionId === "training-gear") {
+    return productMatchesTerms(product, [
+      "boxing",
+      "muay",
+      "glove",
+      "mitt",
+      "pad",
+      "wrap",
+      "bag",
+      "shin",
+      "headgear",
+    ]);
+  }
+
+  if (product.sectionId === "accessories") {
+    return productMatchesTerms(product, ["glove", "mitt", "pad", "wrap", "boxing", "muay"]);
+  }
+
+  return false;
+}
+
+const coreHeroDealProducts = officialDealProducts.filter(
+  (product) => isHomeDealCandidate(product)
+);
+
+const homeValueProducts = sortDealsFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      isHomeDealCandidate(product) &&
+      Number(product.price || 0) > 0 &&
+      Number(product.price || 0) <= 90
+  )
+);
+
 const proteinValueProducts = sortDealsFirst(
   officialHomeProducts.filter(
     (product) =>
@@ -3077,7 +3519,7 @@ const boxingProducts = officialHomeProducts.filter(
 
 const gloveProducts = officialHomeProducts.filter(
   (product) =>
-    product.sectionId === "training-gear" &&
+    ["training-gear", "accessories"].includes(product.sectionId) &&
     ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "century_martial_arts", "fuji_sports"].includes(product.brand) &&
     productMatchesTerms(product, [
       "glove",
@@ -3111,13 +3553,23 @@ const bundleProducts = sortDealsFirst(
   )
 );
 
-const homeShelvesDraft = [
+const initialHomeShelvesDraft = [
   customShelf({
     eyebrow: "Deals",
     title: "Today's Deals",
-    description: "Live offers, markdowns, and active price drops from the real Athletonic catalog.",
-    products: officialDealProducts,
-    limit: 10,
+    description: "Live deals and value picks from the real Athletonic catalog, selected for variety instead of repetition.",
+    products:
+      coreHeroDealProducts.length >= 8
+        ? coreHeroDealProducts
+        : uniqueProducts(
+            [...coreHeroDealProducts, ...officialDealProducts.filter(isHomeDealCandidate), ...homeValueProducts],
+            80
+          ),
+    limit: 8,
+    maxPerBrand: 1,
+    maxGlobalBrand: 2,
+    maxPerSection: 2,
+    minUniqueBrands: 4,
   }),
   customShelf({
     eyebrow: "Popular picks",
@@ -3125,6 +3577,10 @@ const homeShelvesDraft = [
     description: "Top catalog picks across supplements, recovery, and training essentials.",
     products: populatedSections.flatMap((section) => sectionProducts(section.id, 2)),
     limit: 12,
+    maxPerBrand: 1,
+    maxGlobalBrand: 3,
+    maxPerSection: 3,
+    minUniqueBrands: 5,
   }),
   customShelf({
     eyebrow: "Supplements",
@@ -3132,6 +3588,10 @@ const homeShelvesDraft = [
     description: "Protein, hydration, vitamins, greens, and ready-to-drink staples in one shelf.",
     sectionIds: ["protein", "hydration", "vitamins", "greens", "bars-shakes"],
     limit: 12,
+    maxPerBrand: 1,
+    maxGlobalBrand: 3,
+    maxPerSection: 3,
+    minUniqueBrands: 4,
   }),
   customShelf({
     eyebrow: "Protein",
@@ -3145,13 +3605,21 @@ const homeShelvesDraft = [
       12
     ),
     limit: 12,
+    maxPerBrand: 1,
+    maxGlobalBrand: 3,
+    maxPerSection: 12,
+    minUniqueBrands: 4,
   }),
   customShelf({
     eyebrow: "Strength",
     title: "Creatine & Pre-workout",
     description: "Lift-day staples for pumps, strength, and training energy.",
-    sectionIds: ["creatine", "pre-workout"],
+    products: blendedProducts(["creatine", "pre-workout"], 80),
     limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 3,
+    maxPerSection: 6,
+    minUniqueBrands: 4,
   }),
   customShelf({
     eyebrow: "Combat sports",
@@ -3159,6 +3627,10 @@ const homeShelvesDraft = [
     description: "Real fight gear, pads, gloves, and protection from active catalog inventory.",
     products: boxingProducts,
     limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 4,
   }),
   customShelf({
     eyebrow: "Training gear",
@@ -3166,50 +3638,52 @@ const homeShelvesDraft = [
     description: "Gloves, mitts, wraps, pads, bags, and core training equipment.",
     products: gloveProducts,
     limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 4,
   }),
 ];
 
 if (bundleProducts.length >= 4) {
-  homeShelvesDraft.push(
+  initialHomeShelvesDraft.push(
     customShelf({
       eyebrow: "Value picks",
       title: "Bundles & Multi-pack Deals",
       description: "Only real bundles, variety packs, and multi-bottle offers with valid pricing.",
       products: bundleProducts,
       limit: 12,
+      maxPerBrand: 2,
+      maxGlobalBrand: 4,
+      minUniqueBrands: 2,
     })
   );
 }
 
 const latestProductsDraft = latestOfficialProducts(12);
 if (latestProductsDraft.length >= 4) {
-  homeShelvesDraft.push(
+  initialHomeShelvesDraft.push(
     customShelf({
       eyebrow: "New arrivals",
       title: "New Arrivals",
       description: "Recently added products pulled from the current official catalog data.",
       products: latestProductsDraft,
       limit: 12,
+      maxPerBrand: 2,
+      maxGlobalBrand: 4,
+      minUniqueBrands: 3,
     })
   );
 }
 
 const homePurchaseMeta = purchaseMetaByProductId(
-  homeShelvesDraft.flatMap((shelf) => shelf.products.map((product) => product.id))
+  initialHomeShelvesDraft.flatMap((shelf) => shelf.products.map((product) => product.id))
 );
 
-const homeShelves = homeShelvesDraft
-  .map((shelf) => ({
-    ...shelf,
-    products: applyPurchaseMeta(
-      uniqueProducts(shelf.products, shelf.products.length),
-      homePurchaseMeta
-    ),
-  }))
-  .filter((shelf) => shelf.products.length >= 4);
+const homeShelves = buildHomeShelvesWithDiversity(initialHomeShelvesDraft, homePurchaseMeta);
 
 const heroSlides = (homeShelves.find((shelf) => shelf.title === "Today's Deals")?.products ?? [])
-  .slice(0, 5);
+  .slice(0, 4);
 
 const categoryCards = [
   {
@@ -3256,7 +3730,7 @@ const page = `<!doctype html>
     />
     ${canonicalLink("/")}
     ${assetHeadLinks("./")}
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=home-marketplace-fix-2" />
   </head>
   <body class="home-body">
     <a id="top" tabindex="-1" aria-hidden="true"></a>
@@ -3368,51 +3842,6 @@ ${mobileBottomNav("./")}
     <script>
       window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
       window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
-      document.addEventListener("DOMContentLoaded", function () {
-        var slider = document.querySelector("[data-hero-slider]");
-        if (!slider) return;
-        var slides = Array.from(slider.querySelectorAll("[data-hero-slide]"));
-        var dots = Array.from(slider.querySelectorAll("[data-hero-dot]"));
-        if (slides.length <= 1) return;
-        var current = 0;
-        var timer = null;
-
-        function show(index) {
-          current = (index + slides.length) % slides.length;
-          slides.forEach(function (slide, slideIndex) {
-            slide.classList.toggle("is-active", slideIndex === current);
-          });
-          dots.forEach(function (dot, dotIndex) {
-            dot.classList.toggle("is-active", dotIndex === current);
-          });
-        }
-
-        function start() {
-          stop();
-          timer = window.setInterval(function () {
-            show(current + 1);
-          }, 4800);
-        }
-
-        function stop() {
-          if (timer) window.clearInterval(timer);
-          timer = null;
-        }
-
-        dots.forEach(function (dot) {
-          dot.addEventListener("click", function () {
-            show(Number(dot.getAttribute("data-hero-dot") || 0));
-            start();
-          });
-        });
-
-        slider.addEventListener("mouseenter", stop);
-        slider.addEventListener("mouseleave", start);
-        slider.addEventListener("focusin", stop);
-        slider.addEventListener("focusout", start);
-        show(0);
-        start();
-      });
     </script>
     <script src="./assets/cart.js" defer></script>
   </body>
