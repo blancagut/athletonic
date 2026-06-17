@@ -108,6 +108,23 @@ const displayOnlyFragments = [
   "plp",
 ];
 
+const combatGloveBrands = new Set([
+  "century_martial_arts",
+  "everlast",
+  "fairtex",
+  "fuji_sports",
+  "hayabusa",
+  "raja_boxing",
+  "rdx_sports",
+  "rival_boxing",
+  "sanabul",
+  "twins_special",
+  "venum",
+]);
+
+const boxingGloveSizeValues = ["8oz", "10oz", "12oz", "14oz", "16oz", "18oz"];
+const bagGloveSizeValues = ["S", "M", "L", "XL"];
+
 const sections = [
   {
     id: "protein",
@@ -875,6 +892,19 @@ const allCuratedProducts = populatedSections.flatMap((section) =>
   }))
 );
 
+const allCuratedPurchaseMeta = purchaseMetaByProductId(
+  allCuratedProducts.map((product) => product.id)
+);
+
+const allCuratedProductsWithPurchaseMeta = allCuratedProducts.map((product) => ({
+  ...product,
+  purchaseMeta: allCuratedPurchaseMeta.get(String(product.id)) ?? {
+    hasAvailablePurchase: true,
+    requiresVariantSelection: false,
+    cartVariant: "",
+  },
+}));
+
 const dealsState = readJsonFile(new URL("../data/deals-state.json", import.meta.url), {
   offers: [],
 });
@@ -1143,6 +1173,11 @@ const productSections = populatedSections
         sectionId: section.id,
         sectionTitle: section.title,
         sectionEyebrow: section.eyebrow,
+        purchaseMeta: allCuratedPurchaseMeta.get(String(product.id)) ?? {
+          hasAvailablePurchase: true,
+          requiresVariantSelection: false,
+          cartVariant: "",
+        },
       }));
       return `
       <section id="${section.id}" class="market-section">
@@ -1178,6 +1213,105 @@ const knownOfficialBrandSlugs = new Set(
 function defaultishValue(value) {
   const normalized = String(value ?? "").trim().toLowerCase();
   return !normalized || normalized === "default" || normalized === "default title";
+}
+
+function productBrandSlug(product) {
+  return String(product?.brand_slug ?? product?.brand ?? "").trim().toLowerCase();
+}
+
+function productSizingText(product) {
+  return [
+    product?.name,
+    product?.title,
+    product?.category,
+    product?.category_normalized,
+    product?.store_collection,
+    product?.store_department,
+    product?.sectionId,
+    product?.section_id,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function isCombatGloveProduct(product) {
+  const brand = productBrandSlug(product);
+  const text = productSizingText(product);
+  return (
+    combatGloveBrands.has(brand) &&
+    /\bgloves?\b/.test(text) &&
+    /\b(boxing|muay|bag|sparring|fight|mma|training|punch)\b/.test(text)
+  );
+}
+
+function standardGloveSizeProfile(product) {
+  if (!isCombatGloveProduct(product)) return null;
+  const text = productSizingText(product);
+  if (
+    /\bbag gloves?\b/.test(text) ||
+    /\bboxing\s*&\s*bag gloves?\b/.test(text) ||
+    /\bboxing bag gloves?\b/.test(text) ||
+    /\bpunching bag gloves?\b/.test(text) ||
+    /\bworkout bag gloves?\b/.test(text)
+  ) {
+    return { name: "Size", values: bagGloveSizeValues };
+  }
+  return { name: "Size", values: boxingGloveSizeValues };
+}
+
+function normalizeOptionValue(value) {
+  return String(value ?? "").trim();
+}
+
+function isOunceSizeValue(value) {
+  return /^\d+\s*oz\.?$/i.test(normalizeOptionValue(value));
+}
+
+function isLetterSizeValue(value) {
+  return /^(?:XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|Y-S|Y-M|Y-L)$/i.test(
+    normalizeOptionValue(value)
+  );
+}
+
+function isSizeLikeOption(option) {
+  const name = String(option?.name ?? "").trim().toLowerCase();
+  const values = Array.isArray(option?.values)
+    ? option.values.map(normalizeOptionValue).filter((value) => !defaultishValue(value))
+    : [];
+  return (
+    /size|weight|ounce|ounces|\boz\b/.test(name) ||
+    values.some((value) => isOunceSizeValue(value) || isLetterSizeValue(value))
+  );
+}
+
+function meaningfulOption(option) {
+  if (!option || typeof option !== "object") return null;
+  const values = Array.isArray(option.values)
+    ? [...new Set(option.values.map(normalizeOptionValue).filter((value) => !defaultishValue(value)))]
+    : [];
+  if (!values.length) return null;
+  return {
+    name: String(option.name ?? "").trim() || "Option",
+    values,
+  };
+}
+
+function normalizedOptionsForProduct(product, options = []) {
+  const normalized = Array.isArray(options)
+    ? options.map(meaningfulOption).filter(Boolean)
+    : [];
+  const gloveSizeProfile = standardGloveSizeProfile(product);
+  if (!gloveSizeProfile) return normalized;
+
+  const withoutSize = normalized.filter((option) => !isSizeLikeOption(option));
+  return [
+    ...withoutSize,
+    {
+      name: gloveSizeProfile.name,
+      values: [...gloveSizeProfile.values],
+    },
+  ];
 }
 
 function variantLabelFromRow(row) {
@@ -1228,23 +1362,20 @@ function purchaseMetaByProductId(productIds) {
 
     for (const [productId, group] of grouped.entries()) {
       const options = safeParseJson(group[0]?.options, []);
+      const normalizedOptions = normalizedOptionsForProduct(group[0], options);
       const availableVariants = group.filter((row) => Number(row.variant_available) === 1);
-      const meaningfulOptions = Array.isArray(options)
-        ? options
-            .map((option) => ({
-              name: option?.name || "",
-              values: Array.isArray(option?.values)
-                ? option.values
-                    .map((value) => String(value ?? "").trim())
-                    .filter((value) => !defaultishValue(value))
-                : [],
-            }))
-            .filter((option) => option.values.length > 0)
-        : [];
+      const meaningfulOptions = normalizedOptions.filter(
+        (option) => Array.isArray(option.values) && option.values.length > 1
+      );
 
-      const requiresVariantSelection = availableVariants.length > 1;
+      const requiresVariantSelection =
+        Boolean(standardGloveSizeProfile(group[0])) ||
+        meaningfulOptions.length > 0 ||
+        availableVariants.length > 1;
       const cartVariant =
-        availableVariants.length === 1 ? variantLabelFromRow(availableVariants[0]) : "";
+        requiresVariantSelection || availableVariants.length !== 1
+          ? ""
+          : variantLabelFromRow(availableVariants[0]);
 
       meta.set(String(productId), {
         hasAvailablePurchase: availableVariants.length > 0,
@@ -1620,7 +1751,7 @@ writeFileSync(
     {
       generated_at: new Date().toISOString(),
       currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
-      products: allCuratedProducts.map((product) => ({
+      products: allCuratedProductsWithPurchaseMeta.map((product) => ({
         id: String(product.id),
         brand_slug: product.brand,
         brand: brandNames[product.brand] ?? product.brand,
@@ -1638,6 +1769,9 @@ writeFileSync(
         available: true,
         section_id: product.sectionId,
         section_title: product.sectionTitle,
+        requires_variant_selection:
+          Boolean(product.purchaseMeta?.requiresVariantSelection) ||
+          Boolean(standardGloveSizeProfile(product)),
         deal: product.deal
           ? {
               discount_percent: product.deal.discount_percent,
@@ -1885,6 +2019,18 @@ function buildSearchIndex() {
 }
 
 const searchIndexRecords = buildSearchIndex();
+const searchIndexPurchaseMeta = purchaseMetaByProductId(
+  searchIndexRecords.map((record) => record.id)
+);
+for (const record of searchIndexRecords) {
+  const purchaseMeta = searchIndexPurchaseMeta.get(String(record.id));
+  if (
+    purchaseMeta?.requiresVariantSelection ||
+    standardGloveSizeProfile(record)
+  ) {
+    record.requires_variant_selection = true;
+  }
+}
 writeFileSync(
   new URL("search-index.json", commerceCatalogDir),
   JSON.stringify(
@@ -1903,6 +2049,7 @@ console.log(
 );
 
 function indexRecordToProduct(record) {
+  const requiresVariantSelection = Boolean(record.requires_variant_selection);
   return {
     id: record.id,
     brand: record.brand_slug,
@@ -1927,6 +2074,13 @@ function indexRecordToProduct(record) {
         }
       : null,
     variantOffer: record.variant_offer || null,
+    purchaseMeta: requiresVariantSelection
+      ? {
+          hasAvailablePurchase: true,
+          requiresVariantSelection: true,
+          cartVariant: "",
+        }
+      : null,
   };
 }
 
@@ -2170,15 +2324,19 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
   if (images.length === 0 && curated.image) images.push(curated.image);
 
   const options = safeParseJson(fullRow?.options, []);
-  const variantOptions = Array.isArray(options)
-    ? options.filter(
-        (opt) =>
-          opt &&
-          typeof opt === "object" &&
-          Array.isArray(opt.values) &&
-          opt.values.filter((v) => v != null && String(v).trim() !== "").length > 1
-      )
-    : [];
+  const variantOptions = normalizedOptionsForProduct(
+    {
+      ...fullRow,
+      ...curated,
+    },
+    options
+  ).filter(
+    (opt) =>
+      opt &&
+      typeof opt === "object" &&
+      Array.isArray(opt.values) &&
+      opt.values.filter((v) => v != null && String(v).trim() !== "").length > 1
+  );
 
   const description = sanitizeDescriptionHtml(fullRow?.description_html);
 
@@ -2581,6 +2739,127 @@ function customShelf({
     description,
     products: uniqueProducts(products ?? blendedProducts(sectionIds, limit), limit),
   };
+}
+
+function productIdValue(product) {
+  return String(product?.id ?? "").trim();
+}
+
+function productSectionValue(product) {
+  return String(product?.sectionId ?? "").trim();
+}
+
+function uniquePurchasableProducts(products = [], purchaseMeta = new Map()) {
+  return applyPurchaseMeta(uniqueProducts(products, products.length || 1), purchaseMeta);
+}
+
+function buildBrandCountMap(products = []) {
+  const counts = new Map();
+  for (const product of products) {
+    const brand = String(product?.brand ?? "").trim();
+    if (!brand) continue;
+    counts.set(brand, (counts.get(brand) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function pickShelfProducts(
+  candidates = [],
+  {
+    limit = 12,
+    purchaseMeta = new Map(),
+    usedIds = new Set(),
+    globalBrandCounts = new Map(),
+    maxPerBrand = 2,
+    maxGlobalBrand = 4,
+    maxPerSection = Number.POSITIVE_INFINITY,
+  } = {}
+) {
+  const pool = uniquePurchasableProducts(candidates, purchaseMeta).filter(
+    (product) => !usedIds.has(productIdValue(product))
+  );
+  const chosen = [];
+  const chosenIds = new Set();
+  const brandCounts = new Map();
+  const sectionCounts = new Map();
+  const passes = [
+    {
+      maxPerBrand,
+      maxGlobalBrand,
+      maxPerSection,
+    },
+    {
+      maxPerBrand: Math.max(maxPerBrand, 2),
+      maxGlobalBrand: Math.max(maxGlobalBrand, 5),
+      maxPerSection:
+        Number.isFinite(maxPerSection) ? Math.max(maxPerSection, 6) : maxPerSection,
+    },
+    {
+      maxPerBrand: Number.POSITIVE_INFINITY,
+      maxGlobalBrand: Number.POSITIVE_INFINITY,
+      maxPerSection: Number.POSITIVE_INFINITY,
+    },
+  ];
+
+  for (const pass of passes) {
+    for (const product of pool) {
+      if (chosen.length >= limit) break;
+      const id = productIdValue(product);
+      if (!id || chosenIds.has(id)) continue;
+
+      const brand = String(product?.brand ?? "").trim();
+      const sectionId = productSectionValue(product);
+      const shelfBrandCount = brandCounts.get(brand) ?? 0;
+      const globalBrandCount = globalBrandCounts.get(brand) ?? 0;
+      const shelfSectionCount = sectionCounts.get(sectionId) ?? 0;
+
+      if (shelfBrandCount >= pass.maxPerBrand) continue;
+      if (globalBrandCount >= pass.maxGlobalBrand) continue;
+      if (shelfSectionCount >= pass.maxPerSection) continue;
+
+      chosen.push(product);
+      chosenIds.add(id);
+      if (brand) brandCounts.set(brand, shelfBrandCount + 1);
+      if (sectionId) sectionCounts.set(sectionId, shelfSectionCount + 1);
+    }
+    if (chosen.length >= limit) break;
+  }
+
+  return chosen.slice(0, limit);
+}
+
+function buildHomeShelvesWithDiversity(shelves = [], purchaseMeta = new Map()) {
+  const usedIds = new Set();
+  const globalBrandCounts = new Map();
+  const out = [];
+
+  for (const shelf of shelves) {
+    const products = pickShelfProducts(shelf.products, {
+      limit: shelf.limit ?? 12,
+      purchaseMeta,
+      usedIds,
+      globalBrandCounts,
+      maxPerBrand: shelf.maxPerBrand ?? 2,
+      maxGlobalBrand: shelf.maxGlobalBrand ?? 4,
+      maxPerSection: shelf.maxPerSection ?? Number.POSITIVE_INFINITY,
+    });
+
+    if (products.length < 4) continue;
+
+    for (const product of products) {
+      const id = productIdValue(product);
+      const brand = String(product?.brand ?? "").trim();
+      if (id) usedIds.add(id);
+      if (brand) globalBrandCounts.set(brand, (globalBrandCounts.get(brand) ?? 0) + 1);
+    }
+
+    out.push({
+      ...shelf,
+      products,
+    });
+  }
+
+  return out;
 }
 
 function filteredShelf({
@@ -5143,12 +5422,12 @@ ${renderFooter(pathPrefix)}
 `;
 }
 
-const curatedIds = allCuratedProducts.map((p) => p.id);
+const curatedIds = allCuratedProductsWithPurchaseMeta.map((p) => p.id);
 const { rowsById: pdpRowsById, imagesById: pdpImagesById } = fetchPdpData(curatedIds);
 
 // Group curated products by section to compute "related" lists
 const sectionProductsBySection = new Map();
-for (const product of allCuratedProducts) {
+for (const product of allCuratedProductsWithPurchaseMeta) {
   if (!sectionProductsBySection.has(product.sectionId)) {
     sectionProductsBySection.set(product.sectionId, []);
   }
@@ -5173,7 +5452,7 @@ if (stalePdpFiles.length > 0) {
 }
 
 let pdpCount = 0;
-for (const product of allCuratedProducts) {
+for (const product of allCuratedProductsWithPurchaseMeta) {
   const fullRow = pdpRowsById.get(product.id);
   const imageList = pdpImagesById.get(product.id) || [];
   const peers = (sectionProductsBySection.get(product.sectionId) || [])
@@ -5191,7 +5470,7 @@ console.log(`Generated ${pdpCount} curated product detail pages in /product/.`);
 // products already got their richer treatment above and are skipped here.
 // Reuses the same productPage() / fetchPdpData() / sanitizeDescriptionHtml()
 // pipeline; DB reads are batched inside fetchPdpData to avoid ENOBUFS.
-const curatedIdSet = new Set(allCuratedProducts.map((p) => String(p.id)));
+const curatedIdSet = new Set(allCuratedProductsWithPurchaseMeta.map((p) => String(p.id)));
 
 // Pre-bucket index records by section for "related" lists on non-curated PDPs.
 const indexRecordsBySection = new Map();

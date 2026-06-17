@@ -12,6 +12,7 @@
   const CART_STORAGE_KEY = "athletonic-cart-v1";
   const GUEST_EMAIL_KEY = "athletonic-guest-email";
   const LAST_ORDER_REFERENCE_KEY = "athletonic-last-order-reference";
+  const ACCESS_CODE_SESSION_KEY = "athletonic-access-code";
 
   const $ = (selector, root) => (root || document).querySelector(selector);
   const $$ = (selector, root) =>
@@ -93,6 +94,10 @@
   const checkoutEmail = $("#checkout-email");
   const checkoutStatus = $("[data-checkout-status]");
   const checkoutSubmit = $("[data-checkout-submit]");
+  let accessCodeInput = null;
+  let accessCodeStatus = null;
+  let accessQuote = null;
+  let accessQuoteTimer = null;
   const accountForm = $("[data-account-form]");
   const accountEmail = $("#guest-email");
   const accountStatus = $("[data-account-status]");
@@ -118,6 +123,29 @@
     } catch {
       return false;
     }
+  }
+
+  function sessionGet(key, fallback) {
+    try {
+      return sessionStorage.getItem(key) ?? fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function sessionSet(key, value) {
+    try {
+      sessionStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function sessionRemove(key) {
+    try {
+      sessionStorage.removeItem(key);
+    } catch {}
   }
 
   function normalizeCartItem(item) {
@@ -266,6 +294,202 @@
     element.dataset.state = state || "";
   }
 
+  function ensureAccessCodeControls() {
+    if (!checkoutForm || checkoutForm.querySelector("[data-access-code-field]")) {
+      accessCodeInput = $("[data-access-code-input]", checkoutForm);
+      accessCodeStatus = $("[data-access-code-status]", checkoutForm);
+      return;
+    }
+
+    const field = document.createElement("details");
+    field.className = "checkout-access";
+    field.dataset.accessCodeField = "";
+    field.innerHTML =
+      '<summary>Access code</summary>' +
+      '<div class="checkout-access-body">' +
+        '<label for="checkout-access-code">Access code</label>' +
+        '<div class="checkout-access-row">' +
+          '<input id="checkout-access-code" name="access_code" type="text" autocomplete="off" autocapitalize="characters" data-access-code-input />' +
+          '<button type="button" data-access-code-apply>Apply</button>' +
+        '</div>' +
+        '<p class="form-status" data-access-code-status aria-live="polite"></p>' +
+      '</div>';
+
+    const totalRow = $(".cart-total", checkoutForm);
+    checkoutForm.insertBefore(field, totalRow || checkoutSubmit || null);
+
+    if (totalRow && !checkoutForm.querySelector("[data-cart-discount-row]")) {
+      const discountRow = document.createElement("div");
+      discountRow.className = "cart-total cart-discount-row";
+      discountRow.dataset.cartDiscountRow = "";
+      discountRow.hidden = true;
+      discountRow.innerHTML =
+        '<span>Access pricing</span><strong data-cart-discount></strong>';
+
+      const finalRow = document.createElement("div");
+      finalRow.className = "cart-total cart-final-row";
+      finalRow.dataset.cartTotalRow = "";
+      finalRow.hidden = true;
+      finalRow.innerHTML =
+        '<span>Estimated total</span><strong data-cart-total></strong>';
+
+      totalRow.insertAdjacentElement("afterend", discountRow);
+      discountRow.insertAdjacentElement("afterend", finalRow);
+    }
+
+    accessCodeInput = $("[data-access-code-input]", checkoutForm);
+    accessCodeStatus = $("[data-access-code-status]", checkoutForm);
+    const savedCode = sessionGet(ACCESS_CODE_SESSION_KEY, "");
+    if (accessCodeInput && savedCode) {
+      accessCodeInput.value = savedCode;
+      field.open = true;
+    }
+
+    const applyButton = $("[data-access-code-apply]", checkoutForm);
+    if (applyButton) {
+      applyButton.addEventListener("click", () => applyAccessCode({ silent: false }));
+    }
+    if (accessCodeInput) {
+      accessCodeInput.addEventListener("input", () => {
+        accessQuote = null;
+        sessionRemove(ACCESS_CODE_SESSION_KEY);
+        renderCartTotals(cartTotal());
+        setFormStatus(accessCodeStatus, "", "");
+      });
+    }
+  }
+
+  function accessCodeValue() {
+    const value = accessCodeInput ? accessCodeInput.value : "";
+    return String(value || "").trim();
+  }
+
+  function hasEmailShape(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+  }
+
+  function checkoutPayloadCart() {
+    return cart.map((item) => ({
+      productId: item.productId || item.id,
+      variant: item.variant || "",
+      quantity: item.quantity,
+    }));
+  }
+
+  function renderCartTotals(localTotal) {
+    const currency = (accessQuote && accessQuote.currency) || "USD";
+    const discountRow = $("[data-cart-discount-row]", checkoutForm);
+    const discountValue = $("[data-cart-discount]", checkoutForm);
+    const finalRow = $("[data-cart-total-row]", checkoutForm);
+    const finalValue = $("[data-cart-total]", checkoutForm);
+
+    if (accessQuote && accessQuote.access_pricing_applied) {
+      if (cartSubtotal) {
+        cartSubtotal.textContent = formatMoney(
+          Number(accessQuote.subtotal_cents || 0) / 100,
+          currency
+        );
+      }
+      if (discountRow && discountValue) {
+        discountValue.textContent =
+          "-" + formatMoney(Number(accessQuote.discount_cents || 0) / 100, currency);
+        discountRow.hidden = false;
+      }
+      if (finalRow && finalValue) {
+        finalValue.textContent = formatMoney(
+          Number(accessQuote.total_cents || 0) / 100,
+          currency
+        );
+        finalRow.hidden = false;
+      }
+      return;
+    }
+
+    if (cartSubtotal) cartSubtotal.textContent = formatMoney(localTotal, "USD");
+    if (discountRow) discountRow.hidden = true;
+    if (finalRow) finalRow.hidden = true;
+  }
+
+  async function quoteCheckout(email, accessCode) {
+    const response = await fetch("/api/checkout-quote", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        cart: checkoutPayloadCart(),
+        access_code: accessCode,
+      }),
+    });
+
+    if (!response.ok) {
+      let message = "Access code could not be applied.";
+      try {
+        const error = await response.json();
+        message = error.message || message;
+      } catch {
+        message = await response.text();
+      }
+      throw new Error(message);
+    }
+
+    return response.json();
+  }
+
+  async function applyAccessCode(options) {
+    const silent = options && options.silent;
+    if (!accessCodeInput || cart.length === 0) return;
+    const accessCode = accessCodeValue();
+    if (!accessCode) {
+      accessQuote = null;
+      sessionRemove(ACCESS_CODE_SESSION_KEY);
+      renderCartTotals(cartTotal());
+      if (!silent) setFormStatus(accessCodeStatus, "", "");
+      return;
+    }
+
+    const email = checkoutEmail ? String(checkoutEmail.value || "").trim() : "";
+    if (!hasEmailShape(email)) {
+      if (!silent) {
+        setFormStatus(accessCodeStatus, "Enter a valid email before applying an access code.", "error");
+      }
+      return;
+    }
+
+    if (!silent) setFormStatus(accessCodeStatus, "Checking access code...", "pending");
+    try {
+      const quote = await quoteCheckout(email, accessCode);
+      if (!quote.access_pricing_applied) {
+        throw new Error("Access code could not be applied.");
+      }
+      accessQuote = quote;
+      sessionSet(ACCESS_CODE_SESSION_KEY, accessCode);
+      renderCartTotals(cartTotal());
+      setFormStatus(accessCodeStatus, "Access pricing applied.", "success");
+    } catch (error) {
+      accessQuote = null;
+      sessionRemove(ACCESS_CODE_SESSION_KEY);
+      renderCartTotals(cartTotal());
+      if (!silent) {
+        setFormStatus(
+          accessCodeStatus,
+          error.message || "Access code could not be applied.",
+          "error"
+        );
+      }
+    }
+  }
+
+  function scheduleAccessQuoteRefresh() {
+    clearTimeout(accessQuoteTimer);
+    if (!accessCodeInput || !accessCodeValue() || cart.length === 0) return;
+    if (!hasEmailShape(checkoutEmail ? checkoutEmail.value : "")) return;
+    accessQuoteTimer = setTimeout(() => {
+      applyAccessCode({ silent: true });
+    }, 250);
+  }
+
   function hydrateEmailFields() {
     const email = storageGet(GUEST_EMAIL_KEY, "");
     if (accountEmail) accountEmail.value = email;
@@ -316,13 +540,14 @@
   }
 
   function renderCart() {
+    if (cart.length === 0) accessQuote = null;
     const totalItems = cartQuantity();
     const total = cartTotal();
     for (const cartCount of cartCounts) {
       cartCount.textContent = String(totalItems);
       cartCount.hidden = totalItems === 0;
     }
-    if (cartSubtotal) cartSubtotal.textContent = formatMoney(total, "USD");
+    renderCartTotals(total);
     if (!cartItems) return;
     cartItems.textContent = "";
 
@@ -434,8 +659,10 @@
     }
     saveCart();
     setFormStatus(checkoutStatus, "", "");
+    accessQuote = null;
     renderCart();
     openCart();
+    scheduleAccessQuoteRefresh();
   }
 
   function addToCartFromButton(button) {
@@ -458,25 +685,27 @@
       cart = cart.filter((cartItem) => cartItem.id !== id);
     }
     saveCart();
+    accessQuote = null;
     renderCart();
+    scheduleAccessQuoteRefresh();
   }
 
   function removeCartItem(id) {
     cart = cart.filter((cartItem) => cartItem.id !== id);
     saveCart();
+    accessQuote = null;
     renderCart();
+    scheduleAccessQuoteRefresh();
   }
 
   async function submitCheckout(email) {
+    const accessCode = accessCodeValue();
     const payload = {
       email,
-      cart: cart.map((item) => ({
-        productId: item.productId || item.id,
-        variant: item.variant || "",
-        quantity: item.quantity,
-      })),
+      cart: checkoutPayloadCart(),
       attribution: captureAttribution(),
     };
+    if (accessCode) payload.access_code = accessCode;
 
     const response = await fetch("/api/checkout", {
       method: "POST",
@@ -618,6 +847,9 @@
       const email = String(new FormData(accountForm).get("email") || "").trim();
       storageSet(GUEST_EMAIL_KEY, email);
       hydrateEmailFields();
+      accessQuote = null;
+      renderCartTotals(cartTotal());
+      scheduleAccessQuoteRefresh();
       setFormStatus(
         accountStatus,
         "Email saved for guest checkout.",
@@ -627,6 +859,14 @@
   }
 
   if (checkoutForm) {
+    if (checkoutEmail) {
+      checkoutEmail.addEventListener("input", () => {
+        accessQuote = null;
+        renderCartTotals(cartTotal());
+        scheduleAccessQuoteRefresh();
+      });
+    }
+
     checkoutForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const email = String(
@@ -668,15 +908,19 @@
     });
   }
 
+  ensureAccessCodeControls();
   hydrateEmailFields();
   applyCheckoutLabels();
   renderCart();
+  scheduleAccessQuoteRefresh();
   showCheckoutNoticeFromUrl();
 
   window.addEventListener("storage", (event) => {
     if (event.key === CART_STORAGE_KEY || event.key === null) {
       cart = loadCart();
+      accessQuote = null;
       renderCart();
+      scheduleAccessQuoteRefresh();
     }
     if (event.key === GUEST_EMAIL_KEY || event.key === null) hydrateEmailFields();
   });
@@ -979,6 +1223,7 @@
     var currency = p.currency || "USD";
     var label = sectionLabel(p);
     var variantOffer = p.variant_offer || null;
+    var requiresVariantSelection = Boolean(p.requires_variant_selection);
     if (variantOffer) {
       price = (Number(variantOffer.sale_price_cents) || 0) / 100;
       priceStr = price.toFixed(2);
@@ -1018,7 +1263,7 @@
       dealNote = '<p class="product-deal-note">' +
         esc(dealText + ends) + "</p>";
     }
-    var actionHtml = variantOffer
+    var actionHtml = (variantOffer || requiresVariantSelection)
       ? '<a class="add-cart-button product-options-button" href="' + esc(href) +
           '" aria-label="View eligible options for ' + esc(p.name || "product") +
         '">View options</a>'
