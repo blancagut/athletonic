@@ -582,9 +582,12 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variantPricing = [{"key":"Black / S","optionValues":["Black","S"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black / M","optionValues":["Black","M"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black / L","optionValues":["Black","L"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black / XL","optionValues":["Black","XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black / 2XL","optionValues":["Black","2XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black/White / S","optionValues":["Black/White","S"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black/White / M","optionValues":["Black/White","M"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black/White / L","optionValues":["Black/White","L"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black/White / XL","optionValues":["Black/White","XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Black/White / 2XL","optionValues":["Black/White","2XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Blue / S","optionValues":["Blue","S"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Blue / M","optionValues":["Blue","M"],"price_cents":3496,"compare_at_cents":4995,"available":true},{"key":"Blue / L","optionValues":["Blue","L"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Blue / XL","optionValues":["Blue","XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Blue / 2XL","optionValues":["Blue","2XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Blue/White / S","optionValues":["Blue/White","S"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Blue/White / M","optionValues":["Blue/White","M"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Blue/White / L","optionValues":["Blue/White","L"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Blue/White / XL","optionValues":["Blue/White","XL"],"price_cents":3496,"compare_at_cents":4995,"available":true},{"key":"Blue/White / 2XL","optionValues":["Blue/White","2XL"],"price_cents":3496,"compare_at_cents":4995,"available":true},{"key":"Red / S","optionValues":["Red","S"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red / M","optionValues":["Red","M"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red / L","optionValues":["Red","L"],"price_cents":3496,"compare_at_cents":4995,"available":true},{"key":"Red / XL","optionValues":["Red","XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red / 2XL","optionValues":["Red","2XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red/Black / S","optionValues":["Red/Black","S"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red/Black / M","optionValues":["Red/Black","M"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red/Black / L","optionValues":["Red/Black","L"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red/Black / XL","optionValues":["Red/Black","XL"],"price_cents":3496,"compare_at_cents":4995,"available":true},{"key":"Red/Black / 2XL","optionValues":["Red/Black","2XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red/White / S","optionValues":["Red/White","S"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red/White / M","optionValues":["Red/White","M"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red/White / L","optionValues":["Red/White","L"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"Red/White / XL","optionValues":["Red/White","XL"],"price_cents":3496,"compare_at_cents":4995,"available":true},{"key":"Red/White / 2XL","optionValues":["Red/White","2XL"],"price_cents":3496,"compare_at_cents":4995,"available":true},{"key":"White / S","optionValues":["White","S"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"White / M","optionValues":["White","M"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"White / L","optionValues":["White","L"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"White / XL","optionValues":["White","XL"],"price_cents":3496,"compare_at_cents":4995,"available":false},{"key":"White / 2XL","optionValues":["White","2XL"],"price_cents":3496,"compare_at_cents":4995,"available":false}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+        var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
+        var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
 
         function normalize(value) {
           return String(value || "").trim().toLowerCase();
@@ -609,6 +612,45 @@
           }, {});
         }
 
+        function defaultPriceState() {
+          return {
+            price_cents: basePriceCents,
+            compare_at_cents: baseCompareCents,
+            available: true,
+          };
+        }
+
+        function setDisplayPrice(state, label) {
+          if (!priceEl || !state) return;
+          priceEl.textContent = formatMoneyFromCents(state.price_cents);
+          if (compareEl) {
+            var compareCents = Number(state.compare_at_cents || 0);
+            compareEl.hidden = !(compareCents > state.price_cents);
+            compareEl.textContent = compareEl.hidden ? "" : formatMoneyFromCents(compareCents);
+          }
+          if (discountEl) {
+            discountEl.hidden = !label;
+            discountEl.textContent = label || "";
+          }
+          if (addBtn) {
+            addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
+          }
+        }
+
+        function selectedVariant() {
+          if (!variantPricing.length) return null;
+          var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
+          if (!parts.length) return null;
+          var joined = parts.join(" / ");
+          return variantPricing.find(function (variant) {
+            if (normalize(variant.key) === normalize(joined)) return true;
+            if (variant.optionValues.length !== parts.length) return false;
+            return variant.optionValues.every(function (value, index) {
+              return normalize(value) === normalize(parts[index]);
+            });
+          }) || null;
+        }
+
         function eligibleLabel() {
           return variantDeals.map(function (deal) {
             return Object.keys(deal.option_match || {}).map(function (name) {
@@ -629,20 +671,20 @@
 
         function setDisplayDeal(deal) {
           if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
-          if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
-          }
-          if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
-          }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+          setDisplayPrice(
+            {
+              price_cents: Number(deal.sale_price_cents || 0),
+              compare_at_cents: Number(deal.original_price_cents || 0),
+              available: true,
+            },
+            discountLabel(deal)
+          );
         }
 
         if (variantDeals.length) {
           setDisplayDeal(variantDeals[0]);
+        } else {
+          setDisplayPrice(defaultPriceState(), "");
         }
 
         function refresh() {
@@ -654,33 +696,53 @@
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (!currentVariant && variantPricing.length) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(defaultPriceState(), "");
+              if (note) note.textContent = "This combination is not available right now.";
+              return;
+            }
+            if (currentVariant && !currentVariant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(currentVariant, "");
+              if (note) note.textContent = "This option is currently out of stock.";
+              return;
+            }
             if (variantDeals.length && !selectedDeal) {
               addBtn.disabled = true;
               addBtn.textContent = "Offer not available";
-              addBtn.dataset.cartPrice = baseCartPrice;
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal);
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            } else {
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
             if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
               setDisplayDeal(variantDeals[0]);
+            } else {
+              setDisplayPrice(defaultPriceState(), "");
             }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
+            if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) { s.addEventListener("change", refresh); });

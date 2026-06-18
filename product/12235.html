@@ -650,9 +650,12 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variantPricing = [{"key":"S / US FLAG","optionValues":["S","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / AZTEC DIAMOND","optionValues":["S","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / COWBOY AZTEC","optionValues":["S","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / JUNGLE CAMO","optionValues":["S","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / BANANA SPLIT","optionValues":["S","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / WETLAND DUCK CAMO","optionValues":["S","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / SHOOTER PARADISE","optionValues":["S","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / TEAL PINEAPPLE EXPRESS","optionValues":["S","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / US FLAG","optionValues":["M","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"M / AZTEC DIAMOND","optionValues":["M","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / COWBOY AZTEC","optionValues":["M","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / JUNGLE CAMO","optionValues":["M","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"M / BANANA SPLIT","optionValues":["M","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"M / WETLAND DUCK CAMO","optionValues":["M","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"M / SHOOTER PARADISE","optionValues":["M","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / TEAL PINEAPPLE EXPRESS","optionValues":["M","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / US FLAG","optionValues":["L","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"L / AZTEC DIAMOND","optionValues":["L","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"L / COWBOY AZTEC","optionValues":["L","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / JUNGLE CAMO","optionValues":["L","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"L / BANANA SPLIT","optionValues":["L","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"L / WETLAND DUCK CAMO","optionValues":["L","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"L / SHOOTER PARADISE","optionValues":["L","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / TEAL PINEAPPLE EXPRESS","optionValues":["L","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"XL / US FLAG","optionValues":["XL","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / AZTEC DIAMOND","optionValues":["XL","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / COWBOY AZTEC","optionValues":["XL","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"XL / JUNGLE CAMO","optionValues":["XL","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"XL / BANANA SPLIT","optionValues":["XL","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"XL / WETLAND DUCK CAMO","optionValues":["XL","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":false},{"key":"XL / SHOOTER PARADISE","optionValues":["XL","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / TEAL PINEAPPLE EXPRESS","optionValues":["XL","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / US FLAG","optionValues":["2XL","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / AZTEC DIAMOND","optionValues":["2XL","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / COWBOY AZTEC","optionValues":["2XL","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / JUNGLE CAMO","optionValues":["2XL","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / BANANA SPLIT","optionValues":["2XL","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / WETLAND DUCK CAMO","optionValues":["2XL","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / SHOOTER PARADISE","optionValues":["2XL","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / TEAL PINEAPPLE EXPRESS","optionValues":["2XL","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+        var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
+        var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
 
         function normalize(value) {
           return String(value || "").trim().toLowerCase();
@@ -677,6 +680,45 @@
           }, {});
         }
 
+        function defaultPriceState() {
+          return {
+            price_cents: basePriceCents,
+            compare_at_cents: baseCompareCents,
+            available: true,
+          };
+        }
+
+        function setDisplayPrice(state, label) {
+          if (!priceEl || !state) return;
+          priceEl.textContent = formatMoneyFromCents(state.price_cents);
+          if (compareEl) {
+            var compareCents = Number(state.compare_at_cents || 0);
+            compareEl.hidden = !(compareCents > state.price_cents);
+            compareEl.textContent = compareEl.hidden ? "" : formatMoneyFromCents(compareCents);
+          }
+          if (discountEl) {
+            discountEl.hidden = !label;
+            discountEl.textContent = label || "";
+          }
+          if (addBtn) {
+            addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
+          }
+        }
+
+        function selectedVariant() {
+          if (!variantPricing.length) return null;
+          var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
+          if (!parts.length) return null;
+          var joined = parts.join(" / ");
+          return variantPricing.find(function (variant) {
+            if (normalize(variant.key) === normalize(joined)) return true;
+            if (variant.optionValues.length !== parts.length) return false;
+            return variant.optionValues.every(function (value, index) {
+              return normalize(value) === normalize(parts[index]);
+            });
+          }) || null;
+        }
+
         function eligibleLabel() {
           return variantDeals.map(function (deal) {
             return Object.keys(deal.option_match || {}).map(function (name) {
@@ -697,20 +739,20 @@
 
         function setDisplayDeal(deal) {
           if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
-          if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
-          }
-          if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
-          }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+          setDisplayPrice(
+            {
+              price_cents: Number(deal.sale_price_cents || 0),
+              compare_at_cents: Number(deal.original_price_cents || 0),
+              available: true,
+            },
+            discountLabel(deal)
+          );
         }
 
         if (variantDeals.length) {
           setDisplayDeal(variantDeals[0]);
+        } else {
+          setDisplayPrice(defaultPriceState(), "");
         }
 
         function refresh() {
@@ -722,33 +764,53 @@
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (!currentVariant && variantPricing.length) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(defaultPriceState(), "");
+              if (note) note.textContent = "This combination is not available right now.";
+              return;
+            }
+            if (currentVariant && !currentVariant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(currentVariant, "");
+              if (note) note.textContent = "This option is currently out of stock.";
+              return;
+            }
             if (variantDeals.length && !selectedDeal) {
               addBtn.disabled = true;
               addBtn.textContent = "Offer not available";
-              addBtn.dataset.cartPrice = baseCartPrice;
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal);
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            } else {
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
             if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
               setDisplayDeal(variantDeals[0]);
+            } else {
+              setDisplayPrice(defaultPriceState(), "");
             }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
+            if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) { s.addEventListener("change", refresh); });

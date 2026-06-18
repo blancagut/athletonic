@@ -295,8 +295,35 @@
     openPanel(cartDrawer, trigger, cartOpenButtons, "[data-cart-close]");
   }
 
+  // Supabase session key for auth-aware header button
+  const SB_SESSION_KEY = "sb-spdvsaozvdcvztinsuex-auth-token";
+
+  function getStoredAuthSession() {
+    try {
+      const raw = localStorage.getItem(SB_SESSION_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      const session = data && data.access_token ? data : null;
+      if (!session) return null;
+      const exp = session.expires_at;
+      if (exp && Date.now() / 1000 > exp) return null;
+      return session;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function openAccount(trigger) {
-    openPanel(accountPanel, trigger, accountOpenButtons, "#guest-email");
+    const session = getStoredAuthSession();
+    const prefix = pagePathPrefix();
+    if (session) {
+      window.location.href = prefix + "pages/account.html";
+    } else {
+      window.location.href =
+        prefix +
+        "pages/login.html?return_to=" +
+        encodeURIComponent(window.location.href);
+    }
   }
 
   function setFormStatus(element, message, state) {
@@ -309,7 +336,19 @@
     const email = storageGet(GUEST_EMAIL_KEY, "");
     if (accountEmail) accountEmail.value = email;
     if (checkoutEmail) checkoutEmail.value = email;
-    if (accountLabel) accountLabel.textContent = "Guest";
+    if (accountLabel) {
+      const session = getStoredAuthSession();
+      if (session && session.user) {
+        const meta = session.user.user_metadata || {};
+        const fullName = meta.full_name || meta.name || "";
+        const firstName = fullName
+          ? fullName.trim().split(" ")[0]
+          : (session.user.email || "").split("@")[0];
+        accountLabel.textContent = firstName || "Account";
+      } else {
+        accountLabel.textContent = "Sign in";
+      }
+    }
   }
 
   function applyCheckoutLabels() {
@@ -732,7 +771,13 @@
       cart = loadCart();
       renderCart();
     }
-    if (event.key === GUEST_EMAIL_KEY || event.key === null) hydrateEmailFields();
+    if (
+      event.key === GUEST_EMAIL_KEY ||
+      event.key === SB_SESSION_KEY ||
+      event.key === null
+    ) {
+      hydrateEmailFields();
+    }
   });
 
   // Footer: back-to-top

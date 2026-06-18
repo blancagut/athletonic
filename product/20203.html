@@ -584,9 +584,12 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variantPricing = [{"key":"000 / Black","optionValues":["000","Black"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"000 / White","optionValues":["000","White"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"000 / Blue","optionValues":["000","Blue"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"000 / Red","optionValues":["000","Red"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"00 / Black","optionValues":["00","Black"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"00 / White","optionValues":["00","White"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"00 / Blue","optionValues":["00","Blue"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"00 / Red","optionValues":["00","Red"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"0 / Black","optionValues":["0","Black"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"0 / White","optionValues":["0","White"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"0 / Blue","optionValues":["0","Blue"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"0 / Red","optionValues":["0","Red"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"1 / Black","optionValues":["1","Black"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"1 / White","optionValues":["1","White"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"1 / Blue","optionValues":["1","Blue"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"1 / Red","optionValues":["1","Red"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"2 / Black","optionValues":["2","Black"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"2 / White","optionValues":["2","White"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"2 / Blue","optionValues":["2","Blue"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"2 / Red","optionValues":["2","Red"],"price_cents":9499,"compare_at_cents":0,"available":true},{"key":"3 / Black","optionValues":["3","Black"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"3 / White","optionValues":["3","White"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"3 / Blue","optionValues":["3","Blue"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"3 / Red","optionValues":["3","Red"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"4 / Black","optionValues":["4","Black"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"4 / White","optionValues":["4","White"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"4 / Blue","optionValues":["4","Blue"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"4 / Red","optionValues":["4","Red"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"5 / Black","optionValues":["5","Black"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"5 / White","optionValues":["5","White"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"5 / Blue","optionValues":["5","Blue"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"5 / Red","optionValues":["5","Red"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"6 / Black","optionValues":["6","Black"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"6 / White","optionValues":["6","White"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"6 / Blue","optionValues":["6","Blue"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"6 / Red","optionValues":["6","Red"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"7 / Black","optionValues":["7","Black"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"7 / White","optionValues":["7","White"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"7 / Blue","optionValues":["7","Blue"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"7 / Red","optionValues":["7","Red"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"8 / Black","optionValues":["8","Black"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"8 / White","optionValues":["8","White"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"9 / Black","optionValues":["9","Black"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"9 / White","optionValues":["9","White"],"price_cents":9999,"compare_at_cents":0,"available":true},{"key":"9 / Blue","optionValues":["9","Blue"],"price_cents":9499,"compare_at_cents":0,"available":false},{"key":"9 / Red","optionValues":["9","Red"],"price_cents":9499,"compare_at_cents":0,"available":false}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+        var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
+        var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
 
         function normalize(value) {
           return String(value || "").trim().toLowerCase();
@@ -611,6 +614,45 @@
           }, {});
         }
 
+        function defaultPriceState() {
+          return {
+            price_cents: basePriceCents,
+            compare_at_cents: baseCompareCents,
+            available: true,
+          };
+        }
+
+        function setDisplayPrice(state, label) {
+          if (!priceEl || !state) return;
+          priceEl.textContent = formatMoneyFromCents(state.price_cents);
+          if (compareEl) {
+            var compareCents = Number(state.compare_at_cents || 0);
+            compareEl.hidden = !(compareCents > state.price_cents);
+            compareEl.textContent = compareEl.hidden ? "" : formatMoneyFromCents(compareCents);
+          }
+          if (discountEl) {
+            discountEl.hidden = !label;
+            discountEl.textContent = label || "";
+          }
+          if (addBtn) {
+            addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
+          }
+        }
+
+        function selectedVariant() {
+          if (!variantPricing.length) return null;
+          var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
+          if (!parts.length) return null;
+          var joined = parts.join(" / ");
+          return variantPricing.find(function (variant) {
+            if (normalize(variant.key) === normalize(joined)) return true;
+            if (variant.optionValues.length !== parts.length) return false;
+            return variant.optionValues.every(function (value, index) {
+              return normalize(value) === normalize(parts[index]);
+            });
+          }) || null;
+        }
+
         function eligibleLabel() {
           return variantDeals.map(function (deal) {
             return Object.keys(deal.option_match || {}).map(function (name) {
@@ -631,20 +673,20 @@
 
         function setDisplayDeal(deal) {
           if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
-          if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
-          }
-          if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
-          }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+          setDisplayPrice(
+            {
+              price_cents: Number(deal.sale_price_cents || 0),
+              compare_at_cents: Number(deal.original_price_cents || 0),
+              available: true,
+            },
+            discountLabel(deal)
+          );
         }
 
         if (variantDeals.length) {
           setDisplayDeal(variantDeals[0]);
+        } else {
+          setDisplayPrice(defaultPriceState(), "");
         }
 
         function refresh() {
@@ -656,33 +698,53 @@
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (!currentVariant && variantPricing.length) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(defaultPriceState(), "");
+              if (note) note.textContent = "This combination is not available right now.";
+              return;
+            }
+            if (currentVariant && !currentVariant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(currentVariant, "");
+              if (note) note.textContent = "This option is currently out of stock.";
+              return;
+            }
             if (variantDeals.length && !selectedDeal) {
               addBtn.disabled = true;
               addBtn.textContent = "Offer not available";
-              addBtn.dataset.cartPrice = baseCartPrice;
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal);
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            } else {
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
             if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
               setDisplayDeal(variantDeals[0]);
+            } else {
+              setDisplayPrice(defaultPriceState(), "");
             }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
+            if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) { s.addEventListener("change", refresh); });

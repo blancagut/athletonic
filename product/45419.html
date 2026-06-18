@@ -586,9 +586,12 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variantPricing = [{"key":"Black / XS / Liner","optionValues":["Black","XS","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Black / S / Liner","optionValues":["Black","S","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Black / M / Liner","optionValues":["Black","M","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Black / L / Liner","optionValues":["Black","L","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Black / XL / Liner","optionValues":["Black","XL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Black / XXL / Liner","optionValues":["Black","XXL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Light Grey / XS / Liner","optionValues":["Light Grey","XS","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Light Grey / S / Liner","optionValues":["Light Grey","S","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Light Grey / M / Liner","optionValues":["Light Grey","M","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Light Grey / L / Liner","optionValues":["Light Grey","L","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Light Grey / XL / Liner","optionValues":["Light Grey","XL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Light Grey / XXL / Liner","optionValues":["Light Grey","XXL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Navy / XS / Liner","optionValues":["Navy","XS","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Navy / S / Liner","optionValues":["Navy","S","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Navy / M / Liner","optionValues":["Navy","M","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Navy / L / Liner","optionValues":["Navy","L","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Navy / XL / Liner","optionValues":["Navy","XL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Navy / XXL / Liner","optionValues":["Navy","XXL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Bluefin / XS / Liner","optionValues":["Bluefin","XS","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Bluefin / S / Liner","optionValues":["Bluefin","S","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Bluefin / M / Liner","optionValues":["Bluefin","M","Liner"],"price_cents":8800,"compare_at_cents":0,"available":true},{"key":"Bluefin / L / Liner","optionValues":["Bluefin","L","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Bluefin / XL / Liner","optionValues":["Bluefin","XL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Bluefin / XXL / Liner","optionValues":["Bluefin","XXL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Pine / XS / Liner","optionValues":["Pine","XS","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Pine / S / Liner","optionValues":["Pine","S","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Pine / M / Liner","optionValues":["Pine","M","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Pine / L / Liner","optionValues":["Pine","L","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Pine / XL / Liner","optionValues":["Pine","XL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false},{"key":"Pine / XXL / Liner","optionValues":["Pine","XXL","Liner"],"price_cents":8800,"compare_at_cents":0,"available":false}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+        var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
+        var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
 
         function normalize(value) {
           return String(value || "").trim().toLowerCase();
@@ -613,6 +616,45 @@
           }, {});
         }
 
+        function defaultPriceState() {
+          return {
+            price_cents: basePriceCents,
+            compare_at_cents: baseCompareCents,
+            available: true,
+          };
+        }
+
+        function setDisplayPrice(state, label) {
+          if (!priceEl || !state) return;
+          priceEl.textContent = formatMoneyFromCents(state.price_cents);
+          if (compareEl) {
+            var compareCents = Number(state.compare_at_cents || 0);
+            compareEl.hidden = !(compareCents > state.price_cents);
+            compareEl.textContent = compareEl.hidden ? "" : formatMoneyFromCents(compareCents);
+          }
+          if (discountEl) {
+            discountEl.hidden = !label;
+            discountEl.textContent = label || "";
+          }
+          if (addBtn) {
+            addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
+          }
+        }
+
+        function selectedVariant() {
+          if (!variantPricing.length) return null;
+          var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
+          if (!parts.length) return null;
+          var joined = parts.join(" / ");
+          return variantPricing.find(function (variant) {
+            if (normalize(variant.key) === normalize(joined)) return true;
+            if (variant.optionValues.length !== parts.length) return false;
+            return variant.optionValues.every(function (value, index) {
+              return normalize(value) === normalize(parts[index]);
+            });
+          }) || null;
+        }
+
         function eligibleLabel() {
           return variantDeals.map(function (deal) {
             return Object.keys(deal.option_match || {}).map(function (name) {
@@ -633,20 +675,20 @@
 
         function setDisplayDeal(deal) {
           if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
-          if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
-          }
-          if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
-          }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+          setDisplayPrice(
+            {
+              price_cents: Number(deal.sale_price_cents || 0),
+              compare_at_cents: Number(deal.original_price_cents || 0),
+              available: true,
+            },
+            discountLabel(deal)
+          );
         }
 
         if (variantDeals.length) {
           setDisplayDeal(variantDeals[0]);
+        } else {
+          setDisplayPrice(defaultPriceState(), "");
         }
 
         function refresh() {
@@ -658,33 +700,53 @@
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (!currentVariant && variantPricing.length) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(defaultPriceState(), "");
+              if (note) note.textContent = "This combination is not available right now.";
+              return;
+            }
+            if (currentVariant && !currentVariant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(currentVariant, "");
+              if (note) note.textContent = "This option is currently out of stock.";
+              return;
+            }
             if (variantDeals.length && !selectedDeal) {
               addBtn.disabled = true;
               addBtn.textContent = "Offer not available";
-              addBtn.dataset.cartPrice = baseCartPrice;
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal);
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            } else {
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
             if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
               setDisplayDeal(variantDeals[0]);
+            } else {
+              setDisplayPrice(defaultPriceState(), "");
             }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
+            if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) { s.addEventListener("change", refresh); });

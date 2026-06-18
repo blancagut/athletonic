@@ -2415,7 +2415,9 @@ function fetchPdpData(productIds) {
   const ids = productIds
     .map((id) => Number(id))
     .filter((id) => Number.isInteger(id) && id > 0);
-  if (ids.length === 0) return { rowsById: new Map(), imagesById: new Map() };
+  if (ids.length === 0) {
+    return { rowsById: new Map(), imagesById: new Map(), variantsById: new Map() };
+  }
 
   // Batch DB reads in chunks so large id sets (the full ~34.5k catalog) do not
   // build oversized SQL strings or overflow sqlite3's stdout buffer (ENOBUFS),
@@ -2423,6 +2425,7 @@ function fetchPdpData(productIds) {
   const BATCH = 3000;
   const rowsById = new Map();
   const imagesById = new Map();
+  const variantsById = new Map();
 
   for (let i = 0; i < ids.length; i += BATCH) {
     const chunk = ids.slice(i, i + BATCH);
@@ -2449,12 +2452,26 @@ function fetchPdpData(productIds) {
       }
       imagesById.get(image.product_row_id).push(image);
     }
+
+    const variants = runQuery(`
+      select product_row_id, variant_id, title, option1, option2, option3,
+             price, compare_at_price, available
+      from variants
+      where product_row_id in (${chunk.join(",")})
+      order by product_row_id asc, id asc;
+    `);
+    for (const variant of variants) {
+      if (!variantsById.has(variant.product_row_id)) {
+        variantsById.set(variant.product_row_id, []);
+      }
+      variantsById.get(variant.product_row_id).push(variant);
+    }
   }
 
   for (const list of imagesById.values()) {
     list.sort((a, b) => productImageScore(a) - productImageScore(b));
   }
-  return { rowsById, imagesById };
+  return { rowsById, imagesById, variantsById };
 }
 
 function safeParseJson(raw, fallback) {
@@ -2601,7 +2618,7 @@ function renderDrawers() {
     </aside>`;
 }
 
-function productPage(curated, fullRow, imageList, relatedProducts) {
+function productPage(curated, fullRow, imageList, relatedProducts, variantRows = []) {
   const pathPrefix = "../";
   const brand = brandNames[curated.brand] ?? curated.brand;
   const name = curated.displayName ?? curated.name;
@@ -2629,6 +2646,22 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
     ? `−${displayDiscountPct}%`
     : "Limited offer";
   const variantDealsJson = JSON.stringify(variantDeals).replace(/</g, "\\u003c");
+  const variantPricing = variantRows
+    .map((variant) => {
+      const title = String(variant?.title || "").trim();
+      const optionValues = [variant?.option1, variant?.option2, variant?.option3]
+        .map((value) => String(value || "").trim())
+        .filter(Boolean);
+      return {
+        key: title || optionValues.join(" / "),
+        optionValues,
+        price_cents: Math.round(Number(variant?.price || 0) * 100),
+        compare_at_cents: Math.round(Number(variant?.compare_at_price || 0) * 100),
+        available: Boolean(Number(variant?.available)),
+      };
+    })
+    .filter((variant) => variant.key && variant.price_cents > 0);
+  const variantPricingJson = JSON.stringify(variantPricing).replace(/</g, "\\u003c");
   const variantOfferNote = pdpVariantOffer
     ? `<p class="pdp-variant-deal-note" data-pdp-variant-deal-note>${html(
         pdpVariantOffer.note || "Select eligible options for this offer."
@@ -2879,9 +2912,12 @@ ${mobileBottomNav(pathPrefix)}
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = ${variantDealsJson};
+        var variantPricing = ${variantPricingJson};
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+        var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
+        var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
 
         function normalize(value) {
           return String(value || "").trim().toLowerCase();
@@ -2906,6 +2942,45 @@ ${mobileBottomNav(pathPrefix)}
           }, {});
         }
 
+        function defaultPriceState() {
+          return {
+            price_cents: basePriceCents,
+            compare_at_cents: baseCompareCents,
+            available: true,
+          };
+        }
+
+        function setDisplayPrice(state, label) {
+          if (!priceEl || !state) return;
+          priceEl.textContent = formatMoneyFromCents(state.price_cents);
+          if (compareEl) {
+            var compareCents = Number(state.compare_at_cents || 0);
+            compareEl.hidden = !(compareCents > state.price_cents);
+            compareEl.textContent = compareEl.hidden ? "" : formatMoneyFromCents(compareCents);
+          }
+          if (discountEl) {
+            discountEl.hidden = !label;
+            discountEl.textContent = label || "";
+          }
+          if (addBtn) {
+            addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
+          }
+        }
+
+        function selectedVariant() {
+          if (!variantPricing.length) return null;
+          var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
+          if (!parts.length) return null;
+          var joined = parts.join(" / ");
+          return variantPricing.find(function (variant) {
+            if (normalize(variant.key) === normalize(joined)) return true;
+            if (variant.optionValues.length !== parts.length) return false;
+            return variant.optionValues.every(function (value, index) {
+              return normalize(value) === normalize(parts[index]);
+            });
+          }) || null;
+        }
+
         function eligibleLabel() {
           return variantDeals.map(function (deal) {
             return Object.keys(deal.option_match || {}).map(function (name) {
@@ -2926,20 +3001,20 @@ ${mobileBottomNav(pathPrefix)}
 
         function setDisplayDeal(deal) {
           if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
-          if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
-          }
-          if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
-          }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+          setDisplayPrice(
+            {
+              price_cents: Number(deal.sale_price_cents || 0),
+              compare_at_cents: Number(deal.original_price_cents || 0),
+              available: true,
+            },
+            discountLabel(deal)
+          );
         }
 
         if (variantDeals.length) {
           setDisplayDeal(variantDeals[0]);
+        } else {
+          setDisplayPrice(defaultPriceState(), "");
         }
 
         function refresh() {
@@ -2951,33 +3026,53 @@ ${mobileBottomNav(pathPrefix)}
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (!currentVariant && variantPricing.length) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(defaultPriceState(), "");
+              if (note) note.textContent = "This combination is not available right now.";
+              return;
+            }
+            if (currentVariant && !currentVariant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(currentVariant, "");
+              if (note) note.textContent = "This option is currently out of stock.";
+              return;
+            }
             if (variantDeals.length && !selectedDeal) {
               addBtn.disabled = true;
               addBtn.textContent = "Offer not available";
-              addBtn.dataset.cartPrice = baseCartPrice;
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal);
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            } else {
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
             if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
               setDisplayDeal(variantDeals[0]);
+            } else {
+              setDisplayPrice(defaultPriceState(), "");
             }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
+            if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) { s.addEventListener("change", refresh); });
@@ -6234,7 +6329,11 @@ ${renderFooter(pathPrefix)}
 }
 
 const curatedIds = allCuratedProductsWithPurchaseMeta.map((p) => p.id);
-const { rowsById: pdpRowsById, imagesById: pdpImagesById } = fetchPdpData(curatedIds);
+const {
+  rowsById: pdpRowsById,
+  imagesById: pdpImagesById,
+  variantsById: pdpVariantsById,
+} = fetchPdpData(curatedIds);
 
 // Group curated products by section to compute "related" lists
 const sectionProductsBySection = new Map();
@@ -6266,10 +6365,11 @@ let pdpCount = 0;
 for (const product of allCuratedProductsWithPurchaseMeta) {
   const fullRow = pdpRowsById.get(product.id);
   const imageList = pdpImagesById.get(product.id) || [];
+  const variantRows = pdpVariantsById.get(product.id) || [];
   const peers = (sectionProductsBySection.get(product.sectionId) || [])
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
-  const pageHtml = productPage(product, fullRow, imageList, peers);
+  const pageHtml = productPage(product, fullRow, imageList, peers, variantRows);
   writeFileSync(new URL(`${product.id}.html`, pdpDir), cleanGeneratedText(pageHtml));
   pdpCount += 1;
 }
@@ -6301,18 +6401,23 @@ const PDP_BATCH = 3000;
 for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
   const batch = nonCuratedRecords.slice(i, i + PDP_BATCH);
   const batchIds = batch.map((record) => record.id);
-  const { rowsById: batchRows, imagesById: batchImages } = fetchPdpData(batchIds);
+  const {
+    rowsById: batchRows,
+    imagesById: batchImages,
+    variantsById: batchVariants,
+  } = fetchPdpData(batchIds);
 
   for (const record of batch) {
     const numericId = Number(record.id);
     const fullRow = batchRows.get(numericId);
     const imageList = batchImages.get(numericId) || [];
+    const variantRows = batchVariants.get(numericId) || [];
     const product = indexRecordToProduct(record);
     const peers = (indexRecordsBySection.get(record.section_id) || [])
       .filter((peer) => peer.id !== record.id)
       .slice(0, 4)
       .map(indexRecordToProduct);
-    const pageHtml = productPage(product, fullRow, imageList, peers);
+    const pageHtml = productPage(product, fullRow, imageList, peers, variantRows);
     writeFileSync(new URL(`${record.id}.html`, pdpDir), cleanGeneratedText(pageHtml));
     extraPdpCount += 1;
   }

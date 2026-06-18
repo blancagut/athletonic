@@ -562,9 +562,12 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variantPricing = [{"key":"M 4 / W 5","optionValues":["M 4 / W 5"],"price_cents":17999,"compare_at_cents":0,"available":false},{"key":"M 4.5 / W 5.5","optionValues":["M 4.5 / W 5.5"],"price_cents":17999,"compare_at_cents":0,"available":false},{"key":"M 5 / W 6","optionValues":["M 5 / W 6"],"price_cents":17999,"compare_at_cents":0,"available":false},{"key":"M 5.5 / W 6.5","optionValues":["M 5.5 / W 6.5"],"price_cents":17999,"compare_at_cents":0,"available":false},{"key":"M 6 / W 7","optionValues":["M 6 / W 7"],"price_cents":17999,"compare_at_cents":0,"available":false},{"key":"M 6.5 / W 7.5","optionValues":["M 6.5 / W 7.5"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 7 / W 8","optionValues":["M 7 / W 8"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 7.5 / W 8.5","optionValues":["M 7.5 / W 8.5"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 8 / W 9","optionValues":["M 8 / W 9"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 8.5 / W 9.5","optionValues":["M 8.5 / W 9.5"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 9 / W 10","optionValues":["M 9 / W 10"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 9.5 / W 10.5","optionValues":["M 9.5 / W 10.5"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 10 / W 11","optionValues":["M 10 / W 11"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 10.5 / W 11.5","optionValues":["M 10.5 / W 11.5"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 11 / W 12","optionValues":["M 11 / W 12"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 11.5 / W 12.5","optionValues":["M 11.5 / W 12.5"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 12 / W 13","optionValues":["M 12 / W 13"],"price_cents":17999,"compare_at_cents":0,"available":true},{"key":"M 12.5 / W 13.5","optionValues":["M 12.5 / W 13.5"],"price_cents":17999,"compare_at_cents":0,"available":false},{"key":"M 13 / W 14","optionValues":["M 13 / W 14"],"price_cents":17999,"compare_at_cents":0,"available":false}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+        var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
+        var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
 
         function normalize(value) {
           return String(value || "").trim().toLowerCase();
@@ -589,6 +592,45 @@
           }, {});
         }
 
+        function defaultPriceState() {
+          return {
+            price_cents: basePriceCents,
+            compare_at_cents: baseCompareCents,
+            available: true,
+          };
+        }
+
+        function setDisplayPrice(state, label) {
+          if (!priceEl || !state) return;
+          priceEl.textContent = formatMoneyFromCents(state.price_cents);
+          if (compareEl) {
+            var compareCents = Number(state.compare_at_cents || 0);
+            compareEl.hidden = !(compareCents > state.price_cents);
+            compareEl.textContent = compareEl.hidden ? "" : formatMoneyFromCents(compareCents);
+          }
+          if (discountEl) {
+            discountEl.hidden = !label;
+            discountEl.textContent = label || "";
+          }
+          if (addBtn) {
+            addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
+          }
+        }
+
+        function selectedVariant() {
+          if (!variantPricing.length) return null;
+          var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
+          if (!parts.length) return null;
+          var joined = parts.join(" / ");
+          return variantPricing.find(function (variant) {
+            if (normalize(variant.key) === normalize(joined)) return true;
+            if (variant.optionValues.length !== parts.length) return false;
+            return variant.optionValues.every(function (value, index) {
+              return normalize(value) === normalize(parts[index]);
+            });
+          }) || null;
+        }
+
         function eligibleLabel() {
           return variantDeals.map(function (deal) {
             return Object.keys(deal.option_match || {}).map(function (name) {
@@ -609,20 +651,20 @@
 
         function setDisplayDeal(deal) {
           if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
-          if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
-          }
-          if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
-          }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+          setDisplayPrice(
+            {
+              price_cents: Number(deal.sale_price_cents || 0),
+              compare_at_cents: Number(deal.original_price_cents || 0),
+              available: true,
+            },
+            discountLabel(deal)
+          );
         }
 
         if (variantDeals.length) {
           setDisplayDeal(variantDeals[0]);
+        } else {
+          setDisplayPrice(defaultPriceState(), "");
         }
 
         function refresh() {
@@ -634,33 +676,53 @@
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (!currentVariant && variantPricing.length) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(defaultPriceState(), "");
+              if (note) note.textContent = "This combination is not available right now.";
+              return;
+            }
+            if (currentVariant && !currentVariant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(currentVariant, "");
+              if (note) note.textContent = "This option is currently out of stock.";
+              return;
+            }
             if (variantDeals.length && !selectedDeal) {
               addBtn.disabled = true;
               addBtn.textContent = "Offer not available";
-              addBtn.dataset.cartPrice = baseCartPrice;
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal);
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            } else {
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
             if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
               setDisplayDeal(variantDeals[0]);
+            } else {
+              setDisplayPrice(defaultPriceState(), "");
             }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
+            if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) { s.addEventListener("change", refresh); });

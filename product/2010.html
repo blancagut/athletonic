@@ -287,19 +287,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="2124"
-                data-cart-brand="GHOST"
-                data-cart-name="CORE LOGO HOODIE - BLACK"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2060/6331/files/CoreHoodieBlackFront.webp"
-                data-cart-variant=""
-                aria-label="Add CORE LOGO HOODIE - BLACK to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/2124.html" aria-label="View eligible options for CORE LOGO HOODIE - BLACK">View options</a>
             </div>
           </article>
 
@@ -316,19 +304,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="2093"
-                data-cart-brand="GHOST"
-                data-cart-name="INSPO HOODIE - ASH GREY"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2060/6331/files/InspoHoodieGrey.webp"
-                data-cart-variant=""
-                aria-label="Add INSPO HOODIE - ASH GREY to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/2093.html" aria-label="View eligible options for INSPO HOODIE - ASH GREY">View options</a>
             </div>
           </article>
 
@@ -345,19 +321,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="2080"
-                data-cart-brand="GHOST"
-                data-cart-name="CORE LOGO TEE - ESPRESSO"
-                data-cart-price="34.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/2060/6331/files/CoreLogoTeeEspressoFront.webp"
-                data-cart-variant=""
-                aria-label="Add CORE LOGO TEE - ESPRESSO to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/2080.html" aria-label="View eligible options for CORE LOGO TEE - ESPRESSO">View options</a>
             </div>
           </article>
 
@@ -374,19 +338,7 @@
 
               </div>
 
-              <button
-                class="add-cart-button"
-                type="button"
-                data-add-to-cart
-                data-cart-id="452"
-                data-cart-brand="RAW Nutrition"
-                data-cart-name="Collegiate Hoodies"
-                data-cart-price="59.99"
-                data-cart-currency="USD"
-                data-cart-image="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Collegiate_Collection-01.webp"
-                data-cart-variant=""
-                aria-label="Add Collegiate Hoodies to cart"
-              >Add to cart</button>
+              <a class="add-cart-button product-options-button" href="../product/452.html" aria-label="View eligible options for Collegiate Hoodies">View options</a>
             </div>
           </article>
         </div>
@@ -623,9 +575,12 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
+        var variantPricing = [{"key":"S / Bone","optionValues":["S","Bone"],"price_cents":5999,"compare_at_cents":0,"available":true},{"key":"M / Bone","optionValues":["M","Bone"],"price_cents":5999,"compare_at_cents":0,"available":true},{"key":"L / Bone","optionValues":["L","Bone"],"price_cents":5999,"compare_at_cents":0,"available":true},{"key":"XL / Bone","optionValues":["XL","Bone"],"price_cents":5999,"compare_at_cents":0,"available":true},{"key":"XXL / Bone","optionValues":["XXL","Bone"],"price_cents":5999,"compare_at_cents":0,"available":true},{"key":"3XL / Bone","optionValues":["3XL","Bone"],"price_cents":5999,"compare_at_cents":0,"available":true}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
+        var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
+        var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
 
         function normalize(value) {
           return String(value || "").trim().toLowerCase();
@@ -650,6 +605,45 @@
           }, {});
         }
 
+        function defaultPriceState() {
+          return {
+            price_cents: basePriceCents,
+            compare_at_cents: baseCompareCents,
+            available: true,
+          };
+        }
+
+        function setDisplayPrice(state, label) {
+          if (!priceEl || !state) return;
+          priceEl.textContent = formatMoneyFromCents(state.price_cents);
+          if (compareEl) {
+            var compareCents = Number(state.compare_at_cents || 0);
+            compareEl.hidden = !(compareCents > state.price_cents);
+            compareEl.textContent = compareEl.hidden ? "" : formatMoneyFromCents(compareCents);
+          }
+          if (discountEl) {
+            discountEl.hidden = !label;
+            discountEl.textContent = label || "";
+          }
+          if (addBtn) {
+            addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
+          }
+        }
+
+        function selectedVariant() {
+          if (!variantPricing.length) return null;
+          var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
+          if (!parts.length) return null;
+          var joined = parts.join(" / ");
+          return variantPricing.find(function (variant) {
+            if (normalize(variant.key) === normalize(joined)) return true;
+            if (variant.optionValues.length !== parts.length) return false;
+            return variant.optionValues.every(function (value, index) {
+              return normalize(value) === normalize(parts[index]);
+            });
+          }) || null;
+        }
+
         function eligibleLabel() {
           return variantDeals.map(function (deal) {
             return Object.keys(deal.option_match || {}).map(function (name) {
@@ -670,20 +664,20 @@
 
         function setDisplayDeal(deal) {
           if (!deal || !priceEl) return;
-          priceEl.textContent = formatMoneyFromCents(deal.sale_price_cents);
-          if (compareEl) {
-            compareEl.textContent = formatMoneyFromCents(deal.original_price_cents);
-            compareEl.hidden = false;
-          }
-          if (discountEl) {
-            discountEl.textContent = discountLabel(deal);
-            discountEl.hidden = false;
-          }
-          if (addBtn) addBtn.dataset.cartPrice = (Number(deal.sale_price_cents) / 100).toFixed(2);
+          setDisplayPrice(
+            {
+              price_cents: Number(deal.sale_price_cents || 0),
+              compare_at_cents: Number(deal.original_price_cents || 0),
+              available: true,
+            },
+            discountLabel(deal)
+          );
         }
 
         if (variantDeals.length) {
           setDisplayDeal(variantDeals[0]);
+        } else {
+          setDisplayPrice(defaultPriceState(), "");
         }
 
         function refresh() {
@@ -695,33 +689,53 @@
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
+            var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
+            if (!currentVariant && variantPricing.length) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(defaultPriceState(), "");
+              if (note) note.textContent = "This combination is not available right now.";
+              return;
+            }
+            if (currentVariant && !currentVariant.available) {
+              addBtn.disabled = true;
+              addBtn.textContent = "Unavailable";
+              setDisplayPrice(currentVariant, "");
+              if (note) note.textContent = "This option is currently out of stock.";
+              return;
+            }
             if (variantDeals.length && !selectedDeal) {
               addBtn.disabled = true;
               addBtn.textContent = "Offer not available";
-              addBtn.dataset.cartPrice = baseCartPrice;
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              setDisplayDeal(variantDeals[0]);
               return;
             }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal);
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+            } else {
+              setDisplayPrice(currentVariant || defaultPriceState(), "");
+              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             }
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
             if (note) note.textContent = selectedDeal ? "Offer applied." : "";
           } else {
             addBtn.dataset.cartVariant = "";
+            addBtn.dataset.cartPrice = baseCartPrice;
+            if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             if (variantDeals.length) {
-              addBtn.dataset.cartPrice = baseCartPrice;
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
               setDisplayDeal(variantDeals[0]);
+            } else {
+              setDisplayPrice(defaultPriceState(), "");
             }
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
+            if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) { s.addEventListener("change", refresh); });
