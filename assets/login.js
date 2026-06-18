@@ -167,22 +167,29 @@
           setBtn("btn-create", false, "Create account");
           return;
         }
-        // Supabase may or may not require email confirmation
-        var user = result.data && result.data.user;
-        var confirmed = user && user.confirmed_at;
-        if (confirmed) {
-          // Email confirmation disabled — signed in immediately
+
+        // If Supabase returned a session directly (email confirmation OFF) → done
+        if (result.data && result.data.session) {
           window.location.replace(returnTo);
-        } else {
+          return;
+        }
+
+        // Email confirmation is ON in Supabase — attempt sign-in anyway in case
+        // the account was already confirmed or confirmation is being bypassed.
+        setBtn("btn-create", true, "Signing in\u2026");
+        sb.auth.signInWithPassword({ email: email, password: password }).then(function (signInResult) {
+          if (!signInResult.error && signInResult.data && signInResult.data.session) {
+            window.location.replace(returnTo);
+            return;
+          }
+          // Confirmation genuinely required — show a clear, friendly message
           setStatus(
             "create-status",
-            "Account created! Check your email to confirm, then sign in.",
+            "Almost there — check your inbox and click the confirmation link, then come back to sign in.",
             "success"
           );
           setBtn("btn-create", false, "Create account");
-          // Switch to sign-in tab so they can log in after confirming
-          setTimeout(function () { showAuthView("signin"); }, 3000);
-        }
+        });
       });
     });
   }
