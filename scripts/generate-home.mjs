@@ -2675,15 +2675,6 @@ function productPage(curated, fullRow, imageList, relatedProducts) {
 
   const description = sanitizeDescriptionHtml(fullRow?.description_html);
 
-  // External brand page kept ONLY as a secondary reference (never the primary
-  // click target). The on-site PDP is the destination from search and cards.
-  const officialUrl = curated.url || fullRow?.url || "";
-  const officialLinkHtml = officialUrl
-    ? `<p class="pdp-official-link"><a href="${html(
-        officialUrl
-      )}" target="_blank" rel="noopener nofollow">View official brand page ↗</a></p>`
-    : "";
-
   const galleryHtml = `
         <div class="pdp-gallery">
           <div class="pdp-gallery-main">
@@ -2821,7 +2812,6 @@ ${variantSelectorsHtml}
             >${variantOptions.length ? "Select options" : "Add to cart"}</button>
           </div>
           <p class="pdp-cta-note" data-pdp-cta-note></p>
-          ${officialLinkHtml}
 
           ${
             description
