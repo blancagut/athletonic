@@ -128,8 +128,6 @@ const fittedApparelSizeValues = ["XS", "S", "M", "L", "XL"];
 const standardApparelSizeValues = ["S", "M", "L", "XL", "2XL", "3XL"];
 const extendedApparelSizeValues = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
 const mensFootwearSizeValues = [
-  "6",
-  "6.5",
   "7",
   "7.5",
   "8",
@@ -141,14 +139,8 @@ const mensFootwearSizeValues = [
   "11",
   "11.5",
   "12",
-  "12.5",
-  "13",
-  "14",
-  "15",
 ];
 const womensFootwearSizeValues = [
-  "5",
-  "5.5",
   "6",
   "6.5",
   "7",
@@ -161,7 +153,8 @@ const womensFootwearSizeValues = [
   "10.5",
   "11",
 ];
-const womensSlideSizeValues = ["5", "6", "7", "8", "9", "10", "11"];
+const mensSlideSizeValues = ["7", "8", "9", "10", "11", "12"];
+const womensSlideSizeValues = ["6", "7", "8", "9", "10", "11"];
 const kidsFootwearSizeValues = ["1", "2", "3", "4", "5", "6", "7"];
 
 const sections = [
@@ -1345,18 +1338,17 @@ function isFootwearProduct(product) {
 function standardFootwearSizeProfile(product) {
   if (!isFootwearProduct(product)) return null;
   const text = productSizingText(product);
+  const isSlideLike = /\b(slide|slides|sandal|sandals)\b/.test(text);
   if (/\b(women|women's|womens)\b/.test(text)) {
     return {
       name: "Size",
-      values: /\b(slide|slides|sandal|sandals)\b/.test(text)
-        ? womensSlideSizeValues
-        : womensFootwearSizeValues,
+      values: isSlideLike ? womensSlideSizeValues : womensFootwearSizeValues,
     };
   }
   if (/\b(kids|kid|boys|girls|youth|grade school|preschool|toddler)\b/.test(text)) {
     return { name: "Size", values: kidsFootwearSizeValues };
   }
-  return { name: "Size", values: mensFootwearSizeValues };
+  return { name: "Size", values: isSlideLike ? mensSlideSizeValues : mensFootwearSizeValues };
 }
 
 function normalizeOptionValue(value) {
@@ -1678,6 +1670,29 @@ function sortDealsFirst(products = []) {
     const aDiscount = Number(a.deal?.discount_percent || a.variantOffer?.discount_percent || 0);
     const bDiscount = Number(b.deal?.discount_percent || b.variantOffer?.discount_percent || 0);
     if (bDiscount !== aDiscount) return bDiscount - aDiscount;
+    return String(a.displayName ?? a.name).localeCompare(String(b.displayName ?? b.name));
+  });
+}
+
+function sortMerchFirst(products = [], { brands = [], terms = [] } = {}) {
+  const brandRank = new Map(brands.map((brand, index) => [brand, index]));
+  return [...products].sort((a, b) => {
+    const aBrand = brandRank.has(a.brand) ? brandRank.get(a.brand) : 999;
+    const bBrand = brandRank.has(b.brand) ? brandRank.get(b.brand) : 999;
+    if (aBrand !== bBrand) return aBrand - bBrand;
+
+    const aName = productNameText(a);
+    const bName = productNameText(b);
+    const aTerm = terms.findIndex((term) => aName.includes(term.toLowerCase()));
+    const bTerm = terms.findIndex((term) => bName.includes(term.toLowerCase()));
+    const aTermRank = aTerm === -1 ? 999 : aTerm;
+    const bTermRank = bTerm === -1 ? 999 : bTerm;
+    if (aTermRank !== bTermRank) return aTermRank - bTermRank;
+
+    const aOffer = a.deal || a.variantOffer ? 1 : 0;
+    const bOffer = b.deal || b.variantOffer ? 1 : 0;
+    if (aOffer !== bOffer) return bOffer - aOffer;
+
     return String(a.displayName ?? a.name).localeCompare(String(b.displayName ?? b.name));
   });
 }
@@ -3013,6 +3028,19 @@ function productMatchesTerms(product, terms = []) {
   return terms.some((term) => searchText.includes(term.toLowerCase()));
 }
 
+function productNameText(product) {
+  return [product?.displayName, product?.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function productNameMatchesTerms(product, terms = []) {
+  if (!terms.length) return true;
+  const nameText = productNameText(product);
+  return terms.some((term) => nameText.includes(term.toLowerCase()));
+}
+
 function productCommerceLabel(product) {
   if (
     productMatchesTerms(product, [
@@ -3133,7 +3161,6 @@ function pickShelfProducts(
   const pool = uniquePurchasableProducts(candidates, purchaseMeta).filter(
     (product) => !usedIds.has(productIdValue(product))
   );
-  const candidateBrandCounts = buildBrandCountMap(pool);
   const chosen = [];
   const chosenIds = new Set();
   const brandCounts = new Map();
@@ -3183,8 +3210,7 @@ function pickShelfProducts(
           shelfBrandCount * 100 +
           globalBrandCount * 30 +
           shelfSectionCount * 10 +
-          (candidateBrandCounts.get(brand) ?? 0) -
-          offerStrength;
+          -offerStrength;
 
         if (score < bestScore) {
           bestScore = score;
@@ -3245,6 +3271,19 @@ function buildHomeShelvesWithDiversity(shelves = [], purchaseMeta = new Map()) {
   }
 
   return out;
+}
+
+function homePurchaseMetaWithOffers(products = [], purchaseMeta = new Map()) {
+  const meta = new Map(purchaseMeta);
+  for (const product of products) {
+    if (!product?.variantOffer && !product?.purchaseMeta?.requiresVariantSelection) continue;
+    meta.set(String(product.id), {
+      hasAvailablePurchase: true,
+      requiresVariantSelection: true,
+      cartVariant: "",
+    });
+  }
+  return meta;
 }
 
 function filteredShelf({
@@ -3411,6 +3450,7 @@ const officialHomeRecords = searchIndexRecords.filter(
 );
 
 const officialHomeProducts = officialHomeRecords.map(indexRecordToProduct);
+const catalogHomeProducts = searchIndexRecords.map(indexRecordToProduct);
 
 const officialDealProducts = sortDealsFirst(
   officialHomeRecords
@@ -3475,23 +3515,272 @@ const homeValueProducts = sortDealsFirst(
   )
 );
 
-const proteinValueProducts = sortDealsFirst(
+function realPricedProduct(product) {
+  const price = Number(product?.price || 0);
+  return Number.isFinite(price) && price > 0;
+}
+
+function cleanHomeProduct(product) {
+  return (
+    realPricedProduct(product) &&
+    !productMatchesTerms(product, [
+      "book",
+      "memoir",
+      "jazz",
+      "mob",
+      "gift card",
+      "sample",
+      "test",
+      "replacement",
+      "insert for glove",
+      "key chain",
+      "socks",
+      "sock",
+      "hoodie",
+      "crew",
+      "pullover",
+      "quarter zip",
+      "zip up",
+      "breeze",
+      "sweatpants",
+      "pants",
+      "tee",
+      "t-shirt",
+      "shorts",
+      "airpod",
+      "case skin",
+      "dog toy",
+      "trucker cap",
+      "walkingpad",
+      "treadmill",
+      "foldable",
+      "rack",
+      "cable attachment",
+      "abductor",
+      "leg extension",
+      "pec fly",
+    ])
+  );
+}
+
+function proteinProduct(product) {
+  return (
+    cleanHomeProduct(product) &&
+    productNameMatchesTerms(product, [
+      "protein",
+      "whey",
+      "isolate",
+      "casein",
+      "mass gainer",
+    ]) &&
+    !productMatchesTerms(product, ["shaker", "pre-workout", "amin.o", "bcaa", "hoodie", "tumbler"])
+  );
+}
+
+const proteinValueProducts = sortMerchFirst(
+  uniqueProducts(
+    [
+      ...catalogHomeProducts.filter((product) => String(product.id) === "1509"),
+      ...officialHomeProducts.filter(
+        (product) =>
+          proteinProduct(product) &&
+          productNameMatchesTerms(product, [
+            "variety pack",
+            "bundle",
+            "multi-pack",
+            "multipack",
+            "2 bottles",
+            "3 bottles",
+            "5lb",
+            "5 lb",
+            "5 lbs",
+          ]) &&
+          !productMatchesTerms(product, ["kids"])
+      ),
+    ],
+    80
+  ),
+  {
+    brands: ["optimum_nutrition", "transparent_labs", "raw_nutrition", "animal_pak", "muscletech", "nutrabio", "bare_performance", "momentous", "orgain", "naked_nutrition"],
+    terms: ["gold standard", "5 lb", "5lb", "5 lbs", "100% whey", "whey isolate", "isolate", "mass gainer", "protein bundle", "variety pack"],
+  }
+);
+
+const proteinEssentialsProducts = sortMerchFirst(
+  uniqueProducts(
+    [
+      ...catalogHomeProducts.filter((product) => String(product.id) === "1509"),
+      ...officialHomeProducts.filter(
+        (product) =>
+          proteinProduct(product) &&
+          productNameMatchesTerms(product, [
+            "gold standard 100% whey",
+            "gold standard",
+            "100% whey",
+            "whey protein",
+            "whey isolate",
+            "grass-fed whey",
+            "isolate protein",
+            "nitro tech",
+            "mass gainer",
+          ]) &&
+          !productNameMatchesTerms(product, ["casein"])
+      ),
+    ],
+    120
+  ),
+  {
+    brands: ["optimum_nutrition", "transparent_labs", "raw_nutrition", "animal_pak", "muscletech", "nutrabio", "bare_performance", "momentous", "orgain", "naked_nutrition"],
+    terms: ["gold standard 100% whey", "100% whey", "gold standard", "whey protein", "whey isolate", "isolate protein", "mass gainer", "grass-fed whey"],
+  }
+);
+
+const creatineProducts = sortMerchFirst(
   officialHomeProducts.filter(
     (product) =>
-      ["protein", "bars-shakes"].includes(product.sectionId) &&
-      productMatchesTerms(product, [
-        "protein",
-        "whey",
-        "isolate",
-        "casein",
-        "variety pack",
-        "bundle",
-        "multi-pack",
-        "multipack",
-        "2 bottles",
-        "3 bottles",
+      cleanHomeProduct(product) &&
+      productNameMatchesTerms(product, ["creatine"]) &&
+      !productMatchesTerms(product, ["pre-workout", "pre workout", "legend", "mode lightning", "collagen"])
+  ),
+  {
+    brands: ["transparent_labs", "gorilla_mind", "raw_nutrition", "nutrabio", "kaged", "muscletech", "naked_nutrition", "momentous", "codeage"],
+    terms: ["creatine hmb", "creatine monohydrate", "creatine hcl", "creatine + hmb", "creatine gummies"],
+  }
+);
+
+const preWorkoutProducts = sortMerchFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      productNameMatchesTerms(product, [
+        "pre-workout",
+        "pre workout",
+        "preworkout",
+        "legend all out",
+        "superhuman",
+        "gorilla mode",
+        "nitric",
+        "thavage",
+        "c4",
+        "alphamine",
+        "naked energy",
       ]) &&
-      !productMatchesTerms(product, ["kids", "sample", "test"])
+      !productMatchesTerms(product, [
+        "whey",
+        "protein powder",
+        "clear whey",
+        "5lb whey",
+        "hat",
+        "cap",
+        "shirt",
+        "seeds",
+        "seed",
+        "collagen",
+        "oil drops",
+        "kids",
+        "airpod",
+        "case skin",
+        "case",
+        "patch",
+        "bundle",
+        "stack",
+      ])
+  ),
+  {
+    brands: ["ghost_lifestyle", "gorilla_mind", "raw_nutrition", "alpha_lion", "cellucor", "onnit", "naked_nutrition", "pescience", "jacked_factory", "nutrex"],
+    terms: ["legend all out", "gorilla mode", "superhuman", "c4", "pre-workout", "pre workout", "thavage", "alphamine", "naked energy"],
+  }
+);
+
+const hydrationProducts = sortMerchFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      productNameMatchesTerms(product, [
+        "hydration",
+        "electrolyte",
+        "liquid i.v.",
+        "skratch",
+        "nuun",
+        "multiplier",
+        "dripdrop",
+        "immune booster",
+        "canteen",
+      ]) &&
+      !productMatchesTerms(product, [
+        "pre-workout",
+        "protein",
+        "collagen",
+        "greens",
+        "matcha",
+        "skin essentials",
+        "chocolate drink",
+        "hat",
+        "cap",
+        "shirt",
+        "airpod",
+        "case",
+        "bottle",
+        "stack",
+      ])
+  ),
+  {
+    brands: ["liquid_iv", "skratch_labs", "nuun", "drip_drop", "cure_hydration", "cellucor", "alpha_lion"],
+    terms: ["hydration multiplier", "electrolyte", "hydration", "nuun", "skratch", "liquid i.v."],
+  }
+);
+
+const boxingGloveProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      productNameMatchesTerms(product, ["boxing glove", "boxing gloves", "muay thai glove", "bgv", "gloves", "glove"]) &&
+      !productMatchesTerms(product, ["kids", "insert", "key chain", "t-shirt", "rashguard"])
+  ),
+  {
+    brands: ["fairtex", "twins_special", "windy", "hayabusa", "rival_boxing", "everlast", "venum", "sanabul"],
+    terms: ["bgv", "boxing gloves", "muay thai", "glove"],
+  }
+);
+
+const bagsMittsPadsProducts = sortDealsFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "century_martial_arts", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      productNameMatchesTerms(product, [
+        "heavy bag",
+        "punching bag",
+        "muay thai bag",
+        "banana bag",
+        "punch mitt",
+        "focus mitt",
+        "mitts",
+        "thai pads",
+        "kick pad",
+        "reflex bag",
+        "pole bag",
+      ]) &&
+      !productMatchesTerms(product, ["crash pad", "gi limited", "t-shirt", "shorts"])
+  )
+);
+
+const wrapsGuardsFightAccessoriesProducts = sortDealsFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      productNameMatchesTerms(product, [
+        "hand wrap",
+        "quick wraps",
+        "shin guard",
+        "headgear",
+        "mouthguard",
+        "ankle guard",
+        "groin guard",
+        "gel wraps",
+      ])
   )
 );
 
@@ -3537,6 +3826,7 @@ const gloveProducts = officialHomeProducts.filter(
 const bundleProducts = sortDealsFirst(
   officialHomeProducts.filter(
     (product) =>
+      cleanHomeProduct(product) &&
       productMatchesTerms(product, [
         "bundle",
         "stack",
@@ -3548,7 +3838,46 @@ const bundleProducts = sortDealsFirst(
         "3 bottles",
         "starter stack",
       ]) &&
-      !productMatchesTerms(product, ["test", "sample", "kids", "gift", "build a bundle"]) &&
+      (
+        ["protein", "creatine", "pre-workout", "hydration", "bars-shakes"].includes(product.sectionId) ||
+        productNameMatchesTerms(product, [
+          "protein",
+          "whey",
+          "electrolyte",
+          "hydration",
+          "creatine",
+          "pre-workout",
+          "greens",
+          "boxing",
+          "glove",
+          "hand grips",
+          "wrap",
+        ])
+      ) &&
+      !productMatchesTerms(product, [
+        "test",
+        "sample",
+        "kids",
+        "gift",
+        "build a bundle",
+        "cleanser",
+        "skin",
+        "serum",
+        "beauty",
+        "mane",
+        "sleep",
+        "blackout",
+        "pearly",
+        "whites",
+        "journal",
+        "diamondbacks",
+        "dressed",
+        "crash pad",
+        "hat",
+        "cap",
+        "shirt",
+        "apparel",
+      ]) &&
       Number(product.price || 0) > 0
   )
 );
@@ -3583,10 +3912,88 @@ const initialHomeShelvesDraft = [
     minUniqueBrands: 5,
   }),
   customShelf({
+    eyebrow: "Protein",
+    title: "Protein Essentials",
+    description: "Core whey, isolate, mass gainer, and Gold Standard protein basics.",
+    products: proteinEssentialsProducts,
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Protein",
+    title: "Protein Deals & 5LB Tubs",
+    description: "Whey deals, isolate value picks, 5LB tubs, and multi-pack protein offers.",
+    products: uniqueProducts(
+      [
+        ...proteinEssentialsProducts.filter((product) =>
+          product.variantOffer && productNameMatchesTerms(product, ["gold standard 100% whey", "100% whey"])
+        ),
+        ...proteinValueProducts.filter((product) => product.deal || product.variantOffer),
+        ...proteinValueProducts,
+        ...proteinEssentialsProducts.filter((product) =>
+          productMatchesTerms(product, ["5lb", "5 lb", "5 lbs", "2x", "gold standard"])
+        ),
+      ],
+      80
+    ),
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 5,
+    maxPerSection: 12,
+    minUniqueBrands: 4,
+  }),
+  customShelf({
+    eyebrow: "Strength",
+    title: "Creatine Best Sellers",
+    description: "Creatine powders, HMB blends, capsules, and strength staples.",
+    products: creatineProducts,
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Energy",
+    title: "Pre-Workout",
+    description: "Training energy, pumps, nitric formulas, and stimulant-free options.",
+    products: preWorkoutProducts,
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Hydration",
+    title: "Hydration & Electrolytes",
+    description: "Electrolyte sticks, hydration multipliers, drink mixes, and training fluids.",
+    products: hydrationProducts,
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Combat sports",
+    title: "Boxing & Muay Thai Gloves",
+    description: "Boxing gloves and Muay Thai gloves from real fight-gear inventory.",
+    products: boxingGloveProducts,
+    limit: 12,
+    maxPerBrand: 3,
+    maxGlobalBrand: 5,
+    maxPerSection: 12,
+    minUniqueBrands: 3,
+  }),
+  customShelf({
     eyebrow: "Supplements",
     title: "Top Supplements",
-    description: "Protein, hydration, vitamins, greens, and ready-to-drink staples in one shelf.",
-    sectionIds: ["protein", "hydration", "vitamins", "greens", "bars-shakes"],
+    description: "Vitamins, greens, bars, shakes, daily health, and supplement staples.",
+    sectionIds: ["vitamins", "greens", "bars-shakes", "hydration"],
     limit: 12,
     maxPerBrand: 1,
     maxGlobalBrand: 3,
@@ -3594,53 +4001,36 @@ const initialHomeShelvesDraft = [
     minUniqueBrands: 4,
   }),
   customShelf({
-    eyebrow: "Protein",
-    title: "Protein Deals",
-    description: "Current protein offers, value packs, and variety picks with real catalog pricing.",
-    products: uniqueProducts(
-      [
-        ...proteinValueProducts.filter((product) => product.deal || product.variantOffer),
-        ...proteinValueProducts,
-      ],
-      12
-    ),
-    limit: 12,
-    maxPerBrand: 1,
-    maxGlobalBrand: 3,
-    maxPerSection: 12,
-    minUniqueBrands: 4,
-  }),
-  customShelf({
-    eyebrow: "Strength",
-    title: "Creatine & Pre-workout",
-    description: "Lift-day staples for pumps, strength, and training energy.",
-    products: blendedProducts(["creatine", "pre-workout"], 80),
-    limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 3,
-    maxPerSection: 6,
-    minUniqueBrands: 4,
-  }),
-  customShelf({
     eyebrow: "Combat sports",
-    title: "Muay Thai & Boxing Gear",
-    description: "Real fight gear, pads, gloves, and protection from active catalog inventory.",
-    products: boxingProducts,
+    title: "Punching Bags, Mitts & Pads",
+    description: "Heavy bags, Muay Thai bags, punch mitts, focus mitts, and training pads.",
+    products: bagsMittsPadsProducts,
     limit: 12,
     maxPerBrand: 2,
     maxGlobalBrand: 4,
     maxPerSection: 12,
-    minUniqueBrands: 4,
+    minUniqueBrands: 3,
   }),
   customShelf({
-    eyebrow: "Training gear",
-    title: "Gloves & Training Gear",
-    description: "Gloves, mitts, wraps, pads, bags, and core training equipment.",
-    products: gloveProducts,
+    eyebrow: "Fight accessories",
+    title: "Wraps, Guards & Fight Accessories",
+    description: "Hand wraps, quick wraps, headgear, shin guards, mouthguards, and protection.",
+    products: wrapsGuardsFightAccessoriesProducts,
     limit: 12,
     maxPerBrand: 2,
     maxGlobalBrand: 4,
     maxPerSection: 12,
+    minUniqueBrands: 3,
+  }),
+  customShelf({
+    eyebrow: "Recovery",
+    title: "Recovery & Training Essentials",
+    description: "Recovery devices and useful training gear placed below the core shopping rows.",
+    sectionIds: ["recovery", "sleep", "accessories"],
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 5,
     minUniqueBrands: 4,
   }),
 ];
@@ -3676,8 +4066,10 @@ if (latestProductsDraft.length >= 4) {
   );
 }
 
-const homePurchaseMeta = purchaseMetaByProductId(
-  initialHomeShelvesDraft.flatMap((shelf) => shelf.products.map((product) => product.id))
+const homeShelfCandidates = initialHomeShelvesDraft.flatMap((shelf) => shelf.products);
+const homePurchaseMeta = homePurchaseMetaWithOffers(
+  homeShelfCandidates,
+  purchaseMetaByProductId(homeShelfCandidates.map((product) => product.id))
 );
 
 const homeShelves = buildHomeShelvesWithDiversity(initialHomeShelvesDraft, homePurchaseMeta);
