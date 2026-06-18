@@ -5135,12 +5135,12 @@ const staticPages = [
     title: "Your Account",
     eyebrow: "Customer",
     summary:
-      "Athletonic currently supports guest checkout profiles so customers can save an email locally and submit checkout interest from the cart.",
+      "Manage Athletonic orders, returns, account settings, support links, and product reorders from your customer account dashboard.",
     sections: [
       {
-        heading: "Guest Checkout",
+        heading: "Customer Account Tools",
         body:
-          "Use the account button in the header to save the email used for checkout updates.",
+          "Customers can sign in to view order history, track deliveries, request returns, and continue shopping from real Athletonic catalog products.",
       },
     ],
   },
@@ -5684,15 +5684,15 @@ const footerPageCopy = {
     title: "Your Account",
     eyebrow: "Customer",
     summary:
-      "Athletonic is expanding real customer accounts. Today, customers can use checkout email, order reference, and support history for tracking and returns.",
+      "Manage Athletonic orders, returns, account settings, support links, and product reorders from your customer account dashboard.",
     links: [{ label: "Track an order", href: "pages/order-tracking.html" }],
     sections: [
       {
-        heading: "Current Account Tools",
+        heading: "Customer Account Tools",
         bullets: [
-          "Save a checkout email in the account panel",
+          "View signed-in order history when it exists",
           "Track orders by email and order reference",
-          "Submit return or replacement requests from the order lookup flow",
+          "Continue shopping from real Athletonic catalog shelves",
         ],
       },
       {
@@ -6116,6 +6116,207 @@ ${renderFooter(pathPrefix)}
 `;
 }
 
+function accountDashboardPage(pageInfo) {
+  const pathPrefix = "../";
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${html(pageInfo.title)} | Athletonic</title>
+    <meta name="description" content="${html(pageInfo.summary)}" />
+    ${canonicalLink(`/pages/${pageInfo.slug}.html`)}
+    ${assetHeadLinks(pathPrefix)}
+    <link rel="apple-touch-icon" href="${pathPrefix}assets/logo.png" />
+    <link rel="stylesheet" href="${pathPrefix}styles.css" />
+  </head>
+  <body class="info-body">
+    <a id="top" tabindex="-1" aria-hidden="true"></a>
+${renderPdpHeader(pathPrefix)}
+${renderDrawers()}
+
+    <main class="account-hub" id="account-hub">
+      <div class="account-hub-inner">
+
+        <div class="hub-signin" id="hub-gate" hidden>
+          <h1>Sign in to your account</h1>
+          <p class="hub-signin-sub">Sign in to track orders, manage returns, and access your account settings.</p>
+          <button class="hub-signin-cta" id="btn-hub-signin">Sign in to Your Account</button>
+          <p class="hub-signin-new">New to Athletonic? <a href="login.html?tab=create">Create your account</a></p>
+        </div>
+
+        <div id="hub-body" hidden>
+          <nav class="hub-breadcrumb" aria-label="Breadcrumb">
+            <a href="../">Home</a>
+            <span aria-hidden="true">›</span>
+            Your Account
+          </nav>
+
+          <section class="account-hero" aria-labelledby="hub-greeting">
+            <div class="account-hero-copy">
+              <p class="account-eyebrow">Athletonic account</p>
+              <h1 id="hub-greeting">Your Account</h1>
+              <p class="account-email" id="hub-email"></p>
+              <p class="account-hero-line">Manage orders, track deliveries, reorder essentials, and update your Athletonic account.</p>
+            </div>
+            <div class="account-summary-grid" aria-label="Account summary">
+              <article class="account-summary-card">
+                <span>Orders</span>
+                <strong data-summary-orders>Loading</strong>
+              </article>
+              <article class="account-summary-card">
+                <span>Active deliveries</span>
+                <strong data-summary-deliveries>Loading</strong>
+              </article>
+              <article class="account-summary-card">
+                <span>Saved items</span>
+                <strong data-summary-saved>No saved items</strong>
+              </article>
+              <article class="account-summary-card">
+                <span>Account status</span>
+                <strong data-summary-status>Ready</strong>
+              </article>
+            </div>
+          </section>
+
+          <nav class="account-action-strip" aria-label="Customer account actions">
+            <a href="order-tracking.html" data-latest-order-link>Track latest order</a>
+            <a href="#recent-orders">View orders</a>
+            <a href="#buy-again">Buy again</a>
+            <a href="returns-request.html">Returns &amp; replacements</a>
+            <a href="#account-management">Addresses</a>
+            <a href="contact.html">Contact support</a>
+          </nav>
+
+          <div class="account-layout">
+            <div class="account-main-column">
+              <section class="account-module" id="recent-orders" aria-labelledby="recent-orders-title">
+                <div class="account-module-head">
+                  <div>
+                    <p class="account-eyebrow">Orders</p>
+                    <h2 id="recent-orders-title">Recent orders</h2>
+                  </div>
+                  <a href="order-tracking.html">Look up an order</a>
+                </div>
+                <div class="recent-orders-list" data-recent-orders aria-live="polite">
+                  <p class="account-loading">Loading order history...</p>
+                </div>
+              </section>
+
+              <section class="account-module" id="buy-again" aria-labelledby="buy-again-title">
+                <div class="account-module-head">
+                  <div>
+                    <p class="account-eyebrow">Shopping</p>
+                    <h2 id="buy-again-title">Buy again</h2>
+                  </div>
+                  <a href="best-sellers.html">Shop best sellers</a>
+                </div>
+                <div class="account-product-row" data-buy-again-shelf aria-live="polite">
+                  <p class="account-loading">Loading products...</p>
+                </div>
+              </section>
+
+              <section class="account-module" aria-labelledby="recommended-title">
+                <div class="account-module-head">
+                  <div>
+                    <p class="account-eyebrow">Keep shopping</p>
+                    <h2 id="recommended-title">Recommended for you</h2>
+                  </div>
+                  <a href="catalog.html">Shop all</a>
+                </div>
+                <div class="account-product-row" data-recommended-shelf aria-live="polite">
+                  <p class="account-loading">Loading products...</p>
+                </div>
+              </section>
+            </div>
+
+            <aside class="account-side-column" aria-label="Account tools and support">
+              <section class="account-module account-management" id="account-management" aria-labelledby="account-management-title">
+                <div class="account-module-head compact">
+                  <div>
+                    <p class="account-eyebrow">Settings</p>
+                    <h2 id="account-management-title">Account management</h2>
+                  </div>
+                </div>
+                <div class="account-link-list">
+                  <a href="contact.html">Profile information <span>Contact support if your account name needs correction</span></a>
+                  <button class="account-link-button" type="button" id="btn-security-reset">Email and password/security <span id="security-reset-status">Email a secure password reset link</span></button>
+                  <a href="order-tracking.html">Addresses <span>Delivery addresses are collected during secure checkout</span></a>
+                  <a href="help.html">Payment methods <span>Payment is handled securely by Stripe at checkout</span></a>
+                  <a href="cookie-preferences.html">Communication preferences <span>Manage privacy and preference choices</span></a>
+                  <button class="account-link-button" type="button" id="btn-signout">Sign out <span>End this account session</span></button>
+                </div>
+              </section>
+
+              <section class="account-module" aria-labelledby="help-service-title">
+                <div class="account-module-head compact">
+                  <div>
+                    <p class="account-eyebrow">Service</p>
+                    <h2 id="help-service-title">Help &amp; service</h2>
+                  </div>
+                </div>
+                <div class="account-link-list two-line">
+                  <a href="shipping.html">Shipping info <span>Rates, timing, and delivery policy</span></a>
+                  <a href="returns.html">Returns policy <span>Return windows and replacement details</span></a>
+                  <a href="contact.html">Contact us <span>Reach the Athletonic support team</span></a>
+                  <a href="help.html">Help center / FAQ <span>Answers for checkout, products, and orders</span></a>
+                  <a href="order-tracking.html">Order issue support <span>Use your order reference for faster help</span></a>
+                </div>
+              </section>
+
+              <section class="account-module" aria-labelledby="shopping-shortcuts-title">
+                <div class="account-module-head compact">
+                  <div>
+                    <p class="account-eyebrow">Shortcuts</p>
+                    <h2 id="shopping-shortcuts-title">Shopping shortcuts</h2>
+                  </div>
+                </div>
+                <div class="shopping-shortcuts">
+                  <a href="daily-deals.html">Today's deals</a>
+                  <a href="best-sellers.html">Best sellers</a>
+                  <a href="protein.html">Protein</a>
+                  <a href="creatine.html">Creatine</a>
+                  <a href="pre-workout.html">Pre-workout</a>
+                  <a href="combat-sports.html">Boxing &amp; Muay Thai gloves</a>
+                  <a href="recovery.html">Recovery devices</a>
+                  <a href="new-arrivals.html">New arrivals</a>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </div>
+
+        <div id="hub-reset" hidden>
+          <div class="hub-header">
+            <h1>Create a new password</h1>
+            <p>Enter and confirm your new password below.</p>
+          </div>
+          <form id="form-reset" class="commerce-form account-reset-form" novalidate>
+            <label for="reset-password">New password</label>
+            <input id="reset-password" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" required minlength="8" />
+            <label for="reset-confirm">Confirm password</label>
+            <input id="reset-confirm" name="confirm" type="password" autocomplete="new-password" placeholder="Repeat password" required />
+            <button type="submit">Update password</button>
+            <p class="form-status" id="reset-status" aria-live="polite"></p>
+          </form>
+        </div>
+
+      </div>
+    </main>
+
+${renderFooter(pathPrefix)}
+    <script>
+      window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
+      window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <script src="${pathPrefix}assets/account-dashboard.js" defer></script>
+    <script src="${pathPrefix}assets/cart.js" defer></script>
+  </body>
+</html>
+`;
+}
+
 function renderCommerceHeader(activePage, shopLabel = "Shop") {
   const current = (page) => (activePage === page ? ' aria-current="page"' : "");
   return `
@@ -6436,7 +6637,7 @@ let staticPageCount = 0;
 for (const pageInfo of staticPages) {
   writeFileSync(
     new URL(`${pageInfo.slug}.html`, pagesDir),
-    cleanGeneratedText(infoPage(pageInfo))
+    cleanGeneratedText(pageInfo.slug === "account" ? accountDashboardPage(pageInfo) : infoPage(pageInfo))
   );
   staticPageCount += 1;
 }

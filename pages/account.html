@@ -4,10 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Your Account | Athletonic</title>
-    <meta name="description" content="Athletonic is expanding real customer accounts. Today, customers can use checkout email, order reference, and support history for tracking and returns." />
+    <meta name="description" content="Manage Athletonic orders, returns, account settings, support links, and product reorders from your customer account dashboard." />
     <link rel="canonical" href="https://athletonic.com/pages/account.html" />
     <link rel="icon" href="../favicon.ico" sizes="any" />
     <link rel="manifest" href="../site.webmanifest" />
+    <link rel="apple-touch-icon" href="../assets/logo.png" />
     <link rel="stylesheet" href="../styles.css" />
   </head>
   <body class="info-body">
@@ -139,7 +140,6 @@
     <main class="account-hub" id="account-hub">
       <div class="account-hub-inner">
 
-        <!-- ── Unauthenticated gate ── -->
         <div class="hub-signin" id="hub-gate" hidden>
           <h1>Sign in to your account</h1>
           <p class="hub-signin-sub">Sign in to track orders, manage returns, and access your account settings.</p>
@@ -147,7 +147,6 @@
           <p class="hub-signin-new">New to Athletonic? <a href="login.html?tab=create">Create your account</a></p>
         </div>
 
-        <!-- ── Authenticated hub ── -->
         <div id="hub-body" hidden>
           <nav class="hub-breadcrumb" aria-label="Breadcrumb">
             <a href="../">Home</a>
@@ -155,103 +154,146 @@
             Your Account
           </nav>
 
-          <div class="hub-header">
-            <h1 id="hub-greeting">Your Account</h1>
-            <p id="hub-email"></p>
-          </div>
-
-          <div class="hub-grid">
-
-            <a class="hub-tile" href="order-tracking.html">
-              <div class="hub-tile-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="1" y="3" width="15" height="13" rx="1"></rect>
-                  <path d="M16 8h4l3 3v5h-7V8z"></path>
-                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                </svg>
-              </div>
-              <div class="hub-tile-body">
-                <h3>Your Orders</h3>
-                <p>Track packages, view order history, and buy items again.</p>
-              </div>
-            </a>
-
-            <a class="hub-tile" href="returns-request.html">
-              <div class="hub-tile-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <polyline points="1 4 1 10 7 10"></polyline>
-                  <path d="M3.51 15a9 9 0 1 0 .49-3"></path>
-                </svg>
-              </div>
-              <div class="hub-tile-body">
-                <h3>Returns &amp; Replacements</h3>
-                <p>Return or exchange an item from a recent order.</p>
-              </div>
-            </a>
-
-            <a class="hub-tile" href="order-tracking.html">
-              <div class="hub-tile-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-              </div>
-              <div class="hub-tile-body">
-                <h3>Track a Package</h3>
-                <p>See real-time status of your deliveries.</p>
-              </div>
-            </a>
-
-            <a class="hub-tile" href="contact.html">
-              <div class="hub-tile-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-              </div>
-              <div class="hub-tile-body">
-                <h3>Message Us</h3>
-                <p>Get help from the Athletonic support team.</p>
-              </div>
-            </a>
-
-          </div>
-          <!-- /hub-grid -->
-
-          <div class="hub-extra">
-            <div>
-              <h2>Shop</h2>
-              <ul>
-                <li><a href="daily-deals.html">Today's deals</a></li>
-                <li><a href="best-sellers.html">Best sellers</a></li>
-                <li><a href="new-arrivals.html">New arrivals</a></li>
-                <li><a href="brands.html">Brand directory</a></li>
-              </ul>
+          <section class="account-hero" aria-labelledby="hub-greeting">
+            <div class="account-hero-copy">
+              <p class="account-eyebrow">Athletonic account</p>
+              <h1 id="hub-greeting">Your Account</h1>
+              <p class="account-email" id="hub-email"></p>
+              <p class="account-hero-line">Manage orders, track deliveries, reorder essentials, and update your Athletonic account.</p>
             </div>
-            <div>
-              <h2>Help &amp; Policies</h2>
-              <ul>
-                <li><a href="help.html">Help center</a></li>
-                <li><a href="shipping.html">Shipping info</a></li>
-                <li><a href="returns.html">Returns policy</a></li>
-                <li><a href="contact.html">Contact us</a></li>
-              </ul>
+            <div class="account-summary-grid" aria-label="Account summary">
+              <article class="account-summary-card">
+                <span>Orders</span>
+                <strong data-summary-orders>Loading</strong>
+              </article>
+              <article class="account-summary-card">
+                <span>Active deliveries</span>
+                <strong data-summary-deliveries>Loading</strong>
+              </article>
+              <article class="account-summary-card">
+                <span>Saved items</span>
+                <strong data-summary-saved>No saved items</strong>
+              </article>
+              <article class="account-summary-card">
+                <span>Account status</span>
+                <strong data-summary-status>Ready</strong>
+              </article>
             </div>
-          </div>
+          </section>
 
-          <div class="hub-footer">
-            <button class="hub-signout" id="btn-signout">Sign out</button>
+          <nav class="account-action-strip" aria-label="Customer account actions">
+            <a href="order-tracking.html" data-latest-order-link>Track latest order</a>
+            <a href="#recent-orders">View orders</a>
+            <a href="#buy-again">Buy again</a>
+            <a href="returns-request.html">Returns &amp; replacements</a>
+            <a href="#account-management">Addresses</a>
+            <a href="contact.html">Contact support</a>
+          </nav>
+
+          <div class="account-layout">
+            <div class="account-main-column">
+              <section class="account-module" id="recent-orders" aria-labelledby="recent-orders-title">
+                <div class="account-module-head">
+                  <div>
+                    <p class="account-eyebrow">Orders</p>
+                    <h2 id="recent-orders-title">Recent orders</h2>
+                  </div>
+                  <a href="order-tracking.html">Look up an order</a>
+                </div>
+                <div class="recent-orders-list" data-recent-orders aria-live="polite">
+                  <p class="account-loading">Loading order history...</p>
+                </div>
+              </section>
+
+              <section class="account-module" id="buy-again" aria-labelledby="buy-again-title">
+                <div class="account-module-head">
+                  <div>
+                    <p class="account-eyebrow">Shopping</p>
+                    <h2 id="buy-again-title">Buy again</h2>
+                  </div>
+                  <a href="best-sellers.html">Shop best sellers</a>
+                </div>
+                <div class="account-product-row" data-buy-again-shelf aria-live="polite">
+                  <p class="account-loading">Loading products...</p>
+                </div>
+              </section>
+
+              <section class="account-module" aria-labelledby="recommended-title">
+                <div class="account-module-head">
+                  <div>
+                    <p class="account-eyebrow">Keep shopping</p>
+                    <h2 id="recommended-title">Recommended for you</h2>
+                  </div>
+                  <a href="catalog.html">Shop all</a>
+                </div>
+                <div class="account-product-row" data-recommended-shelf aria-live="polite">
+                  <p class="account-loading">Loading products...</p>
+                </div>
+              </section>
+            </div>
+
+            <aside class="account-side-column" aria-label="Account tools and support">
+              <section class="account-module account-management" id="account-management" aria-labelledby="account-management-title">
+                <div class="account-module-head compact">
+                  <div>
+                    <p class="account-eyebrow">Settings</p>
+                    <h2 id="account-management-title">Account management</h2>
+                  </div>
+                </div>
+                <div class="account-link-list">
+                  <a href="contact.html">Profile information <span>Contact support if your account name needs correction</span></a>
+                  <button class="account-link-button" type="button" id="btn-security-reset">Email and password/security <span id="security-reset-status">Email a secure password reset link</span></button>
+                  <a href="order-tracking.html">Addresses <span>Delivery addresses are collected during secure checkout</span></a>
+                  <a href="help.html">Payment methods <span>Payment is handled securely by Stripe at checkout</span></a>
+                  <a href="cookie-preferences.html">Communication preferences <span>Manage privacy and preference choices</span></a>
+                  <button class="account-link-button" type="button" id="btn-signout">Sign out <span>End this account session</span></button>
+                </div>
+              </section>
+
+              <section class="account-module" aria-labelledby="help-service-title">
+                <div class="account-module-head compact">
+                  <div>
+                    <p class="account-eyebrow">Service</p>
+                    <h2 id="help-service-title">Help &amp; service</h2>
+                  </div>
+                </div>
+                <div class="account-link-list two-line">
+                  <a href="shipping.html">Shipping info <span>Rates, timing, and delivery policy</span></a>
+                  <a href="returns.html">Returns policy <span>Return windows and replacement details</span></a>
+                  <a href="contact.html">Contact us <span>Reach the Athletonic support team</span></a>
+                  <a href="help.html">Help center / FAQ <span>Answers for checkout, products, and orders</span></a>
+                  <a href="order-tracking.html">Order issue support <span>Use your order reference for faster help</span></a>
+                </div>
+              </section>
+
+              <section class="account-module" aria-labelledby="shopping-shortcuts-title">
+                <div class="account-module-head compact">
+                  <div>
+                    <p class="account-eyebrow">Shortcuts</p>
+                    <h2 id="shopping-shortcuts-title">Shopping shortcuts</h2>
+                  </div>
+                </div>
+                <div class="shopping-shortcuts">
+                  <a href="daily-deals.html">Today's deals</a>
+                  <a href="best-sellers.html">Best sellers</a>
+                  <a href="protein.html">Protein</a>
+                  <a href="creatine.html">Creatine</a>
+                  <a href="pre-workout.html">Pre-workout</a>
+                  <a href="combat-sports.html">Boxing &amp; Muay Thai gloves</a>
+                  <a href="recovery.html">Recovery devices</a>
+                  <a href="new-arrivals.html">New arrivals</a>
+                </div>
+              </section>
+            </aside>
           </div>
         </div>
-        <!-- /hub-body -->
 
-        <!-- ── Password reset (from email link) ── -->
         <div id="hub-reset" hidden>
           <div class="hub-header">
             <h1>Create a new password</h1>
             <p>Enter and confirm your new password below.</p>
           </div>
-          <form id="form-reset" class="commerce-form" style="max-width:400px" novalidate>
+          <form id="form-reset" class="commerce-form account-reset-form" novalidate>
             <label for="reset-password">New password</label>
             <input id="reset-password" name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" required minlength="8" />
             <label for="reset-confirm">Confirm password</label>
@@ -260,7 +302,6 @@
             <p class="form-status" id="reset-status" aria-live="polite"></p>
           </form>
         </div>
-        <!-- /hub-reset -->
 
       </div>
     </main>
@@ -433,94 +474,8 @@
       window.ATHLETONIC_SUPABASE_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
       window.ATHLETONIC_SUPABASE_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script>
-    (function () {
-      "use strict";
-      var sb = window.supabase && window.supabase.createClient(
-        window.ATHLETONIC_SUPABASE_URL,
-        window.ATHLETONIC_SUPABASE_KEY
-      );
-      if (!sb) return;
-
-      var gateEl   = document.getElementById("hub-gate");
-      var bodyEl   = document.getElementById("hub-body");
-      var resetEl  = document.getElementById("hub-reset");
-      var greetEl  = document.getElementById("hub-greeting");
-      var emailEl  = document.getElementById("hub-email");
-
-      /* ── Password-reset flow (arrived via email link) ── */
-      var hashParams = new URLSearchParams(window.location.hash.slice(1));
-      if (hashParams.get("type") === "recovery" && hashParams.get("access_token")) {
-        sb.auth.setSession({
-          access_token:  hashParams.get("access_token"),
-          refresh_token: hashParams.get("refresh_token") || ""
-        });
-        if (resetEl) resetEl.hidden = false;
-        // Clean the hash so tokens don't stay in browser history
-        history.replaceState(null, "", window.location.pathname + window.location.search);
-      } else {
-        sb.auth.getSession().then(function (res) {
-          var session = res && res.data && res.data.session;
-          if (!session) {
-            if (gateEl) gateEl.hidden = false;
-            return;
-          }
-          var user = session.user || {};
-          var meta = user.user_metadata || {};
-          var name = meta.full_name || meta.name || "";
-          var first = name ? name.trim().split(" ")[0] : "";
-          if (greetEl) greetEl.textContent = first ? "Hello, " + first : "Your Account";
-          if (emailEl) emailEl.textContent = user.email || "";
-          if (bodyEl) bodyEl.hidden = false;
-        });
-      }
-
-      /* ── Gate: sign-in button ── */
-      var btnIn = document.getElementById("btn-hub-signin");
-      if (btnIn) {
-        btnIn.addEventListener("click", function () {
-          window.location.href = "login.html?return_to=" + encodeURIComponent(window.location.href);
-        });
-      }
-
-      /* ── Sign out ── */
-      var btnOut = document.getElementById("btn-signout");
-      if (btnOut) {
-        btnOut.addEventListener("click", function () {
-          sb.auth.signOut().then(function () {
-            window.location.href = "../";
-          });
-        });
-      }
-
-      /* ── Password reset form ── */
-      var formReset = document.getElementById("form-reset");
-      if (formReset) {
-        formReset.addEventListener("submit", function (e) {
-          e.preventDefault();
-          var pw   = formReset.elements["password"].value;
-          var conf = formReset.elements["confirm"].value;
-          var statusEl = document.getElementById("reset-status");
-          if (pw !== conf) {
-            if (statusEl) { statusEl.textContent = "Passwords do not match."; statusEl.dataset.state = "error"; }
-            return;
-          }
-          var btn = formReset.querySelector("button[type=submit]");
-          if (btn) btn.disabled = true;
-          sb.auth.updateUser({ password: pw }).then(function (res) {
-            if (res.error) {
-              if (statusEl) { statusEl.textContent = res.error.message || "Could not update password."; statusEl.dataset.state = "error"; }
-              if (btn) btn.disabled = false;
-            } else {
-              if (statusEl) { statusEl.textContent = "Password updated! Taking you home\u2026"; statusEl.dataset.state = "success"; }
-              setTimeout(function () { window.location.href = "../"; }, 1500);
-            }
-          });
-        });
-      }
-    })();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <script src="../assets/account-dashboard.js" defer></script>
     <script src="../assets/cart.js" defer></script>
   </body>
 </html>

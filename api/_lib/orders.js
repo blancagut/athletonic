@@ -132,9 +132,30 @@ async function fetchOrderBySession(supabase, sessionId) {
   return { order: sanitizeOrder(data), error: null };
 }
 
+async function fetchOrdersForCustomer(supabase, options) {
+  const userId = String(options?.userId || "").trim();
+  const email = String(options?.email || "").trim().toLowerCase();
+  const limit = Math.min(Math.max(Number(options?.limit) || 12, 1), 25);
+
+  if (!userId || !email) {
+    return { orders: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select(ORDER_SELECT)
+    .or(`user_id.eq.${userId},customer_email.eq.${email}`)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) return { orders: [], error };
+  return { orders: (data || []).map(sanitizeOrder).filter(Boolean), error: null };
+}
+
 module.exports = {
   fetchOrderById,
   fetchOrderByReferenceAndEmail,
+  fetchOrdersForCustomer,
   fetchOrderBySession,
   sanitizeOrder,
 };
