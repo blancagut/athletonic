@@ -13,6 +13,7 @@
   const GUEST_EMAIL_KEY = "athletonic-guest-email";
   const LAST_ORDER_REFERENCE_KEY = "athletonic-last-order-reference";
   const ACCESS_CODE_SESSION_KEY = "athletonic-access-code";
+  const LOCALHOST_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
 
   const $ = (selector, root) => (root || document).querySelector(selector);
   const $$ = (selector, root) =>
@@ -146,6 +147,10 @@
     try {
       sessionStorage.removeItem(key);
     } catch {}
+  }
+
+  function isLocalPreview() {
+    return LOCALHOST_HOSTNAMES.has(String(window.location.hostname || "").toLowerCase());
   }
 
   function normalizeCartItem(item) {
@@ -411,6 +416,12 @@
   }
 
   async function quoteCheckout(email, accessCode) {
+    if (isLocalPreview()) {
+      const error = new Error("Access pricing is unavailable in local preview.");
+      error.code = "local_preview";
+      throw error;
+    }
+
     const response = await fetch("/api/checkout-quote", {
       method: "POST",
       headers: {
@@ -453,6 +464,20 @@
     if (!hasEmailShape(email)) {
       if (!silent) {
         setFormStatus(accessCodeStatus, "Enter a valid email before applying an access code.", "error");
+      }
+      return;
+    }
+
+    if (isLocalPreview()) {
+      accessQuote = null;
+      sessionRemove(ACCESS_CODE_SESSION_KEY);
+      renderCartTotals(cartTotal());
+      if (!silent) {
+        setFormStatus(
+          accessCodeStatus,
+          "Access pricing is unavailable in local preview.",
+          "error"
+        );
       }
       return;
     }
@@ -699,6 +724,12 @@
   }
 
   async function submitCheckout(email) {
+    if (isLocalPreview()) {
+      const error = new Error("Checkout is unavailable in local preview.");
+      error.code = "local_preview";
+      throw error;
+    }
+
     const accessCode = accessCodeValue();
     const payload = {
       email,
