@@ -109,14 +109,9 @@ const displayOnlyFragments = [
 ];
 
 const combatGloveBrands = new Set([
-  "adidas",
-  "boon_sport",
-  "cleto_reyes",
-  "contender_fight_sports",
-  "engage",
+  "century_martial_arts",
   "everlast",
   "fairtex",
-  "fight_2_finish",
   "fuji_sports",
   "hayabusa",
   "raja_boxing",
@@ -133,8 +128,6 @@ const fittedApparelSizeValues = ["XS", "S", "M", "L", "XL"];
 const standardApparelSizeValues = ["S", "M", "L", "XL", "2XL", "3XL"];
 const extendedApparelSizeValues = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
 const mensFootwearSizeValues = [
-  "6",
-  "6.5",
   "7",
   "7.5",
   "8",
@@ -146,14 +139,8 @@ const mensFootwearSizeValues = [
   "11",
   "11.5",
   "12",
-  "12.5",
-  "13",
-  "14",
-  "15",
 ];
 const womensFootwearSizeValues = [
-  "5",
-  "5.5",
   "6",
   "6.5",
   "7",
@@ -166,7 +153,8 @@ const womensFootwearSizeValues = [
   "10.5",
   "11",
 ];
-const womensSlideSizeValues = ["5", "6", "7", "8", "9", "10", "11"];
+const mensSlideSizeValues = ["7", "8", "9", "10", "11", "12"];
+const womensSlideSizeValues = ["6", "7", "8", "9", "10", "11"];
 const kidsFootwearSizeValues = ["1", "2", "3", "4", "5", "6", "7"];
 
 const sections = [
@@ -839,7 +827,7 @@ function collectionLabel(value) {
 function productCard(product, pathPrefix = "./") {
   const brand = brandNames[product.brand] ?? product.brand;
   const name = product.displayName ?? product.name;
-  const label = product.displayLabel ?? collectionLabel(product.store_collection);
+  const label = productCommerceLabel(product);
   const deal = product.deal;
   const variantOffer = product.variantOffer;
   const purchaseMeta = product.purchaseMeta ?? null;
@@ -858,7 +846,7 @@ function productCard(product, pathPrefix = "./") {
   const offerNote = variantOffer
     ? variantOffer.note || "Select eligible options for this offer."
     : deal
-      ? `${displayDiscount > 0 ? `${displayDiscount}% off` : "Limited offer"}`
+      ? `${displayDiscount >= 5 ? `${displayDiscount}% off` : "Limited offer"}`
     : "";
   const dealEnds = deal?.expires_at
     ? new Intl.DateTimeFormat("en-US", {
@@ -935,6 +923,19 @@ const allCuratedProducts = populatedSections.flatMap((section) =>
     sectionDescription: section.description,
   }))
 );
+
+const allCuratedPurchaseMeta = purchaseMetaByProductId(
+  allCuratedProducts.map((product) => product.id)
+);
+
+const allCuratedProductsWithPurchaseMeta = allCuratedProducts.map((product) => ({
+  ...product,
+  purchaseMeta: allCuratedPurchaseMeta.get(String(product.id)) ?? {
+    hasAvailablePurchase: true,
+    requiresVariantSelection: false,
+    cartVariant: "",
+  },
+}));
 
 const dealsState = readJsonFile(new URL("../data/deals-state.json", import.meta.url), {
   offers: [],
@@ -1204,6 +1205,11 @@ const productSections = populatedSections
         sectionId: section.id,
         sectionTitle: section.title,
         sectionEyebrow: section.eyebrow,
+        purchaseMeta: allCuratedPurchaseMeta.get(String(product.id)) ?? {
+          hasAvailablePurchase: true,
+          requiresVariantSelection: false,
+          cartVariant: "",
+        },
       }));
       return `
       <section id="${section.id}" class="market-section">
@@ -1306,10 +1312,14 @@ function standardApparelSizeProfile(product) {
   ) {
     return { name: "Size", values: fittedApparelSizeValues };
   }
-  if (/\b(youth|kids|kid|boys|girls)\b/.test(text)) {
+  if (
+    /\b(youth|kids|kid|boys|girls)\b/.test(text)
+  ) {
     return { name: "Size", values: ["Y-S", "Y-M", "Y-L"] };
   }
-  if (/\b(hoodie|jacket|pants|sweatpants)\b/.test(text)) {
+  if (
+    /\b(hoodie|jacket|pants|sweatpants)\b/.test(text)
+  ) {
     return { name: "Size", values: extendedApparelSizeValues };
   }
   return { name: "Size", values: standardApparelSizeValues };
@@ -1328,18 +1338,17 @@ function isFootwearProduct(product) {
 function standardFootwearSizeProfile(product) {
   if (!isFootwearProduct(product)) return null;
   const text = productSizingText(product);
+  const isSlideLike = /\b(slide|slides|sandal|sandals)\b/.test(text);
   if (/\b(women|women's|womens)\b/.test(text)) {
     return {
       name: "Size",
-      values: /\b(slide|slides|sandal|sandals)\b/.test(text)
-        ? womensSlideSizeValues
-        : womensFootwearSizeValues,
+      values: isSlideLike ? womensSlideSizeValues : womensFootwearSizeValues,
     };
   }
   if (/\b(kids|kid|boys|girls|youth|grade school|preschool|toddler)\b/.test(text)) {
     return { name: "Size", values: kidsFootwearSizeValues };
   }
-  return { name: "Size", values: mensFootwearSizeValues };
+  return { name: "Size", values: isSlideLike ? mensSlideSizeValues : mensFootwearSizeValues };
 }
 
 function normalizeOptionValue(value) {
@@ -1465,9 +1474,7 @@ function isOunceSizeValue(value) {
 }
 
 function isLetterSizeValue(value) {
-  return /^(?:XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|Y-S|Y-M|Y-L)$/i.test(
-    normalizeOptionValue(value)
-  );
+  return /^(?:XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|Y-S|Y-M|Y-L)$/i.test(normalizeOptionValue(value));
 }
 
 function isSizeLikeOption(option) {
@@ -1667,6 +1674,29 @@ function sortDealsFirst(products = []) {
   });
 }
 
+function sortMerchFirst(products = [], { brands = [], terms = [] } = {}) {
+  const brandRank = new Map(brands.map((brand, index) => [brand, index]));
+  return [...products].sort((a, b) => {
+    const aBrand = brandRank.has(a.brand) ? brandRank.get(a.brand) : 999;
+    const bBrand = brandRank.has(b.brand) ? brandRank.get(b.brand) : 999;
+    if (aBrand !== bBrand) return aBrand - bBrand;
+
+    const aName = productNameText(a);
+    const bName = productNameText(b);
+    const aTerm = terms.findIndex((term) => aName.includes(term.toLowerCase()));
+    const bTerm = terms.findIndex((term) => bName.includes(term.toLowerCase()));
+    const aTermRank = aTerm === -1 ? 999 : aTerm;
+    const bTermRank = bTerm === -1 ? 999 : bTerm;
+    if (aTermRank !== bTermRank) return aTermRank - bTermRank;
+
+    const aOffer = a.deal || a.variantOffer ? 1 : 0;
+    const bOffer = b.deal || b.variantOffer ? 1 : 0;
+    if (aOffer !== bOffer) return bOffer - aOffer;
+
+    return String(a.displayName ?? a.name).localeCompare(String(b.displayName ?? b.name));
+  });
+}
+
 function latestOfficialProducts(limit = 12) {
   const rows = runQuery(`
     select
@@ -1728,8 +1758,8 @@ function latestOfficialProducts(limit = 12) {
   return out;
 }
 
-function renderHomeHero(slides = []) {
-  if (!slides.length) {
+function renderHomeHero(featuredOffers = []) {
+  if (!featuredOffers.length) {
     return `
       <section class="hero">
         <div class="hero-copy">
@@ -1747,38 +1777,86 @@ function renderHomeHero(slides = []) {
       </section>`;
   }
 
-  return `
-      <section class="hero hero-slider" data-hero-slider>
-        ${slides
-          .map((product, index) => {
-            const brand = brandNames[product.brand] ?? product.brand;
-            const compare = Number(product.deal?.original_price || 0);
-            const heroTitle = `${brand} ${product.displayLabel || "offer"}`.trim();
-            const note = product.variantOffer
-              ? product.variantOffer.note || "Select options for this offer."
-              : product.deal
-                ? `${Number(product.deal.discount_percent || 0)}% off${product.deal.expires_at ? ` through ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(product.deal.expires_at))}` : ""}`
-                : "Real catalog offer";
-            return `
-        <article class="hero-slide${index === 0 ? " is-active" : ""}" data-hero-slide>
-          <div class="hero-copy">
-            <p class="eyebrow">Offer ${index + 1}</p>
-            <h1>${html(heroTitle)}</h1>
-            <p>${html(`${product.displayName ?? product.name} • ${note}`)}</p>
-            <div class="hero-actions">
-              <a href="./product/${html(product.id)}.html">Shop offer</a>
-              <a href="./pages/daily-deals.html">Today's deals</a>
-            </div>
-          </div>
+  const primaryOffer = featuredOffers[0];
+  const supportingOffers = featuredOffers.slice(1, 5);
+  const primaryBrand = brandNames[primaryOffer.brand] ?? primaryOffer.brand;
+  const primaryCompare = Number(
+    primaryOffer.deal?.original_price || primaryOffer.variantOffer?.original_price || 0
+  );
+  const primaryDiscount = Number(
+    primaryOffer.deal?.discount_percent || primaryOffer.variantOffer?.discount_percent || 0
+  );
+  const primaryNote = primaryOffer.variantOffer
+    ? primaryOffer.variantOffer.note || "Select options for this offer."
+    : primaryOffer.deal
+      ? `${primaryDiscount >= 5 ? `${primaryDiscount}% off` : "Limited offer"}${
+          primaryOffer.deal.expires_at
+            ? ` through ${new Intl.DateTimeFormat("en-US", {
+                month: "short",
+                day: "numeric",
+              }).format(new Date(primaryOffer.deal.expires_at))}`
+            : ""
+        }`
+      : "Real catalog offer";
 
-          <div class="hero-deal">
-            <span class="deal-label">${html(product.displayLabel || "Offer")}</span>
+  return `
+      <section class="hero hero-offers">
+        <div class="hero-copy">
+          <p class="eyebrow">Today's Deals</p>
+          <h1>Today's Deals</h1>
+          <p>Supplements, protein value picks, strength staples, and fight gear from the live catalog.</p>
+          <div class="hero-actions">
+            <a href="./product/${html(primaryOffer.id)}.html">Shop offer</a>
+            <a href="./pages/daily-deals.html">Browse all deals</a>
+          </div>
+        </div>
+
+        <div class="hero-offer-grid">
+          <article class="hero-deal hero-deal-primary">
+            <span class="deal-label">${html(productCommerceLabel(primaryOffer) || "Offer")}</span>
+            <img
+              src="${html(primaryOffer.image)}"
+              alt="${html(primaryOffer.displayName ?? primaryOffer.name)}"
+              width="${html(primaryOffer.imageWidth || 640)}"
+              height="${html(primaryOffer.imageHeight || 640)}"
+              fetchpriority="high"
+              decoding="async"
+            />
+            <h2>${html(primaryOffer.displayName ?? primaryOffer.name)}</h2>
+            <p>${html(`${primaryBrand} • ${primaryNote}`)}</p>
+            <strong>${html(money(primaryOffer.price, primaryOffer.currency || "USD"))}${
+              primaryCompare > Number(primaryOffer.price || 0)
+                ? `<span>${html(money(primaryCompare, primaryOffer.currency || "USD"))}</span>`
+                : ""
+            }</strong>
+            <a class="hero-deal-link" href="./product/${html(primaryOffer.id)}.html">Shop deal</a>
+          </article>
+
+          ${supportingOffers
+            .map((product) => {
+              const brand = brandNames[product.brand] ?? product.brand;
+              const compare = Number(
+                product.deal?.original_price || product.variantOffer?.original_price || 0
+              );
+              const discount = Number(
+                product.deal?.discount_percent || product.variantOffer?.discount_percent || 0
+              );
+              const note = product.variantOffer
+                ? product.variantOffer.note || "Select options for this offer."
+                : product.deal
+                  ? discount >= 5
+                    ? `${discount}% off`
+                    : "Limited offer"
+                  : "Value pick";
+              return `
+          <article class="hero-deal hero-deal-compact">
+            <span class="deal-label">${html(productCommerceLabel(product) || "Offer")}</span>
             <img
               src="${html(product.image)}"
               alt="${html(product.displayName ?? product.name)}"
               width="${html(product.imageWidth || 640)}"
               height="${html(product.imageHeight || 640)}"
-              fetchpriority="${index === 0 ? "high" : "auto"}"
+              fetchpriority="auto"
               decoding="async"
             />
             <h2>${html(product.displayName ?? product.name)}</h2>
@@ -1788,22 +1866,11 @@ function renderHomeHero(slides = []) {
                 ? `<span>${html(money(compare, product.currency || "USD"))}</span>`
                 : ""
             }</strong>
-          </div>
-        </article>`;
-          })
-          .join("\n")}
-        ${
-          slides.length > 1
-            ? `<div class="hero-slider-controls" aria-label="Offer slider controls">
-        ${slides
-          .map(
-            (_, index) =>
-              `<button type="button" class="hero-slider-dot${index === 0 ? " is-active" : ""}" data-hero-dot="${index}" aria-label="Show offer ${index + 1}"></button>`
-          )
-          .join("\n")}
-      </div>`
-            : ""
-        }
+            <a class="hero-deal-link" href="./product/${html(product.id)}.html">Shop deal</a>
+          </article>`;
+            })
+            .join("\n")}
+        </div>
       </section>`;
 }
 
@@ -2007,7 +2074,7 @@ writeFileSync(
     {
       generated_at: new Date().toISOString(),
       currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
-      products: allCuratedProducts.map((product) => ({
+      products: allCuratedProductsWithPurchaseMeta.map((product) => ({
         id: String(product.id),
         brand_slug: product.brand,
         brand: brandNames[product.brand] ?? product.brand,
@@ -2961,6 +3028,42 @@ function productMatchesTerms(product, terms = []) {
   return terms.some((term) => searchText.includes(term.toLowerCase()));
 }
 
+function productNameText(product) {
+  return [product?.displayName, product?.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function productNameMatchesTerms(product, terms = []) {
+  if (!terms.length) return true;
+  const nameText = productNameText(product);
+  return terms.some((term) => nameText.includes(term.toLowerCase()));
+}
+
+function productCommerceLabel(product) {
+  if (
+    productMatchesTerms(product, [
+      "boxing",
+      "muay",
+      "glove",
+      "mitt",
+      "punching bag",
+      "heavy bag",
+      "shin",
+      "headgear",
+    ])
+  ) {
+    return "Boxing gear";
+  }
+
+  if (productMatchesTerms(product, ["grip", "wrap", "pad", "belt", "strap"])) {
+    return "Training gear";
+  }
+
+  return product.displayLabel ?? collectionLabel(product.store_collection);
+}
+
 function uniqueProducts(products = [], limit = 14) {
   const seen = new Set();
   const out = [];
@@ -3008,13 +3111,179 @@ function customShelf({
   sectionIds = [],
   products,
   limit = 14,
+  ...rest
 }) {
+  const sourceProducts = products ?? blendedProducts(sectionIds, limit * 8);
   return {
     eyebrow,
     title,
     description,
-    products: uniqueProducts(products ?? blendedProducts(sectionIds, limit), limit),
+    products: uniqueProducts(sourceProducts, sourceProducts.length || limit),
+    limit,
+    ...rest,
   };
+}
+
+function productIdValue(product) {
+  return String(product?.id ?? "").trim();
+}
+
+function productSectionValue(product) {
+  return String(product?.sectionId ?? "").trim();
+}
+
+function uniquePurchasableProducts(products = [], purchaseMeta = new Map()) {
+  return applyPurchaseMeta(uniqueProducts(products, products.length || 1), purchaseMeta);
+}
+
+function buildBrandCountMap(products = []) {
+  const counts = new Map();
+  for (const product of products) {
+    const brand = String(product?.brand ?? "").trim();
+    if (!brand) continue;
+    counts.set(brand, (counts.get(brand) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function pickShelfProducts(
+  candidates = [],
+  {
+    limit = 12,
+    purchaseMeta = new Map(),
+    usedIds = new Set(),
+    globalBrandCounts = new Map(),
+    maxPerBrand = 2,
+    maxGlobalBrand = 4,
+    maxPerSection = Number.POSITIVE_INFINITY,
+  } = {}
+) {
+  const pool = uniquePurchasableProducts(candidates, purchaseMeta).filter(
+    (product) => !usedIds.has(productIdValue(product))
+  );
+  const chosen = [];
+  const chosenIds = new Set();
+  const brandCounts = new Map();
+  const sectionCounts = new Map();
+  const passes = [
+    {
+      maxPerBrand,
+      maxGlobalBrand,
+      maxPerSection,
+    },
+    {
+      maxPerBrand: Math.max(maxPerBrand, 2),
+      maxGlobalBrand: Math.max(maxGlobalBrand, 5),
+      maxPerSection:
+        Number.isFinite(maxPerSection) ? Math.max(maxPerSection, 6) : maxPerSection,
+    },
+    {
+      maxPerBrand: Number.POSITIVE_INFINITY,
+      maxGlobalBrand: Number.POSITIVE_INFINITY,
+      maxPerSection: Number.POSITIVE_INFINITY,
+    },
+  ];
+
+  for (const pass of passes) {
+    while (chosen.length < limit) {
+      let bestProduct = null;
+      let bestScore = Number.POSITIVE_INFINITY;
+
+      for (const product of pool) {
+        const id = productIdValue(product);
+        if (!id || chosenIds.has(id)) continue;
+
+        const brand = String(product?.brand ?? "").trim();
+        const sectionId = productSectionValue(product);
+        const shelfBrandCount = brandCounts.get(brand) ?? 0;
+        const globalBrandCount = globalBrandCounts.get(brand) ?? 0;
+        const shelfSectionCount = sectionCounts.get(sectionId) ?? 0;
+
+        if (shelfBrandCount >= pass.maxPerBrand) continue;
+        if (globalBrandCount >= pass.maxGlobalBrand) continue;
+        if (shelfSectionCount >= pass.maxPerSection) continue;
+
+        const offerStrength = Number(
+          product.deal?.discount_percent || product.variantOffer?.discount_percent || 0
+        );
+        const score =
+          shelfBrandCount * 100 +
+          globalBrandCount * 30 +
+          shelfSectionCount * 10 +
+          -offerStrength;
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestProduct = product;
+        }
+      }
+
+      if (!bestProduct) break;
+
+      const id = productIdValue(bestProduct);
+      const brand = String(bestProduct?.brand ?? "").trim();
+      const sectionId = productSectionValue(bestProduct);
+      const shelfBrandCount = brandCounts.get(brand) ?? 0;
+      const shelfSectionCount = sectionCounts.get(sectionId) ?? 0;
+
+      chosen.push(bestProduct);
+      chosenIds.add(id);
+      if (brand) brandCounts.set(brand, shelfBrandCount + 1);
+      if (sectionId) sectionCounts.set(sectionId, shelfSectionCount + 1);
+    }
+    if (chosen.length >= limit) break;
+  }
+
+  return chosen.slice(0, limit);
+}
+
+function buildHomeShelvesWithDiversity(shelves = [], purchaseMeta = new Map()) {
+  const usedIds = new Set();
+  const globalBrandCounts = new Map();
+  const out = [];
+
+  for (const shelf of shelves) {
+    const products = pickShelfProducts(shelf.products, {
+      limit: shelf.limit ?? 12,
+      purchaseMeta,
+      usedIds,
+      globalBrandCounts,
+      maxPerBrand: shelf.maxPerBrand ?? 2,
+      maxGlobalBrand: shelf.maxGlobalBrand ?? 4,
+      maxPerSection: shelf.maxPerSection ?? Number.POSITIVE_INFINITY,
+    });
+
+    const uniqueBrands = new Set(products.map((product) => String(product?.brand ?? "").trim()).filter(Boolean));
+    if (products.length < 4) continue;
+    if ((shelf.minUniqueBrands ?? 1) > uniqueBrands.size) continue;
+
+    for (const product of products) {
+      const id = productIdValue(product);
+      const brand = String(product?.brand ?? "").trim();
+      if (id) usedIds.add(id);
+      if (brand) globalBrandCounts.set(brand, (globalBrandCounts.get(brand) ?? 0) + 1);
+    }
+
+    out.push({
+      ...shelf,
+      products,
+    });
+  }
+
+  return out;
+}
+
+function homePurchaseMetaWithOffers(products = [], purchaseMeta = new Map()) {
+  const meta = new Map(purchaseMeta);
+  for (const product of products) {
+    if (!product?.variantOffer && !product?.purchaseMeta?.requiresVariantSelection) continue;
+    meta.set(String(product.id), {
+      hasAvailablePurchase: true,
+      requiresVariantSelection: true,
+      cartVariant: "",
+    });
+  }
+  return meta;
 }
 
 function filteredShelf({
@@ -3181,6 +3450,7 @@ const officialHomeRecords = searchIndexRecords.filter(
 );
 
 const officialHomeProducts = officialHomeRecords.map(indexRecordToProduct);
+const catalogHomeProducts = searchIndexRecords.map(indexRecordToProduct);
 
 const officialDealProducts = sortDealsFirst(
   officialHomeRecords
@@ -3188,23 +3458,329 @@ const officialDealProducts = sortDealsFirst(
     .map(indexRecordToProduct)
 );
 
-const proteinValueProducts = sortDealsFirst(
+function isHomeDealCandidate(product) {
+  if (
+    productMatchesTerms(product, [
+      "book",
+      "memoir",
+      "jazz",
+      "mob",
+      "cable machine",
+      "attachment",
+      "replacement",
+      "shoe",
+      "pegasus",
+      "trail",
+      "recoverypulse",
+    ])
+  ) {
+    return false;
+  }
+
+  if (["protein", "creatine", "pre-workout", "hydration", "bars-shakes"].includes(product.sectionId)) {
+    return true;
+  }
+
+  if (product.sectionId === "training-gear") {
+    return productMatchesTerms(product, [
+      "boxing",
+      "muay",
+      "glove",
+      "mitt",
+      "pad",
+      "wrap",
+      "bag",
+      "shin",
+      "headgear",
+    ]);
+  }
+
+  if (product.sectionId === "accessories") {
+    return productMatchesTerms(product, ["glove", "mitt", "pad", "wrap", "boxing", "muay"]);
+  }
+
+  return false;
+}
+
+const coreHeroDealProducts = officialDealProducts.filter(
+  (product) => isHomeDealCandidate(product)
+);
+
+const homeValueProducts = sortDealsFirst(
   officialHomeProducts.filter(
     (product) =>
-      ["protein", "bars-shakes"].includes(product.sectionId) &&
-      productMatchesTerms(product, [
-        "protein",
-        "whey",
-        "isolate",
-        "casein",
-        "variety pack",
-        "bundle",
-        "multi-pack",
-        "multipack",
-        "2 bottles",
-        "3 bottles",
+      isHomeDealCandidate(product) &&
+      Number(product.price || 0) > 0 &&
+      Number(product.price || 0) <= 90
+  )
+);
+
+function realPricedProduct(product) {
+  const price = Number(product?.price || 0);
+  return Number.isFinite(price) && price > 0;
+}
+
+function cleanHomeProduct(product) {
+  return (
+    realPricedProduct(product) &&
+    !productMatchesTerms(product, [
+      "book",
+      "memoir",
+      "jazz",
+      "mob",
+      "gift card",
+      "sample",
+      "test",
+      "replacement",
+      "insert for glove",
+      "key chain",
+      "socks",
+      "sock",
+      "hoodie",
+      "crew",
+      "pullover",
+      "quarter zip",
+      "zip up",
+      "breeze",
+      "sweatpants",
+      "pants",
+      "tee",
+      "t-shirt",
+      "shorts",
+      "airpod",
+      "case skin",
+      "dog toy",
+      "trucker cap",
+      "walkingpad",
+      "treadmill",
+      "foldable",
+      "rack",
+      "cable attachment",
+      "abductor",
+      "leg extension",
+      "pec fly",
+    ])
+  );
+}
+
+function proteinProduct(product) {
+  return (
+    cleanHomeProduct(product) &&
+    productNameMatchesTerms(product, [
+      "protein",
+      "whey",
+      "isolate",
+      "casein",
+      "mass gainer",
+    ]) &&
+    !productMatchesTerms(product, ["shaker", "pre-workout", "amin.o", "bcaa", "hoodie", "tumbler"])
+  );
+}
+
+const proteinValueProducts = sortMerchFirst(
+  uniqueProducts(
+    [
+      ...catalogHomeProducts.filter((product) => String(product.id) === "1509"),
+      ...officialHomeProducts.filter(
+        (product) =>
+          proteinProduct(product) &&
+          productNameMatchesTerms(product, [
+            "variety pack",
+            "bundle",
+            "multi-pack",
+            "multipack",
+            "2 bottles",
+            "3 bottles",
+            "5lb",
+            "5 lb",
+            "5 lbs",
+          ]) &&
+          !productMatchesTerms(product, ["kids"])
+      ),
+    ],
+    80
+  ),
+  {
+    brands: ["optimum_nutrition", "transparent_labs", "raw_nutrition", "animal_pak", "muscletech", "nutrabio", "bare_performance", "momentous", "orgain", "naked_nutrition"],
+    terms: ["gold standard", "5 lb", "5lb", "5 lbs", "100% whey", "whey isolate", "isolate", "mass gainer", "protein bundle", "variety pack"],
+  }
+);
+
+const proteinEssentialsProducts = sortMerchFirst(
+  uniqueProducts(
+    [
+      ...catalogHomeProducts.filter((product) => String(product.id) === "1509"),
+      ...officialHomeProducts.filter(
+        (product) =>
+          proteinProduct(product) &&
+          productNameMatchesTerms(product, [
+            "gold standard 100% whey",
+            "gold standard",
+            "100% whey",
+            "whey protein",
+            "whey isolate",
+            "grass-fed whey",
+            "isolate protein",
+            "nitro tech",
+            "mass gainer",
+          ]) &&
+          !productNameMatchesTerms(product, ["casein"])
+      ),
+    ],
+    120
+  ),
+  {
+    brands: ["optimum_nutrition", "transparent_labs", "raw_nutrition", "animal_pak", "muscletech", "nutrabio", "bare_performance", "momentous", "orgain", "naked_nutrition"],
+    terms: ["gold standard 100% whey", "100% whey", "gold standard", "whey protein", "whey isolate", "isolate protein", "mass gainer", "grass-fed whey"],
+  }
+);
+
+const creatineProducts = sortMerchFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      productNameMatchesTerms(product, ["creatine"]) &&
+      !productMatchesTerms(product, ["pre-workout", "pre workout", "legend", "mode lightning", "collagen"])
+  ),
+  {
+    brands: ["transparent_labs", "gorilla_mind", "raw_nutrition", "nutrabio", "kaged", "muscletech", "naked_nutrition", "momentous", "codeage"],
+    terms: ["creatine hmb", "creatine monohydrate", "creatine hcl", "creatine + hmb", "creatine gummies"],
+  }
+);
+
+const preWorkoutProducts = sortMerchFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      productNameMatchesTerms(product, [
+        "pre-workout",
+        "pre workout",
+        "preworkout",
+        "legend all out",
+        "superhuman",
+        "gorilla mode",
+        "nitric",
+        "thavage",
+        "c4",
+        "alphamine",
+        "naked energy",
       ]) &&
-      !productMatchesTerms(product, ["kids", "sample", "test"])
+      !productMatchesTerms(product, [
+        "whey",
+        "protein powder",
+        "clear whey",
+        "5lb whey",
+        "hat",
+        "cap",
+        "shirt",
+        "seeds",
+        "seed",
+        "collagen",
+        "oil drops",
+        "kids",
+        "airpod",
+        "case skin",
+        "case",
+        "patch",
+        "bundle",
+        "stack",
+      ])
+  ),
+  {
+    brands: ["ghost_lifestyle", "gorilla_mind", "raw_nutrition", "alpha_lion", "cellucor", "onnit", "naked_nutrition", "pescience", "jacked_factory", "nutrex"],
+    terms: ["legend all out", "gorilla mode", "superhuman", "c4", "pre-workout", "pre workout", "thavage", "alphamine", "naked energy"],
+  }
+);
+
+const hydrationProducts = sortMerchFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      productNameMatchesTerms(product, [
+        "hydration",
+        "electrolyte",
+        "liquid i.v.",
+        "skratch",
+        "nuun",
+        "multiplier",
+        "dripdrop",
+        "immune booster",
+        "canteen",
+      ]) &&
+      !productMatchesTerms(product, [
+        "pre-workout",
+        "protein",
+        "collagen",
+        "greens",
+        "matcha",
+        "skin essentials",
+        "chocolate drink",
+        "hat",
+        "cap",
+        "shirt",
+        "airpod",
+        "case",
+        "bottle",
+        "stack",
+      ])
+  ),
+  {
+    brands: ["liquid_iv", "skratch_labs", "nuun", "drip_drop", "cure_hydration", "cellucor", "alpha_lion"],
+    terms: ["hydration multiplier", "electrolyte", "hydration", "nuun", "skratch", "liquid i.v."],
+  }
+);
+
+const boxingGloveProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      productNameMatchesTerms(product, ["boxing glove", "boxing gloves", "muay thai glove", "bgv", "gloves", "glove"]) &&
+      !productMatchesTerms(product, ["kids", "insert", "key chain", "t-shirt", "rashguard"])
+  ),
+  {
+    brands: ["fairtex", "twins_special", "windy", "hayabusa", "rival_boxing", "everlast", "venum", "sanabul"],
+    terms: ["bgv", "boxing gloves", "muay thai", "glove"],
+  }
+);
+
+const bagsMittsPadsProducts = sortDealsFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "century_martial_arts", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      productNameMatchesTerms(product, [
+        "heavy bag",
+        "punching bag",
+        "muay thai bag",
+        "banana bag",
+        "punch mitt",
+        "focus mitt",
+        "mitts",
+        "thai pads",
+        "kick pad",
+        "reflex bag",
+        "pole bag",
+      ]) &&
+      !productMatchesTerms(product, ["crash pad", "gi limited", "t-shirt", "shorts"])
+  )
+);
+
+const wrapsGuardsFightAccessoriesProducts = sortDealsFirst(
+  officialHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) &&
+      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      productNameMatchesTerms(product, [
+        "hand wrap",
+        "quick wraps",
+        "shin guard",
+        "headgear",
+        "mouthguard",
+        "ankle guard",
+        "groin guard",
+        "gel wraps",
+      ])
   )
 );
 
@@ -3232,7 +3808,7 @@ const boxingProducts = officialHomeProducts.filter(
 
 const gloveProducts = officialHomeProducts.filter(
   (product) =>
-    product.sectionId === "training-gear" &&
+    ["training-gear", "accessories"].includes(product.sectionId) &&
     ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "century_martial_arts", "fuji_sports"].includes(product.brand) &&
     productMatchesTerms(product, [
       "glove",
@@ -3250,6 +3826,7 @@ const gloveProducts = officialHomeProducts.filter(
 const bundleProducts = sortDealsFirst(
   officialHomeProducts.filter(
     (product) =>
+      cleanHomeProduct(product) &&
       productMatchesTerms(product, [
         "bundle",
         "stack",
@@ -3261,18 +3838,67 @@ const bundleProducts = sortDealsFirst(
         "3 bottles",
         "starter stack",
       ]) &&
-      !productMatchesTerms(product, ["test", "sample", "kids", "gift", "build a bundle"]) &&
+      (
+        ["protein", "creatine", "pre-workout", "hydration", "bars-shakes"].includes(product.sectionId) ||
+        productNameMatchesTerms(product, [
+          "protein",
+          "whey",
+          "electrolyte",
+          "hydration",
+          "creatine",
+          "pre-workout",
+          "greens",
+          "boxing",
+          "glove",
+          "hand grips",
+          "wrap",
+        ])
+      ) &&
+      !productMatchesTerms(product, [
+        "test",
+        "sample",
+        "kids",
+        "gift",
+        "build a bundle",
+        "cleanser",
+        "skin",
+        "serum",
+        "beauty",
+        "mane",
+        "sleep",
+        "blackout",
+        "pearly",
+        "whites",
+        "journal",
+        "diamondbacks",
+        "dressed",
+        "crash pad",
+        "hat",
+        "cap",
+        "shirt",
+        "apparel",
+      ]) &&
       Number(product.price || 0) > 0
   )
 );
 
-const homeShelvesDraft = [
+const initialHomeShelvesDraft = [
   customShelf({
     eyebrow: "Deals",
     title: "Today's Deals",
-    description: "Live offers, markdowns, and active price drops from the real Athletonic catalog.",
-    products: officialDealProducts,
-    limit: 10,
+    description: "Live deals and value picks from the real Athletonic catalog, selected for variety instead of repetition.",
+    products:
+      coreHeroDealProducts.length >= 8
+        ? coreHeroDealProducts
+        : uniqueProducts(
+            [...coreHeroDealProducts, ...officialDealProducts.filter(isHomeDealCandidate), ...homeValueProducts],
+            80
+          ),
+    limit: 8,
+    maxPerBrand: 1,
+    maxGlobalBrand: 2,
+    maxPerSection: 2,
+    minUniqueBrands: 4,
   }),
   customShelf({
     eyebrow: "Popular picks",
@@ -3280,91 +3906,176 @@ const homeShelvesDraft = [
     description: "Top catalog picks across supplements, recovery, and training essentials.",
     products: populatedSections.flatMap((section) => sectionProducts(section.id, 2)),
     limit: 12,
+    maxPerBrand: 1,
+    maxGlobalBrand: 3,
+    maxPerSection: 3,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Protein",
+    title: "Protein Essentials",
+    description: "Core whey, isolate, mass gainer, and Gold Standard protein basics.",
+    products: proteinEssentialsProducts,
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Protein",
+    title: "Protein Deals & 5LB Tubs",
+    description: "Whey deals, isolate value picks, 5LB tubs, and multi-pack protein offers.",
+    products: uniqueProducts(
+      [
+        ...proteinEssentialsProducts.filter((product) =>
+          product.variantOffer && productNameMatchesTerms(product, ["gold standard 100% whey", "100% whey"])
+        ),
+        ...proteinValueProducts.filter((product) => product.deal || product.variantOffer),
+        ...proteinValueProducts,
+        ...proteinEssentialsProducts.filter((product) =>
+          productMatchesTerms(product, ["5lb", "5 lb", "5 lbs", "2x", "gold standard"])
+        ),
+      ],
+      80
+    ),
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 5,
+    maxPerSection: 12,
+    minUniqueBrands: 4,
+  }),
+  customShelf({
+    eyebrow: "Strength",
+    title: "Creatine Best Sellers",
+    description: "Creatine powders, HMB blends, capsules, and strength staples.",
+    products: creatineProducts,
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Energy",
+    title: "Pre-Workout",
+    description: "Training energy, pumps, nitric formulas, and stimulant-free options.",
+    products: preWorkoutProducts,
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Hydration",
+    title: "Hydration & Electrolytes",
+    description: "Electrolyte sticks, hydration multipliers, drink mixes, and training fluids.",
+    products: hydrationProducts,
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Combat sports",
+    title: "Boxing & Muay Thai Gloves",
+    description: "Boxing gloves and Muay Thai gloves from real fight-gear inventory.",
+    products: boxingGloveProducts,
+    limit: 12,
+    maxPerBrand: 3,
+    maxGlobalBrand: 5,
+    maxPerSection: 12,
+    minUniqueBrands: 3,
   }),
   customShelf({
     eyebrow: "Supplements",
     title: "Top Supplements",
-    description: "Protein, hydration, vitamins, greens, and ready-to-drink staples in one shelf.",
-    sectionIds: ["protein", "hydration", "vitamins", "greens", "bars-shakes"],
+    description: "Vitamins, greens, bars, shakes, daily health, and supplement staples.",
+    sectionIds: ["vitamins", "greens", "bars-shakes", "hydration"],
     limit: 12,
-  }),
-  customShelf({
-    eyebrow: "Protein",
-    title: "Protein Deals",
-    description: "Current protein offers, value packs, and variety picks with real catalog pricing.",
-    products: uniqueProducts(
-      [
-        ...proteinValueProducts.filter((product) => product.deal || product.variantOffer),
-        ...proteinValueProducts,
-      ],
-      12
-    ),
-    limit: 12,
-  }),
-  customShelf({
-    eyebrow: "Strength",
-    title: "Creatine & Pre-workout",
-    description: "Lift-day staples for pumps, strength, and training energy.",
-    sectionIds: ["creatine", "pre-workout"],
-    limit: 12,
+    maxPerBrand: 1,
+    maxGlobalBrand: 3,
+    maxPerSection: 3,
+    minUniqueBrands: 4,
   }),
   customShelf({
     eyebrow: "Combat sports",
-    title: "Muay Thai & Boxing Gear",
-    description: "Real fight gear, pads, gloves, and protection from active catalog inventory.",
-    products: boxingProducts,
+    title: "Punching Bags, Mitts & Pads",
+    description: "Heavy bags, Muay Thai bags, punch mitts, focus mitts, and training pads.",
+    products: bagsMittsPadsProducts,
     limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 3,
   }),
   customShelf({
-    eyebrow: "Training gear",
-    title: "Gloves & Training Gear",
-    description: "Gloves, mitts, wraps, pads, bags, and core training equipment.",
-    products: gloveProducts,
+    eyebrow: "Fight accessories",
+    title: "Wraps, Guards & Fight Accessories",
+    description: "Hand wraps, quick wraps, headgear, shin guards, mouthguards, and protection.",
+    products: wrapsGuardsFightAccessoriesProducts,
     limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 12,
+    minUniqueBrands: 3,
+  }),
+  customShelf({
+    eyebrow: "Recovery",
+    title: "Recovery & Training Essentials",
+    description: "Recovery devices and useful training gear placed below the core shopping rows.",
+    sectionIds: ["recovery", "sleep", "accessories"],
+    limit: 12,
+    maxPerBrand: 2,
+    maxGlobalBrand: 4,
+    maxPerSection: 5,
+    minUniqueBrands: 4,
   }),
 ];
 
 if (bundleProducts.length >= 4) {
-  homeShelvesDraft.push(
+  initialHomeShelvesDraft.push(
     customShelf({
       eyebrow: "Value picks",
       title: "Bundles & Multi-pack Deals",
       description: "Only real bundles, variety packs, and multi-bottle offers with valid pricing.",
       products: bundleProducts,
       limit: 12,
+      maxPerBrand: 2,
+      maxGlobalBrand: 4,
+      minUniqueBrands: 2,
     })
   );
 }
 
 const latestProductsDraft = latestOfficialProducts(12);
 if (latestProductsDraft.length >= 4) {
-  homeShelvesDraft.push(
+  initialHomeShelvesDraft.push(
     customShelf({
       eyebrow: "New arrivals",
       title: "New Arrivals",
       description: "Recently added products pulled from the current official catalog data.",
       products: latestProductsDraft,
       limit: 12,
+      maxPerBrand: 2,
+      maxGlobalBrand: 4,
+      minUniqueBrands: 3,
     })
   );
 }
 
-const homePurchaseMeta = purchaseMetaByProductId(
-  homeShelvesDraft.flatMap((shelf) => shelf.products.map((product) => product.id))
+const homeShelfCandidates = initialHomeShelvesDraft.flatMap((shelf) => shelf.products);
+const homePurchaseMeta = homePurchaseMetaWithOffers(
+  homeShelfCandidates,
+  purchaseMetaByProductId(homeShelfCandidates.map((product) => product.id))
 );
 
-const homeShelves = homeShelvesDraft
-  .map((shelf) => ({
-    ...shelf,
-    products: applyPurchaseMeta(
-      uniqueProducts(shelf.products, shelf.products.length),
-      homePurchaseMeta
-    ),
-  }))
-  .filter((shelf) => shelf.products.length >= 4);
+const homeShelves = buildHomeShelvesWithDiversity(initialHomeShelvesDraft, homePurchaseMeta);
 
 const heroSlides = (homeShelves.find((shelf) => shelf.title === "Today's Deals")?.products ?? [])
-  .slice(0, 5);
+  .slice(0, 4);
 
 const categoryCards = [
   {
@@ -3411,7 +4122,7 @@ const page = `<!doctype html>
     />
     ${canonicalLink("/")}
     ${assetHeadLinks("./")}
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=home-marketplace-fix-2" />
   </head>
   <body class="home-body">
     <a id="top" tabindex="-1" aria-hidden="true"></a>
@@ -3523,51 +4234,6 @@ ${mobileBottomNav("./")}
     <script>
       window.ATHLETONIC_SUPABASE_URL = "${html(SUPABASE_PUBLIC_URL)}";
       window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
-      document.addEventListener("DOMContentLoaded", function () {
-        var slider = document.querySelector("[data-hero-slider]");
-        if (!slider) return;
-        var slides = Array.from(slider.querySelectorAll("[data-hero-slide]"));
-        var dots = Array.from(slider.querySelectorAll("[data-hero-dot]"));
-        if (slides.length <= 1) return;
-        var current = 0;
-        var timer = null;
-
-        function show(index) {
-          current = (index + slides.length) % slides.length;
-          slides.forEach(function (slide, slideIndex) {
-            slide.classList.toggle("is-active", slideIndex === current);
-          });
-          dots.forEach(function (dot, dotIndex) {
-            dot.classList.toggle("is-active", dotIndex === current);
-          });
-        }
-
-        function start() {
-          stop();
-          timer = window.setInterval(function () {
-            show(current + 1);
-          }, 4800);
-        }
-
-        function stop() {
-          if (timer) window.clearInterval(timer);
-          timer = null;
-        }
-
-        dots.forEach(function (dot) {
-          dot.addEventListener("click", function () {
-            show(Number(dot.getAttribute("data-hero-dot") || 0));
-            start();
-          });
-        });
-
-        slider.addEventListener("mouseenter", stop);
-        slider.addEventListener("mouseleave", start);
-        slider.addEventListener("focusin", stop);
-        slider.addEventListener("focusout", start);
-        show(0);
-        start();
-      });
     </script>
     <script src="./assets/cart.js" defer></script>
   </body>
@@ -5577,12 +6243,12 @@ ${renderFooter(pathPrefix)}
 `;
 }
 
-const curatedIds = allCuratedProducts.map((p) => p.id);
+const curatedIds = allCuratedProductsWithPurchaseMeta.map((p) => p.id);
 const { rowsById: pdpRowsById, imagesById: pdpImagesById } = fetchPdpData(curatedIds);
 
 // Group curated products by section to compute "related" lists
 const sectionProductsBySection = new Map();
-for (const product of allCuratedProducts) {
+for (const product of allCuratedProductsWithPurchaseMeta) {
   if (!sectionProductsBySection.has(product.sectionId)) {
     sectionProductsBySection.set(product.sectionId, []);
   }
@@ -5607,7 +6273,7 @@ if (stalePdpFiles.length > 0) {
 }
 
 let pdpCount = 0;
-for (const product of allCuratedProducts) {
+for (const product of allCuratedProductsWithPurchaseMeta) {
   const fullRow = pdpRowsById.get(product.id);
   const imageList = pdpImagesById.get(product.id) || [];
   const peers = (sectionProductsBySection.get(product.sectionId) || [])
@@ -5625,7 +6291,7 @@ console.log(`Generated ${pdpCount} curated product detail pages in /product/.`);
 // products already got their richer treatment above and are skipped here.
 // Reuses the same productPage() / fetchPdpData() / sanitizeDescriptionHtml()
 // pipeline; DB reads are batched inside fetchPdpData to avoid ENOBUFS.
-const curatedIdSet = new Set(allCuratedProducts.map((p) => String(p.id)));
+const curatedIdSet = new Set(allCuratedProductsWithPurchaseMeta.map((p) => String(p.id)));
 
 // Pre-bucket index records by section for "related" lists on non-curated PDPs.
 const indexRecordsBySection = new Map();
