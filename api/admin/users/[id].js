@@ -4,6 +4,7 @@ const { getSupabaseAdmin } = require("../../_lib/supabase");
 const { getParam } = require("../../_lib/admin");
 
 const ROLES = ["user", "admin", "super_admin"];
+const OWNER_EMAIL = "renvagu1@icloud.com";
 
 function validationError(message, code) {
   const error = new Error(message);
@@ -49,6 +50,19 @@ module.exports = async function handler(req, res) {
     // A super admin cannot demote themselves (avoid locking out the tier).
     if (target.id === ctx.user.id && newRole !== target.role) {
       throw validationError("You cannot change your own role.", "self_role_change");
+    }
+
+    if (target.email === OWNER_EMAIL && newRole !== "super_admin") {
+      throw validationError("The owner account cannot be demoted.", "owner_demote_blocked");
+    }
+
+    if (newRole === "super_admin" && target.email !== OWNER_EMAIL) {
+      throw validationError("Only the owner account can hold the super admin role.", "owner_only_super_admin");
+    }
+
+    const expectedConfirmation = `${target.email}:${newRole}`;
+    if (newRole !== target.role && body.confirmation !== expectedConfirmation) {
+      throw validationError("Role changes require confirmation.", "confirmation_required");
     }
 
     const { error: updateError } = await supabase

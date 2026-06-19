@@ -11,8 +11,17 @@ const LIST_SELECT = `
   requested_resolution,
   status,
   reason,
+  admin_notes,
   created_at,
-  updated_at
+  updated_at,
+  orders (
+    order_reference,
+    currency,
+    total_cents,
+    order_status,
+    payment_status,
+    fulfillment_status
+  )
 `;
 
 const RETURN_STATUSES = [
@@ -55,6 +64,7 @@ module.exports = async function handler(req, res) {
       builder = builder.or(buildIlikeOr([
         { column: "return_reference", value: search.toUpperCase() },
         { column: "customer_email", value: search },
+        { column: "reason", value: search },
       ]));
     }
 

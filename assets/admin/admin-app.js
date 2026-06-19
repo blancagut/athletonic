@@ -8,8 +8,19 @@ import catalog from "./views/catalog.js";
 import users from "./views/users.js";
 import settings from "./views/settings.js";
 import audit from "./views/audit.js";
+import privatePricing from "./views/private-pricing.js";
 
-const VIEWS = { dashboard, orders, returns, intents, catalog, users, settings, audit };
+const VIEWS = {
+  dashboard,
+  orders,
+  returns,
+  intents,
+  catalog,
+  privatePricing,
+  users,
+  settings,
+  audit,
+};
 const DEFAULT_ROUTE = "dashboard";
 
 const app = {
@@ -60,7 +71,7 @@ async function renderRoute() {
   const view = VIEWS[route];
 
   // Guard super-admin-only routes.
-  if ((route === "users" || route === "settings") && app.user.role !== "super_admin") {
+  if (["users", "settings", "privatePricing"].includes(route) && app.user.role !== "super_admin") {
     app.navigate(DEFAULT_ROUTE);
     return;
   }

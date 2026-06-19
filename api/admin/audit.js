@@ -1,7 +1,7 @@
 const { handleError, json, methodNotAllowed, requireEnv } = require("../_lib/http");
 const { requireAdmin } = require("../_lib/auth");
 const { getSupabaseAdmin } = require("../_lib/supabase");
-const { getQuery, getPagination } = require("../_lib/admin");
+const { buildIlikeOr, getQuery, getPagination, normalizeSearchTerm } = require("../_lib/admin");
 
 const LIST_SELECT =
   "id, actor_email, actor_role, action, target_type, target_id, metadata, created_at";
@@ -31,6 +31,28 @@ module.exports = async function handler(req, res) {
 
     const targetType = String(query.target_type || "").trim();
     if (targetType) builder = builder.eq("target_type", targetType);
+
+    const actor = normalizeSearchTerm(query.actor || query.actor_email);
+    if (actor) builder = builder.ilike("actor_email", `%${actor}%`);
+
+    const target = normalizeSearchTerm(query.target || query.target_id);
+    if (target) builder = builder.ilike("target_id", `%${target}%`);
+
+    const dateFrom = Date.parse(String(query.date_from || ""));
+    if (Number.isFinite(dateFrom)) builder = builder.gte("created_at", new Date(dateFrom).toISOString());
+
+    const dateTo = Date.parse(String(query.date_to || ""));
+    if (Number.isFinite(dateTo)) builder = builder.lte("created_at", new Date(dateTo).toISOString());
+
+    const search = normalizeSearchTerm(query.search);
+    if (search) {
+      builder = builder.or(buildIlikeOr([
+        { column: "actor_email", value: search },
+        { column: "action", value: search },
+        { column: "target_type", value: search },
+        { column: "target_id", value: search },
+      ]));
+    }
 
     const { data, count, error } = await builder;
     if (error) throw error;

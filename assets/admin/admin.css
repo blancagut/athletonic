@@ -5,7 +5,7 @@
 
 :root {
   --admin-sidebar-w: 248px;
-  --admin-radius: 12px;
+  --admin-radius: 8px;
   --admin-shadow: 0 1px 2px rgba(16, 32, 51, 0.06), 0 8px 24px rgba(16, 32, 51, 0.06);
 }
 
@@ -188,6 +188,8 @@
 .admin-topbar h1 { margin: 0; font-size: 1.3rem; }
 .admin-topbar-actions { display: flex; gap: 0.5rem; }
 .admin-view { padding: 1.75rem; }
+.admin-link { color: var(--blue, #0b1f3a); font-size: 0.85rem; font-weight: 700; text-decoration: none; }
+.admin-link:hover { text-decoration: underline; }
 
 /* ---------- Badges ---------- */
 .admin-badge {
@@ -224,20 +226,28 @@
 /* ---------- Cards / metrics ---------- */
 .admin-metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.8rem;
   margin-bottom: 1.5rem;
 }
 .admin-metric {
   background: #fff;
   border: 1px solid var(--line, #dde5ef);
   border-radius: var(--admin-radius);
-  padding: 1.1rem 1.2rem;
+  padding: 0.95rem 1rem;
   box-shadow: var(--admin-shadow);
 }
 .admin-metric-label { color: var(--muted, #607084); font-size: 0.82rem; font-weight: 600; }
-.admin-metric-value { font-size: 1.9rem; font-weight: 800; margin-top: 0.25rem; }
+.admin-metric-value { font-size: 1.55rem; font-weight: 800; margin-top: 0.25rem; }
 .admin-metric-sub { color: var(--muted, #607084); font-size: 0.78rem; margin-top: 0.2rem; }
+
+.admin-ops-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.45fr);
+  gap: 1rem;
+}
+.admin-card-span-2 { grid-column: 1 / -1; }
+.admin-action-list { padding: 1rem; display: grid; gap: 0.55rem; }
 
 .admin-card {
   background: #fff;
@@ -288,6 +298,7 @@
   padding: 0.7rem 1rem;
   border-bottom: 1px solid var(--line, #dde5ef);
   white-space: nowrap;
+  vertical-align: top;
 }
 .admin-table th {
   color: var(--muted, #607084);
@@ -299,6 +310,15 @@
 .admin-table tbody tr:hover { background: #f8fafd; }
 .admin-table .admin-row-action { cursor: pointer; }
 .admin-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; }
+.admin-thumb {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border: 1px solid var(--line, #dde5ef);
+  border-radius: 6px;
+  background: #fff;
+}
+.admin-product-cell { display: flex; align-items: center; gap: 0.65rem; min-width: 260px; white-space: normal; }
 
 /* ---------- Pagination ---------- */
 .admin-pagination {
@@ -321,6 +341,22 @@
 .admin-kv { display: grid; grid-template-columns: 140px 1fr; gap: 0.4rem 0.75rem; font-size: 0.88rem; }
 .admin-kv dt { color: var(--muted, #607084); font-weight: 600; }
 .admin-kv dd { margin: 0; }
+.admin-actions-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.8rem 0; }
+.admin-check { display: flex; align-items: center; gap: 0.45rem; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.85rem; }
+.admin-check-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.9rem; }
+.admin-json-mini {
+  margin: 0;
+  max-width: 460px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: 0.75rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink, #102033);
+}
+.admin-product-summary { display: grid; grid-template-columns: 130px 1fr; gap: 1rem; margin-bottom: 1rem; align-items: start; }
+.admin-product-image { width: 120px; height: 120px; object-fit: contain; border: 1px solid var(--line, #dde5ef); border-radius: 8px; background: #fff; }
+.admin-callout { border: 1px solid var(--line, #dde5ef); border-radius: 8px; padding: 0.75rem 0.9rem; background: #f8fafd; margin: 0.8rem 0; font-size: 0.85rem; }
+.admin-callout-warn { border-color: #f5dca6; background: #fff8e8; color: #7a4400; }
+.admin-empty-compact { padding: 0.8rem; text-align: left; }
 
 /* ---------- States ---------- */
 .admin-empty,
@@ -394,5 +430,10 @@
   .admin-nav { flex-direction: row; flex-wrap: wrap; }
   .admin-sidebar-footer { border-top: none; padding-top: 0; }
   .admin-detail-grid,
-  .admin-grid-2 { grid-template-columns: 1fr; }
+  .admin-grid-2,
+  .admin-ops-grid,
+  .admin-product-summary { grid-template-columns: 1fr; }
+  .admin-card-span-2 { grid-column: auto; }
+  .admin-modal-overlay { place-items: stretch; padding: 0.75rem; }
+  .admin-modal { max-height: 94vh; }
 }

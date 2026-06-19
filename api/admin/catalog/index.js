@@ -7,14 +7,36 @@ const catalog = require("../../../data/athletonic-catalog.json");
 const PRODUCTS = Array.isArray(catalog.products) ? catalog.products : [];
 
 function applyOverride(product, override) {
-  if (!override) return { ...product, _override: false, _hidden: false };
+  if (!override) {
+    return {
+      ...product,
+      _override: false,
+      _hidden: false,
+      _source_price_cents: product.price_cents,
+      _source_available: product.available,
+      _source_image: product.image,
+      _source_url: product.url,
+    };
+  }
   return {
     ...product,
     ...(override.patch || {}),
     _override: true,
     _hidden: Boolean(override.hidden),
+    _source_price_cents: product.price_cents,
+    _source_available: product.available,
+    _source_image: product.image,
+    _source_url: product.url,
     _updated_at: override.updated_at,
   };
+}
+
+function matchesAvailability(product, value) {
+  if (!value) return true;
+  if (value === "available") return product.available !== false && !product._hidden;
+  if (value === "unavailable") return product.available === false;
+  if (value === "hidden") return product._hidden;
+  return true;
 }
 
 module.exports = async function handler(req, res) {
@@ -40,7 +62,7 @@ module.exports = async function handler(req, res) {
       (overrideRows || []).map((row) => [String(row.product_id), row])
     );
 
-    let list = PRODUCTS;
+    let list = PRODUCTS.map((p) => applyOverride(p, overrides.get(String(p.id))));
 
     const search = String(query.search || "").trim().toLowerCase();
     if (search) {
@@ -55,13 +77,33 @@ module.exports = async function handler(req, res) {
       list = list.filter((p) => p.brand_slug === brand);
     }
 
+    const section = String(query.section_id || query.category || "").trim();
+    if (section) {
+      list = list.filter((p) => p.section_id === section);
+    }
+
+    const availability = String(query.availability || "").trim();
+    if (availability) {
+      list = list.filter((p) => matchesAvailability(p, availability));
+    }
+
+    const overrideState = String(query.override_state || "").trim();
+    if (overrideState === "edited") list = list.filter((p) => p._override);
+    if (overrideState === "source") list = list.filter((p) => !p._override);
+
     const total = list.length;
-    const pageItems = list
-      .slice(from, to + 1)
-      .map((p) => applyOverride(p, overrides.get(String(p.id))));
+    const pageItems = list.slice(from, to + 1);
+
+    const brands = [...new Map(PRODUCTS.map((p) => [p.brand_slug, p.brand]).filter(([slug]) => slug)).entries()]
+      .map(([slug, name]) => ({ slug, name }))
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    const sections = [...new Map(PRODUCTS.map((p) => [p.section_id, p.section_title]).filter(([id]) => id)).entries()]
+      .map(([id, title]) => ({ id, title }))
+      .sort((a, b) => String(a.title).localeCompare(String(b.title)));
 
     json(res, 200, {
       products: pageItems,
+      facets: { brands, sections },
       pagination: { page, page_size: pageSize, total },
     });
   } catch (error) {

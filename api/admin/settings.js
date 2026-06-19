@@ -9,6 +9,52 @@ function validationError(message, code) {
   return error;
 }
 
+function integerInRange(value, key, min, max) {
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < min || number > max) {
+    throw validationError(`${key} must be an integer from ${min} to ${max}.`, "invalid_setting_value");
+  }
+  return number;
+}
+
+function booleanValue(value, key) {
+  if (typeof value !== "boolean") {
+    throw validationError(`${key} must be true or false.`, "invalid_setting_value");
+  }
+  return value;
+}
+
+function validateSettingsValue(key, value) {
+  if (key === "shipping") {
+    const countries = Array.isArray(value.countries) ? value.countries : [];
+    if (!countries.length || countries.some((country) => !/^[A-Z]{2}$/.test(String(country)))) {
+      throw validationError("countries must be a list of two-letter country codes.", "invalid_setting_value");
+    }
+    return {
+      flat_amount_cents: integerInRange(value.flat_amount_cents, "flat_amount_cents", 0, 100000),
+      free_shipping_min_cents: integerInRange(value.free_shipping_min_cents, "free_shipping_min_cents", 0, 1000000),
+      countries: countries.map((country) => String(country).toUpperCase()),
+    };
+  }
+
+  if (key === "tax") {
+    return {
+      automatic: booleanValue(value.automatic, "automatic"),
+      default_rate_bps: integerInRange(value.default_rate_bps, "default_rate_bps", 0, 10000),
+    };
+  }
+
+  if (key === "returns") {
+    return {
+      window_days: integerInRange(value.window_days, "window_days", 0, 365),
+      allow_replacement: booleanValue(value.allow_replacement, "allow_replacement"),
+      allow_refund: booleanValue(value.allow_refund, "allow_refund"),
+    };
+  }
+
+  throw validationError("Unsupported settings key.", "unsupported_settings_key");
+}
+
 module.exports = async function handler(req, res) {
   try {
     requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
@@ -36,9 +82,11 @@ module.exports = async function handler(req, res) {
         throw validationError("value must be a JSON object.", "invalid_value");
       }
 
+      const value = validateSettingsValue(key, body.value);
+
       const { data, error } = await supabase
         .from("app_settings")
-        .update({ value: body.value, updated_by: ctx.user.id })
+        .update({ value, updated_by: ctx.user.id })
         .eq("key", key)
         .select("key, value, description, updated_at")
         .single();
@@ -52,7 +100,7 @@ module.exports = async function handler(req, res) {
         throw error;
       }
 
-      await logAudit(ctx, "settings.update", "app_settings", key, { value: body.value });
+      await logAudit(ctx, "settings.update", "app_settings", key, { value });
       json(res, 200, { setting: data });
       return;
     }

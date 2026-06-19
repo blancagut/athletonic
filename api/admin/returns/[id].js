@@ -28,6 +28,15 @@ const DETAIL_SELECT = `
     original_filename,
     mime_type,
     file_size
+  ),
+  orders (
+    order_reference,
+    currency,
+    total_cents,
+    order_status,
+    payment_status,
+    fulfillment_status,
+    created_at
   )
 `;
 
@@ -83,6 +92,13 @@ module.exports = async function handler(req, res) {
     if (req.method === "PATCH") {
       const body = await readJson(req);
       const patch = {};
+      const existing = await fetchReturn(supabase, returnId);
+      if (!existing) {
+        const error = new Error("Return request not found.");
+        error.statusCode = 404;
+        error.code = "return_not_found";
+        throw error;
+      }
 
       if (body.status !== undefined) {
         if (!RETURN_STATUSES.includes(body.status)) {
@@ -97,6 +113,15 @@ module.exports = async function handler(req, res) {
           : String(body.admin_notes).trim().slice(0, 2000);
       }
 
+      if (
+        patch.status &&
+        patch.status !== existing.status &&
+        ["approved", "rejected", "refunded", "replaced"].includes(patch.status) &&
+        !patch.admin_notes
+      ) {
+        throw validationError("Add admin notes before approving, rejecting, refunding, or replacing a return.", "missing_admin_notes");
+      }
+
       if (Object.keys(patch).length === 0) {
         throw validationError("No supported fields to update.", "nothing_to_update");
       }
@@ -107,7 +132,10 @@ module.exports = async function handler(req, res) {
         .eq("id", returnId);
       if (updateError) throw updateError;
 
-      await logAudit(ctx, "return.update", "return_request", returnId, patch);
+      await logAudit(ctx, "return.update", "return_request", returnId, {
+        before: { status: existing.status, admin_notes: existing.admin_notes || null },
+        patch,
+      });
 
       const record = await fetchReturn(supabase, returnId);
       json(res, 200, { return: record });

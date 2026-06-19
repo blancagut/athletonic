@@ -185,6 +185,7 @@ export default {
         { label: "Profile", render: (r) => escapeHtml(r.profile || "private_access") },
         { label: "Usage", render: (r) => String(Number(r.usage_count || 0)) },
         { label: "Last used", render: (r) => formatDate(r.last_used_at) },
+        { label: "Expires", render: (r) => formatDate(r.expires_at) },
       ],
       onRowClick: (row) => openGrant(app, row, () => controls.reload()),
     });

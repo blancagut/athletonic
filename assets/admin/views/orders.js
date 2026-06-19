@@ -1,5 +1,5 @@
 // Orders view: list + detail drawer with status / tracking editing.
-import { escapeHtml, formatMoney, formatDate, statusBadge, toast } from "../admin-core.js";
+import { escapeHtml, formatMoney, formatDate, statusBadge, toast, compactJson } from "../admin-core.js";
 import { listView, openModal, optionList } from "./_ui.js";
 
 const ORDER_STATUSES = [
@@ -21,15 +21,32 @@ const FULFILLMENT_STATUSES = [
   "returned",
 ].map((v) => ({ value: v, label: v.replace(/_/g, " ") }));
 
+const PAYMENT_STATUSES = ["pending", "paid", "failed", "cancelled", "partially_refunded", "refunded"].map((v) => ({
+  value: v,
+  label: v.replace(/_/g, " "),
+}));
+
+function addressBlock(address) {
+  if (!address || typeof address !== "object") return "—";
+  const parts = [
+    address.name,
+    address.line1,
+    address.line2,
+    [address.city, address.state, address.postal_code].filter(Boolean).join(", "),
+    address.country,
+  ].filter(Boolean);
+  return parts.length ? parts.map(escapeHtml).join("<br />") : `<pre class="admin-json-mini">${escapeHtml(compactJson(address))}</pre>`;
+}
+
 async function openOrder(app, orderId, reload) {
   const { order } = await app.authFetch(`/api/admin/orders/${orderId}`);
   const items = (order.items || [])
     .map(
       (it) => `
       <tr>
-        <td>${escapeHtml(it.brand)} — ${escapeHtml(it.name)}${
+        <td class="admin-product-cell">${it.image_url ? `<img class="admin-thumb" src="${escapeHtml(it.image_url)}" alt="" loading="lazy" onerror="this.hidden=true" />` : ""}<span>${escapeHtml(it.brand)} — ${escapeHtml(it.name)}${
         it.variant ? ` <span class="admin-mono">(${escapeHtml(it.variant)})</span>` : ""
-      }</td>
+      }</span></td>
         <td>${it.quantity}</td>
         <td>${formatMoney(it.unit_amount_cents, order.currency)}</td>
         <td>${formatMoney(it.line_subtotal_cents, order.currency)}</td>
@@ -54,8 +71,15 @@ async function openOrder(app, orderId, reload) {
           <dt>Order status</dt><dd>${statusBadge(order.order_status)}</dd>
           <dt>Payment</dt><dd>${statusBadge(order.payment_status)}</dd>
           <dt>Fulfillment</dt><dd>${statusBadge(order.fulfillment_status)}</dd>
-          <dt>Total</dt><dd>${formatMoney(order.amounts.total_cents, order.currency)}</dd>
+          <dt>Subtotal</dt><dd>${formatMoney(order.amounts.subtotal_cents, order.currency)}</dd>
+          <dt>Shipping</dt><dd>${formatMoney(order.amounts.shipping_cents, order.currency)}</dd>
+          <dt>Tax</dt><dd>${formatMoney(order.amounts.tax_cents, order.currency)}</dd>
+          <dt>Discount</dt><dd>${formatMoney(order.amounts.discount_cents, order.currency)}</dd>
+          <dt>Total</dt><dd><strong>${formatMoney(order.amounts.total_cents, order.currency)}</strong></dd>
           <dt>Placed</dt><dd>${formatDate(order.timestamps.created_at)}</dd>
+          <dt>Paid</dt><dd>${formatDate(order.timestamps.paid_at)}</dd>
+          <dt>Shipping address</dt><dd>${addressBlock(order.shipping_address)}</dd>
+          <dt>Tracking</dt><dd>${escapeHtml([order.tracking.carrier, order.tracking.number].filter(Boolean).join(" ") || "—")}</dd>
         </dl>
         <table class="admin-table" style="margin-top:1rem;">
           <thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Subtotal</th></tr></thead>
@@ -87,8 +111,8 @@ async function openOrder(app, orderId, reload) {
             <input name="tracking_url" value="${escapeHtml(order.tracking.url || "")}" />
           </div>
           <div class="admin-field">
-            <label>Note (optional)</label>
-            <input name="message" placeholder="Reason for this update" />
+            <label>Internal note</label>
+            <textarea name="message" placeholder="Required when status or fulfillment changes"></textarea>
           </div>
           <button type="submit" class="admin-btn admin-btn-primary">Save changes</button>
         </form>
@@ -131,6 +155,12 @@ export default {
       endpoint: "/api/admin/orders",
       dataKey: "orders",
       statuses: ORDER_STATUSES,
+      filters: [
+        { name: "payment_status", label: "Payment", emptyLabel: "All payments", options: PAYMENT_STATUSES },
+        { name: "fulfillment_status", label: "Fulfillment", emptyLabel: "All fulfillment", options: FULFILLMENT_STATUSES },
+        { name: "date_from", label: "From", type: "date" },
+        { name: "date_to", label: "To", type: "date" },
+      ],
       searchPlaceholder: "Search reference or email…",
       columns: [
         { label: "Reference", render: (r) => `<span class="admin-mono">${escapeHtml(r.order_reference)}</span>` },
@@ -138,6 +168,7 @@ export default {
         { label: "Total", render: (r) => formatMoney(r.total_cents, r.currency) },
         { label: "Status", render: (r) => statusBadge(r.order_status) },
         { label: "Payment", render: (r) => statusBadge(r.payment_status) },
+        { label: "Fulfillment", render: (r) => statusBadge(r.fulfillment_status) },
         { label: "Placed", render: (r) => formatDate(r.created_at) },
       ],
       onRowClick: (row) => openOrder(app, row.id, () => controls.reload()),

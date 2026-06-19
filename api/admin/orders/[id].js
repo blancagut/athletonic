@@ -45,6 +45,21 @@ function cleanText(value, max) {
   return text.slice(0, max || 240);
 }
 
+function cleanUrl(value) {
+  const text = cleanText(value, 500);
+  if (!text) return null;
+  try {
+    const url = new URL(text);
+    if (!["http:", "https:"].includes(url.protocol)) {
+      throw validationError("Tracking URL must use http or https.", "invalid_tracking_url");
+    }
+    return url.href;
+  } catch (error) {
+    if (error.code === "invalid_tracking_url") throw error;
+    throw validationError("Tracking URL must be a valid URL.", "invalid_tracking_url");
+  }
+}
+
 module.exports = async function handler(req, res) {
   try {
     requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
@@ -71,6 +86,13 @@ module.exports = async function handler(req, res) {
       const body = await readJson(req);
       const patch = {};
       const eventParts = [];
+      const { order: existing } = await fetchOrderById(supabase, orderId);
+      if (!existing) {
+        const error = new Error("Order not found.");
+        error.statusCode = 404;
+        error.code = "order_not_found";
+        throw error;
+      }
 
       if (body.order_status !== undefined) {
         if (!ORDER_STATUSES.includes(body.order_status)) {
@@ -97,7 +119,15 @@ module.exports = async function handler(req, res) {
         patch.tracking_number = cleanText(body.tracking_number, 120);
       }
       if (body.tracking_url !== undefined) {
-        patch.tracking_url = cleanText(body.tracking_url, 500);
+        patch.tracking_url = cleanUrl(body.tracking_url);
+      }
+
+      const message = cleanText(body.message || body.reason, 500);
+      const statusChanged =
+        (patch.order_status && patch.order_status !== existing.order_status) ||
+        (patch.fulfillment_status && patch.fulfillment_status !== existing.fulfillment_status);
+      if (statusChanged && !message) {
+        throw validationError("Add an internal note for status changes.", "missing_change_note");
       }
 
       if (Object.keys(patch).length === 0) {
@@ -111,16 +141,24 @@ module.exports = async function handler(req, res) {
       if (updateError) throw updateError;
 
       // Record a status event describing what changed.
-      const message = cleanText(body.message, 500) || eventParts.join(" / ") || "Order updated";
+      const eventMessage = message || eventParts.join(" / ") || "Order updated";
       const eventStatus = patch.order_status || patch.fulfillment_status || "updated";
       await supabase.from("order_status_events").insert({
         order_id: orderId,
         status: eventStatus,
-        message,
+        message: eventMessage,
         created_by: ctx.user.email || ctx.profile.email || "admin",
       });
 
-      await logAudit(ctx, "order.update", "order", orderId, patch);
+      await logAudit(ctx, "order.update", "order", orderId, {
+        before: {
+          order_status: existing.order_status,
+          fulfillment_status: existing.fulfillment_status,
+          tracking: existing.tracking,
+        },
+        patch,
+        note: eventMessage,
+      });
 
       const { order } = await fetchOrderById(supabase, orderId);
       json(res, 200, { order });

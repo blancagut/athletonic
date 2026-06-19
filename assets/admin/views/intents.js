@@ -1,5 +1,5 @@
 // Checkout intents view: conversion follow-up.
-import { escapeHtml, formatMoney, formatDate, statusBadge, toast } from "../admin-core.js";
+import { escapeHtml, formatDecimalMoney, formatMoney, formatDate, statusBadge, toast } from "../admin-core.js";
 import { listView, openModal, optionList } from "./_ui.js";
 
 const INTENT_STATUSES = ["new", "contacted", "converted", "cancelled"].map((v) => ({
@@ -22,9 +22,13 @@ async function openIntent(app, id, reload) {
   const modal = openModal("Checkout intent", `
     <dl class="admin-kv">
       <dt>Email</dt><dd>${escapeHtml(intent.email)}</dd>
-      <dt>Subtotal</dt><dd>${formatMoney(Math.round((intent.subtotal || 0) * 100), intent.currency)}</dd>
+      <dt>Subtotal</dt><dd>${formatDecimalMoney(intent.subtotal, intent.currency)}</dd>
+      <dt>Total</dt><dd>${formatDecimalMoney(intent.total || intent.subtotal, intent.currency)}</dd>
+      <dt>Discount</dt><dd>${formatMoney(intent.discount_cents || 0, intent.currency)}</dd>
       <dt>Status</dt><dd>${statusBadge(intent.status)}</dd>
+      <dt>Order</dt><dd>${intent.orders && intent.orders.length ? `<span class="admin-mono">${escapeHtml(intent.orders[0].order_reference)}</span>` : "—"}</dd>
       <dt>Created</dt><dd>${formatDate(intent.created_at)}</dd>
+      <dt>Updated</dt><dd>${formatDate(intent.updated_at)}</dd>
     </dl>
     <h3 style="margin:1rem 0 0.4rem;font-size:0.95rem;">Cart</h3>
     <ul style="padding-left:1rem;font-size:0.85rem;">${items || "<li>—</li>"}</ul>
@@ -71,7 +75,9 @@ export default {
       searchPlaceholder: "Search email…",
       columns: [
         { label: "Email", render: (r) => escapeHtml(r.email) },
-        { label: "Subtotal", render: (r) => formatMoney(Math.round((r.subtotal || 0) * 100), r.currency) },
+        { label: "Subtotal", render: (r) => formatDecimalMoney(r.subtotal, r.currency) },
+        { label: "Order", render: (r) => (r.orders && r.orders.length ? `<span class="admin-mono">${escapeHtml(r.orders[0].order_reference)}</span>` : "—") },
+        { label: "Items", render: (r) => String(Array.isArray(r.cart) ? r.cart.length : 0) },
         { label: "Status", render: (r) => statusBadge(r.status) },
         { label: "Created", render: (r) => formatDate(r.created_at) },
       ],

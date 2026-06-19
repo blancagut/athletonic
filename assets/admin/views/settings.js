@@ -1,6 +1,75 @@
 // Settings view (super_admin only): edit app_settings JSON values.
 import { escapeHtml, formatDate, toast } from "../admin-core.js";
 
+function input(name, label, value, attrs = "") {
+  return `<div class="admin-field"><label>${escapeHtml(label)}</label><input name="${escapeHtml(name)}" value="${escapeHtml(value ?? "")}" ${attrs} /></div>`;
+}
+
+function checkbox(name, label, checked) {
+  return `<label class="admin-check"><input type="checkbox" name="${escapeHtml(name)}" ${checked ? "checked" : ""} /> ${escapeHtml(label)}</label>`;
+}
+
+function settingsForm(setting) {
+  const value = setting.value || {};
+  if (setting.key === "shipping") {
+    return `
+      <form data-key="shipping" data-mode="structured">
+        <div class="admin-grid-2">
+          ${input("flat_amount_cents", "Flat shipping (cents)", value.flat_amount_cents, 'type="number" min="0" max="100000" step="1"')}
+          ${input("free_shipping_min_cents", "Free shipping minimum (cents)", value.free_shipping_min_cents, 'type="number" min="0" max="1000000" step="1"')}
+        </div>
+        ${input("countries", "Countries", (value.countries || []).join(", "))}
+        <button type="submit" class="admin-btn admin-btn-primary">Save shipping</button>
+      </form>`;
+  }
+  if (setting.key === "tax") {
+    return `
+      <form data-key="tax" data-mode="structured">
+        ${checkbox("automatic", "Automatic tax", Boolean(value.automatic))}
+        ${input("default_rate_bps", "Default rate (basis points)", value.default_rate_bps, 'type="number" min="0" max="10000" step="1"')}
+        <button type="submit" class="admin-btn admin-btn-primary">Save tax</button>
+      </form>`;
+  }
+  if (setting.key === "returns") {
+    return `
+      <form data-key="returns" data-mode="structured">
+        ${input("window_days", "Return window days", value.window_days, 'type="number" min="0" max="365" step="1"')}
+        <div class="admin-check-row">
+          ${checkbox("allow_refund", "Allow refunds", Boolean(value.allow_refund))}
+          ${checkbox("allow_replacement", "Allow replacements", Boolean(value.allow_replacement))}
+        </div>
+        <button type="submit" class="admin-btn admin-btn-primary">Save returns</button>
+      </form>`;
+  }
+  return `<pre class="admin-json-mini">${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
+}
+
+function payloadFromForm(form) {
+  const fd = new FormData(form);
+  const key = form.getAttribute("data-key");
+  if (key === "shipping") {
+    return {
+      flat_amount_cents: Number.parseInt(fd.get("flat_amount_cents"), 10),
+      free_shipping_min_cents: Number.parseInt(fd.get("free_shipping_min_cents"), 10),
+      countries: String(fd.get("countries") || "").split(",").map((v) => v.trim().toUpperCase()).filter(Boolean),
+    };
+  }
+  if (key === "tax") {
+    return {
+      automatic: fd.get("automatic") === "on",
+      default_rate_bps: Number.parseInt(fd.get("default_rate_bps"), 10),
+    };
+  }
+  if (key === "returns") {
+    return {
+      window_days: Number.parseInt(fd.get("window_days"), 10),
+      allow_refund: fd.get("allow_refund") === "on",
+      allow_replacement: fd.get("allow_replacement") === "on",
+    };
+  }
+  return null;
+}
+
 export default {
   title: "Settings",
   async render(mount, app) {
@@ -23,15 +92,7 @@ export default {
           <span class="admin-metric-sub">Updated ${formatDate(s.updated_at)}</span>
         </div>
         <div style="padding:1.25rem;">
-          <form data-key="${escapeHtml(s.key)}">
-            <div class="admin-field">
-              <label>Value (JSON)</label>
-              <textarea name="value" style="min-height:150px;font-family:ui-monospace,monospace;">${escapeHtml(
-                JSON.stringify(s.value, null, 2)
-              )}</textarea>
-            </div>
-            <button type="submit" class="admin-btn admin-btn-primary">Save ${escapeHtml(s.key)}</button>
-          </form>
+          ${settingsForm(s)}
         </div>
       </div>`
       )
@@ -41,15 +102,9 @@ export default {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const key = form.getAttribute("data-key");
-        let value;
-        try {
-          value = JSON.parse(form.querySelector("textarea").value);
-        } catch {
-          toast("Invalid JSON", "error");
-          return;
-        }
-        if (typeof value !== "object" || value === null || Array.isArray(value)) {
-          toast("Value must be a JSON object", "error");
+        const value = payloadFromForm(form);
+        if (!value) {
+          toast("Unsupported settings form", "error");
           return;
         }
         try {

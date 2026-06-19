@@ -1,5 +1,5 @@
 const { handleError, json, methodNotAllowed, readJson, requireEnv } = require("../../_lib/http");
-const { requireAdmin, logAudit } = require("../../_lib/auth");
+const { requireSuperAdmin, logAudit } = require("../../_lib/auth");
 const { getSupabaseAdmin } = require("../../_lib/supabase");
 const { getParam } = require("../../_lib/admin");
 const catalog = require("../../../data/athletonic-catalog.json");
@@ -38,7 +38,21 @@ function buildPatch(body) {
     patch.image = String(body.image).trim().slice(0, 1000) || null;
   }
   if (body.url !== undefined) {
-    patch.url = String(body.url).trim().slice(0, 1000) || null;
+    const url = String(body.url).trim().slice(0, 1000);
+    if (url) {
+      try {
+        const parsed = new URL(url);
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          throw validationError("Product URL must use http or https.", "invalid_product_url");
+        }
+        patch.url = parsed.href;
+      } catch (error) {
+        if (error.code === "invalid_product_url") throw error;
+        throw validationError("Product URL must be a valid URL.", "invalid_product_url");
+      }
+    } else {
+      patch.url = null;
+    }
   }
   // Strip any keys outside the allow-list (defensive).
   for (const key of Object.keys(patch)) {
@@ -55,7 +69,7 @@ module.exports = async function handler(req, res) {
 
   try {
     requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
-    const ctx = await requireAdmin(req);
+    const ctx = await requireSuperAdmin(req);
 
     const productId = getParam(req, "id");
     if (!productId) throw validationError("Missing product id.", "missing_id");

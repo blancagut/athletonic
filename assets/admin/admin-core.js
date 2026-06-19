@@ -84,6 +84,15 @@ export function formatMoney(cents, currency = "USD") {
   }
 }
 
+export function formatDecimalMoney(amount, currency = "USD") {
+  const number = Number(amount || 0);
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(number);
+  } catch {
+    return `$${number.toFixed(2)}`;
+  }
+}
+
 export function formatDate(value) {
   if (!value) return "—";
   const d = new Date(value);
@@ -100,6 +109,15 @@ export function formatDate(value) {
 export function statusBadge(status) {
   const safe = escapeHtml(status || "—");
   return `<span class="admin-badge s-${escapeHtml(status || "")}">${safe}</span>`;
+}
+
+export function compactJson(value) {
+  if (value == null) return "—";
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
 }
 
 // SINGLE SOURCE OF TRUTH for shopper role naming.

@@ -3,8 +3,27 @@ const { requireAdmin, logAudit } = require("../../_lib/auth");
 const { getSupabaseAdmin } = require("../../_lib/supabase");
 const { getParam } = require("../../_lib/admin");
 
-const DETAIL_SELECT =
-  "id, email, user_id, cart, subtotal, currency, status, notes, created_at, updated_at";
+const DETAIL_SELECT = `
+  id,
+  email,
+  user_id,
+  cart,
+  subtotal,
+  total,
+  discount_cents,
+  currency,
+  status,
+  notes,
+  created_at,
+  updated_at,
+  orders (
+    order_reference,
+    order_status,
+    payment_status,
+    fulfillment_status,
+    total_cents
+  )
+`;
 
 const INTENT_STATUSES = ["new", "contacted", "converted", "cancelled"];
 
