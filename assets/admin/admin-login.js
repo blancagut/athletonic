@@ -7,6 +7,9 @@ const passwordInput = document.getElementById("password");
 const submitBtn = document.getElementById("submit-btn");
 const messageEl = document.getElementById("auth-message");
 
+submitBtn.disabled = false;
+window.__athletonicAdminLoginReady = true;
+
 function setMessage(text, kind) {
   messageEl.textContent = text;
   messageEl.className = "admin-auth-message" + (kind ? ` is-${kind}` : "");
