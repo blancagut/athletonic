@@ -10,6 +10,8 @@ import settings from "./views/settings.js";
 import audit from "./views/audit.js";
 import privatePricing from "./views/private-pricing.js";
 
+window.__athletonicAdminModuleLoaded = true;
+
 const VIEWS = {
   dashboard,
   orders,
@@ -43,6 +45,55 @@ const els = {
   role: document.getElementById("admin-user-role"),
   signout: document.getElementById("admin-signout"),
 };
+
+const ADMIN_ROLES = ["admin", "super_admin"];
+
+function withTimeout(promise, ms, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error(message)), ms);
+    }),
+  ]);
+}
+
+function showBootError(message) {
+  window.__athletonicAdminBooted = true;
+  els.loading.innerHTML =
+    `<p class="admin-error">${message}</p>` +
+    '<p><a class="admin-btn" href="./login.html">Back to sign in</a></p>';
+}
+
+async function loadAdminProfile(session) {
+  const user = session.user;
+  const { data, error } = await withTimeout(
+    supabase
+      .from("profiles")
+      .select("email, full_name, role")
+      .eq("id", user.id)
+      .maybeSingle(),
+    6000,
+    "Admin profile lookup took too long. Please try signing in again."
+  );
+
+  if (error) {
+    const err = new Error(error.message || "Could not verify your admin profile.");
+    err.status = error.status || 500;
+    throw err;
+  }
+  if (!data || !ADMIN_ROLES.includes(data.role)) {
+    const err = new Error("This account does not have admin access.");
+    err.status = 403;
+    throw err;
+  }
+
+  return {
+    id: user.id,
+    email: data.email || user.email,
+    full_name: data.full_name || null,
+    role: data.role,
+  };
+}
 
 function parseRoute() {
   const raw = (window.location.hash || "").replace(/^#\//, "").trim();
@@ -90,39 +141,46 @@ async function renderRoute() {
 }
 
 async function boot() {
-  const { data } = await supabase.auth.getSession();
-  if (!data || !data.session) {
-    redirectToLogin();
-    return;
-  }
-
-  // Confirm the caller actually has admin access (server-side check).
-  let me;
   try {
-    me = await authFetch("/api/admin/me");
-  } catch (err) {
-    if (err.status === 403) {
-      await supabase.auth.signOut();
-      els.loading.innerHTML =
-        '<p class="admin-error">This account does not have admin access.</p>' +
-        '<p><a class="admin-btn" href="./login.html">Back to sign in</a></p>';
+    const { data } = await withTimeout(
+      supabase.auth.getSession(),
+      10000,
+      "Session verification took too long. Please try signing in again."
+    );
+    if (!data || !data.session) {
+      redirectToLogin();
       return;
     }
-    redirectToLogin();
-    return;
+    // Fast boot: use the authenticated user's own profile via Supabase RLS.
+    // Server-side APIs still enforce admin access for privileged data/actions.
+    let user;
+    try {
+      user = await loadAdminProfile(data.session);
+    } catch (err) {
+      if (err.status === 403) {
+        await supabase.auth.signOut();
+        showBootError("This account does not have admin access.");
+        return;
+      }
+      showBootError(err.message || "Could not verify your admin profile.");
+      return;
+    }
+
+    app.user = user;
+    els.email.textContent = user.email;
+    els.role.textContent = roleLabel(user.role);
+    els.role.className = `admin-badge role-${user.role}`;
+    applyRoleVisibility();
+
+    els.loading.hidden = true;
+    els.shell.hidden = false;
+    window.__athletonicAdminBooted = true;
+
+    window.addEventListener("hashchange", renderRoute);
+    await renderRoute();
+  } catch (error) {
+    showBootError(error.message || "We could not verify your session.");
   }
-
-  app.user = me.user;
-  els.email.textContent = me.user.email;
-  els.role.textContent = roleLabel(me.user.role);
-  els.role.className = `admin-badge role-${me.user.role}`;
-  applyRoleVisibility();
-
-  els.loading.hidden = true;
-  els.shell.hidden = false;
-
-  window.addEventListener("hashchange", renderRoute);
-  await renderRoute();
 }
 
 els.signout.addEventListener("click", async () => {

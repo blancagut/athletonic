@@ -1,6 +1,6 @@
 // Shared admin client utilities (ES module, no build step).
 // Loads supabase-js from CDN and exposes a configured client + helpers.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.108.2?bundle";
 
 const SUPABASE_URL = window.ATHLETONIC_SUPABASE_URL;
 const SUPABASE_KEY = window.ATHLETONIC_SUPABASE_KEY;
@@ -25,22 +25,24 @@ export async function getAccessToken() {
  * Throws an Error with .code / .status on non-2xx responses.
  */
 export async function authFetch(path, options = {}) {
-  const token = await getAccessToken();
+  const token = options.accessToken || await getAccessToken();
   if (!token) {
     redirectToLogin();
     throw new Error("not_authenticated");
   }
 
+  const fetchOptions = { ...options };
+  delete fetchOptions.accessToken;
   const headers = Object.assign(
     { Accept: "application/json" },
-    options.headers || {}
+    fetchOptions.headers || {}
   );
   headers.Authorization = `Bearer ${token}`;
-  if (options.body && !headers["Content-Type"]) {
+  if (fetchOptions.body && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(path, { ...options, headers });
+  const res = await fetch(path, { ...fetchOptions, headers });
   let payload = null;
   try {
     payload = await res.json();

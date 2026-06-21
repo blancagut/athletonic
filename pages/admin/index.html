@@ -69,7 +69,28 @@
     <script>
       window.ATHLETONIC_SUPABASE_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
       window.ATHLETONIC_SUPABASE_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
+      window.__athletonicAdminBooted = false;
+      window.__athletonicAdminShowBootError = function (message) {
+        window.__athletonicAdminBooted = true;
+        var loading = document.getElementById("admin-loading");
+        if (!loading) return;
+        loading.innerHTML =
+          '<p class="admin-error">' + message + '</p>' +
+          '<p><a class="admin-btn" href="./login.html">Back to sign in</a></p>';
+      };
+      window.setTimeout(function () {
+        var shell = document.getElementById("admin-shell");
+        if (!window.__athletonicAdminBooted && shell && shell.hidden) {
+          window.__athletonicAdminShowBootError(
+            "The admin app did not finish loading. Please refresh this page or sign in again."
+          );
+        }
+      }, 12000);
     </script>
-    <script type="module" src="../../assets/admin/admin-app.js"></script>
+    <script
+      type="module"
+      src="../../assets/admin/admin-app.js?v=20260621-fast-boot"
+      onerror="window.__athletonicAdminShowBootError && window.__athletonicAdminShowBootError('The admin app script could not load. Please refresh this page.')"
+    ></script>
   </body>
 </html>
