@@ -1,19 +1,18 @@
-// Magic-link login page controller.
+// Admin email/password login page controller.
 import { supabase } from "./admin-core.js";
 
-const form = document.getElementById("magic-form");
+const form = document.getElementById("admin-login-form");
 const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
 const submitBtn = document.getElementById("submit-btn");
 const messageEl = document.getElementById("auth-message");
-
-const REDIRECT_TO = new URL("./index.html", window.location.href).href;
 
 function setMessage(text, kind) {
   messageEl.textContent = text;
   messageEl.className = "admin-auth-message" + (kind ? ` is-${kind}` : "");
 }
 
-// If a magic link just landed here (or a session already exists), go to the app.
+// If a session already exists, go to the app.
 (async () => {
   const { data } = await supabase.auth.getSession();
   if (data && data.session) {
@@ -24,32 +23,31 @@ function setMessage(text, kind) {
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const email = emailInput.value.trim().toLowerCase();
+  const password = passwordInput.value;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     setMessage("Enter a valid email address.", "error");
     return;
   }
+  if (!password) {
+    setMessage("Enter your admin password.", "error");
+    return;
+  }
 
   submitBtn.disabled = true;
-  setMessage("Sending…", "");
+  setMessage("Signing in...", "");
 
-  const { error } = await supabase.auth.signInWithOtp({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
-    options: {
-      emailRedirectTo: REDIRECT_TO,
-      shouldCreateUser: false,
-    },
+    password,
   });
 
   submitBtn.disabled = false;
 
   if (error) {
-    setMessage(error.message || "Could not send the magic link.", "error");
+    setMessage(error.message || "Could not sign in.", "error");
     return;
   }
 
-  setMessage(
-    "Check your inbox — we sent a secure sign-in link to " + email + ".",
-    "success"
-  );
-  form.reset();
+  setMessage("Signed in. Opening the dashboard...", "success");
+  window.location.replace("./index.html");
 });
