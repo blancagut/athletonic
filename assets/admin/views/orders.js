@@ -1,5 +1,5 @@
 // Orders view: list + detail drawer with status / tracking editing.
-import { escapeHtml, formatMoney, formatDate, statusBadge, toast, compactJson } from "../admin-core.js?v=20260622-direct-auth";
+import { escapeHtml, formatMoney, formatDate, statusBadge, toast, compactJson } from "../admin-core.js?v=20260623-no-hang";
 import { listView, openModal, optionList } from "./_ui.js";
 
 const ORDER_STATUSES = [

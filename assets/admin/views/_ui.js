@@ -1,5 +1,5 @@
 // Shared UI building blocks for admin list/detail views.
-import { escapeHtml } from "../admin-core.js?v=20260622-direct-auth";
+import { escapeHtml } from "../admin-core.js?v=20260623-no-hang";
 
 export function h(html) {
   const tpl = document.createElement("template");

@@ -102,8 +102,9 @@ async function getCurrentSession() {
   const session = readStoredSession();
   if (!session) return null;
   const now = Math.floor(Date.now() / 1000);
-  if (session.expires_at && session.expires_at - now < 60) {
-    return refreshSession(session);
+  if (!session.expires_at || session.expires_at - now < 60) {
+    clearSession();
+    return null;
   }
   return session;
 }

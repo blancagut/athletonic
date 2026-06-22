@@ -1,5 +1,5 @@
 // Admin email/password login page controller.
-import { supabase } from "./admin-core.js?v=20260622-direct-auth";
+import { supabase } from "./admin-core.js?v=20260623-no-hang";
 
 const form = document.getElementById("admin-login-form");
 const emailInput = document.getElementById("email");

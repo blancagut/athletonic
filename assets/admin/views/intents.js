@@ -1,5 +1,5 @@
 // Checkout intents view: conversion follow-up.
-import { escapeHtml, formatDecimalMoney, formatMoney, formatDate, statusBadge, toast } from "../admin-core.js?v=20260622-direct-auth";
+import { escapeHtml, formatDecimalMoney, formatMoney, formatDate, statusBadge, toast } from "../admin-core.js?v=20260623-no-hang";
 import { listView, openModal, optionList } from "./_ui.js";
 
 const INTENT_STATUSES = ["new", "contacted", "converted", "cancelled"].map((v) => ({
