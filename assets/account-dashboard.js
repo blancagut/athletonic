@@ -19,6 +19,7 @@
   var summaryOrders = document.querySelector("[data-summary-orders]");
   var summaryDeliveries = document.querySelector("[data-summary-deliveries]");
   var summaryStatus = document.querySelector("[data-summary-status]");
+  var ADMIN_ROLES = ["admin", "super_admin"];
 
   function escapeHtml(value) {
     return String(value || "")
@@ -278,6 +279,27 @@
       });
   }
 
+  async function redirectAdminSession(session) {
+    var user = session && session.user;
+    if (!user || !user.id) return false;
+
+    try {
+      var result = await sb
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      var role = result && result.data && result.data.role;
+      if (ADMIN_ROLES.includes(role)) {
+        window.location.replace("admin/index.html");
+        return true;
+      }
+    } catch (error) {
+      console.warn("Could not check admin role for account redirect", error);
+    }
+    return false;
+  }
+
   function bindGate() {
     var btnIn = document.getElementById("btn-hub-signin");
     if (btnIn) {
@@ -368,12 +390,13 @@
       return;
     }
 
-    sb.auth.getSession().then(function (res) {
+    sb.auth.getSession().then(async function (res) {
       var session = res && res.data && res.data.session;
       if (!session) {
         if (gateEl) gateEl.hidden = false;
         return;
       }
+      if (await redirectAdminSession(session)) return;
       bindSecurityReset(session.user || {});
       showDashboard(session);
     });

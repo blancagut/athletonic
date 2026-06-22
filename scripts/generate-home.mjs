@@ -6310,7 +6310,7 @@ ${renderFooter(pathPrefix)}
       window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
-    <script src="${pathPrefix}assets/account-dashboard.js" defer></script>
+    <script src="${pathPrefix}assets/account-dashboard.js?v=20260622-admin-redirect" defer></script>
     <script src="${pathPrefix}assets/cart.js" defer></script>
   </body>
 </html>
