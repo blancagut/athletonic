@@ -1,19 +1,194 @@
 // Shared admin client utilities (ES module, no build step).
-// Loads supabase-js from CDN and exposes a configured client + helpers.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.108.2?bundle";
+// Uses Supabase Auth/PostgREST directly so admin boot has no external module CDN dependency.
 
 const SUPABASE_URL = window.ATHLETONIC_SUPABASE_URL;
 const SUPABASE_KEY = window.ATHLETONIC_SUPABASE_KEY;
+const PROJECT_REF = (() => {
+  try {
+    return new URL(SUPABASE_URL).hostname.split(".")[0];
+  } catch {
+    return "athletonic";
+  }
+})();
+const SESSION_STORAGE_KEY = `sb-${PROJECT_REF}-auth-token`;
+const authListeners = new Set();
 
 export const LOGIN_PATH = "./login.html";
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+function authHeaders(extra = {}) {
+  return {
+    apikey: SUPABASE_KEY,
+    ...extra,
+  };
+}
+
+function normalizeSession(payload) {
+  if (!payload || !payload.access_token) return null;
+  const expiresAt = payload.expires_at || (
+    payload.expires_in ? Math.floor(Date.now() / 1000) + Number(payload.expires_in) : null
+  );
+  return {
+    access_token: payload.access_token,
+    refresh_token: payload.refresh_token || null,
+    expires_in: payload.expires_in || null,
+    expires_at: expiresAt,
+    token_type: payload.token_type || "bearer",
+    user: payload.user || null,
+  };
+}
+
+function readStoredSession() {
+  try {
+    return normalizeSession(JSON.parse(window.localStorage.getItem(SESSION_STORAGE_KEY) || "null"));
+  } catch {
+    return null;
+  }
+}
+
+function storeSession(session) {
+  if (!session) return;
+  window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+}
+
+function clearSession() {
+  window.localStorage.removeItem(SESSION_STORAGE_KEY);
+}
+
+function notifyAuth(event, session = null) {
+  authListeners.forEach((listener) => {
+    try {
+      listener(event, session);
+    } catch {
+      // Auth listeners must never break navigation.
+    }
+  });
+}
+
+async function parseJsonResponse(res) {
+  let payload = null;
+  try {
+    payload = await res.json();
+  } catch {
+    payload = null;
+  }
+  return payload;
+}
+
+function authError(payload, fallback = "Authentication failed.") {
+  return {
+    message: (payload && (payload.error_description || payload.msg || payload.message || payload.error)) || fallback,
+    status: payload && payload.status,
+  };
+}
+
+async function refreshSession(session) {
+  if (!session || !session.refresh_token) return null;
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    method: "POST",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ refresh_token: session.refresh_token }),
+  });
+  const payload = await parseJsonResponse(res);
+  if (!res.ok) {
+    clearSession();
+    return null;
+  }
+  const nextSession = normalizeSession(payload);
+  storeSession(nextSession);
+  return nextSession;
+}
+
+async function getCurrentSession() {
+  const session = readStoredSession();
+  if (!session) return null;
+  const now = Math.floor(Date.now() / 1000);
+  if (session.expires_at && session.expires_at - now < 60) {
+    return refreshSession(session);
+  }
+  return session;
+}
+
+function createQuery(table) {
+  const params = new URLSearchParams();
+  const filters = [];
+  return {
+    select(columns) {
+      params.set("select", columns);
+      return this;
+    },
+    eq(column, value) {
+      filters.push([column, `eq.${value}`]);
+      return this;
+    },
+    async maybeSingle() {
+      filters.forEach(([column, value]) => params.set(column, value));
+      params.set("limit", "1");
+      const session = await getCurrentSession();
+      if (!session) {
+        return { data: null, error: { message: "Authentication required.", status: 401 } };
+      }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params.toString()}`, {
+        headers: authHeaders({
+          Accept: "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        }),
+      });
+      const payload = await parseJsonResponse(res);
+      if (!res.ok) {
+        return { data: null, error: { ...authError(payload, "Request failed."), status: res.status } };
+      }
+      return { data: Array.isArray(payload) ? payload[0] || null : payload || null, error: null };
+    },
+  };
+}
+
+export const supabase = {
   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
+    async getSession() {
+      return { data: { session: await getCurrentSession() }, error: null };
+    },
+    async signInWithPassword({ email, password }) {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ email, password }),
+      });
+      const payload = await parseJsonResponse(res);
+      if (!res.ok) {
+        return { data: { session: null, user: null }, error: authError(payload, "Could not sign in.") };
+      }
+      const session = normalizeSession(payload);
+      storeSession(session);
+      notifyAuth("SIGNED_IN", session);
+      return { data: { session, user: session.user }, error: null };
+    },
+    async signOut() {
+      const session = readStoredSession();
+      clearSession();
+      if (session && session.access_token) {
+        fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+          method: "POST",
+          headers: authHeaders({ Authorization: `Bearer ${session.access_token}` }),
+        }).catch(() => {});
+      }
+      notifyAuth("SIGNED_OUT", null);
+      return { error: null };
+    },
+    onAuthStateChange(listener) {
+      authListeners.add(listener);
+      return {
+        data: {
+          subscription: {
+            unsubscribe() {
+              authListeners.delete(listener);
+            },
+          },
+        },
+      };
+    },
   },
-});
+  from: createQuery,
+};
 
 export async function getAccessToken() {
   const { data } = await supabase.auth.getSession();

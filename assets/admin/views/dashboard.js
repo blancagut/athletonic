@@ -1,5 +1,5 @@
 // Dashboard view: high-level ecommerce operations metrics.
-import { escapeHtml, formatMoney, formatDate, roleLabel, statusBadge, compactJson } from "../admin-core.js";
+import { escapeHtml, formatMoney, formatDate, roleLabel, statusBadge, compactJson } from "../admin-core.js?v=20260622-direct-auth";
 
 function metric(label, value, sub) {
   return `

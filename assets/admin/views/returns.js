@@ -1,5 +1,5 @@
 // Returns view: list + approve/reject with admin notes.
-import { escapeHtml, formatMoney, formatDate, statusBadge, toast } from "../admin-core.js";
+import { escapeHtml, formatMoney, formatDate, statusBadge, toast } from "../admin-core.js?v=20260622-direct-auth";
 import { listView, openModal, optionList } from "./_ui.js";
 
 const RETURN_STATUSES = [

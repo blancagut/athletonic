@@ -1,5 +1,5 @@
 // Audit log view: read-only stream of privileged actions.
-import { escapeHtml, formatDate, roleLabel, compactJson } from "../admin-core.js";
+import { escapeHtml, formatDate, roleLabel, compactJson } from "../admin-core.js?v=20260622-direct-auth";
 import { listView } from "./_ui.js";
 
 export default {

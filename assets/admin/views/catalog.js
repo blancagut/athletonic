@@ -1,5 +1,5 @@
 // Catalog view: browse products and persist admin overrides.
-import { escapeHtml, formatMoney, toast } from "../admin-core.js";
+import { escapeHtml, formatMoney, toast } from "../admin-core.js?v=20260622-direct-auth";
 import { listView, openModal } from "./_ui.js";
 
 async function openProduct(app, product, reload) {

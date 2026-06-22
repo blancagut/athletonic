@@ -1,5 +1,5 @@
 // Settings view (super_admin only): edit app_settings JSON values.
-import { escapeHtml, formatDate, toast } from "../admin-core.js";
+import { escapeHtml, formatDate, toast } from "../admin-core.js?v=20260622-direct-auth";
 
 function input(name, label, value, attrs = "") {
   return `<div class="admin-field"><label>${escapeHtml(label)}</label><input name="${escapeHtml(name)}" value="${escapeHtml(value ?? "")}" ${attrs} /></div>`;
