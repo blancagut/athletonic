@@ -39,7 +39,12 @@ function normalizeSession(payload) {
 
 function readStoredSession() {
   try {
-    return normalizeSession(JSON.parse(window.localStorage.getItem(SESSION_STORAGE_KEY) || "null"));
+    const raw = JSON.parse(window.localStorage.getItem(SESSION_STORAGE_KEY) || "null");
+    // Tolerate both the flat session shape we write and the wrapped shape that
+    // supabase-js persists ({ currentSession: { ... } }) so a session created on
+    // the customer site is still readable by the admin panel.
+    const payload = raw && raw.currentSession ? raw.currentSession : raw;
+    return normalizeSession(payload);
   } catch {
     return null;
   }
@@ -98,6 +103,50 @@ async function refreshSession(session) {
   return nextSession;
 }
 
+async function fetchSessionUser(accessToken) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: authHeaders({ Authorization: `Bearer ${accessToken}` }),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+// Capture a Supabase auth response (magic link / recovery / invite) that arrives
+// in the URL fragment, e.g. `#access_token=...&refresh_token=...&type=magiclink`.
+// Without this, a magic-link login would never establish an admin session and
+// the panel would hang on "Verifying your session…".
+async function captureSessionFromUrl() {
+  if (typeof window === "undefined" || !window.location) return;
+  const hash = (window.location.hash || "").replace(/^#/, "");
+  if (!hash || hash.indexOf("access_token=") === -1) return;
+  const params = new URLSearchParams(hash);
+  const accessToken = params.get("access_token");
+  if (!accessToken) return;
+  let session = normalizeSession({
+    access_token: accessToken,
+    refresh_token: params.get("refresh_token"),
+    expires_in: params.get("expires_in"),
+    expires_at: params.get("expires_at"),
+    token_type: params.get("token_type") || "bearer",
+  });
+  if (!session) return;
+  if (!session.user) {
+    session = { ...session, user: await fetchSessionUser(accessToken) };
+  }
+  storeSession(session);
+  // Strip the auth fragment so a refresh doesn't reprocess (or leak) the tokens.
+  try {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  } catch {
+    // Ignore environments where history is unavailable.
+  }
+  notifyAuth("SIGNED_IN", session);
+}
+
 async function getCurrentSession() {
   const session = readStoredSession();
   if (!session) return null;
@@ -146,6 +195,7 @@ function createQuery(table) {
 export const supabase = {
   auth: {
     async getSession() {
+      await captureSessionFromUrl();
       return { data: { session: await getCurrentSession() }, error: null };
     },
     async signInWithPassword({ email, password }) {

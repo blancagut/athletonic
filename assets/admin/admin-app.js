@@ -1,5 +1,5 @@
 // Admin panel bootstrap: session guard, role-aware nav, and hash router.
-import { supabase, authFetch, redirectToLogin, roleLabel, toast } from "./admin-core.js?v=20260623-no-hang";
+import { supabase, authFetch, redirectToLogin, roleLabel, toast } from "./admin-core.js?v=20260623-magic-link";
 import dashboard from "./views/dashboard.js";
 import orders from "./views/orders.js";
 import returns from "./views/returns.js";

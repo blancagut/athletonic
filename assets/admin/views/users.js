@@ -1,5 +1,5 @@
 // Users & admins view (super_admin only): manage roles.
-import { escapeHtml, formatDate, roleBadge, roleLabel, toast } from "../admin-core.js?v=20260623-no-hang";
+import { escapeHtml, formatDate, roleBadge, roleLabel, toast } from "../admin-core.js?v=20260623-magic-link";
 import { listView, openModal } from "./_ui.js";
 
 const ROLES = ["user", "admin", "super_admin"];

@@ -3,6 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      // Auth bridge: Supabase magic-link / recovery redirects can land on the site
+      // root with the token in the URL fragment. The home page has no auth client,
+      // so forward the response to the account page, which establishes the session
+      // and routes admins to the admin panel.
+      (function () {
+        var hash = window.location.hash || "";
+        if (hash.indexOf("access_token=") === -1 && hash.indexOf("error=") === -1) return;
+        var params = new URLSearchParams(hash.replace(/^#/, ""));
+        if (params.get("access_token") || params.get("error")) {
+          window.location.replace("./pages/account.html" + window.location.search + hash);
+        }
+      })();
+    </script>
     <title>Athletonic | Performance Supplements, Recovery &amp; Training Gear</title>
     <meta
       name="description"

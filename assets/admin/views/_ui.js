@@ -1,5 +1,5 @@
 // Shared UI building blocks for admin list/detail views.
-import { escapeHtml } from "../admin-core.js?v=20260623-no-hang";
+import { escapeHtml } from "../admin-core.js?v=20260623-magic-link";
 
 export function h(html) {
   const tpl = document.createElement("template");

@@ -1,5 +1,5 @@
 // Private pricing view (super_admin only): grant, revoke, and rotate access codes.
-import { escapeHtml, formatDate, statusBadge, toast } from "../admin-core.js?v=20260623-no-hang";
+import { escapeHtml, formatDate, statusBadge, toast } from "../admin-core.js?v=20260623-magic-link";
 import { listView, openModal } from "./_ui.js";
 
 const STATUSES = [
