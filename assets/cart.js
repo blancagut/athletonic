@@ -581,11 +581,17 @@
 
     if (!response.ok) {
       let message = "Could not start checkout.";
-      try {
-        const error = await response.json();
-        message = error.message || message;
-      } catch {
-        message = await response.text();
+      // Read the body exactly once, then try to parse it. Calling json() and
+      // then text() on the same response throws "body already read" and masks
+      // the real error.
+      const raw = await response.text().catch(() => "");
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          message = parsed.message || message;
+        } catch {
+          message = raw;
+        }
       }
       throw new Error(message);
     }
