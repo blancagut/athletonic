@@ -229,8 +229,29 @@ function validateCart(cart, options = {}) {
       );
     }
 
-    const variantLabel = variant ? variant.title || optionLabel(variant.option_values) : "";
-    const mergeKey = `${productId}::${variant ? variant.variant_id : ""}`;
+    // Current catalog exports flag `requires_variant_selection` but ship no
+    // structured variant rows, so `has_variants` is false and no variant_id can
+    // be resolved. The storefront PDP forces the shopper to pick an option and
+    // submits it as a free-text label. Require that label server-side so a
+    // variant-required product can never reach checkout unspecified (e.g. a
+    // hand-crafted API request), and carry it onto the order line for
+    // fulfillment. The label never affects price — the catalog price is flat
+    // across these options — so this cannot change any amount.
+    const clientVariantLabel = String(rawItem.variant || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 200);
+    if (!variant && product.requires_variant_selection && !clientVariantLabel) {
+      throw validationError(
+        "Choose the required product options before checkout.",
+        "variant_required"
+      );
+    }
+
+    const variantLabel = variant
+      ? variant.title || optionLabel(variant.option_values)
+      : clientVariantLabel;
+    const mergeKey = `${productId}::${variant ? variant.variant_id : variantLabel}`;
     const existing = merged.get(mergeKey);
     if (existing) {
       existing.quantity += quantity;

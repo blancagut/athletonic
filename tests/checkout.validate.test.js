@@ -17,6 +17,7 @@ const catalogData = require("../data/athletonic-catalog.json");
 
 const SYN_UNPURCHASABLE = "__test_unpurchasable__";
 const SYN_UNAVAILABLE = "__test_unavailable__";
+const SYN_VARIANT = "__test_variant_required__";
 
 catalogData.products.push({
   id: SYN_UNPURCHASABLE,
@@ -34,6 +35,17 @@ catalogData.products.push({
   price_cents: 1234,
   currency: "USD",
   available: false,
+});
+// Mirrors the live catalog shape: a product that requires the shopper to pick
+// an option but ships NO structured variant rows (so `has_variants` is false).
+catalogData.products.push({
+  id: SYN_VARIANT,
+  brand: "Test",
+  name: "Synthetic Variant Required",
+  price_cents: 4999,
+  currency: "USD",
+  available: true,
+  requires_variant_selection: true,
 });
 
 const { validateCart } = require("../api/_lib/catalog.js");
@@ -109,4 +121,33 @@ test("a product explicitly marked purchasable:false is still rejected", () => {
 
 test("an unavailable product is rejected", () => {
   expectReject([{ productId: SYN_UNAVAILABLE, quantity: 1 }], "product_unavailable");
+});
+
+test("a variant-required product with no chosen option is rejected", () => {
+  expectReject([{ productId: SYN_VARIANT, quantity: 1 }], "variant_required");
+  expectReject(
+    [{ productId: SYN_VARIANT, quantity: 1, variant: "   " }],
+    "variant_required"
+  );
+});
+
+test("a variant-required product with a chosen option validates and carries the label", () => {
+  const result = validateCart([
+    { productId: SYN_VARIANT, quantity: 1, variant: "Cookies N Cream" },
+  ]);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].variant, "Cookies N Cream");
+  // Price is the flat catalog price regardless of the chosen option.
+  assert.equal(result.items[0].unit_amount_cents, 4999);
+  assert.equal(result.items[0].product_snapshot.variant_title, "Cookies N Cream");
+});
+
+test("distinct chosen options of the same product stay separate lines", () => {
+  const result = validateCart([
+    { productId: SYN_VARIANT, quantity: 1, variant: "Vanilla" },
+    { productId: SYN_VARIANT, quantity: 1, variant: "Chocolate" },
+  ]);
+  assert.equal(result.items.length, 2);
+  const labels = result.items.map((i) => i.variant).sort();
+  assert.deepEqual(labels, ["Chocolate", "Vanilla"]);
 });
