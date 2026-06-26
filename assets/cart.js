@@ -56,6 +56,14 @@
         '</svg>' +
         '<span>Deals</span>' +
       '</a>' +
+      '<button type="button" data-account-open aria-haspopup="dialog" aria-controls="account-panel" aria-expanded="false" aria-label="Open account panel">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<circle cx="12" cy="12" r="10"></circle>' +
+          '<circle cx="12" cy="10" r="3"></circle>' +
+          '<path d="M7 20.4a5.5 5.5 0 0 1 10 0"></path>' +
+        '</svg>' +
+        '<span>Account</span>' +
+      '</button>' +
       '<button type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart-drawer" aria-expanded="false" aria-label="Open cart">' +
         '<svg viewBox="0 0 24 24" aria-hidden="true">' +
           '<circle cx="8" cy="21" r="1"></circle>' +
@@ -313,17 +321,79 @@
     }
   }
 
-  function openAccount(trigger) {
-    const session = getStoredAuthSession();
-    const prefix = pagePathPrefix();
-    if (session) {
-      window.location.href = prefix + "pages/account.html";
-    } else {
-      window.location.href =
-        prefix +
-        "pages/login.html?return_to=" +
-        encodeURIComponent(window.location.href);
+  function renderAccountPanel() {
+    if (!accountPanel) return;
+    let actions = accountPanel.querySelector("[data-account-actions]");
+    if (!actions) {
+      actions = document.createElement("div");
+      actions.className = "account-actions";
+      actions.setAttribute("data-account-actions", "");
+      const header = accountPanel.querySelector(".drawer-header");
+      if (header && header.nextSibling) {
+        accountPanel.insertBefore(actions, header.nextSibling);
+      } else if (header) {
+        header.insertAdjacentElement("afterend", actions);
+      } else {
+        accountPanel.prepend(actions);
+      }
     }
+
+    const prefix = pagePathPrefix();
+    const title = accountPanel.querySelector("#account-title");
+    const eyebrow = accountPanel.querySelector(".drawer-eyebrow");
+    const session = getStoredAuthSession();
+    const returnTo = encodeURIComponent(window.location.href);
+
+    const quickLinks =
+      '<div class="account-action-grid">' +
+        '<a href="' + prefix + 'pages/orders.html">Your orders</a>' +
+        '<a href="' + prefix + 'pages/order-tracking.html">Track a package</a>' +
+        '<a href="' + prefix + 'pages/returns.html">Returns</a>' +
+        '<a href="' + prefix + 'pages/daily-deals.html">Today\u2019s deals</a>' +
+      '</div>';
+
+    if (session && session.user) {
+      const meta = session.user.user_metadata || {};
+      const fullName = meta.full_name || meta.name || "";
+      const firstName = fullName
+        ? fullName.trim().split(" ")[0]
+        : (session.user.email || "").split("@")[0];
+      if (eyebrow) eyebrow.textContent = "Account";
+      if (title) title.textContent = "Hello, " + (firstName || "athlete");
+      actions.innerHTML =
+        '<a class="account-action-primary" href="' + prefix + 'pages/account.html">Your account</a>' +
+        quickLinks +
+        '<button type="button" class="account-action-signout" data-account-signout>Sign out</button>';
+    } else {
+      if (eyebrow) eyebrow.textContent = "Account";
+      if (title) title.textContent = "Hello, sign in";
+      actions.innerHTML =
+        '<a class="account-action-primary" href="' + prefix + 'pages/login.html?return_to=' + returnTo + '">Sign in</a>' +
+        '<p class="account-action-note">New customer? <a href="' + prefix + 'pages/login.html?return_to=' + returnTo + '">Create your account</a>.</p>' +
+        quickLinks;
+    }
+  }
+
+  function signOutFromPanel() {
+    try {
+      localStorage.removeItem(SB_SESSION_KEY);
+    } catch (e) {
+      /* ignore */
+    }
+    window.location.href = pagePathPrefix();
+  }
+
+  function openAccount(trigger) {
+    if (!accountPanel) {
+      const session = getStoredAuthSession();
+      const prefix = pagePathPrefix();
+      window.location.href = session
+        ? prefix + "pages/account.html"
+        : prefix + "pages/login.html?return_to=" + encodeURIComponent(window.location.href);
+      return;
+    }
+    renderAccountPanel();
+    openPanel(accountPanel, trigger, accountOpenButtons, "[data-account-close]");
   }
 
   function setFormStatus(element, message, state) {
@@ -649,6 +719,13 @@
     );
     if (closeButton) closePanels();
 
+    const signOutButton = event.target.closest("[data-account-signout]");
+    if (signOutButton) {
+      event.preventDefault();
+      signOutFromPanel();
+      return;
+    }
+
     const addButton = event.target.closest("[data-add-to-cart]");
     if (addButton) {
       // Card and PDP buttons share the same data attributes; disabled PDP
@@ -794,11 +871,11 @@
     });
   }
 
-  // Footer: newsletter signup (stub)
+  // Footer: newsletter signup
   const newsletterForm = $("[data-footer-newsletter]");
   const newsletterStatus = $("[data-footer-newsletter-status]");
   if (newsletterForm) {
-    newsletterForm.addEventListener("submit", (event) => {
+    newsletterForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const formData = new FormData(newsletterForm);
       if ((formData.get("company") || "").toString().trim() !== "") return;
@@ -810,11 +887,44 @@
         }
         return;
       }
+
       if (newsletterStatus) {
-        newsletterStatus.textContent = "Thanks — you're on the list.";
-        newsletterStatus.dataset.state = "success";
+        newsletterStatus.textContent = "Submitting...";
+        newsletterStatus.dataset.state = "pending";
       }
-      newsletterForm.reset();
+
+      try {
+        const response = await fetch("/api/newsletter", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            company: (formData.get("company") || "").toString(),
+            source: "footer",
+            page: window.location.pathname,
+          }),
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.message || "We could not save your email right now.");
+        }
+
+        if (newsletterStatus) {
+          newsletterStatus.textContent =
+            data.message || "Thanks - you're on the list.";
+          newsletterStatus.dataset.state = "success";
+        }
+        newsletterForm.reset();
+      } catch (error) {
+        if (newsletterStatus) {
+          newsletterStatus.textContent =
+            error.message || "We could not save your email right now.";
+          newsletterStatus.dataset.state = "error";
+        }
+      }
     });
   }
 
