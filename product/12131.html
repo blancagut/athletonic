@@ -164,6 +164,12 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00380_1_ddda389d-02af-4426-b915-e192ac86a6ab.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00380_1_ddda389d-02af-4426-b915-e192ac86a6ab.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA07510-2_1.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA07510-2_1.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_1.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_4.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_4.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_7.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_7.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_2.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_2.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_3.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_3.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_5.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_5.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_6.jpg" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_6.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -531,6 +537,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA07508_1_0dacbe4a-85a5-47f1-a678-58b20b4474fb.jpg","t":"cia0750810dacbe4a85a547f1a67858b20b4474fbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03239_1_288f5c28-cc9f-4a93-96f7-09e7c023fe62.jpg","t":"cia032391288f5c28cc9f4a9396f709e7c023fe62jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03241_1_55426dee-1c11-4c71-b31a-b810e68d9a0f.jpg","t":"cia03241155426dee1c114c71b31ab810e68d9a0fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/blackhatside_1_26dfe297-b66a-4532-bc47-11f4fbaaa467.jpg","t":"blackhatside126dfe297b66a4532bc4711f4fbaaa467jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03248-2_1-253076.jpg","t":"cia0324821253076jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00380_1_ddda389d-02af-4426-b915-e192ac86a6ab.jpg","t":"cia003801ddda389d02af4426b915e192ac86a6abjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA07510-2_1.jpg","t":"cia0751021jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_1.jpg","t":"benddontbreakblackedoutflatbrimsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_4.jpg","t":"benddontbreakblackedoutflatbrimsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_7.jpg","t":"benddontbreakblackedoutflatbrimsnapback7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_2.jpg","t":"benddontbreakblackedoutflatbrimsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_3.jpg","t":"benddontbreakblackedoutflatbrimsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_5.jpg","t":"benddontbreakblackedoutflatbrimsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BENDDONTBREAK-BLACKEDOUTFLATBRIMSNAPBACK_6.jpg","t":"benddontbreakblackedoutflatbrimsnapback6jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +763,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

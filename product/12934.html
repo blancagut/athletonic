@@ -164,6 +164,18 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/951952365301511480_2048.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/951952365301511480_2048.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/17552454533006827344_2048.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/17552454533006827344_2048.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/12066816759587226345_2048.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/12066816759587226345_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/9442407270266471361_2048.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/9442407270266471361_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/7770846308095894191_2048.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/7770846308095894191_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/10465410329049348202_2048.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/10465410329049348202_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/3143318905158755464_2048.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/3143318905158755464_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/10403969465482541746_2048.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/10403969465482541746_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/9280608306797174083_2048.jpg" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/9280608306797174083_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/18239905544750572273_2048.jpg" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/18239905544750572273_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/15486042771739582737_2048.jpg" aria-label="View image 16"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/15486042771739582737_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/139613007746423678_2048.jpg" aria-label="View image 17"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/139613007746423678_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/1178642275016589048_2048.jpg" aria-label="View image 18"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/1178642275016589048_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/15477124021695488086_2048.jpg" aria-label="View image 19"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/15477124021695488086_2048.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/8251429286652928309_2048.jpg" aria-label="View image 20"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/8251429286652928309_2048.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -589,6 +601,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/10936684164081039600_2048.jpg","t":"109366841640810396002048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/3869554000536913687_2048.jpg","t":"38695540005369136872048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/317806177787650096_2048.jpg","t":"3178061777876500962048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/14031644551357645236_2048.jpg","t":"140316445513576452362048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/16703428019214428422_2048.jpg","t":"167034280192144284222048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/951952365301511480_2048.jpg","t":"9519523653015114802048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/17552454533006827344_2048.jpg","t":"175524545330068273442048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/12066816759587226345_2048.jpg","t":"120668167595872263452048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/9442407270266471361_2048.jpg","t":"94424072702664713612048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/7770846308095894191_2048.jpg","t":"77708463080958941912048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/10465410329049348202_2048.jpg","t":"104654103290493482022048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/3143318905158755464_2048.jpg","t":"31433189051587554642048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/10403969465482541746_2048.jpg","t":"104039694654825417462048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/9280608306797174083_2048.jpg","t":"92806083067971740832048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/18239905544750572273_2048.jpg","t":"182399055447505722732048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/15486042771739582737_2048.jpg","t":"154860427717395827372048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/139613007746423678_2048.jpg","t":"1396130077464236782048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1178642275016589048_2048.jpg","t":"11786422750165890482048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/15477124021695488086_2048.jpg","t":"154771240216954880862048jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/8251429286652928309_2048.jpg","t":"82514292866529283092048jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -762,7 +827,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

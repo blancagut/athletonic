@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_2c213066-4955-43be-b57d-c6cebd614a1f_1_1.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_2c213066-4955-43be-b57d-c6cebd614a1f_1_1.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_54ff7ba9-619f-4348-a42e-ec37033cb881_1_1.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_54ff7ba9-619f-4348-a42e-ec37033cb881_1_1.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/knee1_dcb01abf-dede-4e22-bf34-cb2e9f17f6a6_1_1.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/knee1_dcb01abf-dede-4e22-bf34-cb2e9f17f6a6_1_1.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/BK-GUIDE-KNEESLEEVES_1_02e4105e-c273-4946-ab3a-fa0cd862dd60_1.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/BK-GUIDE-KNEESLEEVES_1_02e4105e-c273-4946-ab3a-fa0cd862dd60_1.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -574,6 +575,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TieDye2.png","t":"tiedye2png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/tiedye_1024x1024_777632b4-4339-4814-bc9f-338b1eb32032_1.png","t":"tiedye1024x1024777632b443394814bc9f338b1eb320321png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/KneeSleeveGroup_31d8756a-61d2-4358-abf9-138d8163a437_1.png","t":"kneesleevegroup31d8756a61d24358abf9138d8163a4371png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_42fc6e38-16c8-40d3-a6b6-9afc907ef44f_1.jpg","t":"image42fc6e3816c840d3a6b69afc907ef44f1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/FullSizeRender_044e72e5-0542-42b3-ac8b-92a125a9a962_1_1.png","t":"fullsizerender044e72e5054242b3ac8b92a125a9a96211png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_2c213066-4955-43be-b57d-c6cebd614a1f_1_1.png","t":"image2c213066495543beb57dc6cebd614a1f11png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_54ff7ba9-619f-4348-a42e-ec37033cb881_1_1.png","t":"image54ff7ba9619f4348a42eec37033cb88111png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/knee1_dcb01abf-dede-4e22-bf34-cb2e9f17f6a6_1_1.png","t":"knee1dcb01abfdede4e22bf34cb2e9f17f6a611png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/BK-GUIDE-KNEESLEEVES_1_02e4105e-c273-4946-ab3a-fa0cd862dd60_1.png","t":"bkguidekneesleeves102e4105ec2734946ab3afa0cd862dd601png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -747,7 +801,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

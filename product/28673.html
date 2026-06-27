@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSUH000-2000_clipped_rev_1_74c3933f-8050-4051-a2bd-7d9db79f9f77.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSUH000-2000_clipped_rev_1_74c3933f-8050-4051-a2bd-7d9db79f9f77.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD001-2000_clipped_rev_1_1b6c5f4a-fbec-49bc-b913-08619bfea337.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD001-2000_clipped_rev_1_1b6c5f4a-fbec-49bc-b913-08619bfea337.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD000-2000_clipped_rev_1_5ad046e9-6a8b-4088-bdfc-f1d582428309.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD000-2000_clipped_rev_1_5ad046e9-6a8b-4088-bdfc-f1d582428309.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD003-2000_clipped_rev_1_e030d16f-a3ef-48a9-8ab1-849345515fd3.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD003-2000_clipped_rev_1_e030d16f-a3ef-48a9-8ab1-849345515fd3.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -541,6 +542,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSRH000-2000_clipped_rev_1_54424d20-6a3e-4bff-8c27-51526a4c2320.png","t":"auroraib2472600phsrh0002000clippedrev154424d206a3e4bff8c2751526a4c2320png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHCFH001-2000_clipped_rev_1_1bbea886-8cf7-4bd9-9fa4-7f25fa22d5b6.png","t":"auroraib2472600phcfh0012000clippedrev11bbea8868cf74bd99fa47f25fa22d5b6png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSRH001-2000_clipped_rev_1_a582b2f0-68f7-4d92-acff-0b426629bf04.png","t":"auroraib2472600phsrh0012000clippedrev1a582b2f068f74d92acff0b426629bf04png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHCTH001-2000_clipped_rev_1_4b7693f6-35a7-415b-a026-9d5d7f9743d7.png","t":"auroraib2472600phcth0012000clippedrev14b7693f635a7415ba0269d5d7f9743d7png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHCBH000-2000_clipped_rev_1_cf97be07-89f1-4680-8c0e-70ffbcad2c6b.png","t":"auroraib2472600phcbh0002000clippedrev1cf97be0789f146808c0e70ffbcad2c6bpng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSUH000-2000_clipped_rev_1_74c3933f-8050-4051-a2bd-7d9db79f9f77.png","t":"auroraib2472600phsuh0002000clippedrev174c3933f80504051a2bd7d9db79f9f77png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD001-2000_clipped_rev_1_1b6c5f4a-fbec-49bc-b913-08619bfea337.png","t":"auroraib2472600phsyd0012000clippedrev11b6c5f4afbec49bcb91308619bfea337png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD000-2000_clipped_rev_1_5ad046e9-6a8b-4088-bdfc-f1d582428309.png","t":"auroraib2472600phsyd0002000clippedrev15ad046e96a8b4088bdfcf1d582428309png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB2472-600_PHSYD003-2000_clipped_rev_1_e030d16f-a3ef-48a9-8ab1-849345515fd3.png","t":"auroraib2472600phsyd0032000clippedrev1e030d16fa3ef48a98ab1849345515fd3png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -714,7 +768,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -573,6 +573,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/TheUltimateStack.jpg","t":"theultimatestackjpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innoshred_5_48264516-645d-474b-aba2-5d3368887b61.png","t":"innoshred548264516645d474baba25d3368887b61png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-auside1_ca68e612-436d-4890-9329-24861b071146.webp","t":"nightshredauside1ca68e612436d4890932924861b071146webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/volcarn-pinkstarblast_1_22143552-1f1a-41e5-8e27-58f6cabf2653.png","t":"volcarnpinkstarblast1221435521f1a41e58e2758f6cabf2653png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-blackberrylemon_1_28f970af-1892-44c7-99da-cf97034c5ce6.png","t":"stormmakerblackberrylemon128f970af189244c799dacf97034c5ce6png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/advancediso-butterypancake_7f93de10-5893-4f16-afe0-49288b3ecf79.png","t":"advancedisobutterypancake7f93de1058934f16afe049288b3ecf79png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -746,7 +799,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

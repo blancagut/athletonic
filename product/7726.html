@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0645/6465/files/vanilla-pea-protein-shake.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0645/6465/files/vanilla-pea-protein-shake.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0645/6465/files/pea-protein-powder-collection_d6d45648-acd0-433d-ae96-912f1a5c02dd.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0645/6465/files/pea-protein-powder-collection_d6d45648-acd0-433d-ae96-912f1a5c02dd.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0645/6465/files/BestPeaProteinRecipes-2_eadcd561-ee8d-4185-8d96-aa202265866e.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0645/6465/files/BestPeaProteinRecipes-2_eadcd561-ee8d-4185-8d96-aa202265866e.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Lifestyle.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Lifestyle.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -512,6 +513,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Vanilla-2LB-Main-Image.jpg","t":"peavanilla2lbmainimagejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/vegan-pea-protein-powder-sourcing_793a543b-ba87-4f05-881c-9217df04a81d.jpg","t":"veganpeaproteinpowdersourcing793a543bba874f05881c9217df04a81djpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Vanilla-2LB-Graphic_5b412a9b-720a-4780-bb9f-d42ede18b1b9.png","t":"peavanilla2lbgraphic5b412a9b720a4780bb9fd42ede18b1b9png"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Vanilla-2lb-NutritionGraphic_800x_ed6455c0-56b3-4335-9d18-4df880c2ab3a.png","t":"peavanilla2lbnutritiongraphic800xed6455c056b343359d184df880c2ab3apng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Naked_AD_June_1.jpg","t":"nakedadjune1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/vanilla-pea-protein-shake.jpg","t":"vanillapeaproteinshakejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/pea-protein-powder-collection_d6d45648-acd0-433d-ae96-912f1a5c02dd.png","t":"peaproteinpowdercollectiond6d45648acd0433dae96912f1a5c02ddpng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/BestPeaProteinRecipes-2_eadcd561-ee8d-4185-8d96-aa202265866e.jpg","t":"bestpeaproteinrecipes2eadcd561ee8d41858d96aa202265866ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Lifestyle.jpg","t":"pealifestylejpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -685,7 +739,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

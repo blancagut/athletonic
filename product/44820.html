@@ -560,6 +560,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/PREGGO-Bundle-PDP_87e21843-b6b9-4293-a862-503c05a4166d.png","t":"preggobundlepdp87e21843b6b94293a862503c05a4166dpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/PREGGO-Female-carousel-instructions_92dbb490-1734-4e34-8fb3-016f25f194a8.png","t":"preggofemalecarouselinstructions92dbb49017344e348fb3016f25f194a8png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/PREGGO-Male-alleviate_1bf0a791-30b3-4a6e-8c12-f298465c035e.png","t":"preggomalealleviate1bf0a79130b34a6e8c12f298465c035epng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/PREGGO-Female-carousel-alleviate_c6119ff9-1a40-45c3-a6a8-6a74371c5d04.png","t":"preggofemalecarouselalleviatec6119ff91a4045c3a6a86a74371c5d04png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/PREGGO-Male-instructions_be419d4d-27b7-4616-990b-6dd4b159eb76.png","t":"preggomaleinstructionsbe419d4d27b74616990b6dd4b159eb76png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/PREGGO-Female-carousel-guarantee_fcdefb60-19d8-46f4-b3e6-0fa9d997672e.png","t":"preggofemalecarouselguaranteefcdefb6019d846f4b3e60fa9d997672epng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/PREGGO-Female-carousel-sfp_45600c45-54a5-41d9-aa19-41364be3adfb.png","t":"preggofemalecarouselsfp45600c4554a541d9aa1941364be3adfbpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/PREGGO-Male-carousel-sfp_c20592f2-008f-40ae-bb03-c8d0ea86e6fd.png","t":"preggomalecarouselsfpc20592f2008f40aebb03c8d0ea86e6fdpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -733,7 +786,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

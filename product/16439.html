@@ -545,6 +545,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/greensdouble.png","t":"greensdoublepng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-paradisepunch1_145d8e7e-28a1-4a49-82d3-7ebbef734840.png","t":"innogreensparadisepunch1145d8e7e28a14a4982d37ebbef734840png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-lemonlime_3b283b74-e009-43b4-8ad8-92a4f61c7d71.png","t":"innogreenslemonlime3b283b74e00943b48ad892a4f61c7d71png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/greens-side2_b1b54afd-1327-424e-9c92-2581ae779994.png","t":"greensside2b1b54afd1327424e9c922581ae779994png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-mangomadness_221452f9-df57-4f35-8935-215a548c6ebf.png","t":"innogreensmangomadness221452f9df574f358935215a548c6ebfpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-strawberrybanana1_c2c1db5c-4450-492a-ae38-2264af37a990.png","t":"innogreensstrawberrybanana1c2c1db5c4450492aae382264af37a990png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/InnoGreensSFP-01_8977961f-b3d6-4660-93c0-30c740f71589.jpg","t":"innogreenssfp018977961fb3d6466093c030c740f71589jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/greens-back_720_de160fdc-8182-4086-930e-231295b5655b.png","t":"greensback720de160fdc81824086930e231295b5655bpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -718,7 +771,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

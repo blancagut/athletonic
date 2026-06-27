@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/lumyhealth-red-light-therapy-bag-for-full-body-726631.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/lumyhealth-red-light-therapy-bag-for-full-body-726631.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/4D_2_1.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/4D_2_1.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/lQDPKGdEf_1kuC_NB9DNB9CwpWsOiomW8XMJNhrLdAlBAg_2000_2000.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/lQDPKGdEf_1kuC_NB9DNB9CwpWsOiomW8XMJNhrLdAlBAg_2000_2000.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/1_3a8d4857-8dd2-46b4-ae12-02d32bfe3537.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/1_3a8d4857-8dd2-46b4-ae12-02d32bfe3537.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -579,6 +580,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/2_fc3b7dfa-8684-40dd-bb9f-195f322dcaaf.jpg","t":"280281136923e47569e0c60ff951e9b13jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/4_a8650fd3-99f3-45d1-b30f-d897af9fbeb4.jpg","t":"4a8650fd399f345d1b30fd897af9fbeb4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/3_5b371d56-801b-4f28-81d5-dc955e429c8b.jpg","t":"3e73c999cf7744aa3804d3f361e2006fajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/5_2a798bbc-6702-49d9-be62-d6365d2bf3f5.jpg","t":"52a798bbc670249d9be62d6365d2bf3f5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1_93015766-5b4e-443b-800b-a79a493e8193.jpg","t":"1930157665b4e443b800ba79a493e8193jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/lumyhealth-red-light-therapy-bag-for-full-body-726631.jpg","t":"lumyhealthredlighttherapybagforfullbody726631jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/4D_2_1.jpg","t":"4d21jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/lQDPKGdEf_1kuC_NB9DNB9CwpWsOiomW8XMJNhrLdAlBAg_2000_2000.jpg","t":"lqdpkgdef1kucnb9dnb9cwpwsoiomw8xmjnhrldalbag20002000jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1_3a8d4857-8dd2-46b4-ae12-02d32bfe3537.png","t":"13a8d48578dd246b4ae1202d32bfe3537png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -752,7 +806,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

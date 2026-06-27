@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker_lemon_side2_transparent_3f5dbd29-d069-4e99-8104-a9447eb3ee70.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker_lemon_side2_transparent_3f5dbd29-d069-4e99-8104-a9447eb3ee70.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/image20_transparent_02f3984a-489e-463d-9687-62238e3891ae.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/image20_transparent_02f3984a-489e-463d-9687-62238e3891ae.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/image21_transparent_55738bb1-8425-457b-8394-a390866f6a08.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/image21_transparent_55738bb1-8425-457b-8394-a390866f6a08.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/StormakerBlackberryLemonadeSFP-01_3b1ac6de-b105-46ab-bd49-0c3139c9132e.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/StormakerBlackberryLemonadeSFP-01_3b1ac6de-b105-46ab-bd49-0c3139c9132e.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -556,6 +557,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-fruitpunch-side1_1_9d923005-749f-4b3d-9170-c8be69ff7cd4.png","t":"stormmakerfruitpunchside119d923005749f4b3d9170c8be69ff7cd4png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-pinklemonrush_9ed4696b-efee-4b63-9d3d-0cdddec17249.png","t":"stormmakerpinklemonrush9ed4696befee4b639d3d0cdddec17249png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-blackberrylemon_e1f3f404-93b2-4b40-aa00-c1aaecee34be.png","t":"stormmakerblackberrylemone1f3f40493b24b40aa00c1aaecee34bepng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-peachmango_1_8cdca9c4-4de8-4f07-8cec-921217c5ac73.png","t":"stormmakerpeachmango18cdca9c44de84f078cec921217c5ac73png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker_lemon_side1_transparent_a6a38abd-19ac-4577-b443-c1cd6553dc59.png","t":"stormmakerlemonside1transparenta6a38abd19ac4577b443c1cd6553dc59png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker_lemon_side2_transparent_3f5dbd29-d069-4e99-8104-a9447eb3ee70.png","t":"stormmakerlemonside2transparent3f5dbd29d0694e998104a9447eb3ee70png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/image20_transparent_02f3984a-489e-463d-9687-62238e3891ae.png","t":"image20transparent02f3984a489e463d968762238e3891aepng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/image21_transparent_55738bb1-8425-457b-8394-a390866f6a08.png","t":"image21transparent55738bb18425457b8394a390866f6a08png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/StormakerBlackberryLemonadeSFP-01_3b1ac6de-b105-46ab-bd49-0c3139c9132e.jpg","t":"stormakerblackberrylemonadesfp013b1ac6deb10546abbd490c3139c9132ejpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -729,7 +783,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

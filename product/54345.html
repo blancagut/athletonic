@@ -527,6 +527,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/manchester-united-202122-home_1_d8dab222-4d0e-437f-a852-dc6d731f9276.png","t":"manchesterunited202122home1d8dab2224d0e437fa852dc6d731f9276png"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/d6c2d8c6-dc89-49f1-a266-a4ad07c3b1bc_238aae71-21da-4256-8485-55c358d51f3e.jpg","t":"d6c2d8c6dc8949f1a266a4ad07c3b1bc238aae7121da4256848555c358d51f3ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/72c7ba4c-0be5-4960-9e7b-51cb4c2d0ef8_b54cbf63-4a35-4f33-8d88-5b70c249245c.jpg","t":"72c7ba4c0be549609e7b51cb4c2d0ef8b54cbf634a354f338d885b70c249245cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/f3fa62b7-e9e2-473f-8292-17e3720a6cfd_e79a25bb-f793-461c-8cdf-213e452235b9.jpg","t":"f3fa62b7e9e2473f829217e3720a6cfde79a25bbf793461c8cdf213e452235b9jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -700,7 +753,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

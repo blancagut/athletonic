@@ -529,6 +529,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_9__hybrid_short_black_0002_d55395a2-b78f-4802-ac28-907212b32f7f.jpg","t":"1stphormapparelmenshorts9hybridshortblack0002d55395a2b78f4802ac28907212b32f7fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_9__hybrid_short_black_0001_25509c46-1fc1-4680-93b7-39424cdca00c.jpg","t":"1stphormapparelmenshorts9hybridshortblack000125509c461fc1468093b739424cdca00cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_9__hybrid_short_black_0005_391a943a-632e-4ada-acf5-19e65a0fd5da.jpg","t":"1stphormapparelmenshorts9hybridshortblack0005391a943a632e4adaacf519e65a0fd5dajpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_9__hybrid_short_black_0006_493e4306-641b-477e-b5a6-1b266d2c4bb6.jpg","t":"1stphormapparelmenshorts9hybridshortblack0006493e4306641b477eb5a61b266d2c4bb6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_9__hybrid_short_black_0003_1498b5ef-6200-4437-90e9-b98a4bc44292.jpg","t":"1stphormapparelmenshorts9hybridshortblack00031498b5ef6200443790e9b98a4bc44292jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_9__hybrid_short_black_0004_6394300e-ee13-4e42-bb34-e100bff34e5b.jpg","t":"1stphormapparelmenshorts9hybridshortblack00046394300eee134e42bb34e100bff34e5bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_9__hybrid_short_black_0008_a79c913e-98c6-4cd4-b195-d19409be7e86.jpg","t":"1stphormapparelmenshorts9hybridshortblack0008a79c913e98c64cd4b195d19409be7e86jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_9__hybrid_short_black_0007_de43290a-7dbb-4038-a33f-4eddccc834e8.jpg","t":"1stphormapparelmenshorts9hybridshortblack0007de43290a7dbb4038a33f4eddccc834e8jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -702,7 +755,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

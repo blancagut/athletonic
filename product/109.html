@@ -591,6 +591,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Lightning_BlueRaspberry_1500x1500_47e0b5a3-50ff-4f3d-b040-bfd1ea620fb0.png","t":"gmherolightningblueraspberry1500x150047e0b5a350ff4f3db040bfd1ea620fb0png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Lightning_MouthwateringWatermelon_1500x1500_87d47ce4-96c5-45ea-9f7f-0d468b3f6e55.png","t":"gmherolightningmouthwateringwatermelon1500x150087d47ce496c545ea9f7f0d468b3f6e55png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Lightning_RocketFrost_1500x1500_2f5ce9b0-ddd3-446e-b9ae-b0f4658951a5.png","t":"gmherolightningrocketfrost1500x15002f5ce9b0ddd3446eb9aeb0f4658951a5png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Lightning_RedGummyFish_120125.png","t":"lightningredgummyfish120125png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Lightning_HowToUse_1500x1500_acc5d7ac-df0b-49e4-9653-6b9fcdfaa1d5.jpg","t":"gmthumbslightninghowtouse1500x1500acc5d7acdf0b49e496536b9fcdfaa1d5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Lightning_ProductCallouts_1500x1500_c45bcff6-5c3d-47b8-9812-eb604b0dda01.jpg","t":"gmthumbslightningproductcallouts1500x1500c45bcff65c3d47b89812eb604b0dda01jpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Lightning_IngredientBenefits_1500x1500_81f00b5b-1935-4d33-90c5-6c0c2524387f.jpg","t":"gmthumbslightningingredientbenefits1500x150081f00b5b19354d3390c56c0c2524387fjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -764,7 +817,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

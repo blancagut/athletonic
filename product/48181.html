@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12071_25Q4_Wool-Runner-NZ-Waterproof-Weathered-Brown-Weathered-Brown-Sole_PDP_LEFT_225fab8e-70f8-4edf-b36f-c1ab7101a001.png","t":"a1207125q4woolrunnernzwaterproofweatheredbrownweatheredbrownsolepdpleft225fab8e70f84edfb36fc1ab7101a001png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12071_25Q4_Wool-Runner-NZ-Waterproof-Weathered-Brown-Weathered-Brown-Sole_PDP_TD_3f9dbf4d-b5cf-49eb-86a7-065b18044cf2.png","t":"a1207125q4woolrunnernzwaterproofweatheredbrownweatheredbrownsolepdptd3f9dbf4db5cf49eb86a7065b18044cf2png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12071_25Q4_Wool-Runner-NZ-Waterproof-Weathered-Brown-Weathered-Brown-Sole_PDP_SOLE_e03c99da-a044-4cc6-b417-b1a49b2bfcb9.png","t":"a1207125q4woolrunnernzwaterproofweatheredbrownweatheredbrownsolepdpsolee03c99daa0444cc6b417b1a49b2bfcb9png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12071_25Q4_Wool-Runner-NZ-Waterproof-Weathered-Brown-Weathered-Brown-Sole_PDP_PAIR_3Q_ccac908b-a6ce-4b86-9b71-ce70493c09ac.png","t":"a1207125q4woolrunnernzwaterproofweatheredbrownweatheredbrownsolepdppair3qccac908ba6ce4b869b71ce70493c09acpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12071_25Q4_Wool-Runner-NZ-Waterproof-Weathered-Brown-Weathered-Brown-Sole_PDP_BACK_e0cfd22a-10c1-4598-8e69-123ab1986edc.png","t":"a1207125q4woolrunnernzwaterproofweatheredbrownweatheredbrownsolepdpbacke0cfd22a10c145988e69123ab1986edcpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

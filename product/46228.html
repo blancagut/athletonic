@@ -526,6 +526,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ5756_1_APPAREL_Photography_FrontCenterView_white_fff53691-a932-4f57-9e00-14a82354f5e1.jpg","t":"jz57561apparelphotographyfrontcenterviewwhitefff53691a9324f579e0014a82354f5e1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ5756_6_APPAREL_OnModel_DetailView1_white_ada0c093-4795-48b5-b8a6-d086203d75d4.jpg","t":"jz57566apparelonmodeldetailview1whiteada0c093479548b5b8a6d086203d75d4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ5756_7_APPAREL_OnModel_DetailView2_white_6be0db22-b51c-4a4a-a42f-5202efe00bb1.jpg","t":"jz57567apparelonmodeldetailview2white6be0db22b51c4a4aa42f5202efe00bb1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ5756_3_APPAREL_OnModel_StandardView_white_667b0b2e-655b-4b57-a2f6-9d5827fffa5f.jpg","t":"jz57563apparelonmodelstandardviewwhite667b0b2e655b4b57a2f69d5827fffa5fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ5756_5_APPAREL_OnModel_StandardOutfitView_white_ebbfbdb7-4159-4ccd-8239-c9a9868feb04.jpg","t":"jz57565apparelonmodelstandardoutfitviewwhiteebbfbdb741594ccd8239c9a9868feb04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ5756_2_APPAREL_Photography_BackCenterView_white_85b8fb16-4f06-4331-b380-391896ce58e1.jpg","t":"jz57562apparelphotographybackcenterviewwhite85b8fb164f064331b380391896ce58e1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ5756_4_APPAREL_OnModel_BackView_white_fd0666a2-a02e-4754-a9dc-98950c4dfa89.jpg","t":"jz57564apparelonmodelbackviewwhitefd0666a2a02e4754a9dc98950c4dfa89jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -699,7 +752,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

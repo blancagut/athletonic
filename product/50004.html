@@ -543,6 +543,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/25b1b91a-4ca5-4235-a5a3-7df16ee3e507/air-max-95-big-bubble-premium-mens-shoes-kiJyp32s.png","t":"nikeairmax95bigbubblepremiummensshoesairmax95bigbubblepremiummensshoeskijyp32spng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/b4653b71-0e96-4ddf-939e-44ef8d996ebc/air-max-95-big-bubble-premium-mens-shoes-kiJyp32s.png","t":"nikeairmax95bigbubblepremiummensshoesairmax95bigbubblepremiummensshoeskijyp32spng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ebbbae0e-8f70-4db8-b10f-70cd31d9d96e/air-max-95-big-bubble-premium-mens-shoes-kiJyp32s.png","t":"nikeairmax95bigbubblepremiummensshoesairmax95bigbubblepremiummensshoeskijyp32spng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/403fb50b-d359-484c-9225-bd4661a0f2d5/air-max-95-big-bubble-premium-mens-shoes-kiJyp32s.png","t":"nikeairmax95bigbubblepremiummensshoesairmax95bigbubblepremiummensshoeskijyp32spng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/29b9e70a-9978-4e6e-a496-63d1fb610c3e/air-max-95-big-bubble-premium-mens-shoes-kiJyp32s.png","t":"nikeairmax95bigbubblepremiummensshoesairmax95bigbubblepremiummensshoeskijyp32spng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/81748900-675c-438a-9e8c-739bf0e6a06f/air-max-95-big-bubble-premium-mens-shoes-kiJyp32s.png","t":"nikeairmax95bigbubblepremiummensshoesairmax95bigbubblepremiummensshoeskijyp32spng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/85606242-a929-44a2-8b83-c6f13a31d09c/air-max-95-big-bubble-premium-mens-shoes-kiJyp32s.png","t":"nikeairmax95bigbubblepremiummensshoesairmax95bigbubblepremiummensshoeskijyp32spng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/fbf01318-9c4e-4708-abe2-e3bca93deb02/air-max-95-big-bubble-premium-mens-shoes-kiJyp32s.png","t":"nikeairmax95bigbubblepremiummensshoesairmax95bigbubblepremiummensshoeskijyp32spng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -716,7 +769,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

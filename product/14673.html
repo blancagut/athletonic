@@ -164,6 +164,16 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-500-INF.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-500-INF.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-FR.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-FR.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-INF.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-INF.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-FR.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-FR.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-INF.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-INF.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-FR.png" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-FR.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-INF.png" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-INF.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-60-SFP.png" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-60-SFP.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-400G-TJM-SFP.png" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-400G-TJM-SFP.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-500-SFP.png" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-500-SFP.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-SFP.png" aria-label="View image 16"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-SFP.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-SFP.png" aria-label="View image 17"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-SFP.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-SFP.png" aria-label="View image 18"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-SFP.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -585,6 +595,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-60.png","t":"creatine60png"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-60-INP.png","t":"creatine60inppng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-400G-TJM-FRT.png","t":"creatine400gtjmfrtpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-400G-TJM-INF.png","t":"creatine400gtjminfpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-500-FR.png","t":"creatine500frpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-500-INF.png","t":"creatine500infpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-FR.png","t":"creatine200bfrpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-INF.png","t":"creatine200binfpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-FR.png","t":"creatine150frpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-INF.png","t":"creatine150infpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-FR.png","t":"creatinekilo2000gfrpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-INF.png","t":"creatinekilo2000ginfpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-60-SFP.png","t":"creatine60sfppng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-400G-TJM-SFP.png","t":"creatine400gtjmsfppng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-500-SFP.png","t":"creatine500sfppng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-200-B-SFP.png","t":"creatine200bsfppng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-150-SFP.png","t":"creatine150sfppng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/CREATINE_Kilo_2000g-SFP.png","t":"creatinekilo2000gsfppng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -758,7 +821,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

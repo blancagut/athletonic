@@ -512,6 +512,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/MASS-VEGAN-8lb-Chocolate-MainImage.jpg","t":"massvegan8lbchocolatemainimagejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/N_Amazon_Mass_X_s3_168319a5-8ca8-440e-99ec-905c575cd21a.jpg","t":"namazonmassxs3168319a58ca8440e99ec905c575cd21ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/MASS-VEGAN-8lb-Chocolate-Graphic_da59a4df-8bd2-41fe-bcba-db606cd11c8f.jpg","t":"massvegan8lbchocolategraphicda59a4df8bd241febcbadb606cd11c8fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/vegan-weight-gainer-protein_4f4fead4-6d78-4dd5-a249-2e4ac1a44c4f.jpg","t":"veganweightgainerprotein4f4fead46d784dd5a2492e4ac1a44c4fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/chocolate-vegan-mass-supplement-NUTRITION.jpg","t":"chocolateveganmasssupplementnutritionjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/MASS-VEGAN-8lb-Unflavored-Lifestyle.jpg","t":"massvegan8lbunflavoredlifestylejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/products/vegan-how-to-gain-weight-chocolate.jpg","t":"veganhowtogainweightchocolatejpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -685,7 +738,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

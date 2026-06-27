@@ -513,6 +513,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Vanilla-1LB-Main-Image.jpg","t":"peavanilla1lbmainimagejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/vegan-pea-protein-powder-sourcing_41bda5d3-cd58-4c0a-bd84-6cd200c48f69.jpg","t":"veganpeaproteinpowdersourcing41bda5d3cd584c0abd846cd200c48f69jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Vanilla-1LB-Graphic.png","t":"peavanilla1lbgraphicpng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Vanilla-1lb-NutritionGraphic-ScoopsCorrected_800x_031c0890-0c3b-4957-afcb-207fd447261d.png","t":"peavanilla1lbnutritiongraphicscoopscorrected800x031c08900c3b4957afcb207fd447261dpng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Naked_AD_June_1_e20b5928-61cb-466e-ba39-fd971c640636.jpg","t":"nakedadjune1e20b592861cb466eba39fd971c640636jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/vanilla-pea-protein-shake_80866bd9-2eeb-4df9-8dda-637ca760ad89.jpg","t":"vanillapeaproteinshake80866bd92eeb4df98dda637ca760ad89jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/BestPeaProteinRecipes-2_8e36a1e8-1b8d-4173-bdb4-7d1634b9264b.jpg","t":"bestpeaproteinrecipes28e36a1e81b8d4173bdb47d1634b9264bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Pea-Lifestyle.jpg","t":"pealifestylejpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -686,7 +739,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

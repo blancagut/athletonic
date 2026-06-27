@@ -164,6 +164,8 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1492/2278/files/JR-BR_540ac65c-46c8-4f91-bafc-026bb0804eba.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/1492/2278/files/JR-BR_540ac65c-46c8-4f91-bafc-026bb0804eba.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1492/2278/files/JR-PEACH.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/1492/2278/files/JR-PEACH.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2585_Digital_JollyRancher_CampaignLaunch_August2024_DTC_Lifestyle_LIFESTYLE1.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2585_Digital_JollyRancher_CampaignLaunch_August2024_DTC_Lifestyle_LIFESTYLE1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2829_Brand_LicensedPerformanceFlavors_PDPUpdate_JollyRancher_June2025_GreenApple_benefits.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2829_Brand_LicensedPerformanceFlavors_PDPUpdate_JollyRancher_June2025_GreenApple_benefits.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2585_Digital_JollyRancher_CampaignLaunch_PDP_Ingredients_August2024_GA.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2585_Digital_JollyRancher_CampaignLaunch_PDP_Ingredients_August2024_GA.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -588,6 +590,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2829_Brand_LicensedPerformanceFlavors_PDPUpdate_JollyRancher_June2025_Caffeine.png","t":"c4bev2829brandlicensedperformanceflavorspdpupdatejollyrancherjune2025caffeinepng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/JR-GA_3f42b9e4-02a8-45a5-8837-950dfafb45cf.jpg","t":"jrga3f42b9e402a845a58837950dfafb45cfjpg"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2791_Digital_JollyRancher_VarietyPack_PDPs_Images_April2025_C_1.jpg","t":"c4bev2791digitaljollyranchervarietypackpdpsimagesapril2025c1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2791_Digital_JollyRancher_VarietyPack_PDPs_Images_April2025_B_1.jpg","t":"c4bev2791digitaljollyranchervarietypackpdpsimagesapril2025b1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/JR-WM_9082081a-e475-4d64-99f8-bbebc16a27b5.jpg","t":"jrwm9082081ae4754d6499f8bbebc16a27b5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/JR-BR_540ac65c-46c8-4f91-bafc-026bb0804eba.jpg","t":"jrbr540ac65c46c84f91bafc026bb0804ebajpg"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/JR-PEACH.jpg","t":"jrpeachjpg"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2585_Digital_JollyRancher_CampaignLaunch_August2024_DTC_Lifestyle_LIFESTYLE1.jpg","t":"c4bev2585digitaljollyranchercampaignlaunchaugust2024dtclifestylelifestyle1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2829_Brand_LicensedPerformanceFlavors_PDPUpdate_JollyRancher_June2025_GreenApple_benefits.png","t":"c4bev2829brandlicensedperformanceflavorspdpupdatejollyrancherjune2025greenapplebenefitspng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2585_Digital_JollyRancher_CampaignLaunch_PDP_Ingredients_August2024_GA.png","t":"c4bev2585digitaljollyranchercampaignlaunchpdpingredientsaugust2024gapng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -761,7 +816,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

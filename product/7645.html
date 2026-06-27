@@ -561,6 +561,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Collagen-1_3LB-Advanced--Vanilla-MainImage_f7eed459-7479-41d9-9421-ff2e02f16ced.jpg","t":"collagen13lbadvancedvanillamainimagef7eed459747941d99421ff2e02f16cedjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/collagen-recipes_2bcf7f98-0e6c-48ee-bd6c-ef01134c1499.jpg","t":"collagenrecipes2bcf7f980e6c48eebd6cef01134c1499jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/collagen-hyaluronic-acid-vitamin-c_0b00a9fe-27de-4949-893b-18d35c27e7ad.jpg","t":"collagenhyaluronicacidvitaminc0b00a9fe27de4949893b18d35c27e7adjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Vanilla-vitamin-c-and-collagen-powder-nutrition.png","t":"vanillavitamincandcollagenpowdernutritionpng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/collagen-hyaluronic-acid-aminos_de3bb555-3aef-4eed-9c29-6aa069ed0e39.jpg","t":"collagenhyaluronicacidaminosde3bb5553aef4eed9c296aa069ed0e39jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/collagen-peptides-powder-howtouse_fa2f83ef-4daf-49c4-af09-0a37e2dedbc3.jpg","t":"collagenpeptidespowderhowtousefa2f83ef4daf49c4af090a37e2dedbc3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Collagen-types_703440cf-6580-464b-a7ff-7ea61a0c81b7.png","t":"collagentypes703440cf6580464ba7ff7ea61a0c81b7png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -734,7 +787,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

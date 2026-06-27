@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11586_25Q4_Cruiser-Tweed-Hazy-Indigo-Light-Grey-Sole_PDP_LEFT_3b0b1a5b-c517-45e2-b86e-32c9d273674b.png","t":"a1158625q4cruisertweedhazyindigolightgreysolepdpleft3b0b1a5bc51745e2b86e32c9d273674bpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11586_25Q4_Cruiser-Tweed-Hazy-Indigo-Light-Grey-Sole_PDP_TD_de20c4ab-5fd4-4c0f-908b-cfef915a9bca.png","t":"a1158625q4cruisertweedhazyindigolightgreysolepdptdde20c4ab5fd44c0f908bcfef915a9bcapng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11586_25Q4_Cruiser-Tweed-Hazy-Indigo-Light-Grey-Sole_PDP_SOLE_eef8cdb9-bab6-4ada-adcc-d76e24d15d49.png","t":"a1158625q4cruisertweedhazyindigolightgreysolepdpsoleeef8cdb9bab64adaadccd76e24d15d49png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11586_25Q4_Cruiser-Tweed-Hazy-Indigo-Light-Grey-Sole_PDP_PAIR_3Q_56857d8b-5a1e-4f2d-8ca4-e5bdd5a39e9a.png","t":"a1158625q4cruisertweedhazyindigolightgreysolepdppair3q56857d8b5a1e4f2d8ca4e5bdd5a39e9apng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11586_25Q4_Cruiser-Tweed-Hazy-Indigo-Light-Grey-Sole_PDP_BACK_de36c773-0fb3-41f6-90ca-70af74a607d6.png","t":"a1158625q4cruisertweedhazyindigolightgreysolepdpbackde36c7730fb341f690ca70af74a607d6png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

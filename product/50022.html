@@ -562,6 +562,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d32078c3-7076-4747-90a3-7ceebd8ab40c/jordan-sport-womens-mesh-shorts-jwWShQ.png","t":"jordansportwomensmeshshortsjordansportwomensmeshshortsjwwshqpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0b62f8c3-ed58-4e75-96a4-dfd9d5e3da9c/jordan-sport-womens-mesh-shorts-jwWShQ.png","t":"jordansportwomensmeshshortsjordansportwomensmeshshortsjwwshqpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9f6b496c-e3ba-42ce-b150-bd4d732aa2e5/jordan-sport-womens-mesh-shorts-jwWShQ.png","t":"jordansportwomensmeshshortsjordansportwomensmeshshortsjwwshqpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/803913fd-a224-4ade-a663-f2a5fce5cef5/jordan-sport-womens-mesh-shorts-jwWShQ.png","t":"jordansportwomensmeshshortsjordansportwomensmeshshortsjwwshqpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/92029c5f-a3ee-46a7-b4aa-3ff677658205/jordan-sport-womens-mesh-shorts-jwWShQ.png","t":"jordansportwomensmeshshortsjordansportwomensmeshshortsjwwshqpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c0b51346-5761-4f3a-9e41-af8e9c726f9e/jordan-sport-womens-mesh-shorts-jwWShQ.png","t":"jordansportwomensmeshshortsjordansportwomensmeshshortsjwwshqpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3b37d67d-012b-481f-af08-8a5027b2339b/jordan-sport-womens-mesh-shorts-jwWShQ.png","t":"jordansportwomensmeshshortsjordansportwomensmeshshortsjwwshqpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -735,7 +788,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

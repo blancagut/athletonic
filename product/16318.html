@@ -164,6 +164,13 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-blackberrylemon_1_387c79eb-96dd-4aa9-b76e-35be6cfbe3d4.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-blackberrylemon_1_387c79eb-96dd-4aa9-b76e-35be6cfbe3d4.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/HMB_2_bd9c7d0a-0ee6-4dd4-8cfa-7c3be9c258bf.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/HMB_2_bd9c7d0a-0ee6-4dd4-8cfa-7c3be9c258bf.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred_3_d9b01982-da41-42ff-a578-f9c1fb6acd7f.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred_3_d9b01982-da41-42ff-a578-f9c1fb6acd7f.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-1.webp" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-1.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/TDrive_9ec7f1d5-11f3-473e-8ba8-7c5477f028fe.webp" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/TDrive_9ec7f1d5-11f3-473e-8ba8-7c5477f028fe.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/Nitrowood_2.webp" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/Nitrowood_2.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nsb-new1_ed86e989-7b5a-4ca0-a08a-680383fb76b2.webp" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nsb-new1_ed86e989-7b5a-4ca0-a08a-680383fb76b2.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-blueberrylemonade-1_d37796fd-5ee7-494c-bff8-b815a8e1d93b.webp" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-blueberrylemonade-1_d37796fd-5ee7-494c-bff8-b815a8e1d93b.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxmane.webp" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxmane.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/turmeric-ginger-w1_c90bd3bc-3f95-4b14-8507-79cd1eca240c.webp" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/turmeric-ginger-w1_c90bd3bc-3f95-4b14-8507-79cd1eca240c.webp" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -557,6 +564,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/Complete_Male_Stack_c9cc05fb-5b25-49bc-b230-39b2bd897c90.webp","t":"completemalestackc9cc05fb5b2549bcb23039b2bd897c90webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/fruitycerealdonut1_846ced21-e0bc-425a-8374-426198503e11.png","t":"fruitycerealdonut1846ced21e0bc425a8374426198503e11png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/cla1000-bc-front.webp","t":"cla1000bcfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/volcarn-pinkstarblast_1_4b23fc0d-2c6b-4e39-9c5a-f15f06d8d062.png","t":"volcarnpinkstarblast14b23fc0d2c6b4e399c5af15f06d8d062png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoCleanse_Front_6903ec8c-b50f-4d2b-bded-a30d6d852ba6.webp","t":"innocleansefront6903ec8cb50f4d2bbdeda30d6d852ba6webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-blackberrylemon_1_387c79eb-96dd-4aa9-b76e-35be6cfbe3d4.png","t":"stormmakerblackberrylemon1387c79eb96dd4aa9b76e35be6cfbe3d4png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/HMB_2_bd9c7d0a-0ee6-4dd4-8cfa-7c3be9c258bf.png","t":"hmb2bd9c7d0a0ee64dd48cfa7c3be9c258bfpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred_3_d9b01982-da41-42ff-a578-f9c1fb6acd7f.png","t":"nightshred3d9b01982da4142ffa578f9c1fb6acd7fpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-1.webp","t":"innoshred1webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/TDrive_9ec7f1d5-11f3-473e-8ba8-7c5477f028fe.webp","t":"tdrive9ec7f1d511f3473e8ba87c5477f028fewebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/Nitrowood_2.webp","t":"nitrowood2webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nsb-new1_ed86e989-7b5a-4ca0-a08a-680383fb76b2.webp","t":"nsbnew1ed86e9897b5a4ca0a08a680383fb76b2webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-blueberrylemonade-1_d37796fd-5ee7-494c-bff8-b815a8e1d93b.webp","t":"maxstrengthhciblueberrylemonade1d37796fd5ee7494cbff8b815a8e1d93bwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxmane.webp","t":"maxmanewebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/turmeric-ginger-w1_c90bd3bc-3f95-4b14-8507-79cd1eca240c.webp","t":"turmericgingerw1c90bd3bc3f954b14850779cd1eca240cwebp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -730,7 +790,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

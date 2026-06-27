@@ -533,6 +533,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/Zero_Classic_Variety_-_16ct_-_Transparent.png","t":"zeroclassicvariety16cttransparentpng"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/c480706f-646a-4858-b151-ff9e83bb51e0_large_4690b2c4-7457-46ee-ab6b-c02f0d55b33d.jpg","t":"c480706f646a4858b151ff9e83bb51e0large4690b2c4745746eeab6bc02f0d55b33djpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/46d31d96-f5e8-49de-ab15-f530ca14412a_large_a95aab41-b6ea-48a9-90ac-ac8f159ce576.jpg","t":"46d31d96f5e849deab15f530ca14412alargea95aab41b6ea48a990acac8f159ce576jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/ec96ecba-5bae-4a5e-9d99-fb2343cc6b07_large_e8b654ab-dfba-44d4-b99a-ab751f978335.jpg","t":"ec96ecba5bae4a5e9d99fb2343cc6b07largee8b654abdfba44d4b99aab751f978335jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/2cdcf68b-26f3-48f8-bdd9-c696d3bce7ae_large_c3b449f5-9008-458c-af7f-be7371cad4e7.jpg","t":"2cdcf68b26f348f8bdd9c696d3bce7aelargec3b449f59008458caf7fbe7371cad4e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/84f37383-64fd-474e-8987-bce1de8e11ce_large_d460ceba-72d1-419c-aa6c-229007a464c8.jpg","t":"84f3738364fd474e8987bce1de8e11celarged460ceba72d1419caa6c229007a464c8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/3ed0e3fb-97d8-4214-a491-56745094d3ec_large_2d83aa4c-c3a6-43b1-a1a0-3b9d11a2c3af.jpg","t":"3ed0e3fb97d84214a49156745094d3eclarge2d83aa4cc3a643b1a1a03b9d11a2c3afjpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/b97f2974-7c06-45cb-acb3-65ec679bf1b6_large_35b50556-79ed-412f-bef0-d0ac4c3b6376.jpg","t":"b97f29747c0645cbacb365ec679bf1b6large35b5055679ed412fbef0d0ac4c3b6376jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -706,7 +759,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

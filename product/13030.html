@@ -571,6 +571,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/AztecReversibleGrey_1.png","t":"aztecreversiblegrey1png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/Aztec_2_1.png","t":"aztec21png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/aztec_sleeves_2.png","t":"aztecsleeves2png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_f804d508-84fd-4b3c-8e47-9068b2376954_1.jpg","t":"imagef804d50884fd4b3c8e479068b23769541jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_94c97fe0-14c3-41b7-a3ba-aa47280e425b_1.jpg","t":"image94c97fe014c341b7a3baaa47280e425b1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/BK-GUIDE-KNEESLEEVES_1_145d33b5-7de0-4175-a45a-747b6d75d02b_1.png","t":"bkguidekneesleeves1145d33b57de04175a45a747b6d75d02b1png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -744,7 +797,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

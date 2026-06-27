@@ -529,6 +529,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/north-macedonia-2020-euro-cup-fan-kit.png","t":"northmacedonia2020eurocupfankitpng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/421581e0-9006-4411-b21a-9105a4d7fbbd.jpg","t":"421581e090064411b21a9105a4d7fbbdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/95332e1c-889d-4c69-9a7a-877c08c07734.jpg","t":"95332e1c889d4c699a7a877c08c07734jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/5eae48f9-6f13-4da4-a667-ed4854547e9c.jpg","t":"5eae48f96f134da4a667ed4854547e9cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c51804f6-1423-4c13-8da5-bd8e19843231.jpg","t":"c51804f614234c138da5bd8e19843231jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/58b6a890-4ad8-4a6f-99a2-fbafe69b3cd5.jpg","t":"58b6a8904ad84a6f99a2fbafe69b3cd5jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -702,7 +755,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

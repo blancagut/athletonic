@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11405_25Q2_Tree_Dasher_2_Utility_Natural_White_Rustic_Brown_Natural_White_PDP_LEFT-2000x2000_594cb0a8-bc8e-4fb2-9b32-1101248f2922.png","t":"a1140525q2treedasher2utilitynaturalwhiterusticbrownnaturalwhitepdpleft2000x2000594cb0a8bc8e4fb29b321101248f2922png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11405_25Q2_Tree_Dasher_2_Utility_Natural_White_Rustic_Brown_Natural_White_PDP_TD-2000x2000_3e54bbf6-9f41-4284-ade6-3a3a730fcead.png","t":"a1140525q2treedasher2utilitynaturalwhiterusticbrownnaturalwhitepdptd2000x20003e54bbf69f414284ade63a3a730fceadpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11405_25Q2_Tree_Dasher_2_Utility_Natural_White_Rustic_Brown_Natural_White_PDP_SOLE-2000x2000_eafaac8d-7cde-4d89-a3fc-6d3639dcd6fe.png","t":"a1140525q2treedasher2utilitynaturalwhiterusticbrownnaturalwhitepdpsole2000x2000eafaac8d7cde4d89a3fc6d3639dcd6fepng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11405_25Q2_Tree_Dasher_2_Utility_Natural_White_Rustic_Brown_Natural_White_PDP_PAIR_3Q-2000x2000_4091df45-94f1-4c5b-b4c9-d2239a484754.png","t":"a1140525q2treedasher2utilitynaturalwhiterusticbrownnaturalwhitepdppair3q2000x20004091df4594f14c5bb4c9d2239a484754png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11405_25Q2_Tree_Dasher_2_Utility_Natural_White_Rustic_Brown_Natural_White_PDP_BACK-2000x2000_7bef9e29-428a-4922-ac89-221737538295.png","t":"a1140525q2treedasher2utilitynaturalwhiterusticbrownnaturalwhitepdpback2000x20007bef9e29428a4922ac89221737538295png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

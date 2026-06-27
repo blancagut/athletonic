@@ -600,6 +600,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/infernoss-1x_87d00caf-832b-4a3d-b8aa-ded8ac6a3ac9.webp","t":"infernoss1x87d00caf832b4a3db8aaded8ac6a3ac9webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoCleanse_6af3a4c2-2899-4ec4-9e53-3f2d7b15b866.webp","t":"innocleanse6af3a4c228994ec49e533f2d7b15b866webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoShred-Inferno_70de9231-719c-4bb8-8914-2fdec4ff0b08.webp","t":"innoshredinferno70de9231719c4bb889142fdec4ff0b08webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShredBlack_29be9f6d-8e34-4a83-a887-37983c1dbd79.webp","t":"nightshredblack29be9f6d8e344a83a88737983c1dbd79webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/Volcarn2000_ea8acd52-4dc5-4c94-be39-3b6c6b4d1ee4.webp","t":"volcarn2000ea8acd524dc54c94be393b6c6b4d1ee4webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -773,7 +826,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

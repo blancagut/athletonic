@@ -610,6 +610,59 @@ Machine wash warm</li>
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-88_eff714b1-144d-4eb1-a665-aa61823fe70e.jpg","t":"preview88eff714b1144d4eb1a665aa61823fe70ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-89_b554a72c-cbed-4c9a-8b0a-e66f7f3c0b53.jpg","t":"preview89b554a72ccbed4c9a8b0ae66f7f3c0b53jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-92_ddb3ddc0-770c-4efb-9d67-55eccc0d3250.jpg","t":"preview92ddb3ddc0770c4efb9d6755eccc0d3250jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-91_ecf1184e-95ec-4920-a1ac-66f678deff0f.jpg","t":"preview91ecf1184e95ec4920a1ac66f678deff0fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-93_98bd7454-516a-4b7b-9adb-b850f7785ba7.jpg","t":"preview9398bd7454516a4b7b9adbb850f7785ba7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-90_551d78b3-976b-44b8-9f9d-c14663ba37c9.jpg","t":"preview90551d78b3976b44b89f9dc14663ba37c9jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -783,7 +836,12 @@ Machine wash warm</li>
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

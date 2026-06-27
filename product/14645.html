@@ -559,6 +559,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/24Hours_Fat_Loss_Stack-new2.png","t":"24hoursfatlossstacknew2png"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Lipo6-BlackUC-60_f249c2dd-52a2-451e-8885-51acbb9fc0f9.png","t":"lipo6blackuc60f249c2dd52a2451e888551acbb9fc0f9png"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/lipo-6-black-uc0001_9d251763-c34a-4ea6-ac7d-2ed0b4f43b46.jpg","t":"lipo6blackuc00019d251763c34a4ea6ac7d2ed0b4f43b46jpg"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Lipo6-StimFree-V2-Fr.png","t":"lipo6stimfreev2frpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Lipo6-NightTime_ffc74c99-c327-4206-b942-33bbdf5bc312.png","t":"lipo6nighttimeffc74c99c3274206b94233bbdf5bc312png"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/lipo-6-stim-free-v4-sfp.png","t":"lipo6stimfreev4sfppng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/LIPO_6_Nighttime_SFP_for_Product_Page_d1703e61-20e3-4713-80f3-7314627a093d.jpg","t":"lipo6nighttimesfpforproductpaged1703e6120e3471380f37314627a093djpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -732,7 +785,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

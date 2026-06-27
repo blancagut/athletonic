@@ -551,6 +551,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/liverpool-201920-special.png","t":"liverpool201920specialpng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/f3f8d723-0faa-4456-82d7-e9b87d6643bc.jpg","t":"f3f8d7230faa445682d7e9b87d6643bcjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/9e9c2afb-ddbe-4e3a-96bb-edaadd036235.jpg","t":"9e9c2afbddbe4e3a96bbedaadd036235jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/94318dfd-50f7-4ea8-a577-2f745fee6ec0.jpg","t":"94318dfd50f74ea8a5772f745fee6ec0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/bdd1f097-fa66-49d5-b503-e7a71e06936a.jpg","t":"bdd1f097fa6649d5b503e7a71e06936ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/416341fd-52dd-44ac-9f1f-8f60dcb0305a.jpg","t":"416341fd52dd44ac9f1f8f60dcb0305ajpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -724,7 +777,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

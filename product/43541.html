@@ -564,6 +564,59 @@ Classic Azzurri. The 2022 Italy Home jersey celebrates a legacy of blue shirts a
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-92_f23ab3ee-02b0-4e37-97c7-ec5ca66c724c.jpg","t":"preview92f23ab3ee02b04e3797c7ec5ca66c724cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-93_7225ffa4-8558-4b87-aaa8-7698afc5c223.jpg","t":"preview937225ffa485584b87aaa87698afc5c223jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-61_ebdb5fd6-aa7c-40a9-9ff6-699dadd18058.jpg","t":"preview61ebdb5fd6aa7c40a99ff6699dadd18058jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-60_9c7c22ae-3102-477a-8bac-d33c529c2552.jpg","t":"preview609c7c22ae3102477a8bacd33c529c2552jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-62_7934acad-9863-4a2c-8ee6-9e514e1ce03f.jpg","t":"preview627934acad98634a2c8ee69e514e1ce03fjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -737,7 +790,12 @@ Classic Azzurri. The 2022 Italy Home jersey celebrates a legacy of blue shirts a
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

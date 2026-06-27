@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12654_26Q1_Dasher-NZ-Natural-Black-Natural-Black_PDP_LEFT_4ae72425-3317-430a-923e-cac140965179.png","t":"a1265426q1dashernznaturalblacknaturalblackpdpleft4ae724253317430a923ecac140965179png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12654_26Q1_Dasher-NZ-Natural-Black-Natural-Black_PDP_TD_4e456138-ca59-4a0b-98a6-70c88228abb3.png","t":"a1265426q1dashernznaturalblacknaturalblackpdptd4e456138ca594a0b98a670c88228abb3png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12654_26Q1_Dasher-NZ-Natural-Black-Natural-Black_PDP_SOLE_82972d0d-f2b4-498b-822d-26bc5324ae5e.png","t":"a1265426q1dashernznaturalblacknaturalblackpdpsole82972d0df2b4498b822d26bc5324ae5epng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12654_26Q1_Dasher-NZ-Natural-Black-Natural-Black_PDP_PAIR_3Q_19d2f39a-c0d7-4001-8593-987cf1aa1550.png","t":"a1265426q1dashernznaturalblacknaturalblackpdppair3q19d2f39ac0d740018593987cf1aa1550png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12654_26Q1_Dasher-NZ-Natural-Black-Natural-Black_PDP_BACK_45ff48e3-ab94-4ef7-8116-e1b896be1289.png","t":"a1265426q1dashernznaturalblacknaturalblackpdpback45ff48e3ab944ef78116e1b896be1289png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

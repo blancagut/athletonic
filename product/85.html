@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Smooth_Thumbnail_Product-Callouts_e8e2eeea-1943-4c00-a616-c832071ea829.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Smooth_Thumbnail_Product-Callouts_e8e2eeea-1943-4c00-a616-c832071ea829.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Smooth_Thumbnail_Ingredient-Benefits_2c2cf15f-ecb7-4cc6-8f94-826ec8cd003b.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Smooth_Thumbnail_Ingredient-Benefits_2c2cf15f-ecb7-4cc6-8f94-826ec8cd003b.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Product_Callouts.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Product_Callouts.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Ingredient_Benefits.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Ingredient_Benefits.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -566,6 +567,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Rush-Smooth-Render.png","t":"rushsmoothrenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Smooth_Thumbnail_SFP-Image_99096cb7-e640-4415-823a-5f5973faf676.jpg","t":"smooththumbnailsfpimage99096cb7e6404415823a5f5973faf676jpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Rush-SFP_150297c0-4976-411b-a3a2-fd7cd37b5531.jpg","t":"rushsfp150297c04976411ba3a2fd7cd37b5531jpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Smooth_Thumbnail_How-To-Use_505e522d-52e8-4e2a-b6aa-f233bbec96a1.jpg","t":"smooththumbnailhowtouse505e522d52e84e2ab6aaf233bbec96a1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/How_To_Use.jpg","t":"howtousejpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Smooth_Thumbnail_Product-Callouts_e8e2eeea-1943-4c00-a616-c832071ea829.jpg","t":"smooththumbnailproductcalloutse8e2eeea19434c00a616c832071ea829jpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Smooth_Thumbnail_Ingredient-Benefits_2c2cf15f-ecb7-4cc6-8f94-826ec8cd003b.jpg","t":"smooththumbnailingredientbenefits2c2cf15fecb74cc68f94826ec8cd003bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Product_Callouts.jpg","t":"productcalloutsjpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Ingredient_Benefits.jpg","t":"ingredientbenefitsjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -739,7 +793,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

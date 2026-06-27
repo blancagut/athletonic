@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationUsVThem.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationUsVThem.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationHowtoUse.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationHowtoUse.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationBenefits_26a84aa4-7935-40e8-8332-9e89543a30da.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationBenefits_26a84aa4-7935-40e8-8332-9e89543a30da.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationIngredients_1a27cfd7-f5ce-43ac-82df-7285670198e6.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationIngredients_1a27cfd7-f5ce-43ac-82df-7285670198e6.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPHP.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPHP.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPFP.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPFP.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPGG.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPGG.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -572,6 +576,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CB-Front-LD_9656f697-d837-42a2-a4fd-386a145e2d34.png","t":"cbfrontld9656f697d83742a2a4fd386a145e2d34png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationKagedStandard.jpg","t":"cleanburnamzhydrationkagedstandardjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CB-Front-OM_0867f22e-6bc0-4580-9dc1-5197afe62598.png","t":"cbfrontom0867f22e6bc045809dc15197afe62598png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationFlavors.jpg","t":"cleanburnamzhydrationflavorsjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CB-Front-SL_9a096b34-eb20-422d-8b64-69d85cb62377.png","t":"cbfrontsl9a096b34eb20422d8b6469d85cb62377png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationUsVThem.jpg","t":"cleanburnamzhydrationusvthemjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationHowtoUse.jpg","t":"cleanburnamzhydrationhowtousejpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationBenefits_26a84aa4-7935-40e8-8332-9e89543a30da.jpg","t":"cleanburnamzhydrationbenefits26a84aa4793540e883329e89543a30dajpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnAMZ_HydrationIngredients_1a27cfd7-f5ce-43ac-82df-7285670198e6.jpg","t":"cleanburnamzhydrationingredients1a27cfd7f5ce43ac82df7285670198e6jpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPHP.jpg","t":"cleanburnd2chydrationsfphpjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPFP.jpg","t":"cleanburnd2chydrationsfpfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/CleanBurnD2C_HydrationSFPGG.jpg","t":"cleanburnd2chydrationsfpggjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -745,7 +802,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

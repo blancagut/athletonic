@@ -526,6 +526,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Vanilla20-GrassFedWhey-Front.png","t":"vanilla20grassfedwheyfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/VanillaWhey20-Front_8f62a8f0-6e26-47ca-911d-64c49fafdec2.png","t":"vanillawhey20front8f62a8f06e2647ca911d64c49fafdec2png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/ChocolateWhey20-Front_982bcd56-e79d-4659-8060-19505b0cd289.png","t":"chocolatewhey20front982bcd56e79d4659806019505b0cd289png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/StrawberryWhey20-Front_2678ce26-fc1e-4961-aace-b1659610dc58.png","t":"strawberrywhey20front2678ce26fc1e4961aaceb1659610dc58png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/ChocolatePBWhey20-Front_4824c8b1-ba9e-406e-a54d-cd55c9d1caf0.png","t":"chocolatepbwhey20front4824c8b1ba9e406ea54dcd55c9d1caf0png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/UnflavoredWhey20-Front_6b0ef7d4-9a5e-4d46-92e7-fd51b51a37be.png","t":"unflavoredwhey20front6b0ef7d49a5e4d4692e7fd51b51a37bepng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Choc20-GrassFedWhey-Front.png","t":"choc20grassfedwheyfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Unflavored20-GrassFedWhey-Front.png","t":"unflavored20grassfedwheyfrontpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -699,7 +752,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

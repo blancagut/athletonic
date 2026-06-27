@@ -601,6 +601,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InfernoShredStack_bacc47d2-56be-4076-9414-d2ec41a090e8.webp","t":"infernoshredstackbacc47d256be40769414d2ec41a090e8webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoCleanse_085bd2e5-b890-4e40-a8cc-6b8d7e2719a8.webp","t":"innocleanse085bd2e5b8904e40a8cc6b8d7e2719a8webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoShred-Inferno_66f80844-89ab-4ec6-9bc2-7c6c7873b16f.webp","t":"innoshredinferno66f8084489ab4ec69bc27c6c7873b16fwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShredBlack_ec2c930e-946c-471e-81c0-03d424e348d3.webp","t":"nightshredblackec2c930e946c471e81c003d424e348d3webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/Volcarn2000_810e6a9f-59c5-4ec3-a08a-e3d413185749.webp","t":"volcarn2000810e6a9f59c54ec3a08ae3d413185749webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/1x_CarbCut_e4422075-89b5-4c4d-9372-7f03125b1ad7.webp","t":"1xcarbcute442207589b54c4d93727f03125b1ad7webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -774,7 +827,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

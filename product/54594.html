@@ -549,6 +549,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/ohio-state-2003-scarf.png","t":"ohiostate2003scarfpng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/d6b94575-9bf1-43e1-9139-1e8722f27500.jpg","t":"d6b945759bf143e191391e8722f27500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c99ecff1-1fa9-4c9e-b2f8-d4b6e99fe763.jpg","t":"c99ecff11fa94c9eb2f8d4b6e99fe763jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/f4c7f4d4-54d0-4b0d-8002-8ed050405c7f.jpg","t":"f4c7f4d454d04b0d80028ed050405c7fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/f454e93e-ed45-42f9-b85f-4457fe90af1e.jpg","t":"f454e93eed4542f9b85f4457fe90af1ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/7684311c-2034-42d5-bbe9-0569f158b311.jpg","t":"7684311c203442d5bbe90569f158b311jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -722,7 +775,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

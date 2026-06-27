@@ -552,6 +552,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/graceland-university-away.png","t":"gracelanduniversityawaypng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/e6550740-b816-455a-8cda-ef59b5d0193b.jpg","t":"e6550740b816455a8cdaef59b5d0193bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/22e3710d-a207-4a9c-b1ca-f17edab0a43d.jpg","t":"22e3710da2074a9cb1caf17edab0a43djpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/32fff5da-e166-4476-acfa-5c28c1e7f2be.jpg","t":"32fff5dae1664476acfa5c28c1e7f2bejpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/57e5536e-32b6-403d-905d-7e1333887d25.jpg","t":"57e5536e32b6403d905d7e1333887d25jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/8551ddc1-8e37-4c01-9bbd-5689aea7bcbe.jpg","t":"8551ddc18e374c019bbd5689aea7bcbejpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/59172012-1119-4eb6-a055-1ec9d9d05c16.jpg","t":"5917201211194eb6a0551ec9d9d05c16jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/b2673ea4-3683-40c2-be8b-1972f8a6989a.jpg","t":"b2673ea4368340c2be8b1972f8a6989ajpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -725,7 +778,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

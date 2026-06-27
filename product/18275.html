@@ -533,6 +533,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/Elite2Pro_Handwrap_Purple_4-600x600-bc87582_8b492836-c35d-48f7-87b8-8c79f594296f.jpg","t":"elite2prohandwrappurple4600x600bc875828b492836c35d48f787b88c79f594296fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/Elite2Pro_Handwrap_Purple_1-600x600-bc87582_9f3ca8cd-b850-4920-b896-43d04479f051.jpg","t":"elite2prohandwrappurple1600x600bc875829f3ca8cdb8504920b89643d04479f051jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/Elite2Pro_Handwrap_Purple_3-600x600-bc87582_5198feca-1f6f-447d-b6bc-2403c1d569e4.jpg","t":"elite2prohandwrappurple3600x600bc875825198feca1f6f447db6bc2403c1d569e4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/Elite2Pro_Handwrap_Purple_2-600x600-bc87582_43a6625b-3d2e-4af6-a451-45721f0b0605.jpg","t":"elite2prohandwrappurple2600x600bc8758243a6625b3d2e4af6a45145721f0b0605jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/PURPLEELITE_669d61a6-5cf1-4e7c-bcad-fb6cdb65bf04.jpg","t":"purpleelite669d61a65cf14e7cbcadfb6cdb65bf04jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -706,7 +759,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

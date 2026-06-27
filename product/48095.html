@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11867_25Q3_Wool-Cruiser-Waterproof-Stony-Cream-Rugged-Beige-Stony-Cream-Sole_PDP_LEFT_9c8f68e6-d652-4c55-97eb-0f551cf6cce3.png","t":"a1186725q3woolcruiserwaterproofstonycreamruggedbeigestonycreamsolepdpleft9c8f68e6d6524c5597eb0f551cf6cce3png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11867_25Q3_Wool-Cruiser-Waterproof-Stony-Cream-Rugged-Beige-Stony-Cream-Sole_PDP_TD_b639b849-f60d-4edb-b4b8-0616c192b3de.png","t":"a1186725q3woolcruiserwaterproofstonycreamruggedbeigestonycreamsolepdptdb639b849f60d4edbb4b80616c192b3depng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11867_25Q3_Wool-Cruiser-Waterproof-Stony-Cream-Rugged-Beige-Stony-Cream-Sole_PDP_SOLE_e7f7f283-fdc2-45d0-bf05-5e2fdfedf7c3.png","t":"a1186725q3woolcruiserwaterproofstonycreamruggedbeigestonycreamsolepdpsolee7f7f283fdc245d0bf055e2fdfedf7c3png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11867_25Q3_Wool-Cruiser-Waterproof-Stony-Cream-Rugged-Beige-Stony-Cream-Sole_PDP_PAIR_3Q_0515d682-a26f-4b0d-975c-97ac98ffacc3.png","t":"a1186725q3woolcruiserwaterproofstonycreamruggedbeigestonycreamsolepdppair3q0515d682a26f4b0d975c97ac98ffacc3png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11867_25Q3_Wool-Cruiser-Waterproof-Stony-Cream-Rugged-Beige-Stony-Cream-Sole_PDP_BACK_836f8f8f-3823-495b-8715-1706135b0ff2.png","t":"a1186725q3woolcruiserwaterproofstonycreamruggedbeigestonycreamsolepdpback836f8f8f3823495b87151706135b0ff2png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -555,6 +555,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/070825_IDFH_Compliant_Carousel_White_BG_Front.webp","t":"070825idfhcompliantcarouselwhitebgfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_IDFH_Carousel_Hero_4012e804-8c56-4b13-a98f-ce85eb6c7537.webp","t":"022825idfhcarouselhero4012e8048c564b13a98fce85eb6c7537webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_IDFH_Carousel_HowToTake_d8632ca6-31e2-4010-adac-a3f36d95cc94.webp","t":"022825idfhcarouselhowtotaked8632ca631e24010adaca3f36d95cc94webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_IDFH_Carousel_Study_a3f622b0-5697-4d11-9372-945377cdbb4a.webp","t":"022825idfhcarouselstudya3f622b056974d119372945377cdbb4awebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/IDFH_SFP_Grey_d6f0f31c-7ef2-4b51-b38d-609e4a38a513.webp","t":"idfhsfpgreyd6f0f31c7ef24b51b38d609e4a38a513webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_IDFH_Carousel_Callouts_b0e44b9c-599a-401e-81ff-1c281ab544cc.webp","t":"022825idfhcarouselcalloutsb0e44b9c599a401e81ff1c281ab544ccwebp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -728,7 +781,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

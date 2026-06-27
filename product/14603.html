@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0073/2371/3602/products/Cure-Watermelon-square-web_1283x_12e02dd0-a0dc-4052-a836-c656c8d6220b.webp" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0073/2371/3602/products/Cure-Watermelon-square-web_1283x_12e02dd0-a0dc-4052-a836-c656c8d6220b.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0073/2371/3602/products/Cure-Watermelon-Packet.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0073/2371/3602/products/Cure-Watermelon-Packet.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Berry-14ct-Back_3e34d293-3ef2-4f31-b181-40e1a143327f.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Berry-14ct-Back_3e34d293-3ef2-4f31-b181-40e1a143327f.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Watermelon-14ct-Back.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Watermelon-14ct-Back.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -525,6 +526,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Pouch-BerryPom-Front-min_b14b9910-4fca-4ace-916e-7a157a539bc7.jpg","t":"curepouchberrypomfrontminb14b99104fca4ace916e7a157a539bc7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/BerryPomegranate_Watermelon.png","t":"berrypomegranatewatermelonpng"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Pouch-Watermelon-Front-2-min.jpg","t":"curepouchwatermelonfront2minjpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/products/211122_CL_Cure_01_Berry_web_1300x_1300x_ffb83f5f-07f8-4f94-b892-5e6b5043ea6a.webp","t":"211122clcure01berryweb1300x1300xffb83f5f07f84f94b8925e6b5043ea6awebp"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/products/211122_CL_Cure_01_Berry_078-ForEmail.jpg","t":"211122clcure01berry078foremailjpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/products/Cure-Watermelon-square-web_1283x_12e02dd0-a0dc-4052-a836-c656c8d6220b.webp","t":"curewatermelonsquareweb1283x12e02dd0a0dc4052a836c656c8d6220bwebp"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/products/Cure-Watermelon-Packet.jpg","t":"curewatermelonpacketjpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Berry-14ct-Back_3e34d293-3ef2-4f31-b181-40e1a143327f.jpg","t":"cureberry14ctback3e34d2933ef24f31b18140e1a143327fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Watermelon-14ct-Back.jpg","t":"curewatermelon14ctbackjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -698,7 +752,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

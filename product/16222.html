@@ -557,6 +557,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/BOGOPromo-guthealthstack_1.webp","t":"bogopromoguthealthstack1webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/211014_GutHealthStack_FBAd_GutHealthCarousel_v1-1_5f05f9d2-6136-4042-8f36-e5fa19d114d4.jpg","t":"211014guthealthstackfbadguthealthcarouselv115f05f9d2613640428f36e5fa19d114d4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/211014_GutHealthStack_FBAd_GutHealthCarousel_v1-2_b0d687a8-db1e-4394-ae40-ce9bfd105a67.jpg","t":"211014guthealthstackfbadguthealthcarouselv12b0d687a8db1e4394ae40ce9bfd105a67jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/211014_GutHealthStack_FBAd_GutHealthCarousel_v1-3_a5d16488-dac4-44d8-8cbc-67db9033f6e4.jpg","t":"211014guthealthstackfbadguthealthcarouselv13a5d16488dac444d88cbc67db9033f6e4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/211014_GutHealthStack_FBAd_GutHealthCarousel_v1-4_38327c70-e685-481b-a6d7-b1afed97c1f1.jpg","t":"211014guthealthstackfbadguthealthcarouselv1438327c70e685481ba6d7b1afed97c1f1jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -730,7 +783,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

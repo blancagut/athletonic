@@ -553,6 +553,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a3_gym_ankle_straps_black_1_35d18892-921f-4c1d-bd55-0d0c6077934f.jpg","t":"a3gymanklestrapsblack135d18892921f4c1dbd550d0c6077934fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a3_gym_ankle_straps_black__1_40f3e31e-4abd-457f-8352-175dd50388af.jpg","t":"a3gymanklestrapsblack140f3e31e4abd457f8352175dd50388afjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a3_gym_ankle_straps_black_3_a2b8be61-e9c5-4929-902d-18c5e32fc4f6.jpg","t":"a3gymanklestrapsblack3a2b8be61e9c54929902d18c5e32fc4f6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a3_gym_ankle_straps_black_4_852c805d-fc06-46ab-8165-7f2bb233ec56.jpg","t":"a3gymanklestrapsblack4852c805dfc0646ab81657f2bb233ec56jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a3_gym_ankle_straps_black_5_76da330d-687c-4c6d-ae91-17bf415ab54d.jpg","t":"a3gymanklestrapsblack576da330d687c4c6dae9117bf415ab54djpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a3_gym_ankle_straps_black_6_8bc4a1c6-aac6-4241-a289-379a764b1eab.jpg","t":"a3gymanklestrapsblack68bc4a1c6aac64241a289379a764b1eabjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -726,7 +779,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

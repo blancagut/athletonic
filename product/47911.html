@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12527_26Q1_Cruiser-Terralux-Light-Grey-Light-Gum-Sole_PDP_LEFT_e200bbf7-14f7-45c4-acb1-231e419b3048.png","t":"a1252726q1cruiserterraluxlightgreylightgumsolepdplefte200bbf714f745c4acb1231e419b3048png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12527_26Q1_Cruiser-Terralux-Light-Grey-Light-Gum-Sole_PDP_TD_73cf9a46-ea12-43ba-b39b-151eb90d6ff4.png","t":"a1252726q1cruiserterraluxlightgreylightgumsolepdptd73cf9a46ea1243bab39b151eb90d6ff4png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12527_26Q1_Cruiser-Terralux-Light-Grey-Light-Gum-Sole_PDP_SOLE_ac5df160-6d81-421c-9d66-ef526c15f228.png","t":"a1252726q1cruiserterraluxlightgreylightgumsolepdpsoleac5df1606d81421c9d66ef526c15f228png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12527_26Q1_Cruiser-Terralux-Light-Grey-Light-Gum-Sole_PDP_PAIR_3Q_7c2cc0ed-807d-4c99-af67-945821f2540a.png","t":"a1252726q1cruiserterraluxlightgreylightgumsolepdppair3q7c2cc0ed807d4c99af67945821f2540apng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12527_26Q1_Cruiser-Terralux-Light-Grey-Light-Gum-Sole_PDP_BACK_22b8495a-88f9-4585-a924-d107fc33bdd5.png","t":"a1252726q1cruiserterraluxlightgreylightgumsolepdpback22b8495a88f94585a924d107fc33bdd5png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

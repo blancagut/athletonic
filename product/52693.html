@@ -566,6 +566,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/ecuador-2022-world-cup-hat_ec61063f-1737-488f-a030-36ed3e41655a.png","t":"ecuador2022worldcuphatec61063f1737488fa03036ed3e41655apng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/026ceec1-aba8-45b5-926f-c5f509fc80ad_8bc749a9-5eaa-4ff6-a042-4da5aa2615f1.jpg","t":"026ceec1aba845b5926fc5f509fc80ad8bc749a95eaa4ff6a0424da5aa2615f1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/286c7ec4-7d3a-4917-888a-e39750915288_d8d42666-c6ec-4fc7-a741-3749720bb935.jpg","t":"286c7ec47d3a4917888ae39750915288d8d42666c6ec4fc7a7413749720bb935jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/9496d549-4759-42c3-b79a-fa4dc2afb1ca_6bf76d25-496d-434c-8d63-f616e9938f3f.jpg","t":"9496d549475942c3b79afa4dc2afb1ca6bf76d25496d434c8d63f616e9938f3fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/87413a38-aa82-4617-868e-b55a4da4dd57_c3258ad8-73fc-4622-b643-5df94b0f0097.jpg","t":"87413a38aa824617868eb55a4da4dd57c3258ad873fc4622b6435df94b0f0097jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/83859854-67bc-495c-97e0-6f6466cee611_a071cbda-02cc-4d8c-994d-9911677afc80.jpg","t":"8385985467bc495c97e06f6466cee611a071cbda02cc4d8c994d9911677afc80jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/f9576c1e-d1f9-44b5-ae7b-1c3f67b3a9d4_c587c9a1-d6a3-4866-8c6f-8a313ee772b5.jpg","t":"f9576c1ed1f944b5ae7b1c3f67b3a9d4c587c9a1d6a348668c6f8a313ee772b5jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -739,7 +792,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

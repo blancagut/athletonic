@@ -523,6 +523,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_TrueBlack_Front_1600x1600_3d85f16b-6f80-47da-a427-e372d56f56c0.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomentrueblackfront1600x16003d85f16b6f8047daa427e372d56f56c0jpg"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_TrueBlack_Detail1_1600x1600_7c3c287c-5462-4670-aea4-7d973fccce42.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomentrueblackdetail11600x16007c3c287c54624670aea47d973fccce42jpg"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_TrueBlack_Detail2_1600x1600_fd609392-05d2-495d-b1ff-8f67a75c8bc8.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomentrueblackdetail21600x1600fd60939205d2495db1ff8f67a75c8bc8jpg"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_TrueBlack_FullBody_1600x1600_35375e5e-d6ad-4bb8-b966-bbceef5e7439.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomentrueblackfullbody1600x160035375e5ed6ad4bb8b966bbceef5e7439jpg"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_TrueBlack_Back_1600x1600_6dd8749e-c016-4eca-a12d-e2dcc465b0ad.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomentrueblackback1600x16006dd8749ec0164ecaa12de2dcc465b0adjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -696,7 +749,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

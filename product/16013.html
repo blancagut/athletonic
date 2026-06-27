@@ -581,6 +581,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFast_Frontcopy_aa191968-7683-42a0-9515-e86ea7a489f1.webp","t":"innofastfrontcopyaa191968768342a09515e86ea7a489f1webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-3X_49c24e08-cab5-4a83-8882-7bb33e596d32.webp","t":"ifenergize3x49c24e08cab54a8388827bb33e596d32webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFast_3x_8640f672-c803-482b-a6a5-27b49722bc7d.webp","t":"innofast3x8640f672c803482ba6a527b49722bc7dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFast_Side2_b0602ae2-35c0-42d5-bb96-eecd19957369.webp","t":"innofastside2b0602ae235c042d5bb96eecd19957369webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFast_Side3_b6c74094-535a-4e0b-bec9-05865e8ba31b.webp","t":"innofastside3b6c74094535a4e0bbec905865e8ba31bwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side1_labeled_54663c0c-4c3b-432e-970c-066921d65e81.webp","t":"ifenergizeside1labeled54663c0c4c3b432e970c066921d65e81webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side3_labeled_af191996-f88b-4966-a005-e9d9597dbbb9.webp","t":"ifenergizeside3labeledaf191996f88b4966a005e9d9597dbbb9webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side2_labeled_0d77325a-2fde-4bbf-aa2a-ab1a4c44b027.webp","t":"ifenergizeside2labeled0d77325a2fde4bbfaa2aab1a4c44b027webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -754,7 +807,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

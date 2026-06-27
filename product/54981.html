@@ -551,6 +551,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/chievo-verona-academy-away.png","t":"chievoveronaacademyawaypng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/e9407600-e195-489f-b0b9-efec4509ef08.jpg","t":"e9407600e195489fb0b9efec4509ef08jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/0b17c207-3548-49ba-93af-859eefd71f1d.jpg","t":"0b17c207354849ba93af859eefd71f1djpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/6cc0ccbc-a395-4bfc-befb-5fd75b24f0d3.jpg","t":"6cc0ccbca3954bfcbefb5fd75b24f0d3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/d51362ab-8766-4194-ba5f-7df02868c259.jpg","t":"d51362ab87664194ba5f7df02868c259jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/b3491a24-dddd-49be-8ea4-1b7b538045f2.jpg","t":"b3491a24dddd49be8ea41b7b538045f2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/69363c06-13cf-4047-83a4-31cb90249dda.jpg","t":"69363c0613cf404783a431cb90249ddajpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -724,7 +777,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -567,6 +567,59 @@ Machine wash cold</li>
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview_0b4e84d1-952b-4177-b33e-2ef1aee5d1a0.webp","t":"preview0b4e84d1952b4177b33e2ef1aee5d1a0webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-5_842507cc-c38e-40e5-a71f-019e643ca614.webp","t":"preview5842507ccc38e40e5a71f019e643ca614webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-2_1804e10e-6b41-4f73-bb5f-318c4e56b470.webp","t":"preview21804e10e6b414f73bb5f318c4e56b470webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-3_973719f9-f288-4cd9-8637-4fbe95f29c03.webp","t":"preview3973719f9f2884cd986374fbe95f29c03webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-4_7ac74fa3-1376-4db3-83bb-b5e19a36492f.webp","t":"preview47ac74fa313764db383bbb5e19a36492fwebp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -740,7 +793,12 @@ Machine wash cold</li>
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

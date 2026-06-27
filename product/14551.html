@@ -562,6 +562,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/TimeWar-Front-2048x2048.png","t":"timewarfront2048x2048png"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/products/Time_Is_Money__51241.1684762943.1280.1280.jpg","t":"timeismoney51241168476294312801280jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/products/Terminator_Square__28627.1678074673.1280.1280.jpg","t":"terminatorsquare28627167807467312801280jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/products/Anti_Aging_Square__08597.1678074673.1280.1280.jpg","t":"antiagingsquare08597167807467312801280jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/products/Pills_In_Hand_2__09789.1681738242.1280.1280.jpg","t":"pillsinhand209789168173824212801280jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/products/TIME-WAR_SUP_FACTS_copy__39623.1681738233.1280.1280.png","t":"timewarsupfactscopy39623168173823312801280png"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/products/TW_Pill_BreakDown_Square_2__93261.1681738242.1280.1280.jpg","t":"twpillbreakdownsquare293261168173824212801280jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/products/TW_Pill_Comparison_1__58326.1684762951.1280.1280.jpg","t":"twpillcomparison158326168476295112801280jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -735,7 +788,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Blue_FrontPackaging_27Jan20252.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Blue_FrontPackaging_27Jan20252.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Pink_FrontPackaging_27Jan20252.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Pink_FrontPackaging_27Jan20252.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Red_FrontPackaging_27Jan20252.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Red_FrontPackaging_27Jan20252.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Black_BackPackaging_27Jan20252.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Black_BackPackaging_27Jan20252.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -549,6 +550,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Black_ProductFront_27Jan2025_2_3217625e-6bb5-48df-9336-2b76100309b6.png","t":"splacelockbandblackproductfront27jan202526bc5506f459149f7a9ef94349d04a56cpng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Blue_ProductFront_27Jan2025-1_2.png","t":"splacelockbandblueproductfront27jan202512png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Blue_ProductFront_27Jan2025_2_db1f8688-bd00-46de-92fb-13574d7e1136.png","t":"splacelockbandblueproductfront27jan20252db1f8688bd0046de92fb13574d7e1136png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Red_ProductFront_27Jan2025_2.png","t":"splacelockbandredproductfront27jan20252png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Black_FrontPackaging_27Jan20252.png","t":"splacelockbandblackfrontpackaging27jan20252png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Blue_FrontPackaging_27Jan20252.png","t":"splacelockbandbluefrontpackaging27jan20252png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Pink_FrontPackaging_27Jan20252.png","t":"splacelockbandpinkfrontpackaging27jan20252png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Red_FrontPackaging_27Jan20252.png","t":"splacelockbandredfrontpackaging27jan20252png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/SP_LaceLockBand_Black_BackPackaging_27Jan20252.png","t":"splacelockbandblackbackpackaging27jan20252png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -722,7 +776,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

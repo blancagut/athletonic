@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/whitecordurayfield_f8582b34-646d-479e-a010-f8a97ce3f5e0.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/whitecordurayfield_f8582b34-646d-479e-a010-f8a97ce3f5e0.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/retiredhoochiedaddywhtie55152_5d7342c4-4dbc-4ed1-8f00-ec153bb55d68.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/retiredhoochiedaddywhtie55152_5d7342c4-4dbc-4ed1-8f00-ec153bb55d68.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/cordwhitenewmain.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/cordwhitenewmain.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/corduroywhite1.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/corduroywhite1.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -536,6 +537,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/blkcordfrontmpock_66a1d57e-19c6-48b6-801e-32360b2fabc8.jpg","t":"blkcordfrontmpock66a1d57e19c648b6801e32360b2fabc8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/corduroyrearmockblackteej.jpg","t":"corduroyrearmockblackteejjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/sackne_4836c297-5cb0-4c85-9593-8cd90fe068f3.jpg","t":"sackne4836c2975cb04c8595938cd90fe068f3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/cordurorywhitefrontmock.jpg","t":"cordurorywhitefrontmockjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/corduroyrearwhitemock.jpg","t":"corduroyrearwhitemockjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/whitecordurayfield_f8582b34-646d-479e-a010-f8a97ce3f5e0.jpg","t":"whitecordurayfieldf8582b34646d479ea010f8a97ce3f5e0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/retiredhoochiedaddywhtie55152_5d7342c4-4dbc-4ed1-8f00-ec153bb55d68.jpg","t":"retiredhoochiedaddywhtie551525d7342c44dbc4ed18f00ec153bb55d68jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/cordwhitenewmain.jpg","t":"cordwhitenewmainjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/corduroywhite1.jpg","t":"corduroywhite1jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -709,7 +763,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

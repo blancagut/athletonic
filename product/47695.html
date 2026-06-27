@@ -530,6 +530,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11653_25Q3_Wool-Cruiser-Waterproof-Dark-Jungle-Stony-Cream-Sole_PDP_LEFT_fcc58d37-ab3b-4186-aefd-962b6002c2e5.png","t":"a1165325q3woolcruiserwaterproofdarkjunglestonycreamsolepdpleftfcc58d37ab3b4186aefd962b6002c2e5png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11653_25Q3_Wool-Cruiser-Waterproof-Dark-Jungle-Stony-Cream-Sole_PDP_TD_67206f04-3913-4e2a-b4c3-2ae0536549f7.png","t":"a1165325q3woolcruiserwaterproofdarkjunglestonycreamsolepdptd67206f0439134e2ab4c32ae0536549f7png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11653_25Q3_Wool-Cruiser-Waterproof-Dark-Jungle-Stony-Cream-Sole_PDP_SOLE_77b34b28-c4c9-40bf-b8e3-dd80a12c3bba.png","t":"a1165325q3woolcruiserwaterproofdarkjunglestonycreamsolepdpsole77b34b28c4c940bfb8e3dd80a12c3bbapng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11653_25Q3_Wool-Cruiser-Waterproof-Dark-Jungle-Stony-Cream-Sole_PDP_BACK_77faceca-35f1-4dd9-8b65-3d19d8158556.png","t":"a1165325q3woolcruiserwaterproofdarkjunglestonycreamsolepdpback77faceca35f14dd98b653d19d8158556png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -703,7 +756,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

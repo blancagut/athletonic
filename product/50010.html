@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c021bd71-3573-4aa3-9b3b-56e9d46ea2b5/air-force-1-low-protro-mens-shoes-X4nIbfap.png" aria-label="View image 6"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c021bd71-3573-4aa3-9b3b-56e9d46ea2b5/air-force-1-low-protro-mens-shoes-X4nIbfap.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0d1dbb80-17c0-4d48-a403-268bbc77aa4d/air-force-1-low-protro-mens-shoes-X4nIbfap.png" aria-label="View image 7"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0d1dbb80-17c0-4d48-a403-268bbc77aa4d/air-force-1-low-protro-mens-shoes-X4nIbfap.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/eaa85201-1614-4ba4-a1f1-5cf1ba08a501/air-force-1-low-protro-mens-shoes-X4nIbfap.png" aria-label="View image 8"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/eaa85201-1614-4ba4-a1f1-5cf1ba08a501/air-force-1-low-protro-mens-shoes-X4nIbfap.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/40b82619-6a5f-426c-8012-fa08321ddace/air-force-1-low-protro-mens-shoes-X4nIbfap.png" aria-label="View image 9"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/40b82619-6a5f-426c-8012-fa08321ddace/air-force-1-low-protro-mens-shoes-X4nIbfap.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5a8622c8-1439-43bf-bdeb-6ff023c07eaa/air-force-1-low-protro-mens-shoes-X4nIbfap.png" aria-label="View image 10"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5a8622c8-1439-43bf-bdeb-6ff023c07eaa/air-force-1-low-protro-mens-shoes-X4nIbfap.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/78493500-7929-4fc9-9f80-a5440ce141b5/air-force-1-low-protro-mens-shoes-X4nIbfap.png" aria-label="View image 11"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/78493500-7929-4fc9-9f80-a5440ce141b5/air-force-1-low-protro-mens-shoes-X4nIbfap.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -546,6 +549,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/482d3c92-6872-421b-95d8-933b2389cde1/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0aaa3826-e71a-4ec2-a519-7ed6d8f665b9/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e8346de3-b09a-43d0-a898-0daac0b28791/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d0416b49-478e-4bf5-ba60-d23c89809fda/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c5cbd1be-84fd-485c-82b4-a4b76d6aa7b1/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c021bd71-3573-4aa3-9b3b-56e9d46ea2b5/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0d1dbb80-17c0-4d48-a403-268bbc77aa4d/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/eaa85201-1614-4ba4-a1f1-5cf1ba08a501/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/40b82619-6a5f-426c-8012-fa08321ddace/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5a8622c8-1439-43bf-bdeb-6ff023c07eaa/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/78493500-7929-4fc9-9f80-a5440ce141b5/air-force-1-low-protro-mens-shoes-X4nIbfap.png","t":"nikeairforce1lowprotromensshoesairforce1lowprotromensshoesx4nibfappng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -719,7 +775,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

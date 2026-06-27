@@ -558,6 +558,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL_Greens_30S_O_2_0_355edf01-1041-41af-8370-1fe7303ebd22.png","t":"tlgreens30so20355edf01104141af83701fe7303ebd22png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL_Greens_30S_PM_2_0_88abba0c-7660-44f6-b5bc-86a3c8d9245f.png","t":"tlgreens30spm2088abba0c766044f6b5bc86a3c8d9245fpng"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL_Greens_30S_PC_2_0_03c8956a-3343-4266-aab2-57521ea43607.png","t":"tlgreens30spc2003c8956a33434266aab257521ea43607png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Greens_-_Original_SFP_1200x1200_cfb5abe7-cb8f-485d-9e82-4ca121c0ead7.png","t":"greensoriginalsfp1200x1200cfb5abe7cb8f485d9e824ca121c0ead7png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Greens_-_Peach_Mango_SFP_1200x1200_48649dcd-01ba-455d-beb9-932df805cdb7.png","t":"greenspeachmangosfp1200x120048649dcd01ba455dbeb9932df805cdb7png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/PrebioticGreens-PineappleCoconutSFP.png","t":"prebioticgreenspineapplecoconutsfppng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -731,7 +784,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

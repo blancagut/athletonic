@@ -555,6 +555,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/driveforher-3x.webp","t":"driveforher3xwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/driveforher-1_8e41c457-a4c4-4542-b810-df92e8212f1a.png","t":"driveforher18e41c457a4c44542b810df92e8212f1apng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/driveforher-3_a7dc956b-cafb-468e-82e9-7d60bbcc7219.png","t":"driveforher3a7dc956bcafb468e82e97d60bbcc7219png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/driveforher-2_c213ae83-a82e-46c8-be42-0614423d4d51.png","t":"driveforher2c213ae83a82e46c8be420614423d4d51png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/3x-Inno-Drive-For-Her.png","t":"3xinnodriveforherpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/SFP_93ef7cf2-7f91-4830-ad20-bc2d76d77831.jpg","t":"sfp93ef7cf27f914830ad20bc2d76d77831jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -728,7 +781,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

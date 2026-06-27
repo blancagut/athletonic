@@ -164,6 +164,8 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/1-Navitas-Cacao-Nibs-8oz-FOP1.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/1-Navitas-Cacao-Nibs-8oz-FOP1.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/2-Navitas-Cacao-Nibs-8oz-BOP1.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/2-Navitas-Cacao-Nibs-8oz-BOP1.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/10-Navitas-Cacao-Nibs-16oz-FOP.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/10-Navitas-Cacao-Nibs-16oz-FOP.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/11-Navitas-Cacao-Nibs-16oz-BOP.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/11-Navitas-Cacao-Nibs-16oz-BOP.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/4-Navitas-Cacao-Nibs-Usage.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0012/0605/9079/files/4-Navitas-Cacao-Nibs-Usage.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -548,6 +550,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/8-Navitas-Cacao-Nibs-4oz-FOP.png","t":"8navitascacaonibs4ozfoppng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/9-Navitas-Cacao-Nibs-4oz-BOP.png","t":"9navitascacaonibs4ozboppng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/3-Navitas-Cacao-Nibs-Infographic.jpg","t":"3navitascacaonibsinfographica5489727da9e4753ba1be77ba88986b3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/5-Navitas-Cacao-Nibs.jpg","t":"5navitascacaonibsbab695009538488d92d59fb617177d26jpg"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/6_101750_Navitas_Cacao_Nibs_fa7c3e25-47b7-47f7-ae47-e7bc514d5358.jpg","t":"6101750navitascacaonibs482fdf462aa1413c877022e9df2b09c8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/1-Navitas-Cacao-Nibs-8oz-FOP1.png","t":"1navitascacaonibs8ozfop1png"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/2-Navitas-Cacao-Nibs-8oz-BOP1.png","t":"2navitascacaonibs8ozbop1png"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/10-Navitas-Cacao-Nibs-16oz-FOP.png","t":"10navitascacaonibs16ozfoppng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/11-Navitas-Cacao-Nibs-16oz-BOP.png","t":"11navitascacaonibs16ozboppng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/4-Navitas-Cacao-Nibs-Usage.jpg","t":"4navitascacaonibsusage258b65058b754b0bbb3a8718e0709503jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -721,7 +776,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

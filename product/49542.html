@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0f826c04-1374-4b3a-ad74-3670e18e1b65/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" aria-label="View image 6"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0f826c04-1374-4b3a-ad74-3670e18e1b65/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/261bbfad-7d8f-4e89-8a08-aa158c2c46c9/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" aria-label="View image 7"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/261bbfad-7d8f-4e89-8a08-aa158c2c46c9/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/23fb5958-2c04-49bd-a4bc-820abe19dd2b/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" aria-label="View image 8"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/23fb5958-2c04-49bd-a4bc-820abe19dd2b/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c7daee44-e2f3-4fcf-9c5e-52f39fbf0aba/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" aria-label="View image 9"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c7daee44-e2f3-4fcf-9c5e-52f39fbf0aba/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1c2d30f5-d738-4e1e-94cb-2f9e690a902f/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" aria-label="View image 10"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1c2d30f5-d738-4e1e-94cb-2f9e690a902f/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/acb8faeb-1fb4-446c-bed1-322837334b10/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" aria-label="View image 11"><img src="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/acb8faeb-1fb4-446c-bed1-322837334b10/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -543,6 +546,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/03ee9c45-a6f1-465b-8dbc-614cff70397c/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/fce3cad9-4bcb-4c23-86ec-99a65b9dd059/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/874cf61b-7ad7-47fa-8ee3-f68fa2b29479/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/2e2f136c-1db2-4f9f-8dd0-65dc3f0e00e6/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/397f0df7-6c3d-4e11-b7b8-060e9c0fc25d/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0f826c04-1374-4b3a-ad74-3670e18e1b65/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/261bbfad-7d8f-4e89-8a08-aa158c2c46c9/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/23fb5958-2c04-49bd-a4bc-820abe19dd2b/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c7daee44-e2f3-4fcf-9c5e-52f39fbf0aba/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1c2d30f5-d738-4e1e-94cb-2f9e690a902f/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/acb8faeb-1fb4-446c-bed1-322837334b10/air-force-1-07-lv8-jersey-made-it-mens-shoes-5PBzpHVE.png","t":"airforce107lv8jerseymadeitmensshoesairforce107lv8jerseymadeitmensshoes5pbzphvepng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -716,7 +772,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -565,6 +565,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/santos-laguna-201920.png","t":"santoslaguna201920png"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/27ca3f35-9780-48f0-8464-476dc43fd9ce.jpg","t":"27ca3f35978048f08464476dc43fd9cejpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/998ff463-0ec6-49bb-adcb-5953e955a82b.jpg","t":"998ff4630ec649bbadcb5953e955a82bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/f2864e3d-01a0-4ec5-9e35-a97f33b39809.jpg","t":"f2864e3d01a04ec59e35a97f33b39809jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/7ae605a4-ab61-471b-aa0e-caaaa5819ca5.jpg","t":"7ae605a4ab61471baa0ecaaaa5819ca5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/85e4778f-59f0-4324-a25a-614e2b111860.jpg","t":"85e4778f59f04324a25a614e2b111860jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -738,7 +791,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

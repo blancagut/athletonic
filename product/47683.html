@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12370_26Q1_Cruiser-Terry-Warm-White-Warm-White_PDP_LEFT_f79ee143-f5b7-419a-8cfe-68557b63b868.png","t":"a1237026q1cruiserterrywarmwhitewarmwhitepdpleftf79ee143f5b7419a8cfe68557b63b868png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12370_26Q1_Cruiser-Terry-Warm-White-Warm-White_PDP_TD_d02b6660-ab3e-4b26-b8ef-bff8ed01ee3d.png","t":"a1237026q1cruiserterrywarmwhitewarmwhitepdptdd02b6660ab3e4b26b8efbff8ed01ee3dpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12370_26Q1_Cruiser-Terry-Warm-White-Warm-White_PDP_SOLE_68537ba4-7b5a-486b-827a-1a6aad4afccf.png","t":"a1237026q1cruiserterrywarmwhitewarmwhitepdpsole68537ba47b5a486b827a1a6aad4afccfpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12370_26Q1_Cruiser-Terry-Warm-White-Warm-White_PDP_PAIR_3Q_b74787bf-f834-402e-8915-426fea402ac2.png","t":"a1237026q1cruiserterrywarmwhitewarmwhitepdppair3qb74787bff834402e8915426fea402ac2png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12370_26Q1_Cruiser-Terry-Warm-White-Warm-White_PDP_BACK_28414623-2d68-4c3d-9106-657e50f22b62.png","t":"a1237026q1cruiserterrywarmwhitewarmwhitepdpback284146232d684c3d9106657e50f22b62png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

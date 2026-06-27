@@ -556,6 +556,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/FemaleShredStack_1x_9dbe7bbe-b09e-425e-9af5-5aa563f93041.webp","t":"femaleshredstack1x9dbe7bbeb09e425e9af55aa563f93041webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/InnoCleanse_52194ffc-3e30-4fb6-b27b-1abad883ee52.webp","t":"innocleanse52194ffc3e304fb6b27b1abad883ee52webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/InnoShred_eca6b080-e3dd-41bd-a100-228574538e84.webp","t":"innoshredeca6b080e3dd41bda100228574538e84webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/InnoGlow_84787265-b749-4a48-b319-2b9abdc7513b.webp","t":"innoglow84787265b7494a48b3192b9abdc7513bwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/Volcarn_32b1c3c9-f667-48cb-b754-07299fc50880.webp","t":"volcarn32b1c3c9f66748cbb75407299fc50880webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/NightShred_82a12302-4ddc-4fb8-9799-a6ff2d4b26f5.webp","t":"nightshred82a123024ddc4fb89799a6ff2d4b26f5webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/FreePMS_dfe68e4e-477a-46d6-a4a3-f04caada1ec9.webp","t":"freepmsdfe68e4e477a46d6a4a3f04caada1ec9webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -729,7 +782,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

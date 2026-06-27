@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-60_d67b2514-2ab9-40d3-8756-b2e09798493a.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-60_d67b2514-2ab9-40d3-8756-b2e09798493a.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Anabol-Hardcore-2024-FR_ae9ebc9c-4f48-4b2b-8e8e-c2aee7a2e25d.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Anabol-Hardcore-2024-FR_ae9ebc9c-4f48-4b2b-8e8e-c2aee7a2e25d.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/creatine0002_5e019add-6c7f-4204-9948-dc9284231262.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/creatine0002_5e019add-6c7f-4204-9948-dc9284231262.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Anabol_Hardcore_SFP_for_website_57966364-647f-4552-8f46-c61479bdabd5.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Anabol_Hardcore_SFP_for_website_57966364-647f-4552-8f46-c61479bdabd5.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -571,6 +572,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/XXLMassStack.png","t":"xxlmassstackpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/MassInfusion-Choc-F_e6febf1f-3ccd-425e-9d69-7511a0d53965.png","t":"massinfusionchocfe6febf1f3ccd425e9d697511a0d53965png"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/MassInfusion0001_4d1c541c-7908-44d9-bb6b-bc8b6b5c64da.jpg","t":"massinfusion00014d1c541c790844d9bb6bbc8b6b5c64dajpg"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/MassInfusion-Van_15763377-91ce-401f-9f39-62fd46cc41f1.png","t":"massinfusionvan1576337791ce401f9f3962fd46cc41f1png"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/MassInfusion0002_a6efe3c3-5a08-4589-a337-1470fd71be45.jpg","t":"massinfusion0002a6efe3c35a084589a3371470fd71be45jpg"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Creatine-60_d67b2514-2ab9-40d3-8756-b2e09798493a.png","t":"creatine60d67b25142ab940d38756b2e09798493apng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Anabol-Hardcore-2024-FR_ae9ebc9c-4f48-4b2b-8e8e-c2aee7a2e25d.png","t":"anabolhardcore2024frae9ebc9c4f484b2b8e8ec2aee7a2e25dpng"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/creatine0002_5e019add-6c7f-4204-9948-dc9284231262.jpg","t":"creatine00025e019add6c7f42049948dc9284231262jpg"},{"src":"https://cdn.shopify.com/s/files/1/0556/9750/6368/files/Anabol_Hardcore_SFP_for_website_57966364-647f-4552-8f46-c61479bdabd5.png","t":"anabolhardcoresfpforwebsite57966364647f45528f46c61479bdabd5png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -744,7 +798,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

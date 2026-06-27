@@ -561,6 +561,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/CollagenCreamer-1_2LB-Caramel-MainImage.jpg","t":"collagencreamer12lbcaramelmainimagejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/collagen-creamer-for-coffee.jpg","t":"collagencreamerforcoffeejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/CollagenCreamer-1_2LB-Caramel-Graphic.jpg","t":"collagencreamer12lbcaramelgraphicjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Collagen-Creamer-Amino-Acids.jpg","t":"collagencreameraminoacidsjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/CollagenCreamer-Caramel-NutritionGraphic-ScoopsCorrected_5bc93e10-8dfc-48b8-8b8f-a20968701ce0.jpg","t":"collagencreamercaramelnutritiongraphicscoopscorrected5bc93e108dfc48b88b8fa20968701ce0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/CollagenCreamer-Collection-SocialGraphic-1500x1500_ce320ab9-205b-4192-8d7f-db3350bb3ad8.png","t":"collagencreamercollectionsocialgraphic1500x1500ce320ab9205b41928d7fdb3350bb3ad8png"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Collagen-types_5bd3f8ce-49ba-48bf-bacb-3f2ececb6754.png","t":"collagentypes5bd3f8ce49ba48bfbacb3f2ececb6754png"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/collagen-creamer-health-benefits.jpg","t":"collagencreamerhealthbenefitsjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -734,7 +787,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

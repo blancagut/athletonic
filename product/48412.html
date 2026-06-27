@@ -523,6 +523,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_DeepNavy_Front_1600x1600_1328aead-8b38-4a89-9d9d-e8ed17531b09.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomendeepnavyfront1600x16001328aead8b384a899d9de8ed17531b09jpg"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_DeepNavy_Detail1_1600x1600_5223f2f8-3ee5-4038-b2ee-e86a06f5779c.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomendeepnavydetail11600x16005223f2f83ee54038b2eee86a06f5779cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_DeepNavy_Detail2_1600x1600_b116809c-1c56-4479-9f6e-27bfb40ec9cd.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomendeepnavydetail21600x1600b116809c1c5644799f6e27bfb40ec9cdjpg"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_DeepNavy_FullBody_1600x1600_54005c79-6c2d-4177-8eae-92e93a05e92f.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomendeepnavyfullbody1600x160054005c796c2d41778eae92e93a05e92fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/25Q1_Apparel_MerinoBlendSweatshirt_Site_PDP_Women_DeepNavy_Back_1600x1600_c72322da-ab44-4a70-8b88-4f4104e45dc4.jpg","t":"25q1apparelmerinoblendsweatshirtsitepdpwomendeepnavyback1600x1600c72322daab444a708b884f4104e45dc4jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -696,7 +749,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

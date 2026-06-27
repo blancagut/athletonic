@@ -566,6 +566,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/senegal-2022-world-cup-hat.png","t":"senegal2022worldcuphatpng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/9189f790-30d7-4fed-8338-13be496ef841.jpg","t":"9189f79030d74fed833813be496ef841jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/add4ea91-2322-43fe-a66d-c1dd0f14c0db.jpg","t":"add4ea91232243fea66dc1dd0f14c0dbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/b36c30d8-1c23-4f9c-84da-32c0923adeb8.jpg","t":"b36c30d81c234f9c84da32c0923adeb8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/c2015a41-4a19-4c3a-ac2a-28194f04a6c9.jpg","t":"c2015a414a194c3aac2a28194f04a6c9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/00c7a40f-d98e-47e5-a0b2-080d90c1dbb5.jpg","t":"00c7a40fd98e47e5a0b2080d90c1dbb5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/90f40da6-c740-4d7a-beb1-194e40090428.jpg","t":"90f40da6c7404d7abeb1194e40090428jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -739,7 +792,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

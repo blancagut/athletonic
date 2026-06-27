@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12301_26Q1_Tree-Runner-NZ-Spice-Warm-White_PDP_LEFT_cef32e3a-25ea-40c0-acd5-6c89a1c42d5a.png","t":"a1230126q1treerunnernzspicewarmwhitepdpleftcef32e3a25ea40c0acd56c89a1c42d5apng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12301_26Q1_Tree-Runner-NZ-Spice-Warm-White_PDP_TD_724a0d6e-87a1-42b1-b41e-d44f8dc8022f.png","t":"a1230126q1treerunnernzspicewarmwhitepdptd724a0d6e87a142b1b41ed44f8dc8022fpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12301_26Q1_Tree-Runner-NZ-Spice-Warm-White_PDP_SOLE_6af1ba29-b9e9-4c73-ae23-ee90c5e55d74.png","t":"a1230126q1treerunnernzspicewarmwhitepdpsole6af1ba29b9e94c73ae23ee90c5e55d74png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12301_26Q1_Tree-Runner-NZ-Spice-Warm-White_PDP_PAIR_3Q_a444535d-acae-469c-8425-45ec6efffad3.png","t":"a1230126q1treerunnernzspicewarmwhitepdppair3qa444535dacae469c842545ec6efffad3png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12301_26Q1_Tree-Runner-NZ-Spice-Warm-White_PDP_BACK_427aca88-2912-4d39-bff2-f3c31fa4a8d9.png","t":"a1230126q1treerunnernzspicewarmwhitepdpback427aca8829124d39bff2f3c31fa4a8d9png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -565,6 +565,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/sevilla-200809-away.png","t":"sevilla200809awaypng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/78ffea1e-933b-480c-8722-1c0a8d08142d.jpg","t":"78ffea1e933b480c87221c0a8d08142djpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/91f7c243-a2de-4d1c-9ac6-7fb40aa40c09.jpg","t":"91f7c243a2de4d1c9ac67fb40aa40c09jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/366a92ae-c1b8-40b0-9e43-fd0e950adbd4.jpg","t":"366a92aec1b840b09e43fd0e950adbd4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/f2ba03e4-b3fd-4a92-b6cb-5068cc1933e7.jpg","t":"f2ba03e4b3fd4a92b6cb5068cc1933e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/00b60188-f1b2-4cd8-b75c-3c7976a0f511.jpg","t":"00b60188f1b24cd8b75c3c7976a0f511jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -738,7 +791,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -531,6 +531,59 @@ This product is made with 100% recycled materials. By reusing materials that hav
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Front_5696012e-c578-407d-8244-230327a22013.png","t":"front5696012ec578407d8244230327a22013png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Hero_a4dd9bbd-a808-4a03-91d8-56f7314fd11b.png","t":"heroa4dd9bbda8084a0391d856f7314fd11bpng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Left_3c4939a0-828e-4ec3-a41b-346a83113294.png","t":"left3c4939a0828e4ec3a41b346a83113294png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Right_5a2246ef-3b68-4b2d-871e-199b6fd4c8d5.png","t":"right5a2246ef3b684b2d871e199b6fd4c8d5png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Back_7ef97e91-5099-42f1-b7f1-5af129d41262.png","t":"back7ef97e91509942f1b7f15af129d41262png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@ This product is made with 100% recycled materials. By reusing materials that hav
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

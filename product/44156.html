@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/files/3_7f6b0b96-c5cf-4a71-9f56-806e68e1d4af.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/files/3_7f6b0b96-c5cf-4a71-9f56-806e68e1d4af.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/files/4_5ad50860-10c3-41c3-831e-617c4c82a5d2.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/files/4_5ad50860-10c3-41c3-831e-617c4c82a5d2.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/files/5_4150ba9d-c169-4084-a062-b45c65e37de1.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/files/5_4150ba9d-c169-4084-a062-b45c65e37de1.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/files/6_ef71d503-72ae-43e8-ac51-b2b6ce554102.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/files/6_ef71d503-72ae-43e8-ac51-b2b6ce554102.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -560,6 +561,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/PDP1_3_fa0d4922-4c31-4c2e-a922-61bde82f730c.jpg","t":"pdp13fa0d49224c314c2ea92261bde82f730cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/Vita-hairsystemwithbadgeUKEU_14.png","t":"vitahairsystemwithbadgeukeu14png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/Berberine_-USA_56fd3103-efa4-4433-8bf2-1bc7114f518f.jpg","t":"berberineusa56fd3103efa444338bf21bc7114f518fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/1_96debc78-2dd5-4e63-b20f-ec378d9c61ab.png","t":"196debc782dd54e63b20fec378d9c61abpng"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/2_52a6da2c-2849-40ee-af76-5cf6a92088b8.png","t":"252a6da2c284940eeaf765cf6a92088b8png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/3_7f6b0b96-c5cf-4a71-9f56-806e68e1d4af.png","t":"37f6b0b96c5cf4a719f56806e68e1d4afpng"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/4_5ad50860-10c3-41c3-831e-617c4c82a5d2.png","t":"45ad5086010c341c3831e617c4c82a5d2png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/5_4150ba9d-c169-4084-a062-b45c65e37de1.png","t":"54150ba9dc1694084a062b45c65e37de1png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/6_ef71d503-72ae-43e8-ac51-b2b6ce554102.png","t":"6ef71d50372ae43e8ac51b2b6ce554102png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -733,7 +787,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

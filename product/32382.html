@@ -532,6 +532,59 @@ This product is made with 100% recycled materials. By reusing materials that hav
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Front_74710e5e-0b9e-4f3d-b1ca-a1e8dc7e29a0.png","t":"front74710e5e0b9e4f3db1caa1e8dc7e29a0png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Hero_77ed8b51-26a7-4a36-9834-ccdf7629ca88.png","t":"hero77ed8b5126a74a369834ccdf7629ca88png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Current_3609a33a-01b4-4919-96b6-559c35173a99.png","t":"current3609a33a01b4491996b6559c35173a99png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Left_690a6f3c-f308-4668-94f7-460eb16bc0b1.png","t":"left690a6f3cf308466894f7460eb16bc0b1png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Right_3b28ba78-42a3-4df4-947b-61ef0b83331d.png","t":"right3b28ba7842a34df4947b61ef0b83331dpng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Side_07a65833-6e29-4547-a9c8-75acab970118.png","t":"side07a658336e294547a9c875acab970118png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Back_23d7c7c6-9f81-455b-9695-fc480ae136f5.png","t":"back23d7c7c69f81455b9695fc480ae136f5png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -705,7 +758,12 @@ This product is made with 100% recycled materials. By reusing materials that hav
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

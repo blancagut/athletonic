@@ -557,6 +557,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-focus-front_cc04172f-08d9-4dc8-9b02-5b5cd8bf0d32.png","t":"innoshredfocusfrontcc04172f08d94dc89b025b5cd8bf0d32png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/3x_Inno_Shred_Focus_1_1d8ac146-242c-4159-9577-67387a675aa0.webp","t":"3xinnoshredfocus11d8ac146242c4159957767387a675aa0webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-focus-2_e16b0529-d102-4892-b2a2-0f3839fbab46.png","t":"innoshredfocus2e16b0529d1024892b2a20f3839fbab46png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-focus-stim3x_301b23a6-7342-42ca-83b5-da1b390649e6.webp","t":"innoshredfocusstim3x301b23a6734242ca83b5da1b390649e6webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/big-InnoShredFocusSFP-01_ac7a4b68-df62-438c-b385-8c2beb20b74b.jpg","t":"biginnoshredfocussfp01ac7a4b68df62438cb3858c2beb20b74bjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -730,7 +783,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

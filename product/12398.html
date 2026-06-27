@@ -164,6 +164,12 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_2_c91639c0-624b-41fb-a9dd-294aa96bb496.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_2_c91639c0-624b-41fb-a9dd-294aa96bb496.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_5_c6ee2a3b-f310-4e42-8896-c7bcab9c1420.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_5_c6ee2a3b-f310-4e42-8896-c7bcab9c1420.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_3_2000f4d5-810f-442a-8d41-110127dd5d96.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_3_2000f4d5-810f-442a-8d41-110127dd5d96.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_4_baa8eb5d-ed82-47b3-914f-1da576643a2c.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_4_baa8eb5d-ed82-47b3-914f-1da576643a2c.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_1_90d9b842-03b1-4624-aa1b-37c59a398357.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_1_90d9b842-03b1-4624-aa1b-37c59a398357.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_5_88a1e1ec-525d-41de-bc70-e243193f3fb8.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_5_88a1e1ec-525d-41de-bc70-e243193f3fb8.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_2_fba7871b-0092-449e-a2ff-79d1c446cb24.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_2_fba7871b-0092-449e-a2ff-79d1c446cb24.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_4_78828eb8-44bc-4554-b472-47ef6fe18319.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_4_78828eb8-44bc-4554-b472-47ef6fe18319.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_3_86b4136c-2e67-4862-9ca7-2c415c19c9b9.jpg" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_3_86b4136c-2e67-4862-9ca7-2c415c19c9b9.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -589,6 +595,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05398_1_909a5242-ca2f-41d8-826d-c84d6bbb471e.jpg","t":"cia053981909a5242ca2f41d8826dc84d6bbb471ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05405_1_39939005-d408-4c53-a88b-ee7d48cfceaf.jpg","t":"cia05405139939005d4084c53a88bee7d48cfceafjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05403-2_1_01d79313-8bf5-4f38-b6fd-ce145540ab75.jpg","t":"cia054032101d793138bf54f38b6fdce145540ab75jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05408_1_05f4035b-2574-4bab-90fc-d49186bea612.jpg","t":"cia05408105f4035b25744bab90fcd49186bea612jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_1_9ce985d4-d064-4cd0-908d-34712e7a431d.jpg","t":"doepicshitoriginaltigerstripecamoripstop19ce985d4d0644cd0908d34712e7a431djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_2_c91639c0-624b-41fb-a9dd-294aa96bb496.jpg","t":"doepicshitoriginaltigerstripecamoripstop2c91639c0624b41fba9dd294aa96bb496jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_5_c6ee2a3b-f310-4e42-8896-c7bcab9c1420.jpg","t":"doepicshitoriginaltigerstripecamoripstop5c6ee2a3bf3104e428896c7bcab9c1420jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_3_2000f4d5-810f-442a-8d41-110127dd5d96.jpg","t":"doepicshitoriginaltigerstripecamoripstop32000f4d5810f442a8d41110127dd5d96jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-ORIGINALTIGERSTRIPECAMORIPSTOP_4_baa8eb5d-ed82-47b3-914f-1da576643a2c.jpg","t":"doepicshitoriginaltigerstripecamoripstop4baa8eb5ded8247b3914f1da576643a2cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_1_90d9b842-03b1-4624-aa1b-37c59a398357.jpg","t":"doepicshitjunglecamoripstop190d9b84203b14624aa1b37c59a398357jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_5_88a1e1ec-525d-41de-bc70-e243193f3fb8.jpg","t":"doepicshitjunglecamoripstop588a1e1ec525d41debc70e243193f3fb8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_2_fba7871b-0092-449e-a2ff-79d1c446cb24.jpg","t":"doepicshitjunglecamoripstop2fba7871b0092449ea2ff79d1c446cb24jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_4_78828eb8-44bc-4554-b472-47ef6fe18319.jpg","t":"doepicshitjunglecamoripstop478828eb844bc4554b47247ef6fe18319jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DOEPICSHIT-JUNGLECAMORIPSTOP_3_86b4136c-2e67-4862-9ca7-2c415c19c9b9.jpg","t":"doepicshitjunglecamoripstop386b4136c2e6748629ca72c415c19c9b9jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -762,7 +821,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,11 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_fdf6af7f-b885-450c-a202-f7f0b95eb18d_1.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_fdf6af7f-b885-450c-a202-f7f0b95eb18d_1.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_1db06158-ceeb-4e7c-8597-c71171649193_1.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_1db06158-ceeb-4e7c-8597-c71171649193_1.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/Knit_chart_2_1.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/Knit_chart_2_1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_c96f1dd1-f6d4-475e-8a72-cf6cc4d51157_1.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/image_c96f1dd1-f6d4-475e-8a72-cf6cc4d51157_1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_1_1.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_1_1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_2_1.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_2_1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_4_1.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_4_1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/products/BK-GUIDE-KNEESLEEVES_1_32655cef-d80e-445b-9b1a-f6e2cad06026_80.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0939/5400/products/BK-GUIDE-KNEESLEEVES_1_32655cef-d80e-445b-9b1a-f6e2cad06026_80.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -577,6 +582,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/knit_knee_sleeve_pic_70.png","t":"knitkneesleevepic70b2b2ace8eaa346e0b50c660cc17078e6png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/PinkKnitSleeves_1.jpg","t":"pinkknitsleeves1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/Untitleddesign_1_1.png","t":"untitleddesign11png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_c4754486-fa1c-48d3-9be5-c371eecc7f58_1.jpg","t":"imagec4754486fa1c48d39be5c371eecc7f581jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_ff4bfb6f-7227-4f55-8614-e9fe3ef3c309_1.jpg","t":"imageff4bfb6f72274f558614e9fe3ef3c3091jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_fdf6af7f-b885-450c-a202-f7f0b95eb18d_1.jpg","t":"imagefdf6af7fb885450ca202f7f0b95eb18d1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_1db06158-ceeb-4e7c-8597-c71171649193_1.jpg","t":"image1db06158ceeb4e7c8597c711716491931jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/Knit_chart_2_1.jpg","t":"knitchart21jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/image_c96f1dd1-f6d4-475e-8a72-cf6cc4d51157_1.jpg","t":"imagec96f1dd1f6d4475e8a72cf6cc4d511571jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_1_1.jpg","t":"greyknit11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_2_1.jpg","t":"greyknit21jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/grey_knit_4_1.jpg","t":"greyknit41jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/BK-GUIDE-KNEESLEEVES_1_32655cef-d80e-445b-9b1a-f6e2cad06026_80.jpg","t":"bkguidekneesleeves132655cefd80e445b9b1af6e2cad0602680jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -750,7 +808,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

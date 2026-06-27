@@ -164,6 +164,8 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-AlphaX-JYM_Standard_2000x2000_V2.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-AlphaX-JYM_Standard_2000x2000_V2.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-AlphaX-JYM_Reviews_2000x2000_e01e1bfd-45e3-4074-a73e-d72aab6d3461.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-AlphaX-JYM_Reviews_2000x2000_e01e1bfd-45e3-4074-a73e-d72aab6d3461.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Omega-JYM_Formulated_2000x2000_1.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Omega-JYM_Formulated_2000x2000_1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Omega-JYM_Community_2000x2000_c621671b-8a5a-4078-8f97-a862c918cbc2.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Omega-JYM_Community_2000x2000_c621671b-8a5a-4078-8f97-a862c918cbc2.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Alpha_X-JYM_SFP_2000x2000_a4a61e25-4bc8-4636-a0ba-4f0142c851c8.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Alpha_X-JYM_SFP_2000x2000_a4a61e25-4bc8-4636-a0ba-4f0142c851c8.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -584,6 +586,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/CAP240ALPX25107083024V2.1-Front-1200px_2b95c109-1f36-4e09-a321-50db886972b0.png","t":"cap240alpx25107083024v21front1200px2b95c1091f364e09a32150db886972b0png"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/CAP240ALPX25107091123V1.1_Left_1200px.png","t":"cap240alpx25107091123v11left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/CAP240ALPX25107083024V2.1-Right-1200px.png","t":"cap240alpx25107083024v21right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-AlphaX-JYM_ProductGuide_2000x2000_18332f36-1971-40a0-87ac-e80ff431f1ab.png","t":"jymalphaxjymproductguide2000x200018332f36197140a087ace80ff431f1abpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/AlphaX-Prop65_1200x1200_9a7a7894-6b58-492d-a428-5538475ca7d5.png","t":"alphaxprop651200x12009a7a78946b58492da4285538475ca7d5png"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-AlphaX-JYM_Standard_2000x2000_V2.png","t":"jymalphaxjymstandard2000x2000v2png"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-AlphaX-JYM_Reviews_2000x2000_e01e1bfd-45e3-4074-a73e-d72aab6d3461.png","t":"jymalphaxjymreviews2000x2000e01e1bfd45e34074a73ed72aab6d3461png"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Omega-JYM_Formulated_2000x2000_1.jpg","t":"jymomegajymformulated2000x20001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Omega-JYM_Community_2000x2000_c621671b-8a5a-4078-8f97-a862c918cbc2.jpg","t":"jymomegajymcommunity2000x2000c621671b8a5a40788f97a862c918cbc2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/JYM-Alpha_X-JYM_SFP_2000x2000_a4a61e25-4bc8-4636-a0ba-4f0142c851c8.png","t":"jymalphaxjymsfp2000x2000a4a61e254bc84636a0ba4f0142c851c8png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -757,7 +812,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

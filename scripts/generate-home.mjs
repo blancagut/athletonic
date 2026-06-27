@@ -113,8 +113,6 @@ const displayOnlyFragments = [
   "plp",
 ];
 
-const PDP_GALLERY_IMAGE_LIMIT = 8;
-
 const combatGloveBrands = new Set([
   "century_martial_arts",
   "everlast",
@@ -656,7 +654,11 @@ function productImageScore(image) {
   return score;
 }
 
-function pdpGalleryImages(curated, imageList = [], limit = PDP_GALLERY_IMAGE_LIMIT) {
+// Returns EVERY available product image (default image first, then the rest
+// ordered by display-quality score). Images are deduped but never truncated:
+// the full set must stay available on the PDP. The visible gallery is kept
+// clean by the scrollable thumbnail strip, not by dropping images.
+function pdpGalleryImages(curated, imageList = []) {
   const seen = new Set();
   const result = [];
 
@@ -689,7 +691,6 @@ function pdpGalleryImages(curated, imageList = [], limit = PDP_GALLERY_IMAGE_LIM
     });
 
   for (const image of candidates) {
-    if (result.length >= limit) break;
     addUrl(image.url);
   }
 
@@ -697,7 +698,37 @@ function pdpGalleryImages(curated, imageList = [], limit = PDP_GALLERY_IMAGE_LIM
     result.push(curated.image);
   }
 
-  return result.slice(0, limit);
+  return result;
+}
+
+// Normalizes a string into a compact, comparable token (lowercase, alphanumeric
+// only). Used to associate product images with variant option values when the
+// image alt text or filename encodes the flavor/size (e.g. "..._Chocolate.png").
+function variantImageToken(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+// Builds the gallery metadata embedded in each PDP: for every image, a compact
+// token blob derived from its alt text + URL filename so the client can switch
+// the main image to the one matching the selected variant. Falls back cleanly
+// to the default image when an image carries no variant signal (e.g. opaque CDN
+// filenames), so a wrong image is never shown.
+function pdpGalleryImageMeta(images = [], imageList = []) {
+  const metaByUrl = new Map();
+  for (const image of imageList) {
+    if (!image?.url) continue;
+    const key = imageKey(image.url);
+    if (!key) continue;
+    const filename = String(image.url).split("?")[0].split("/").pop() || "";
+    const blob = `${image.alt || ""} ${filename}`;
+    metaByUrl.set(key, variantImageToken(blob));
+  }
+  return images.map((src) => ({
+    src,
+    t: metaByUrl.get(imageKey(src)) || variantImageToken(String(src).split("?")[0].split("/").pop() || ""),
+  }));
 }
 
 function bestImagesForProducts(productIds) {
@@ -2454,7 +2485,7 @@ function fetchPdpData(productIds) {
     for (const row of rows) rowsById.set(row.id, row);
 
     const images = runQuery(`
-      select product_row_id, position, url, width, height
+      select product_row_id, position, url, width, height, alt
       from images
       where product_row_id in (${chunk.join(",")})
         and url is not null
@@ -2682,6 +2713,8 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
     : "";
 
   const images = pdpGalleryImages(curated, imageList);
+  const galleryImageMeta = pdpGalleryImageMeta(images, imageList);
+  const galleryImageMetaJson = JSON.stringify(galleryImageMeta).replace(/</g, "\\u003c");
 
   const options = safeParseJson(fullRow?.options, []);
   const normalizedPdpOptions = normalizedOptionsForProduct(
@@ -2902,6 +2935,59 @@ ${mobileBottomNav(pathPrefix)}
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = ${galleryImageMetaJson};
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -3075,7 +3161,12 @@ ${mobileBottomNav(pathPrefix)}
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -559,6 +559,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/Sex-Collection-gummy-unstickered.png","t":"sexcollectiongummyunstickeredpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/op-carousel-flo_790af402-cc42-4fd4-a0f5-07bdd104f3fb.png","t":"opcarouselflo790af402cc424fd4a0f507bdd104f3fbpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/op-carousel-vp_5b467a6a-abc9-4904-872e-57cde15402c1.png","t":"opcarouselvp5b467a6aabc94904872e57cde15402c1png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/op-carousel-ut_1c52f54c-bb03-4245-b9d9-406431b58209.png","t":"opcarouselut1c52f54cbb034245b9d9406431b58209png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/OP-carousel-flo-gummy-sfp.png","t":"opcarouselflogummysfppng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/sfp-vp_75dfca7a-5e4f-4683-a078-2e963b15ef2b.png","t":"sfpvp75dfca7a5e4f4683a0782e963b15ef2bpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/sfp-ut_8c54fb45-aec9-45d8-b137-3816bb751bb2.png","t":"sfput8c54fb45aec945d8b1373816bb751bb2png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -732,7 +785,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

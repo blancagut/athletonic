@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1338/1013/files/SFMPPDPNFP.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/1338/1013/files/SFMPPDPNFP.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-WP-Alt-Image-2_f2c30c60-5dc7-4532-8948-c3b9d317b3be.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-WP-Alt-Image-2_f2c30c60-5dc7-4532-8948-c3b9d317b3be.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-WP-Alt-Image-4_b14f8c9f-e161-448a-a840-1e9272b271e2.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-WP-Alt-Image-4_b14f8c9f-e161-448a-a840-1e9272b271e2.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-RS-Alt-Image-4_4d15e061-fd8b-42d3-9caa-5f4015a6f39b.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-RS-Alt-Image-4_4d15e061-fd8b-42d3-9caa-5f4015a6f39b.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -560,6 +561,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPPouch-Static-StrawberryWatermelon-2880x2880.png","t":"webpdppouchstaticstrawberrywatermelon2880x2880png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/SFMPPDPFRUIT.png","t":"sfmppdpfruitpng"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-BundlePDPImage3-OVDLaunch-2880x2880_109475b5-c6d6-48fe-93f3-fbf24278f9a5.jpg","t":"webbundlepdpimage3ovdlaunch2880x2880109475b5c6d648fe93f3fbf24278f9a5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Sugar-FreeBundle.jpg","t":"sugarfreebundlejpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPNutritionFacts-Static-StrawberryWatermelon-2880x2880.png","t":"webpdpnutritionfactsstaticstrawberrywatermelon2880x2880png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/SFMPPDPNFP.png","t":"sfmppdpnfppng"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-WP-Alt-Image-2_f2c30c60-5dc7-4532-8948-c3b9d317b3be.jpg","t":"hmsfwpaltimage2f2c30c605dc745328948c3b9d317b3bejpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-WP-Alt-Image-4_b14f8c9f-e161-448a-a840-1e9272b271e2.jpg","t":"hmsfwpaltimage4b14f8c9fe161448aa8401e9272b271e2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMSF-RS-Alt-Image-4_4d15e061-fd8b-42d3-9caa-5f4015a6f39b.jpg","t":"hmsfrsaltimage44d15e061fd8b42d39caa5f4015a6f39bjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -733,7 +787,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,12 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/Sweet_Cream_Cold_Brew_208b3545-e8a6-4b7f-9a6d-29199f83b4ae.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/Sweet_Cream_Cold_Brew_208b3545-e8a6-4b7f-9a6d-29199f83b4ae.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/01_3021af3e-6e3c-4f62-b803-ad28784a0505.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/01_3021af3e-6e3c-4f62-b803-ad28784a0505.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/02_iced_latte.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/02_iced_latte.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/02_mocha_70563ce5-9ac2-49f1-b2ae-89a23ddc762f.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/02_mocha_70563ce5-9ac2-49f1-b2ae-89a23ddc762f.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/02_sweet_cream.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/02_sweet_cream.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/03_8ff4654a-2946-489f-bd03-f9fc70b63512.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/03_8ff4654a-2946-489f-bd03-f9fc70b63512.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/04_bf8afc87-f599-45b3-a1af-ccc4805efa6b.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/04_bf8afc87-f599-45b3-a1af-ccc4805efa6b.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/05_5aed4f7d-be2a-4800-926e-4d91c673d407.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/05_5aed4f7d-be2a-4800-926e-4d91c673d407.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0866/7664/files/06_2.jpg" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0866/7664/files/06_2.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -572,6 +578,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL_ProteinCoffee_15S_IL_1_7.png","t":"tlproteincoffee15sil17png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL-338_ProteinCoffee_15S_M_1_10.png","t":"tl338proteincoffee15sm110png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL_ProteinCoffee_15S_SCCB_1_7.png","t":"tlproteincoffee15ssccb17png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Iced_Latte.png","t":"icedlattepng"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Mocha.png","t":"mochapng"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Sweet_Cream_Cold_Brew_208b3545-e8a6-4b7f-9a6d-29199f83b4ae.png","t":"sweetcreamcoldbrew208b3545e8a64b7f9a6d29199f83b4aepng"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/01_3021af3e-6e3c-4f62-b803-ad28784a0505.jpg","t":"013021af3e6e3c4f62b803ad28784a0505jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/02_iced_latte.jpg","t":"02icedlattejpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/02_mocha_70563ce5-9ac2-49f1-b2ae-89a23ddc762f.jpg","t":"02mocha70563ce59ac249f1b2ae89a23ddc762fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/02_sweet_cream.jpg","t":"02sweetcreamjpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/03_8ff4654a-2946-489f-bd03-f9fc70b63512.jpg","t":"038ff4654a2946489fbd03f9fc70b63512jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/04_bf8afc87-f599-45b3-a1af-ccc4805efa6b.jpg","t":"04bf8afc87f59945b3a1afccc4805efa6bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/05_5aed4f7d-be2a-4800-926e-4d91c673d407.jpg","t":"055aed4f7dbe2a4800926e4d91c673d407jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/06_2.jpg","t":"062jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -745,7 +804,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

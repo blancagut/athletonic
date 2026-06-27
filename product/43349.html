@@ -585,6 +585,59 @@ Machine wash cold</li>
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/adidas-youth-arsenal-fc-2324-home-jersey-hz2133-jersey-adidas-youth-medium-better-scarlet-white-910711_600x_d2746b25-973c-457d-864e-f3c6d6040c13.webp","t":"adidasyoutharsenalfc2324homejerseyhz2133jerseyadidasyouthmediumbetterscarletwhite910711600xd2746b25973c457d864ef3c6d6040c13webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/adidas-youth-arsenal-fc-2324-home-jersey-hz2133-jersey-adidas-102060_5000x_157f1b38-f8f3-48c5-bfaa-008a208a81c0.jpg","t":"adidasyoutharsenalfc2324homejerseyhz2133jerseyadidas1020605000x157f1b38f8f348c5bfaa008a208a81c0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/adidas-youth-arsenal-fc-2324-home-jersey-hz2133-jersey-adidas-237028_5000x_900081b3-cd72-4b0e-915d-65f2be93c56a.jpg","t":"adidasyoutharsenalfc2324homejerseyhz2133jerseyadidas2370285000x900081b3cd724b0e915d65f2be93c56ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/adidas-youth-arsenal-fc-2324-home-jersey-hz2133-jersey-adidas-898860_5000x_5c8bab72-82b9-4260-a67b-0fa1b41d63fd.jpg","t":"adidasyoutharsenalfc2324homejerseyhz2133jerseyadidas8988605000x5c8bab7282b94260a67b0fa1b41d63fdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/adidas-youth-arsenal-fc-2324-home-jersey-hz2133-jersey-adidas-119297_5000x_31800b43-34b6-41b1-ac84-385a57639822.jpg","t":"adidasyoutharsenalfc2324homejerseyhz2133jerseyadidas1192975000x31800b4334b641b1ac84385a57639822jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -758,7 +811,12 @@ Machine wash cold</li>
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

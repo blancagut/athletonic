@@ -164,6 +164,14 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/blackpineapplejuicyfrontmock.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/blackpineapplejuicyfrontmock.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05278.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05278.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05297-5.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05297-5.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05290-3.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05290-3.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafblackrearmocknew.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafblackrearmocknew.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafpink_1_b31d6d79-a989-4e9a-9782-727041500a7a.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafpink_1_b31d6d79-a989-4e9a-9782-727041500a7a.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/grayjuicyafmock_1.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/grayjuicyafmock_1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_12_1_60b77756-3d8e-46a4-8cba-232fa5406f23.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_12_1_60b77756-3d8e-46a4-8cba-232fa5406f23.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/rearmilgreenjuicyafpineapple_6b373b6e-b9de-4808-a005-a839fc66dd64.jpg" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/rearmilgreenjuicyafpineapple_6b373b6e-b9de-4808-a005-a839fc66dd64.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/juicyaftahitibluerearmocknew_594f157f-ac5a-4dac-81f3-33d20af91913.jpg" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/juicyaftahitibluerearmocknew_594f157f-ac5a-4dac-81f3-33d20af91913.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafblackretropirintmock_67adcd88-2bfd-416f-a7bf-fa2ab3707bf8.jpg" aria-label="View image 16"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafblackretropirintmock_67adcd88-2bfd-416f-a7bf-fa2ab3707bf8.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -551,6 +559,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafwhiterearprint.jpg","t":"juicyafwhiterearprintjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05291-2.jpg","t":"dsc052912jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/neonwhitefrontpinapple.jpg","t":"neonwhitefrontpinapplejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05294-3.jpg","t":"dsc052943jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05280-2.jpg","t":"dsc052802jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/blackpineapplejuicyfrontmock.jpg","t":"blackpineapplejuicyfrontmockjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05278.jpg","t":"dsc05278jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05297-5.jpg","t":"dsc052975jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05290-3.jpg","t":"dsc052903jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafblackrearmocknew.jpg","t":"juicyafblackrearmocknewjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafpink_1_b31d6d79-a989-4e9a-9782-727041500a7a.jpg","t":"juicyafpink1b31d6d79a9894e9a9782727041500a7ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/grayjuicyafmock_1.jpg","t":"grayjuicyafmock1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_12_1_60b77756-3d8e-46a4-8cba-232fa5406f23.jpg","t":"unnamed12160b777563d8e46a48cba232fa5406f23jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/rearmilgreenjuicyafpineapple_6b373b6e-b9de-4808-a005-a839fc66dd64.jpg","t":"rearmilgreenjuicyafpineapple6b373b6eb9de4808a005a839fc66dd64jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/juicyaftahitibluerearmocknew_594f157f-ac5a-4dac-81f3-33d20af91913.jpg","t":"juicyaftahitibluerearmocknew594f157fac5a4dac81f333d20af91913jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/juicyafblackretropirintmock_67adcd88-2bfd-416f-a7bf-fa2ab3707bf8.jpg","t":"juicyafblackretropirintmock67adcd882bfd416fa7bffa2ab3707bf8jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -724,7 +785,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

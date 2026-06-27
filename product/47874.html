@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/AA004FW090_SHOE_PROFILE_GLOBAL_WOMENS_TREE_DASHER_RELAY_BLIZZARD_BLIZZARD_16082bc1-7af2-429b-a2a2-c290c7c06b05.png","t":"aa004fw090shoeprofileglobalwomenstreedasherrelayblizzardblizzard16082bc17af2429ba2a2c290c7c06b05png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/AA004FW090_SHOE_HEEL_GLOBAL_WOMENS_TREE_DASHER_RELAY_BLIZZARD_BLIZZARD_3c0f44bc-45f6-46b0-ad63-84b1d02a4fea.png","t":"aa004fw090shoeheelglobalwomenstreedasherrelayblizzardblizzard3c0f44bc45f646b0ad6384b1d02a4feapng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/AA004FW090_SHOE_OVERHEAD_GLOBAL_WOMENS_TREE_DASHER_RELAY_BLIZZARD_BLIZZARD_3e385a17-66a5-40cb-b8bc-aa68c6ccb776.png","t":"aa004fw090shoeoverheadglobalwomenstreedasherrelayblizzardblizzard3e385a1766a540cbb8bcaa68c6ccb776png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/AA004FW090_SHOE_BOTTOM_GLOBAL_WOMENS_TREE_DASHER_RELAY_BLIZZARD_BLIZZARD_d12f17d1-0b8d-45e1-9b3e-be907a00698a.png","t":"aa004fw090shoebottomglobalwomenstreedasherrelayblizzardblizzardd12f17d10b8d45e19b3ebe907a00698apng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/AA004FW090_SHOE_PAIR_GLOBAL_WOMENS_TREE_DASHER_RELAY_BLIZZARD_BLIZZARD_ba4d5148-98bd-479e-af46-3f50cef09ade.png","t":"aa004fw090shoepairglobalwomenstreedasherrelayblizzardblizzardba4d514898bd479eaf463f50cef09adepng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

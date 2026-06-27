@@ -532,6 +532,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11911_25Q3_Tree_Runner_NZ_Blizzard_Dark_Navy_Blizzard_Sole_PDP_LEFT_8b422d80-b6b8-4094-87fa-5741133505cb.png","t":"a1191125q3treerunnernzblizzarddarknavyblizzardsolepdpleft8b422d80b6b8409487fa5741133505cbpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11911_25Q3_Tree_Runner_NZ_Blizzard_Dark_Navy_Blizzard_Sole_PDP_TD_be586610-6341-404e-8539-bb92a1af62f9.png","t":"a1191125q3treerunnernzblizzarddarknavyblizzardsolepdptdbe5866106341404e8539bb92a1af62f9png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11911_25Q3_Tree_Runner_NZ_Blizzard_Dark_Navy_Blizzard_Sole_PDP_SOLE_09f548a6-7ca7-4337-9b4a-bd63b6f2afd1.png","t":"a1191125q3treerunnernzblizzarddarknavyblizzardsolepdpsole09f548a67ca743379b4abd63b6f2afd1png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11911_25Q3_Tree_Runner_NZ_Blizzard_Dark_Navy_Blizzard_Sole_PDP_PAIR_3Q_8a12378a-bf6d-4435-ba37-561fba00e63f.png","t":"a1191125q3treerunnernzblizzarddarknavyblizzardsolepdppair3q8a12378abf6d4435ba37561fba00e63fpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11911_25Q3_Tree_Runner_NZ_Blizzard_Dark_Navy_Blizzard_Sole_PDP_BACK_bb42cddb-9bb8-4c9f-92e2-98582ed757dd.png","t":"a1191125q3treerunnernzblizzarddarknavyblizzardsolepdpbackbb42cddb9bb84c9f92e298582ed757ddpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -705,7 +758,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

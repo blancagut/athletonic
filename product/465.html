@@ -164,6 +164,13 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/doublefudgebrownie-60g.webp" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/doublefudgebrownie-60g.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/saltedcaramel-60g.webp" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/saltedcaramel-60g.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/darkchocolatebutter-60g.webp" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/darkchocolatebutter-60g.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Peanut_Butter_Fudge_12_Servings_-_2_2f29b443-da2d-4dc2-a6bd-8ecf13a1eecd.webp" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Peanut_Butter_Fudge_12_Servings_-_2_2f29b443-da2d-4dc2-a6bd-8ecf13a1eecd.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/peanutbutter3_9a4bf085-77de-41bd-a778-b944042d3daf.webp" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/peanutbutter3_9a4bf085-77de-41bd-a778-b944042d3daf.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Double_Fudge_12_Servings_-_2_310caa2b-d1af-4966-b437-ef731a01e52b.webp" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Double_Fudge_12_Servings_-_2_310caa2b-d1af-4966-b437-ef731a01e52b.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/doublefudge4_7a908614-4ddf-4326-9734-e28d4f0fe879.webp" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/doublefudge4_7a908614-4ddf-4326-9734-e28d4f0fe879.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Salted_Caramel_12_Servings_-_2_7be1518d-6d86-49a7-b7da-41a233c5ccdf.webp" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Salted_Caramel_12_Servings_-_2_7be1518d-6d86-49a7-b7da-41a233c5ccdf.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/salted01_118b9a2b-2b1f-4fb1-9d55-be9e5e4f3df9.webp" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/salted01_118b9a2b-2b1f-4fb1-9d55-be9e5e4f3df9.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Dark_Chocolate_12_Servings_-_2_4d2227ea-4055-4f29-aabf-b241f7b5bf0a.webp" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Dark_Chocolate_12_Servings_-_2_4d2227ea-4055-4f29-aabf-b241f7b5bf0a.webp" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -576,6 +583,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/bar_12pack-doublefudge.png","t":"bar12packdoublefudgepng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/bar_12pack-saltedcaramelpretzel.png","t":"bar12packsaltedcaramelpretzelpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/bar_12pack-peanutbutterfudge.png","t":"bar12packpeanutbutterfudgepng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/bar_12pack-darkchocolatecookiebutter.png","t":"bar12packdarkchocolatecookiebutterpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/peanutbutterfudge-60g.webp","t":"peanutbutterfudge60gwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/doublefudgebrownie-60g.webp","t":"doublefudgebrownie60gwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/saltedcaramel-60g.webp","t":"saltedcaramel60gwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/darkchocolatebutter-60g.webp","t":"darkchocolatebutter60gwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Peanut_Butter_Fudge_12_Servings_-_2_2f29b443-da2d-4dc2-a6bd-8ecf13a1eecd.webp","t":"proteinbarspeanutbutterfudge12servings2d73a9747efaa45be938fd033256c6499webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/peanutbutter3_9a4bf085-77de-41bd-a778-b944042d3daf.webp","t":"peanutbutter364cb901fbada4151b1c12d302b943858webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Double_Fudge_12_Servings_-_2_310caa2b-d1af-4966-b437-ef731a01e52b.webp","t":"proteinbarsdoublefudge12servings2fc6d98f26d374cc5868bca44b2fc1133webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/doublefudge4_7a908614-4ddf-4326-9734-e28d4f0fe879.webp","t":"doublefudge40b1663e27cbf4e2ea23291fb834375f7webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Salted_Caramel_12_Servings_-_2_7be1518d-6d86-49a7-b7da-41a233c5ccdf.webp","t":"proteinbarssaltedcaramel12servings21196df865b574b2dab8b04a58e2bd47dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/salted01_118b9a2b-2b1f-4fb1-9d55-be9e5e4f3df9.webp","t":"salted019e9b3d65539144629b6515a2a9f3a78fwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Protein_Bars_-_Dark_Chocolate_12_Servings_-_2_4d2227ea-4055-4f29-aabf-b241f7b5bf0a.webp","t":"proteinbarsdarkchocolate12servings25810a3f426f246a5b210c429e08558a8webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -749,7 +809,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

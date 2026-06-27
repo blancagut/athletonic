@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12494_26Q1_Cruiser-Canvas-Stripes-Deep-Navy-Blizzard-Sole_PDP_LEFT_a6da9cc2-28a3-4e38-839a-9a151daa68c5.png","t":"a1249426q1cruisercanvasstripesdeepnavyblizzardsolepdplefta6da9cc228a34e38839a9a151daa68c5png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12494_26Q1_Cruiser-Canvas-Stripes-Deep-Navy-Blizzard-Sole_PDP_TD_3f8ede98-31e9-4d26-b62c-0a5163fc7871.png","t":"a1249426q1cruisercanvasstripesdeepnavyblizzardsolepdptd3f8ede9831e94d26b62c0a5163fc7871png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12494_26Q1_Cruiser-Canvas-Stripes-Deep-Navy-Blizzard-Sole_PDP_SOLE_dc2388cd-a2eb-4668-b056-223710c1b3f6.png","t":"a1249426q1cruisercanvasstripesdeepnavyblizzardsolepdpsoledc2388cda2eb4668b056223710c1b3f6png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12494_26Q1_Cruiser-Canvas-Stripes-Deep-Navy-Blizzard-Sole_PDP_PAIR_3Q_15b5c78a-b769-43f1-a318-76b6c69f57c4.png","t":"a1249426q1cruisercanvasstripesdeepnavyblizzardsolepdppair3q15b5c78ab76943f1a31876b6c69f57c4png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12494_26Q1_Cruiser-Canvas-Stripes-Deep-Navy-Blizzard-Sole_PDP_BACK_6259e832-1933-4598-8655-1ce61f5c82a5.png","t":"a1249426q1cruisercanvasstripesdeepnavyblizzardsolepdpback6259e8321933459886551ce61f5c82a5png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

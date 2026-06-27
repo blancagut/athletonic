@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3446c91a-16c2-45d3-803e-0ace2022456c/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png" aria-label="View image 6"><img src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3446c91a-16c2-45d3-803e-0ace2022456c/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80a097a5-3c12-4b99-ac62-8efd4ca92b73/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png" aria-label="View image 7"><img src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80a097a5-3c12-4b99-ac62-8efd4ca92b73/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80a4e61f-333d-4d21-8dc9-5763f4c0f7f6/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png" aria-label="View image 8"><img src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80a4e61f-333d-4d21-8dc9-5763f4c0f7f6/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f4abdbdc-26a0-4f2d-924f-a8e9fc1bd518/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png" aria-label="View image 9"><img src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f4abdbdc-26a0-4f2d-924f-a8e9fc1bd518/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -533,6 +534,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1c284894-ccdc-40ee-8a7c-15d1af32b1b4/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9038d3d3-0593-4758-b522-b3cd4b49ede1/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7e48dbd7-312b-400c-838f-7ee5b978caa4/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/bedced2c-ecd8-4c08-aac4-19a4f513f927/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1559fa50-4ec2-4ba7-93a1-3f2c9724d6e2/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3446c91a-16c2-45d3-803e-0ace2022456c/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80a097a5-3c12-4b99-ac62-8efd4ca92b73/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80a4e61f-333d-4d21-8dc9-5763f4c0f7f6/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f4abdbdc-26a0-4f2d-924f-a8e9fc1bd518/jordan-5-retro-og-white-metallic-little-kids-shoes-OsHCLXpw.png","t":"jordan5retroogwhitemetalliclittlekidsshoesjordan5retroogwhitemetalliclittlekidsshoesoshclxpwpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -706,7 +760,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0250/5205/3583/files/Single-MindedMessage_2_7b293610-4c5b-4f9e-a355-32a25beb8f18.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0250/5205/3583/files/Single-MindedMessage_2_7b293610-4c5b-4f9e-a355-32a25beb8f18.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0250/5205/3583/files/SupplementFacts_3_1e07cd88-8c8d-4c12-b05e-9d3b36f5c04d.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0250/5205/3583/files/SupplementFacts_3_1e07cd88-8c8d-4c12-b05e-9d3b36f5c04d.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0250/5205/3583/files/What_COsInside_copia_2_e0948ae9-6725-46af-9750-be4e1e2dfd3f.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0250/5205/3583/files/What_COsInside_copia_2_e0948ae9-6725-46af-9750-be4e1e2dfd3f.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0250/5205/3583/files/Benefits_1_2b3bf667-d08a-443f-b1e7-69204c7c44a7.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0250/5205/3583/files/Benefits_1_2b3bf667-d08a-443f-b1e7-69204c7c44a7.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -564,6 +565,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/NN_D3K2_CA_60_EDITED.jpg","t":"nnd3k2ca60editedbe14c9f706ee499a90472128758a95bcjpg"},{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/NN_D3K2_CA_60_Left_8cda6f98-c5c4-42be-911a-3691d1890427.jpg","t":"nnd3k2ca60left8cda6f98c5c442be911a3691d1890427jpg"},{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/NN_D3K2_CA_60_Right_e928fa2c-dc0e-4462-ac8a-20b335ef2bf8.jpg","t":"nnd3k2ca60righte928fa2cdc0e4462ac8a20b335ef2bf8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/Description_3_edc93484-d4bb-4b48-86d7-677602cf605e.jpg","t":"description3edc93484d4bb4b4886d7677602cf605ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/Directions_4_2b47ecb6-fe98-4a8c-9ecc-61a697b1d0f7.jpg","t":"directions42b47ecb6fe984a8c9ecc61a697b1d0f7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/Single-MindedMessage_2_7b293610-4c5b-4f9e-a355-32a25beb8f18.jpg","t":"singlemindedmessage27b2936104c5b4f9ea35532a25beb8f18jpg"},{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/SupplementFacts_3_1e07cd88-8c8d-4c12-b05e-9d3b36f5c04d.jpg","t":"supplementfacts31e07cd888c8d4c12b05e9d3b36f5c04djpg"},{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/What_COsInside_copia_2_e0948ae9-6725-46af-9750-be4e1e2dfd3f.jpg","t":"whatcosinsidecopia2e0948ae9672546af9750be4e1e2dfd3fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0250/5205/3583/files/Benefits_1_2b3bf667-d08a-443f-b1e7-69204c7c44a7.jpg","t":"benefits12b3bf667d08a443fb1e769204c7c44a7jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -737,7 +791,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

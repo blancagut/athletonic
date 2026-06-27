@@ -164,6 +164,14 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/volcarn-pinkstarblast_1_94c2ed83-6384-4ba1-be76-c3f9190a8e02.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/volcarn-pinkstarblast_1_94c2ed83-6384-4ba1-be76-c3f9190a8e02.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/cla1000-bc-front_4a75f415-5f3e-4b17-8af6-eda9b25abfdf.webp" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/cla1000-bc-front_4a75f415-5f3e-4b17-8af6-eda9b25abfdf.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoCleanse_Front_39f0925d-9377-4923-babd-85e8c783f472.webp" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoCleanse_Front_39f0925d-9377-4923-babd-85e8c783f472.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/complete-pms-side1_46c4375a-3ac1-495e-aff4-c3e37c6d2c03.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/complete-pms-side1_46c4375a-3ac1-495e-aff4-c3e37c6d2c03.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/gutprotectcopy2.webp" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/gutprotectcopy2.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-1_b6d0cd14-903c-45ca-b268-2bbe74e7d2e7.webp" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-1_b6d0cd14-903c-45ca-b268-2bbe74e7d2e7.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/gutrestore.webp" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/gutrestore.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innogreens-strawberrybanana1_1.webp" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innogreens-strawberrybanana1_1.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/updatedhsn.webp" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/updatedhsn.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/FB-compliant_driveforher-1_64a14c26-47be-47fc-b2a4-0bc393cbbada.webp" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/FB-compliant_driveforher-1_64a14c26-47be-47fc-b2a4-0bc393cbbada.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/turmeric-ginger-w1_046fe5c8-f97b-4a64-b792-e041ceaeffca.webp" aria-label="View image 16"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/turmeric-ginger-w1_046fe5c8-f97b-4a64-b792-e041ceaeffca.webp" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -557,6 +565,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/GlowFront_Updatedcopy.webp","t":"glowfrontupdatedcopywebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/Complete_Female_Stack_5bf39d20-7f26-4ec2-b541-e47a77285482.webp","t":"completefemalestack5bf39d207f264ec2b541e47a77285482webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/utb-front_cc2a7d11-066f-4980-8465-9354098efae6.png","t":"utbfrontcc2a7d11066f498084659354098efae6png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-shortbreadcookie-1_6138d104-afc8-4561-a360-5e7ec00687e2.png","t":"cvpshortbreadcookie16138d104afc84561a3605e7ec00687e2png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred_3_20d6d554-0ff6-4e83-b478-d7141960138c.png","t":"nightshred320d6d5540ff64e83b478d7141960138cpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/volcarn-pinkstarblast_1_94c2ed83-6384-4ba1-be76-c3f9190a8e02.png","t":"volcarnpinkstarblast194c2ed8363844ba1be76c3f9190a8e02png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/cla1000-bc-front_4a75f415-5f3e-4b17-8af6-eda9b25abfdf.webp","t":"cla1000bcfront4a75f4155f3e4b178af6eda9b25abfdfwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoCleanse_Front_39f0925d-9377-4923-babd-85e8c783f472.webp","t":"innocleansefront39f0925d93774923babd85e8c783f472webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/complete-pms-side1_46c4375a-3ac1-495e-aff4-c3e37c6d2c03.png","t":"completepmsside146c4375a3ac1495eaff4c3e37c6d2c03png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/gutprotectcopy2.webp","t":"gutprotectcopy2webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-1_b6d0cd14-903c-45ca-b268-2bbe74e7d2e7.webp","t":"innoshred1b6d0cd14903c45cab2682bbe74e7d2e7webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/gutrestore.webp","t":"gutrestorewebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innogreens-strawberrybanana1_1.webp","t":"innogreensstrawberrybanana11webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/updatedhsn.webp","t":"updatedhsnwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/FB-compliant_driveforher-1_64a14c26-47be-47fc-b2a4-0bc393cbbada.webp","t":"fbcompliantdriveforher164a14c2647be47fcb2a40bc393cbbadawebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/turmeric-ginger-w1_046fe5c8-f97b-4a64-b792-e041ceaeffca.webp","t":"turmericgingerw1046fe5c8f97b4a64b792e041ceaeffcawebp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -730,7 +791,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

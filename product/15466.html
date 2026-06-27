@@ -571,6 +571,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NSB_Front_08b52812-beae-453e-a813-04300a26227a.webp","t":"nsbfront08b52812beae453ea81304300a26227awebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_NightShredBlack_HowToTake_Carousel_Web_800x_4f6cc844-0ae7-49f9-b80a-90fd4c645b47.webp","t":"022825nightshredblackhowtotakecarouselweb800x4f6cc8440ae749f9b80a90fd4c645b47webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_NightShredBlack_Melatonin-Free_Carousel_Web_800x_9f295dc7-402d-48ea-9b19-65f783d5f597.webp","t":"022825nightshredblackmelatoninfreecarouselweb800x9f295dc7402d48ea9b1965f783d5f597webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NSB_Melatonin_Free_1_e64657b6-59ea-457c-acb0-0d133e47c19d.webp","t":"nsbmelatoninfree1e64657b659ea457cacb00d133e47c19dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_NightShredBlack_Ingredients_Carousel_Web_800x_9ea9f1f4-06f8-4959-8419-29233eb65562.webp","t":"022825nightshredblackingredientscarouselweb800x9ea9f1f406f84959841929233eb65562webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_NightShredBlack_Benefits_Carousel_Web_800x_46863fa7-aebc-49b4-8713-1b3c93ee9513.webp","t":"022825nightshredblackbenefitscarouselweb800x46863fa7aebc49b487131b3c93ee9513webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/022825_NightShredBlack_SFP_Carousel_Web_800x_ebf2d761-3b6d-458a-808e-88914b027e7f.webp","t":"022825nightshredblacksfpcarouselweb800xebf2d7613b6d458a808e88914b027e7fwebp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -744,7 +797,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

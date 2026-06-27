@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocChipBananaBread_Bar_c16a27fd-53eb-4e6a-8ed0-6289709373ab.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocChipBananaBread_Bar_c16a27fd-53eb-4e6a-8ed0-6289709373ab.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocChipCookieDough_Bar_7d0f724f-a396-44f4-824a-c94f23cda490.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocChipCookieDough_Bar_7d0f724f-a396-44f4-824a-c94f23cda490.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_LemonBar_Bar_80644644-c3de-470d-b0e6-46cac8aac8b0.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_LemonBar_Bar_80644644-c3de-470d-b0e6-46cac8aac8b0.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_OatmealChocChip_Bar.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_OatmealChocChip_Bar.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_PBChocChip_Bar_99b6cb9b-919c-4bb7-a879-8885483885f1.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_PBChocChip_Bar_99b6cb9b-919c-4bb7-a879-8885483885f1.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_Snickerdoodle_Bar_ad68e301-5401-416c-bc35-6e2d0a5ec884.png" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_Snickerdoodle_Bar_ad68e301-5401-416c-bc35-6e2d0a5ec884.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_SugarCookie_Bar_ac9e8e3e-af5d-48c0-944a-fb31d0a7f214.png" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_SugarCookie_Bar_ac9e8e3e-af5d-48c0-944a-fb31d0a7f214.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -582,6 +586,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocolateBrownie_Bar_FrontView.png","t":"onlybarchocolatebrowniebarfrontviewpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocolatePB_Bat_FrontView.png","t":"onlybarchocolatepbbatfrontviewpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_CherryChocChip_Bar_5a5a43d9-3dae-4926-88ed-6fa742f4d281.png","t":"onlybarcherrychocchipbar5a5a43d93dae492688ed6fa742f4d281png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocPB_Bar_FrontView.png","t":"onlybarchocpbbarfrontviewpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_CoconutCashew_Bar_FrontView.png","t":"onlybarcoconutcashewbarfrontviewpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocChipBananaBread_Bar_c16a27fd-53eb-4e6a-8ed0-6289709373ab.png","t":"onlybarchocchipbananabreadbarc16a27fd53eb4e6a8ed06289709373abpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_ChocChipCookieDough_Bar_7d0f724f-a396-44f4-824a-c94f23cda490.png","t":"onlybarchocchipcookiedoughbar7d0f724fa39644f4824ac94f23cda490png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_LemonBar_Bar_80644644-c3de-470d-b0e6-46cac8aac8b0.png","t":"onlybarlemonbarbar80644644c3de470db0e646cac8aac8b0png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_OatmealChocChip_Bar.png","t":"onlybaroatmealchocchipbarpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_PBChocChip_Bar_99b6cb9b-919c-4bb7-a879-8885483885f1.png","t":"onlybarpbchocchipbar99b6cb9b919c4bb7a8798885483885f1png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_Snickerdoodle_Bar_ad68e301-5401-416c-bc35-6e2d0a5ec884.png","t":"onlybarsnickerdoodlebarad68e3015401416cbc356e2d0a5ec884png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/OnlyBar_SugarCookie_Bar_ac9e8e3e-af5d-48c0-944a-fb31d0a7f214.png","t":"onlybarsugarcookiebarac9e8e3eaf5d48c0944afb31d0a7f214png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -755,7 +812,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

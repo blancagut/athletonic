@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditiner.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditiner.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8e-1x1_1_8f4897a1-9252-436b-b093-a3334dd6cd3c.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8e-1x1_1_8f4897a1-9252-436b-b093-a3334dd6cd3c.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8o-1x1_9a4d3d8a-ac03-4e92-9769-9323146b5726.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8o-1x1_9a4d3d8a-ac03-4e92-9769-9323146b5726.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8v-1x1_ae654861-4497-487e-a18e-86e2d888877c.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8v-1x1_ae654861-4497-487e-a18e-86e2d888877c.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner_Taylor.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner_Taylor.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner_Alexis.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner_Alexis.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner-Repair-Shine-Right.png" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner-Repair-Shine-Right.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -536,6 +540,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner-Repair-Shine-Front.png","t":"conditionerrepairshinefrontpng"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/ConditionerPackshot_3.png","t":"conditionerpackshot3png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/difference_conditioner.jpg","t":"differenceconditionerjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/reviews_conditioner.jpg","t":"reviewsconditionerjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner_InUse_Taylor.jpg","t":"conditionerinusetaylorjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditiner.jpg","t":"conditinerjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8e-1x1_1_8f4897a1-9252-436b-b093-a3334dd6cd3c.jpg","t":"launch8e1x118f4897a19252436bb093a3334dd6cd3cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8o-1x1_9a4d3d8a-ac03-4e92-9769-9323146b5726.jpg","t":"launch8o1x19a4d3d8aac034e9297699323146b5726jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Launch-8v-1x1_ae654861-4497-487e-a18e-86e2d888877c.jpg","t":"launch8v1x1ae6548614497487ea18e86e2d888877cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner_Taylor.jpg","t":"conditionertaylorjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner_Alexis.jpg","t":"conditioneralexisjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/Conditioner-Repair-Shine-Right.png","t":"conditionerrepairshinerightpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -709,7 +766,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

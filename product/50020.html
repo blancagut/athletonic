@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ab91a3a2-92d0-427d-bfe2-72d1e6b95555/luka-77-basketball-shoes-RNbRTVc7.png" aria-label="View image 6"><img src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ab91a3a2-92d0-427d-bfe2-72d1e6b95555/luka-77-basketball-shoes-RNbRTVc7.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/938f58cb-fc58-4896-b6d7-4e30797de681/luka-77-basketball-shoes-RNbRTVc7.png" aria-label="View image 7"><img src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/938f58cb-fc58-4896-b6d7-4e30797de681/luka-77-basketball-shoes-RNbRTVc7.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/84d90fa5-5ae7-4337-814c-48550b222dbe/luka-77-basketball-shoes-RNbRTVc7.png" aria-label="View image 8"><img src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/84d90fa5-5ae7-4337-814c-48550b222dbe/luka-77-basketball-shoes-RNbRTVc7.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/96efb650-92a7-411d-a3fb-c691bd52bb5c/luka-77-basketball-shoes-RNbRTVc7.png" aria-label="View image 9"><img src="https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/96efb650-92a7-411d-a3fb-c691bd52bb5c/luka-77-basketball-shoes-RNbRTVc7.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -582,6 +583,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e94d8a08-bf79-4d0b-9ca5-a28aa6e572bb/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/212279a4-9102-4b57-ad83-d05875edbbb3/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4d11db8b-3aba-489c-b6eb-b9f8e31e757e/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/207fd662-2949-4c98-868b-ed135b7bca1c/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9b48b576-4bed-46b9-9667-a73361c3b002/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ab91a3a2-92d0-427d-bfe2-72d1e6b95555/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/938f58cb-fc58-4896-b6d7-4e30797de681/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/84d90fa5-5ae7-4337-814c-48550b222dbe/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/96efb650-92a7-411d-a3fb-c691bd52bb5c/luka-77-basketball-shoes-RNbRTVc7.png","t":"luka77basketballshoesluka77basketballshoesrnbrtvc7png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -755,7 +809,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -532,6 +532,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11339_25Q1_Tree_Runner_Go_Travel_Blizzard_Light_Khaki_Natural_White_PDP_LEFT-2000x2000_14ca0294-d324-476d-a9b7-b0931886ce97.png","t":"a1133925q1treerunnergotravelblizzardlightkhakinaturalwhitepdpleft2000x200014ca0294d324476da9b7b0931886ce97png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11339_25Q1_Tree_Runner_Go_Travel_Blizzard_Light_Khaki_Natural_White_PDP_TD-2000x2000_17e3fc04-1ea6-4688-9705-afb76df5aed3.png","t":"a1133925q1treerunnergotravelblizzardlightkhakinaturalwhitepdptd2000x200017e3fc041ea646889705afb76df5aed3png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11339_25Q1_Tree_Runner_Go_Travel_Blizzard_Light_Khaki_Natural_White_PDP_SOLE-2000x2000_3be70825-98c3-4c3e-89db-be4755b98c8a.png","t":"a1133925q1treerunnergotravelblizzardlightkhakinaturalwhitepdpsole2000x20003be7082598c34c3e89dbbe4755b98c8apng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11339_25Q1_Tree_Runner_Go_Travel_Blizzard_Light_Khaki_Natural_White_PDP_PAIR_3Q-2000x2000_507ec051-cd94-4731-ac4a-2343d1bb8ad5.png","t":"a1133925q1treerunnergotravelblizzardlightkhakinaturalwhitepdppair3q2000x2000507ec051cd944731ac4a2343d1bb8ad5png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11339_25Q1_Tree_Runner_Go_Travel_Blizzard_Light_Khaki_Natural_White_PDP_BACK-2000x2000_7566bfc1-784b-4686-8387-2e8270261125.png","t":"a1133925q1treerunnergotravelblizzardlightkhakinaturalwhitepdpback2000x20007566bfc1784b468683872e8270261125png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -705,7 +758,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -530,6 +530,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A10473_24Q1_Wool-Runner-2-Dark-Grey-Blizzard_PDP_LEFT_3a8cad27-488a-4887-87de-9f1ab716619b.png","t":"a1047324q1woolrunner2darkgreyblizzardpdpleft3a8cad27488a488787de9f1ab716619bpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A10473_24Q1_Wool-Runner-2-Dark-Grey-Blizzard_PDP_TOP_70f681bb-6758-4255-bf5d-f015e56a0506.png","t":"a1047324q1woolrunner2darkgreyblizzardpdptop70f681bb67584255bf5df015e56a0506png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A10473_24Q1_Wool-Runner-2-Dark-Grey-Blizzard_PDP_BOTTOM_a3672272-109b-4f63-a53f-0dea63764942.png","t":"a1047324q1woolrunner2darkgreyblizzardpdpbottoma3672272109b4f63a53f0dea63764942png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A10473_24Q1_Wool-Runner-2-Dark-Grey-Blizzard_PDP_PAIR.png","t":"a1047324q1woolrunner2darkgreyblizzardpdppairpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -703,7 +756,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1304/0433/files/6_554cf254-80ca-4849-9bd1-82ff31e2f780.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/1304/0433/files/6_554cf254-80ca-4849-9bd1-82ff31e2f780.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1304/0433/files/7_8394f698-5d33-4248-8f70-52de0811b9e1.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/1304/0433/files/7_8394f698-5d33-4248-8f70-52de0811b9e1.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1304/0433/files/8_485aa6b2-546b-4853-81ba-5e41bfac82bf.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/1304/0433/files/8_485aa6b2-546b-4853-81ba-5e41bfac82bf.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1304/0433/files/ROOT_BEER_-MAIN_286bd381-b64a-4398-9384-e1e48f78281f.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/1304/0433/files/ROOT_BEER_-MAIN_286bd381-b64a-4398-9384-e1e48f78281f.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -573,6 +574,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/1-FLVRRENDER.png","t":"1flvrrenderpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/2_30be64cd-f62b-401c-b060-e17d80cc2c8c.png","t":"230be64cdf62b401cb060e17d80cc2c8cpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/3_1ce0add2-2357-4bab-864c-a28d76372d66.png","t":"31ce0add223574bab864ca28d76372d66png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/4_1c7db5ba-f863-4793-9478-506b7217f2c4.png","t":"41c7db5baf86347939478506b7217f2c4png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/5_6b58e55f-e66b-4bda-952a-cba3b76d9990.png","t":"56b58e55fe66b4bda952acba3b76d9990png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/6_554cf254-80ca-4849-9bd1-82ff31e2f780.png","t":"6554cf25480ca48499bd182ff31e2f780png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/7_8394f698-5d33-4248-8f70-52de0811b9e1.png","t":"78394f6985d3342488f7052de0811b9e1png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/8_485aa6b2-546b-4853-81ba-5e41bfac82bf.png","t":"8485aa6b2546b485381ba5e41bfac82bfpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/ROOT_BEER_-MAIN_286bd381-b64a-4398-9384-e1e48f78281f.jpg","t":"rootbeermain286bd381b64a43989384e1e48f78281fjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -746,7 +800,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

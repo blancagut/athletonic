@@ -557,6 +557,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CompleteGutHealth_1de45d0f-10ab-43d0-92c2-fc024d026551.png","t":"completeguthealth1de45d0f10ab43d092c2fc024d026551png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/211014_GutHealthStack_FBAd_GutHealthCarousel_v1-1_c0b50b25-ee1c-437e-9486-627df2e02708.jpg","t":"211014guthealthstackfbadguthealthcarouselv11c0b50b25ee1c437e9486627df2e02708jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/211014_GutHealthStack_FBAd_GutHealthCarousel_v1-2_31bcc192-eaf5-49cf-850d-2cdcd10d701d.jpg","t":"211014guthealthstackfbadguthealthcarouselv1231bcc192eaf549cf850d2cdcd10d701djpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/211014_GutHealthStack_FBAd_GutHealthCarousel_v1-3_fbcfcd13-38a4-4ff3-977c-6e1a987d4726.jpg","t":"211014guthealthstackfbadguthealthcarouselv13fbcfcd1338a44ff3977c6e1a987d4726jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/211014_GutHealthStack_FBAd_GutHealthCarousel_v1-4_1ecbcb4a-058f-4205-8535-ab4564188f0d.jpg","t":"211014guthealthstackfbadguthealthcarouselv141ecbcb4a058f42058535ab4564188f0djpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -730,7 +783,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

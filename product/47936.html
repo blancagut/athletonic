@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12487_26Q1_Dasher-NZ-Dark-Eucalyptus-Dark-Eucalyptus_PDP_LEFT_dc520d22-8c10-42fc-b4d2-aa4e7a3178b5.png","t":"a1248726q1dashernzdarkeucalyptusdarkeucalyptuspdpleftdc520d228c1042fcb4d2aa4e7a3178b5png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12487_26Q1_Dasher-NZ-Dark-Eucalyptus-Dark-Eucalyptus_PDP_TD_7ffcefe4-fb07-439f-941e-eb2383bfec6d.png","t":"a1248726q1dashernzdarkeucalyptusdarkeucalyptuspdptd7ffcefe4fb07439f941eeb2383bfec6dpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12487_26Q1_Dasher-NZ-Dark-Eucalyptus-Dark-Eucalyptus_PDP_SOLE_b153c48a-b513-45eb-9682-efcb1da62695.png","t":"a1248726q1dashernzdarkeucalyptusdarkeucalyptuspdpsoleb153c48ab51345eb9682efcb1da62695png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12487_26Q1_Dasher-NZ-Dark-Eucalyptus-Dark-Eucalyptus_PDP_PAIR_3Q_e0a9cbf3-17ae-4edc-917d-2c0031133fb2.png","t":"a1248726q1dashernzdarkeucalyptusdarkeucalyptuspdppair3qe0a9cbf317ae4edc917d2c0031133fb2png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12487_26Q1_Dasher-NZ-Dark-Eucalyptus-Dark-Eucalyptus_PDP_BACK_d3c4f392-c956-49c0-9831-299029064151.png","t":"a1248726q1dashernzdarkeucalyptusdarkeucalyptuspdpbackd3c4f392c95649c09831299029064151png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

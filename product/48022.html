@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12097_25Q4_Wool-Runner-NZ-Luxe-Gold-Stony-Cream-Sole_PDP_LEFT_5a352806-ebc6-4cae-b339-4e71d6d2cec6.png","t":"a1209725q4woolrunnernzluxegoldstonycreamsolepdpleft5a352806ebc64caeb3394e71d6d2cec6png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12097_25Q4_Wool-Runner-NZ-Luxe-Gold-Stony-Cream-Sole_PDP_TD_b5fd751d-b2d5-41e9-94ea-a61efad1b1fa.png","t":"a1209725q4woolrunnernzluxegoldstonycreamsolepdptdb5fd751db2d541e994eaa61efad1b1fapng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12097_25Q4_Wool-Runner-NZ-Luxe-Gold-Stony-Cream-Sole_PDP_SOLE_64b36335-a27f-4377-8ca7-163a937e5fc4.png","t":"a1209725q4woolrunnernzluxegoldstonycreamsolepdpsole64b36335a27f43778ca7163a937e5fc4png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12097_25Q4_Wool-Runner-NZ-Luxe-Gold-Stony-Cream-Sole_PDP_PAIR_3Q_2556dfec-87aa-4e43-abef-00a84afa32aa.png","t":"a1209725q4woolrunnernzluxegoldstonycreamsolepdppair3q2556dfec87aa4e43abef00a84afa32aapng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12097_25Q4_Wool-Runner-NZ-Luxe-Gold-Stony-Cream-Sole_PDP_BACK_4686c821-a6a8-4be7-a66d-bb6b28477eea.png","t":"a1209725q4woolrunnernzluxegoldstonycreamsolepdpback4686c821a6a84be7a66dbb6b28477eeapng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -532,6 +532,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11559_25Q3_Cruiser_Dark_Navy_Blizzard_PDP_LEFT-2000x2000_9f5ba943-6b25-4f75-9c74-edd67a6a0aa7.png","t":"a1155925q3cruiserdarknavyblizzardpdpleft2000x20009f5ba9436b254f759c74edd67a6a0aa7png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11559_25Q3_Cruiser_Dark_Navy_Blizzard_PDP_TD-2000x2000_20547dd3-b7e0-4aa6-8ce7-fcc2ce726ff6.png","t":"a1155925q3cruiserdarknavyblizzardpdptd2000x200020547dd3b7e04aa68ce7fcc2ce726ff6png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11559_25Q3_Cruiser_Dark_Navy_Blizzard_PDP_SOLE-2000x2000_897a2eb3-258c-4281-b897-93a94238cfce.png","t":"a1155925q3cruiserdarknavyblizzardpdpsole2000x2000897a2eb3258c4281b89793a94238cfcepng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11559_25Q3_Cruiser_Dark_Navy_Blizzard_PDP_PAIR_3Q-2000x2000_da529a31-a670-46e4-a035-49da0bc6f0b4.png","t":"a1155925q3cruiserdarknavyblizzardpdppair3q2000x2000da529a31a67046e4a03549da0bc6f0b4png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11559_25Q3_Cruiser_Dark_Navy_Blizzard_PDP_BACK-2000x2000_60c9f908-1aac-4935-9e48-34f9606f63b6.png","t":"a1155925q3cruiserdarknavyblizzardpdpback2000x200060c9f9081aac49359e4834f9606f63b6png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -705,7 +758,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ALC_3033_cc.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ALC_3033_cc.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ALC_4315-Edit.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ALC_4315-Edit.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC03809.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC03809.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/hi_res-ad-TRXTraining_r1_095A7326_4bae915d-7cae-4d1b-8fc9-449a36802538.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/hi_res-ad-TRXTraining_r1_095A7326_4bae915d-7cae-4d1b-8fc9-449a36802538.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/hi_res-ae-TRXTraining_r1_095A7331_5b0621c4-0813-4421-88f9-11f06b2a1bf0.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/hi_res-ae-TRXTraining_r1_095A7331_5b0621c4-0813-4421-88f9-11f06b2a1bf0.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ASC00526-Enhanced-NR_e1349fa1-4c2c-4cf2-8020-539b494b69a8.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ASC00526-Enhanced-NR_e1349fa1-4c2c-4cf2-8020-539b494b69a8.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -585,6 +588,59 @@ TRX App with 30-Day Free Trial to support every level, every goal</li>
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/hi_res-ac-TRXTraining_r1_095A7321_d60b17f1-4bb8-4bf7-8999-43bdd46c3991.jpg","t":"hiresactrxtrainingr1095a7321d60b17f14bb84bf7899943bdd46c3991jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC06177.png","t":"dsc06177png"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/hi_res-b7-TRXTraining_r1_095A7360.jpg","t":"hiresb7trxtrainingr1095a7360jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ALC_6550.jpg","t":"alc6550jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC05155_1.png","t":"dsc051551png"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ALC_3033_cc.jpg","t":"alc3033ccjpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ALC_4315-Edit.jpg","t":"alc4315editjpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC03809.png","t":"dsc03809png"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/hi_res-ad-TRXTraining_r1_095A7326_4bae915d-7cae-4d1b-8fc9-449a36802538.jpg","t":"hiresadtrxtrainingr1095a73264bae915d7cae4d1b8fc9449a36802538jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/hi_res-ae-TRXTraining_r1_095A7331_5b0621c4-0813-4421-88f9-11f06b2a1bf0.jpg","t":"hiresaetrxtrainingr1095a73315b0621c40813442188f911f06b2a1bf0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/ASC00526-Enhanced-NR_e1349fa1-4c2c-4cf2-8020-539b494b69a8.jpg","t":"asc00526enhancednre1349fa14c2c4cf28020539b494b69a8jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -758,7 +814,12 @@ TRX App with 30-Day Free Trial to support every level, every goal</li>
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

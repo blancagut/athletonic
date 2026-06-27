@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12263_26Q1_Dasher-NZ-Ochre-Weathered-White_PDP_LEFT_58bbda3d-1e85-4532-a8a1-d64eeeb3edad.png","t":"a1226326q1dashernzochreweatheredwhitepdpleft58bbda3d1e854532a8a1d64eeeb3edadpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12263_26Q1_Dasher-NZ-Ochre-Weathered-White_PDP_TD_b80da91f-7a04-446d-836f-dafe8c050570.png","t":"a1226326q1dashernzochreweatheredwhitepdptdb80da91f7a04446d836fdafe8c050570png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12263_26Q1_Dasher-NZ-Ochre-Weathered-White_PDP_SOLE_31bbafc9-f3bf-4a59-bf48-b7e8edddcab3.png","t":"a1226326q1dashernzochreweatheredwhitepdpsole31bbafc9f3bf4a59bf48b7e8edddcab3png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12263_26Q1_Dasher-NZ-Ochre-Weathered-White_PDP_PAIR_3Q_1b41fad8-1cf4-4aa7-a4b3-a92dbe10daef.png","t":"a1226326q1dashernzochreweatheredwhitepdppair3q1b41fad81cf44aa7a4b3a92dbe10daefpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12263_26Q1_Dasher-NZ-Ochre-Weathered-White_PDP_BACK_cb6c0c04-6a45-41e9-94c2-e0e2278cf6c8.png","t":"a1226326q1dashernzochreweatheredwhitepdpbackcb6c0c046a4541e994c2e0e2278cf6c8png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

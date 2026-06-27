@@ -555,6 +555,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/FLO-Cap_bd925c67-8131-4d2e-bb7c-4aac9885e97c.png","t":"flocapbd925c6781314d2ebb7c4aac9885e97cpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/OP-carousel-alleviate_f12ec989-e7d2-48fb-9ca6-f7d2bbecaf38.png","t":"opcarouselalleviatef12ec989e7d248fb9ca6f7d2bbecaf38png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/OP-carousel-guarantee_b5aa2615-8bd4-4746-a05d-6bf619c6296f.png","t":"opcarouselguaranteeb5aa26158bd44746a05d6bf619c6296fpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/OP-carousel-before-after_c8bf82f1-e1e6-445f-8a2e-b9108af13beb.png","t":"opcarouselbeforeafterc8bf82f1e1e6445f8a2eb9108af13bebpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/OP-carousel-SFP-Cap_56241709-cde6-43ee-84fa-93088dfe7481.png","t":"opcarouselsfpcap56241709cde643ee84fa93088dfe7481png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/OP-carousel-ingredients-gummy_2bf624a7-79eb-4ae4-af53-5a705bc99131.png","t":"opcarouselingredientsgummy2bf624a779eb4ae4af535a705bc99131png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -728,7 +781,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

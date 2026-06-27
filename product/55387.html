@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_6__1_1_x1024_c1a484e4-9d37-4e8e-b151-5d7dda30f67f.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_6__1_1_x1024_c1a484e4-9d37-4e8e-b151-5d7dda30f67f.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_7__1_1_x1024_35453faf-789a-4cc9-ac13-6eb1d015736a.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_7__1_1_x1024_35453faf-789a-4cc9-ac13-6eb1d015736a.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_8__1_1_x1024_9da53537-ec6f-40a8-8066-6cf59d45754a.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_8__1_1_x1024_9da53537-ec6f-40a8-8066-6cf59d45754a.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_2_x1024_403bf47a-ef22-4884-af99-f16216eb631c.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_2_x1024_403bf47a-ef22-4884-af99-f16216eb631c.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_5_x1024_5b900d63-678c-47b9-893c-17f68fe3b8ef.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_5_x1024_5b900d63-678c-47b9-893c-17f68fe3b8ef.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_10_x1024_00304331-a106-494e-8467-b19add03256c.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_10_x1024_00304331-a106-494e-8467-b19add03256c.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_11_x1024_f3d02fb6-46ca-48ff-a673-f61360c4aa1f.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_11_x1024_f3d02fb6-46ca-48ff-a673-f61360c4aa1f.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -578,6 +582,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_1__2_x1024_1713c4c0-c293-47c7-8b09-f6257cede109.jpg","t":"bgv24thebeautyofsurvivalwebsite12x10241713c4c0c29347c78b09f6257cede109jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_2__1_1_x1024_a6b7a5fa-83de-45df-9976-2b4278659b73.jpg","t":"bgv24thebeautyofsurvivalwebsite211x1024a6b7a5fa83de45df99762b4278659b73jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_3__1_1_x1024_9c4254fb-0393-4afb-881b-edc6c941e714.jpg","t":"bgv24thebeautyofsurvivalwebsite311x10249c4254fb03934afb881bedc6c941e714jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_4__1_1_x1024_3acddb35-4635-48b6-905b-a7a1307087fd.jpg","t":"bgv24thebeautyofsurvivalwebsite411x10243acddb35463548b6905ba7a1307087fdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_5__1_1_x1024_9d5a7a84-b7b5-48b7-b6d9-b9a3c204f403.jpg","t":"bgv24thebeautyofsurvivalwebsite511x10249d5a7a84b7b548b7b6d9b9a3c204f403jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_6__1_1_x1024_c1a484e4-9d37-4e8e-b151-5d7dda30f67f.jpg","t":"bgv24thebeautyofsurvivalwebsite611x1024c1a484e49d374e8eb1515d7dda30f67fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_7__1_1_x1024_35453faf-789a-4cc9-ac13-6eb1d015736a.jpg","t":"bgv24thebeautyofsurvivalwebsite711x102435453faf789a4cc9ac136eb1d015736ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv24_the_beauty_of_survival_website_8__1_1_x1024_9da53537-ec6f-40a8-8066-6cf59d45754a.jpg","t":"bgv24thebeautyofsurvivalwebsite811x10249da53537ec6f40a880666cf59d45754ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_2_x1024_403bf47a-ef22-4884-af99-f16216eb631c.jpg","t":"thebeautyofsurvivalpackaging2x1024403bf47aef224884af99f16216eb631cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_5_x1024_5b900d63-678c-47b9-893c-17f68fe3b8ef.jpg","t":"thebeautyofsurvivalpackaging5x10245b900d63678c47b9893c17f68fe3b8efjpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_10_x1024_00304331-a106-494e-8467-b19add03256c.jpg","t":"thebeautyofsurvivalpackaging10x102400304331a106494e8467b19add03256cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/the_beauty_of_survival_packaging_11_x1024_f3d02fb6-46ca-48ff-a673-f61360c4aa1f.jpg","t":"thebeautyofsurvivalpackaging11x1024f3d02fb646ca48ffa673f61360c4aa1fjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -751,7 +808,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -523,6 +523,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Variety-Peach-Bundle-2025.jpg","t":"curevarietypeachbundle2025jpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Pouch-Variety-June2023_1_cb5ac0ed-730b-4151-b964-9b9a0ee9b10c.jpg","t":"curepouchvarietyjune20231cb5ac0ed730b4151b9649b9a0ee9b10cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Pouch_StickPacket-Peach_1_-min_0854b22a-b0ef-4227-971d-f7173dd352d5.jpg","t":"curepouchstickpacketpeach1min0854b22ab0ef4227971df7173dd352d5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure_May_2025_PeachTea_Shot-1-square-min_cd34314f-d193-4928-9970-c4306a30604d.jpg","t":"curemay2025peachteashot1squaremincd34314fd19349289970c4306a30604djpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-Pouch-Variety-Back-June2023_1_d93d223f-19bc-4f0c-bc69-242513eb2ff8.jpg","t":"curepouchvarietybackjune20231d93d223f19bc4f0cbc69242513eb2ff8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-14ct-Peach-Back-min_744ae815-c3c3-48b3-ad0d-f68d2fcbc158.jpg","t":"cure14ctpeachbackmin744ae815c3c348b3ad0df68d2fcbc158jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -696,7 +749,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

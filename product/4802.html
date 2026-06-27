@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_05_cdf5c84c-8bf2-4d6a-837f-928c1d6f74ce.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_05_cdf5c84c-8bf2-4d6a-837f-928c1d6f74ce.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_07_48386e3f-8ba0-47c8-9566-cf8e7f2320f7.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_07_48386e3f-8ba0-47c8-9566-cf8e7f2320f7.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_08_85848332-9da1-4fc6-bceb-a9a04a6400a6.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_08_85848332-9da1-4fc6-bceb-a9a04a6400a6.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_Callout.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_Callout.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -529,6 +530,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_01.jpg","t":"agamzbsweetgreenspeachhibiscus529oz01jpg"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/US_SweetGreens_5.29OZ_PeachHibiscus_6075088_Right.png","t":"ussweetgreens529ozpeachhibiscus6075088rightpng"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/US_SweetGreens_5.29OZ_PeachHibiscus_6075088_Left.png","t":"ussweetgreens529ozpeachhibiscus6075088leftpng"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_04.jpg","t":"agamzbsweetgreenspeachhibiscus529oz04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_06.jpg","t":"agamzbsweetgreenspeachhibiscus529oz06471acbcd5a4b49aca966296f02bb0b30jpg"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_05_cdf5c84c-8bf2-4d6a-837f-928c1d6f74ce.jpg","t":"agamzbsweetgreenspeachhibiscus529oz05cdf5c84c8bf24d6a837f928c1d6f74cejpg"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_07_48386e3f-8ba0-47c8-9566-cf8e7f2320f7.jpg","t":"agamzbsweetgreenspeachhibiscus529oz0748386e3f8ba047c89566cf8e7f2320f7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_08_85848332-9da1-4fc6-bceb-a9a04a6400a6.jpg","t":"agamzbsweetgreenspeachhibiscus529oz08858483329da14fc6bceba9a04a6400a6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/AG_AMZ_B__SweetGreens_PeachHibiscus_5.29oz_Callout.jpg","t":"agamzbsweetgreenspeachhibiscus529ozcalloutjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -702,7 +756,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

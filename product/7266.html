@@ -533,6 +533,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2364/6329/files/Collagen_Peptide-Peanut_Butter-13.89oz-Canister-V1.1.6A-850004639580-front-1200x1200-28e5ebb.png","t":"collagenpeptidepeanutbutter1389ozcanisterv116a850004639580front1200x120028e5ebbpng"},{"src":"https://cdn.shopify.com/s/files/1/2364/6329/files/PK-011-Renovation-Peanut-Butter-Collagen_-Q3_2025---PDP---2048x2048_working-v3.jpg","t":"pk011renovationpeanutbuttercollagenq32025pdp2048x2048workingv3jpg"},{"src":"https://cdn.shopify.com/s/files/1/2364/6329/files/CollagenPin_1000x1200px_2.jpg","t":"collagenpin1000x1200px2jpg"},{"src":"https://cdn.shopify.com/s/files/1/2364/6329/files/Collagen_Peptide-Peanut_Butter-13.89oz-Canister-V1.1.6A-850004639580-back-1200x1200-28e5ebb_ce629b1d-2d10-40af-8259-dbe8e1b9b5eb.png","t":"collagenpeptidepeanutbutter1389ozcanisterv116a850004639580back1200x120028e5ebbpng"},{"src":"https://cdn.shopify.com/s/files/1/2364/6329/files/PK-011-Renovation-Peanut-Butter-Collagen_Label_Comparison-Q3_2025-From-To-PDP-20oz-14oz.png","t":"pk011renovationpeanutbuttercollagenlabelcomparisonq32025fromtopdp20oz14ozpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -706,7 +759,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

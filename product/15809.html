@@ -559,6 +559,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/sss-3x-save3.webp","t":"sss3xsave3webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/carbcut-front1_f394cea3-8ca9-4b79-9feb-079d728a907a.webp","t":"carbcutfront1f394cea38ca94b799feb079d728a907awebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/inno-cleanse_6_856aecac-87e0-40b5-a0de-82f18aab3388.png","t":"innocleanse6856aecac87e040b5a0de82f18aab3388png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/volcarn-candypeachrings_2_81345f10-e2db-4b06-8b15-8ce3601486cd.png","t":"volcarncandypeachrings281345f10e2db4b068b158ce3601486cdpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nightshred_4_7ba8545c-82b4-4e5d-a68b-45192c04fd69.png","t":"nightshred47ba8545c82b44e5da68b45192c04fd69png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred_7_c774fa77-eb8c-48a6-98bf-747327ee6cca.png","t":"innoshred7c774fa77eb8c48a698bf747327ee6ccapng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/cla1200_1c75fa09-8b2f-4ca1-adc8-5215bd8e25a7.png","t":"cla12001c75fa098b2f4ca1adc85215bd8e25a7png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -732,7 +785,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

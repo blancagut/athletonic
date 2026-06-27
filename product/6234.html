@@ -558,6 +558,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0910/2901/2770/files/03-Hero-TGH_2_e4987055-7baa-463a-a2aa-9ec35391b4c8.png","t":"03herotgh2e49870557baa463aa2aa9ec35391b4c8png"},{"src":"https://cdn.shopify.com/s/files/1/0910/2901/2770/files/05-Hero-TGH_2a95d334-0727-4d64-9460-8318ee4c047b.png","t":"05herotgh2a95d33407274d6494608318ee4c047bpng"},{"src":"https://cdn.shopify.com/s/files/1/0910/2901/2770/files/media_37938d3b-ae70-4e06-84d7-a7b58d4a60e1.png","t":"media37938d3bae704e0684d7a7b58d4a60e1png"},{"src":"https://cdn.shopify.com/s/files/1/0910/2901/2770/files/02-Hero-TGH-PDP-Benefits-NEW_7498a572-a173-499e-8ddc-4f4e0da90639.png","t":"02herotghpdpbenefitsnew7498a572a173499e8ddc4f4e0da90639png"},{"src":"https://cdn.shopify.com/s/files/1/0910/2901/2770/files/2025-Onnit-Ingredients-Total-Gut-Health-NEW_9c0594e5-840c-47ac-ba19-85afa7963893.png","t":"2025onnitingredientstotalguthealthnew9c0594e5840c47acba1985afa7963893png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -731,7 +784,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

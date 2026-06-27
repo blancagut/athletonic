@@ -164,6 +164,8 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-12_9abda128-824b-4824-ab41-666a296c8e13.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-12_9abda128-824b-4824-ab41-666a296c8e13.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-13_c6f58014-bd4b-4fcd-b2d3-49d6c1016007.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-13_c6f58014-bd4b-4fcd-b2d3-49d6c1016007.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-14_81c4f470-84eb-412d-8877-e39bce783a95.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-14_81c4f470-84eb-412d-8877-e39bce783a95.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-09_a2e0a89f-2ccf-4908-9d39-00cef9c5e3c2.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-09_a2e0a89f-2ccf-4908-9d39-00cef9c5e3c2.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/1110/3248/files/PW-SF-Elite-SupplementFacts-OM.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/1110/3248/files/PW-SF-Elite-SupplementFacts-OM.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -572,6 +574,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PWE-SF-CherryLimeadeStimulantfreeFRONT_f4182f97-6952-412c-add5-8202958efa04.png","t":"pwesfcherrylimeadestimulantfreefrontf4182f976952412cadd58202958efa04png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-08_a430b2f2-bbe9-4684-bb75-09ee7c834132.png","t":"preworkout08a430b2f2bbe94684bb7509ee7c834132png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-10_c4a2637f-8ae5-409e-ac6f-d195b416f57f.png","t":"preworkout10c4a2637f8ae5409eac6fd195b416f57fpng"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PWE-SFOrangeMangoStimulantFreeFRONT.png","t":"pwesforangemangostimulantfreefrontpng"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-11_ca984783-e6d4-4ea2-9353-a5f9bc660784.png","t":"preworkout11ca984783e6d44ea29353a5f9bc660784png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-12_9abda128-824b-4824-ab41-666a296c8e13.png","t":"preworkout129abda128824b4824ab41666a296c8e13png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-13_c6f58014-bd4b-4fcd-b2d3-49d6c1016007.png","t":"preworkout13c6f58014bd4b4fcdb2d349d6c1016007png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-14_81c4f470-84eb-412d-8877-e39bce783a95.png","t":"preworkout1481c4f47084eb412d8877e39bce783a95png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/Pre-Workout-09_a2e0a89f-2ccf-4908-9d39-00cef9c5e3c2.png","t":"preworkout09a2e0a89f2ccf49089d3900cef9c5e3c2png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PW-SF-Elite-SupplementFacts-OM.jpg","t":"pwsfelitesupplementfactsomjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -745,7 +800,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

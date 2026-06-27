@@ -562,6 +562,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-2_da56c825-5148-40dc-9823-c12524064569.webp","t":"r25rivalamateurfightgearblue2da56c825514840dc9823c12524064569webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-3_57795049-e728-49eb-bfac-e21173d70323.webp","t":"r25rivalamateurfightgearblue357795049e72849ebbface21173d70323webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-4_1c9e2d87-271e-4b62-bea4-4c119faa3e92.webp","t":"r25rivalamateurfightgearblue41c9e2d87271e4b62bea44c119faa3e92webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-1_f8e2ca0b-0540-40ce-8d4e-7e13fcebccbc.webp","t":"r25rivalamateurfightgearred1f8e2ca0b054040ce8d4e7e13fcebccbcwebp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-2_0198c7cf-f1f9-480a-b9fc-7b6a92f7646d.webp","t":"r25rivalamateurfightgearred20198c7cff1f9480ab9fc7b6a92f7646dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-3_e1b6aaff-ec18-41d2-9e9b-a5b66d440fb8.webp","t":"r25rivalamateurfightgearred3e1b6aaffec1841d29e9ba5b66d440fb8webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-4_9f03e042-ba3a-46f9-8f87-06fe88a678b6.webp","t":"r25rivalamateurfightgearred49f03e042ba3a46f98f8706fe88a678b6webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -735,7 +788,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

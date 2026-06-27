@@ -533,6 +533,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1244/1010/products/FootballTown-set137-20221005-0081_2f26aa87-b143-40ec-b492-6915ebba4d2a.jpg","t":"footballtownset1372022100500812f26aa87b14340ecb4926915ebba4d2ajpg"},{"src":"https://cdn.shopify.com/s/files/1/1244/1010/products/PERCHA-HOODIE-NATIONS-DRAGON.jpg","t":"perchahoodienationsdragonjpg"},{"src":"https://cdn.shopify.com/s/files/1/1244/1010/products/FootballTown-set137-20221005-0025_da75fd76-a20f-49e4-8dcd-97378c354c8e.jpg","t":"footballtownset137202210050025da75fd76a20f49e48dcd97378c354c8ejpg"},{"src":"https://cdn.shopify.com/s/files/1/1244/1010/products/FootballTown-set137-20221005-0079_fb58748e-ca2a-407d-bb1e-c581b8949e43.jpg","t":"footballtownset137202210050079fb58748eca2a407dbb1ec581b8949e43jpg"},{"src":"https://cdn.shopify.com/s/files/1/1244/1010/products/FootballTown-set137-20221005-0080_cccf6ebe-81ee-4b6e-8a71-413f42e70126.jpg","t":"footballtownset137202210050080cccf6ebe81ee4b6e8a71413f42e70126jpg"},{"src":"https://cdn.shopify.com/s/files/1/1244/1010/products/FootballTown-set137-20221005-0026_1e898565-0404-49a8-995f-f9577ebb5206.jpg","t":"footballtownset1372022100500261e898565040449a8995ff9577ebb5206jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -706,7 +759,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

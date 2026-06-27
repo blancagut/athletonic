@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Kids-Good-Stuff-Slide-06.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Kids-Good-Stuff-Slide-06.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-Kgs-sider1-1500x1500_2effee89-0fdf-40ee-9c4b-6438d74ffd44.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-Kgs-sider1-1500x1500_2effee89-0fdf-40ee-9c4b-6438d74ffd44.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-kids-good-stuff-US-225g-VC-v05_d2a3a33c-654f-4f24-8533-b4f0ffacebd1.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-kids-good-stuff-US-225g-VC-v05_d2a3a33c-654f-4f24-8533-b4f0ffacebd1.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-kids-good-stuff-US-225g-WS-v05_7f011e79-4161-4169-8008-b5dffcf72bbc.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-kids-good-stuff-US-225g-WS-v05_7f011e79-4161-4169-8008-b5dffcf72bbc.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -572,6 +573,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-kids-good-stuff-US-225g-RC-v05_4c7424d6-8dbb-4386-b0a2-d526ef8db8b2.png","t":"nuzest2025kidsgoodstuffus225grcv054c7424d68dbb4386b0a2d526ef8db8b2png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Kids-Good-Stuff-Slide-02.jpg","t":"nuzestkidsgoodstuffslide02jpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Kids-Good-Stuff-Slide-03.jpg","t":"nuzestkidsgoodstuffslide03jpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Kids-Good-Stuff-Slide-04.jpg","t":"nuzestkidsgoodstuffslide04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Kids-Good-Stuff-Slide-05-US.jpg","t":"nuzestkidsgoodstuffslide05usjpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Kids-Good-Stuff-Slide-06.jpg","t":"nuzestkidsgoodstuffslide06jpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-Kgs-sider1-1500x1500_2effee89-0fdf-40ee-9c4b-6438d74ffd44.png","t":"nuzest2025kgssider11500x15002effee890fdf40ee9c4b6438d74ffd44png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-kids-good-stuff-US-225g-VC-v05_d2a3a33c-654f-4f24-8533-b4f0ffacebd1.png","t":"nuzest2025kidsgoodstuffus225gvcv05d2a3a33c654f4f248533b4f0ffacebd1png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-kids-good-stuff-US-225g-WS-v05_7f011e79-4161-4169-8008-b5dffcf72bbc.png","t":"nuzest2025kidsgoodstuffus225gwsv057f011e79416141698008b5dffcf72bbcpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -745,7 +799,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

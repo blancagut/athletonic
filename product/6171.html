@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/6839/files/c9b8cae5-39c9-4b34-a98b-511efcca9a27_large_61665751-5753-4d78-a2d1-d2b1485f3064.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0267/6839/files/c9b8cae5-39c9-4b34-a98b-511efcca9a27_large_61665751-5753-4d78-a2d1-d2b1485f3064.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/6839/files/c45ad211-9280-48ba-852d-447d828ae79d_large_fde832c2-2967-4704-9673-d01575e9dbc0.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0267/6839/files/c45ad211-9280-48ba-852d-447d828ae79d_large_fde832c2-2967-4704-9673-d01575e9dbc0.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/6839/files/e1c3f90c-c723-43b4-88be-49715e4beb2a_large_4e4247a4-09e0-4b0a-975b-7801132df8d7.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0267/6839/files/e1c3f90c-c723-43b4-88be-49715e4beb2a_large_4e4247a4-09e0-4b0a-975b-7801132df8d7.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/6839/files/3ed0e3fb-97d8-4214-a491-56745094d3ec_large_e360d782-047e-44a2-8165-2d12e5cbb51a.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0267/6839/files/3ed0e3fb-97d8-4214-a491-56745094d3ec_large_e360d782-047e-44a2-8165-2d12e5cbb51a.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -534,6 +535,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/Sunburst_Variety_-_32ct_-_Transparent.png","t":"sunburstvariety32cttransparentpng"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/9c8574f3-0ff1-4ddd-8761-95a8f59053f7_large_bf87bbf2-8f5e-4fd1-9725-93450341c535.jpg","t":"9c8574f30ff14ddd876195a8f59053f7largebf87bbf28f5e4fd1972593450341c535jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/4d051fce-993c-48a1-aad4-c3b93c5a5792_large_b46cfef6-c6b5-444d-ba4a-69ef9ca71bd4.jpg","t":"4d051fce993c48a1aad4c3b93c5a5792largeb46cfef6c6b5444dba4a69ef9ca71bd4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/4b6716e6-870c-4457-9ca4-f19281547570_large_b3c2f868-3ba6-4634-96e2-c728d0db86a8.jpg","t":"4b6716e6870c44579ca4f19281547570largeb3c2f8683ba6463496e2c728d0db86a8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/77a3e112-bf53-4ae4-bbbd-defdd364ca6b_large_3207a670-1742-409a-82a6-a830a2dee448.jpg","t":"77a3e112bf534ae4bbbddefdd364ca6blarge3207a6701742409a82a6a830a2dee448jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/c9b8cae5-39c9-4b34-a98b-511efcca9a27_large_61665751-5753-4d78-a2d1-d2b1485f3064.jpg","t":"c9b8cae539c94b34a98b511efcca9a27large6166575157534d78a2d1d2b1485f3064jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/c45ad211-9280-48ba-852d-447d828ae79d_large_fde832c2-2967-4704-9673-d01575e9dbc0.jpg","t":"c45ad211928048ba852d447d828ae79dlargefde832c2296747049673d01575e9dbc0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/e1c3f90c-c723-43b4-88be-49715e4beb2a_large_4e4247a4-09e0-4b0a-975b-7801132df8d7.jpg","t":"e1c3f90cc72343b488be49715e4beb2alarge4e4247a409e04b0a975b7801132df8d7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/3ed0e3fb-97d8-4214-a491-56745094d3ec_large_e360d782-047e-44a2-8165-2d12e5cbb51a.jpg","t":"3ed0e3fb97d84214a49156745094d3eclargee360d782047e44a281652d12e5cbb51ajpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -707,7 +761,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

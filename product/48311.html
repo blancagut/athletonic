@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11913_25Q3_Tree_Runner_NZ_Rugged_Beige_Stony_Cream_Sole_PDP_LEFT-2000x2000_f59530fd-cd29-4257-b7d3-5e4d25c470cd.png","t":"a1191325q3treerunnernzruggedbeigestonycreamsolepdpleft2000x2000f59530fdcd294257b7d35e4d25c470cdpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11913_25Q3_Tree_Runner_NZ_Rugged_Beige_Stony_Cream_Sole_PDP_TD-2000x2000_0cef2343-b95d-42c1-a1f3-1130cd52e556.png","t":"a1191325q3treerunnernzruggedbeigestonycreamsolepdptd2000x20000cef2343b95d42c1a1f31130cd52e556png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11913_25Q3_Tree_Runner_NZ_Rugged_Beige_Stony_Cream_Sole_PDP_SOLE-2000x2000_455a38dc-a27e-426e-94bd-e1e7c089e049.png","t":"a1191325q3treerunnernzruggedbeigestonycreamsolepdpsole2000x2000455a38dca27e426e94bde1e7c089e049png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11913_25Q3_Tree_Runner_NZ_Rugged_Beige_Stony_Cream_Sole_PDP_PAIR_3Q-2000x2000_158e7064-d79f-4cc3-873d-ca40a89d12a1.png","t":"a1191325q3treerunnernzruggedbeigestonycreamsolepdppair3q2000x2000158e7064d79f4cc3873dca40a89d12a1png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11913_25Q3_Tree_Runner_NZ_Rugged_Beige_Stony_Cream_Sole_PDP_BACK-2000x2000_0e63c801-9027-4eeb-ac6a-01c733b70052.png","t":"a1191325q3treerunnernzruggedbeigestonycreamsolepdpback2000x20000e63c80190274eebac6a01c733b70052png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/beabf38d-3925-409c-971f-34d7b1991b08.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/beabf38d-3925-409c-971f-34d7b1991b08.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c81d0437-3b3e-47ae-9f2e-d67d8163d6a7.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c81d0437-3b3e-47ae-9f2e-d67d8163d6a7.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c8df660b-ac2d-40f6-86b3-42ec86091e6d.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c8df660b-ac2d-40f6-86b3-42ec86091e6d.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/8e87da5e-ae01-4520-8355-e98adca2248f.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/8e87da5e-ae01-4520-8355-e98adca2248f.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/267d8819-e19e-4789-b755-2cf5372fda35.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/267d8819-e19e-4789-b755-2cf5372fda35.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/a3a45e6f-8c83-4cf1-a6a4-efd16d68a772.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0254/6699/4784/products/a3a45e6f-8c83-4cf1-a6a4-efd16d68a772.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -531,6 +534,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/miami-fusion-2001-t-shirt.png","t":"miamifusion2001tshirtpng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/94053acf-b52c-44de-859b-92b3a48e7004.jpg","t":"94053acfb52c44de859b92b3a48e7004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/7b917879-d039-4126-ab41-9978a5cfcebd.jpg","t":"7b917879d0394126ab419978a5cfcebdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/1d64bf8c-125c-4f2a-80f8-921d64a99668.jpg","t":"1d64bf8c125c4f2a80f8921d64a99668jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/935efcbe-8b7e-49db-a6d6-8039e97c4b2c.jpg","t":"935efcbe8b7e49dba6d68039e97c4b2cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/beabf38d-3925-409c-971f-34d7b1991b08.jpg","t":"beabf38d3925409c971f34d7b1991b08jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c81d0437-3b3e-47ae-9f2e-d67d8163d6a7.jpg","t":"c81d04373b3e47ae9f2ed67d8163d6a7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c8df660b-ac2d-40f6-86b3-42ec86091e6d.jpg","t":"c8df660bac2d40f686b342ec86091e6djpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/8e87da5e-ae01-4520-8355-e98adca2248f.jpg","t":"8e87da5eae0145208355e98adca2248fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/267d8819-e19e-4789-b755-2cf5372fda35.jpg","t":"267d8819e19e4789b7552cf5372fda35jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/a3a45e6f-8c83-4cf1-a6a4-efd16d68a772.jpg","t":"a3a45e6f8c834cf1a6a4efd16d68a772jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +760,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,8 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Side-1000_d2f2949b-88d8-42a4-bf51-0cd8a3be77e7.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Side-1000_d2f2949b-88d8-42a4-bf51-0cd8a3be77e7.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Capri_-_No-Background_-_Front-1000_28aa6b26-f5f0-47d4-be39-60e0ababfd1b.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Capri_-_No-Background_-_Front-1000_28aa6b26-f5f0-47d4-be39-60e0ababfd1b.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Phone-1000_c2016a09-b00a-45fd-a64e-8f31124719bb.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Phone-1000_c2016a09-b00a-45fd-a64e-8f31124719bb.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Back-1000_077df9cb-a67c-4a96-9c1f-d40e1f56c90d.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Back-1000_077df9cb-a67c-4a96-9c1f-d40e1f56c90d.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Capri_-_No-Background_-_Back-1000_5c0fa048-f313-4b1a-a47a-8c7363ed61b3.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Capri_-_No-Background_-_Back-1000_5c0fa048-f313-4b1a-a47a-8c7363ed61b3.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -542,6 +544,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/shadowpython-hreo_45c39e10-d1d8-4d02-a6a7-331c767c567a.png","t":"shadowpythonhreo45c39e10d1d84d02a6a7331c767c567apng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/shadow-phython-hero_a7bd36b0-1a46-4a00-820d-3a9e3b14f6f6.jpg","t":"shadowphythonheroa7bd36b01a464a00820d3a9e3b14f6f6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/legging_available_lengths_shadow-python_19fac643-9c03-44e2-8ede-676c68307743.jpg","t":"leggingavailablelengthsshadowpython19fac6439c0344e28ede676c68307743jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/shadow_python2_33092095-8233-4e64-a494-eb15401ef76b.png","t":"shadowpython23309209582334e64a494eb15401ef76bpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/shadow_python_aed05992-3d88-408c-99ea-01e41dca61a6.png","t":"shadowpythonaed059923d88408c99ea01e41dca61a6png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Side-1000_d2f2949b-88d8-42a4-bf51-0cd8a3be77e7.jpg","t":"cvgshadowpythonleggingsnobackgroundside1000d2f2949b88d842a4bf510cd8a3be77e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Capri_-_No-Background_-_Front-1000_28aa6b26-f5f0-47d4-be39-60e0ababfd1b.jpg","t":"cvgshadowpythoncaprinobackgroundfront100028aa6b26f5f047d4be3960e0ababfd1bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Phone-1000_c2016a09-b00a-45fd-a64e-8f31124719bb.jpg","t":"cvgshadowpythonleggingsnobackgroundphone1000c2016a09b00a45fda64e8f31124719bbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Leggings_-_No-Background_-_Back-1000_077df9cb-a67c-4a96-9c1f-d40e1f56c90d.jpg","t":"cvgshadowpythonleggingsnobackgroundback1000077df9cba67c4a969c1fd40e1f56c90djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Shadow-Python-Capri_-_No-Background_-_Back-1000_5c0fa048-f313-4b1a-a47a-8c7363ed61b3.jpg","t":"cvgshadowpythoncaprinobackgroundback10005c0fa048f3134b1aa47a8c7363ed61b3jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -715,7 +770,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

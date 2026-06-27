@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_Flavor_VP-A.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_Flavor_VP-A.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_Use-Case_VP-B.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_Use-Case_VP-B.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/6839/files/3ed0e3fb-97d8-4214-a491-56745094d3ec_large_e360d782-047e-44a2-8165-2d12e5cbb51a.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0267/6839/files/3ed0e3fb-97d8-4214-a491-56745094d3ec_large_e360d782-047e-44a2-8165-2d12e5cbb51a.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_How-To_VP-A_2.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_How-To_VP-A_2.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -549,6 +550,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/Pouch_16ct_Front16ozSticks_VSPlus_Variety_A.png","t":"pouch16ctfront16ozsticksvsplusvarietyapng"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_RTBs_VP-A_1.jpg","t":"ecommzsppdprtbsvpa1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_WWMOM_VP-A_1.jpg","t":"ecommzsppdpwwmomvpa1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_No-List_VP-A_1.jpg","t":"ecommzsppdpnolistvpa1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_Nutrition_VP-A.jpg","t":"ecommzsppdpnutritionvpajpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_Flavor_VP-A.jpg","t":"ecommzsppdpflavorvpajpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_Use-Case_VP-B.jpg","t":"ecommzsppdpusecasevpbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/3ed0e3fb-97d8-4214-a491-56745094d3ec_large_e360d782-047e-44a2-8165-2d12e5cbb51a.jpg","t":"3ed0e3fb97d84214a49156745094d3eclargee360d782047e44a281652d12e5cbb51ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/eComm-ZSP-PDP_How-To_VP-A_2.jpg","t":"ecommzsppdphowtovpa2jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -722,7 +776,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

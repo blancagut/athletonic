@@ -164,6 +164,13 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/hoodiecopenhagenrearJJJ.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/hoodiecopenhagenrearJJJ.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CAMOHOODIEUPSIDENEW.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CAMOHOODIEUPSIDENEW.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/FRONTHOODIEPULLOVERNEW-275711_dd048dca-ed38-4f96-8952-29cd61779059.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/FRONTHOODIEPULLOVERNEW-275711_dd048dca-ed38-4f96-8952-29cd61779059.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRIPENEWSIDEHOODIEUP-806682_cf615b92-e738-45ac-99fe-54c99b3eb8d5.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRIPENEWSIDEHOODIEUP-806682_cf615b92-e738-45ac-99fe-54c99b3eb8d5.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSIDENWHOODIE_20ae28a5-522a-4c99-b363-6411cdcb1540-342798.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSIDENWHOODIE_20ae28a5-522a-4c99-b363-6411cdcb1540-342798.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRIPEMIAMIHOODIESIDE_ea4c6a3b-189e-4376-ba21-1ee890ff0c65-811150.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRIPEMIAMIHOODIESIDE_ea4c6a3b-189e-4376-ba21-1ee890ff0c65-811150.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/HOODIESIDETIGERMIAMINEW_5a0d548d-78ea-4e7f-9afb-c1353804fca1-642645.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/HOODIESIDETIGERMIAMINEW_5a0d548d-78ea-4e7f-9afb-c1353804fca1-642645.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01236-2_e3d53f9d-9f63-4c28-b795-c6cc1b2afef1.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01236-2_e3d53f9d-9f63-4c28-b795-c6cc1b2afef1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01248-894732_ec3e73d2-0c5c-47c0-b215-c4ac69c11dfd.jpg" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01248-894732_ec3e73d2-0c5c-47c0-b215-c4ac69c11dfd.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01241_8f421f6c-67dc-49d2-b714-b4e7a3c81b1a.jpg" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01241_8f421f6c-67dc-49d2-b714-b4e7a3c81b1a.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -544,6 +551,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/frontcopenhagencamohoodienew_f459b6fc-9258-4cb5-bfe4-b04d757ea324.jpg","t":"frontcopenhagencamohoodienewf459b6fc92584cb5bfe4b04d757ea324jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/COPENHAGENCAMOHOODIE_810e7850-787e-4a7b-8e52-7b9a5c35500f.jpg","t":"copenhagencamohoodie810e7850787e4a7b8e527b9a5c35500fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERCAMONEWMIAMIFRONTDOWN-265051_7c1c3215-c647-4cf0-8db7-e8e4715da93b.jpg","t":"tigercamonewmiamifrontdown2650517c1c3215c6474cf08db7e8e4715da93bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/copenhagencamohoodiesideways_c45f38fe-7d69-4df5-af6e-309219e8bbff.jpg","t":"copenhagencamohoodiesidewaysc45f38fe7d694df5af6e309219e8bbffjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/copenhagenhoodieupsidewaysnew.jpg","t":"copenhagenhoodieupsidewaysnewjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoodiecopenhagenrearJJJ.jpg","t":"hoodiecopenhagenrearjjjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CAMOHOODIEUPSIDENEW.jpg","t":"camohoodieupsidenewjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FRONTHOODIEPULLOVERNEW-275711_dd048dca-ed38-4f96-8952-29cd61779059.jpg","t":"fronthoodiepullovernew275711dd048dcaed384f96895229cd61779059jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRIPENEWSIDEHOODIEUP-806682_cf615b92-e738-45ac-99fe-54c99b3eb8d5.jpg","t":"tigerstripenewsidehoodieup806682cf615b92e73845ac99fe54c99b3eb8d5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSIDENWHOODIE_20ae28a5-522a-4c99-b363-6411cdcb1540-342798.jpg","t":"tigersidenwhoodie20ae28a5522a4c99b3636411cdcb1540342798jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRIPEMIAMIHOODIESIDE_ea4c6a3b-189e-4376-ba21-1ee890ff0c65-811150.jpg","t":"tigerstripemiamihoodiesideea4c6a3b189e4376ba211ee890ff0c65811150jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/HOODIESIDETIGERMIAMINEW_5a0d548d-78ea-4e7f-9afb-c1353804fca1-642645.jpg","t":"hoodiesidetigermiaminew5a0d548d78ea4e7f9afbc1353804fca1642645jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01236-2_e3d53f9d-9f63-4c28-b795-c6cc1b2afef1.jpg","t":"cia012362e3d53f9d9f634c28b795c6cc1b2afef1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01248-894732_ec3e73d2-0c5c-47c0-b215-c4ac69c11dfd.jpg","t":"cia01248894732ec3e73d20c5c47c0b215c4ac69c11dfdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01241_8f421f6c-67dc-49d2-b714-b4e7a3c81b1a.jpg","t":"cia012418f421f6c67dc49d2b714b4e7a3c81b1ajpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -717,7 +777,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -542,6 +542,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_FQ8683-800_PHSRH000-2000_clipped_rev_1_637c3c6f-d13a-4b96-ac85-9c55e710f06c.png","t":"aurorafq8683800phsrh0002000clippedrev1637c3c6fd13a4b96ac859c55e710f06cpng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_FQ8683-800_PHCFH001-2000_clipped_rev_1_d6641992-ab58-485a-b2e2-d0506e08e8b9.png","t":"aurorafq8683800phcfh0012000clippedrev1d6641992ab58485ab2e2d0506e08e8b9png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_FQ8683-800_PHSRH001-2000_clipped_rev_1_17c1fc70-57cf-48f5-8039-d3ed41271380.png","t":"aurorafq8683800phsrh0012000clippedrev117c1fc7057cf48f58039d3ed41271380png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_FQ8683-800_PHCTH001-2000_clipped_rev_1_8c0a2b6e-a637-4710-ac75-1b26f5d33ecd.png","t":"aurorafq8683800phcth0012000clippedrev18c0a2b6ea6374710ac751b26f5d33ecdpng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_FQ8683-800_PHCBH000-2000_clipped_rev_1_a3d319aa-3c80-4937-8610-bfad092c8e96.png","t":"aurorafq8683800phcbh0002000clippedrev1a3d319aa3c8049378610bfad092c8e96png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_FQ8683-800_PHSUH000-2000_clipped_rev_1_af64406d-4da2-43b4-aa8e-c286691d8918.png","t":"aurorafq8683800phsuh0002000clippedrev1af64406d4da243b4aa8ec286691d8918png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_FQ8683-800_PHSYD003-2000_clipped_rev_1_5d28cde0-b83e-4c34-8061-69c0fd80801e.png","t":"aurorafq8683800phsyd0032000clippedrev15d28cde0b83e4c34806169c0fd80801epng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -715,7 +768,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

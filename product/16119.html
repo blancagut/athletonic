@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFastEnergizedv2_8b4f5c8f-9918-4b79-8288-7dc8656a5666.webp" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFastEnergizedv2_8b4f5c8f-9918-4b79-8288-7dc8656a5666.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side1_labeled_477285ec-bddf-4461-940d-5e66cf612cb3.webp" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side1_labeled_477285ec-bddf-4461-940d-5e66cf612cb3.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side2_labeled_3fd0a220-261a-4af1-a0a6-22a02ec59f74.webp" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side2_labeled_3fd0a220-261a-4af1-a0a6-22a02ec59f74.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side3_labeled_e4aec2db-f610-40f8-8f04-0beb79f4c223.webp" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side3_labeled_e4aec2db-f610-40f8-8f04-0beb79f4c223.webp" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -581,6 +582,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFast_Frontcopy_53a2b2b1-8fef-4ac6-b4ad-b8c75c98e3b7.webp","t":"innofastfrontcopy53a2b2b18fef4ac6b4adb8c75c98e3b7webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/6x_InnoFast_Ebook_App.webp","t":"6xinnofastebookappwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-6X.webp","t":"ifenergize6xwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFast_Side2_13e04278-3763-47de-8964-a50298b56ce6.webp","t":"innofastside213e04278376347de8964a50298b56ce6webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFast_Side3_2fc85773-9a18-46f0-8166-96f5b8e04434.webp","t":"innofastside32fc857739a1846f0816696f5b8e04434webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoFastEnergizedv2_8b4f5c8f-9918-4b79-8288-7dc8656a5666.webp","t":"innofastenergizedv28b4f5c8f99184b7982887dc8656a5666webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side1_labeled_477285ec-bddf-4461-940d-5e66cf612cb3.webp","t":"ifenergizeside1labeled477285ecbddf4461940d5e66cf612cb3webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side2_labeled_3fd0a220-261a-4af1-a0a6-22a02ec59f74.webp","t":"ifenergizeside2labeled3fd0a220261a4af1a0a622a02ec59f74webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/if-energize-side3_labeled_e4aec2db-f610-40f8-8f04-0beb79f4c223.webp","t":"ifenergizeside3labelede4aec2dbf61040f88f040beb79f4c223webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -754,7 +808,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

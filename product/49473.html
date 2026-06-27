@@ -525,6 +525,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/58a7315c-eca2-4c91-b406-f5911e8583d5/swift-womens-dri-fit-uv-1-4-zip-running-top-bPejmcSx.png","t":"nikeswiftwomensdrifituv14ziprunningtopswiftwomensdrifituv14ziprunningtopbpejmcsxpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/588c9211-b3cd-46cc-89d4-5f1ad56cb39c/swift-womens-dri-fit-uv-1-4-zip-running-top-bPejmcSx.png","t":"nikeswiftwomensdrifituv14ziprunningtopswiftwomensdrifituv14ziprunningtopbpejmcsxpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ad074e39-8016-4042-b698-11cc0e5ed7fd/swift-womens-dri-fit-uv-1-4-zip-running-top-bPejmcSx.png","t":"nikeswiftwomensdrifituv14ziprunningtopswiftwomensdrifituv14ziprunningtopbpejmcsxpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5b12d285-7f20-4190-abae-db86ad17eaa7/swift-womens-dri-fit-uv-1-4-zip-running-top-bPejmcSx.png","t":"nikeswiftwomensdrifituv14ziprunningtopswiftwomensdrifituv14ziprunningtopbpejmcsxpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8c37b480-7f8a-4c05-a997-027b9c2dab32/swift-womens-dri-fit-uv-1-4-zip-running-top-bPejmcSx.png","t":"nikeswiftwomensdrifituv14ziprunningtopswiftwomensdrifituv14ziprunningtopbpejmcsxpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80943e14-bd34-47d0-ab53-45de43430294/swift-womens-dri-fit-uv-1-4-zip-running-top-bPejmcSx.png","t":"nikeswiftwomensdrifituv14ziprunningtopswiftwomensdrifituv14ziprunningtopbpejmcsxpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1d055d68-1347-4aec-bbb0-f15dc1eeedc4/swift-womens-dri-fit-uv-1-4-zip-running-top-bPejmcSx.png","t":"nikeswiftwomensdrifituv14ziprunningtopswiftwomensdrifituv14ziprunningtopbpejmcsxpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -698,7 +751,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

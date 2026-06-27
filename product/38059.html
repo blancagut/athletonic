@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-28_e20283a4-6e7c-4de6-b6cf-f140b242a268.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-28_e20283a4-6e7c-4de6-b6cf-f140b242a268.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-26_4fe1b09c-16a9-49c4-b943-8f9cde0303a3.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-26_4fe1b09c-16a9-49c4-b943-8f9cde0303a3.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-27_4e6b0026-e25a-4c5b-8f94-21e63b680adc.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-27_4e6b0026-e25a-4c5b-8f94-21e63b680adc.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-29_7ea7c44f-589d-44dd-ba0e-71e13dff149f.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-29_7ea7c44f-589d-44dd-ba0e-71e13dff149f.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-31_01c2055e-a620-4f70-ad5b-96f0f85dc2cc.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-31_01c2055e-a620-4f70-ad5b-96f0f85dc2cc.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-32_15d46f09-4751-42d1-93c5-bae1b715dda2.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-32_15d46f09-4751-42d1-93c5-bae1b715dda2.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -557,6 +560,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/adidas-mundial-goal-in-indoor-football-shoes.jpg","t":"adidasmundialgoalinindoorfootballshoesjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-30_b236c080-818c-4b7b-a2c6-ec337f39ef7b.jpg","t":"preview30b236c080818c4b7ba2c6ec337f39ef7bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-33_e8fb4040-6a3f-4e2e-abd1-c0f2eb58906a.jpg","t":"preview33e8fb40406a3f4e2eabd1c0f2eb58906ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-24_7a7553cc-f0ea-4add-83c7-2fe13ad82084.jpg","t":"preview247a7553ccf0ea4add83c72fe13ad82084jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-25_f189b5ea-913c-4ccf-8f02-d4e87f1c7581.jpg","t":"preview25f189b5ea913c4ccf8f02d4e87f1c7581jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-28_e20283a4-6e7c-4de6-b6cf-f140b242a268.jpg","t":"preview28e20283a46e7c4de6b6cff140b242a268jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-26_4fe1b09c-16a9-49c4-b943-8f9cde0303a3.jpg","t":"preview264fe1b09c16a949c4b9438f9cde0303a3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-27_4e6b0026-e25a-4c5b-8f94-21e63b680adc.jpg","t":"preview274e6b0026e25a4c5b8f9421e63b680adcjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-29_7ea7c44f-589d-44dd-ba0e-71e13dff149f.jpg","t":"preview297ea7c44f589d44ddba0e71e13dff149fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-31_01c2055e-a620-4f70-ad5b-96f0f85dc2cc.jpg","t":"preview3101c2055ea6204f70ad5b96f0f85dc2ccjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-32_15d46f09-4751-42d1-93c5-bae1b715dda2.jpg","t":"preview3215d46f09475142d193c5bae1b715dda2jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -730,7 +786,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

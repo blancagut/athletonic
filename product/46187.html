@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_9_APPAREL_OnModel_StandardUnisexPairShot_white_940ef7a5-7b94-4700-8e85-d10163e53400.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_9_APPAREL_OnModel_StandardUnisexPairShot_white_940ef7a5-7b94-4700-8e85-d10163e53400.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_2_APPAREL_Photography_BackCenterView_white_c6bbd3a1-a7f9-4dd5-85af-62e48ceb66fb.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_2_APPAREL_Photography_BackCenterView_white_c6bbd3a1-a7f9-4dd5-85af-62e48ceb66fb.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_4_APPAREL_OnModel_BackView_white_55559684-9c6d-4d05-b1a4-56a102efaa9f.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_4_APPAREL_OnModel_BackView_white_55559684-9c6d-4d05-b1a4-56a102efaa9f.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_8_APPAREL_OnModel_StandardUnisexBackView_white_cca27edb-427a-41aa-93bc-30e06044d2b5.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_8_APPAREL_OnModel_StandardUnisexBackView_white_cca27edb-427a-41aa-93bc-30e06044d2b5.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -525,6 +526,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_1_APPAREL_Photography_FrontCenterView_white_37891f4a-9486-4927-a7ef-79b6f1472ea0.jpg","t":"jz87971apparelphotographyfrontcenterviewwhite37891f4a94864927a7ef79b6f1472ea0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_3_APPAREL_OnModel_StandardView_white_6f094d97-42c3-44d8-9300-d480140744e7.jpg","t":"jz87973apparelonmodelstandardviewwhite6f094d9742c344d89300d480140744e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_5_APPAREL_OnModel_WalkingView_white_649ffd1b-4f74-4835-a9c2-6ba76b6f1bac.jpg","t":"jz87975apparelonmodelwalkingviewwhite649ffd1b4f744835a9c26ba76b6f1bacjpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_6_APPAREL_OnModel_DetailView1_white_7f4f40d7-5bc4-40df-a468-1292061bd5e8.jpg","t":"jz87976apparelonmodeldetailview1white7f4f40d75bc440dfa4681292061bd5e8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_7_APPAREL_OnModel_DetailView2_white_1cdbf8c5-cfa8-4df3-8c88-c652cef96311.jpg","t":"jz87977apparelonmodeldetailview2white1cdbf8c5cfa84df38c88c652cef96311jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_9_APPAREL_OnModel_StandardUnisexPairShot_white_940ef7a5-7b94-4700-8e85-d10163e53400.jpg","t":"jz87979apparelonmodelstandardunisexpairshotwhite940ef7a57b9447008e85d10163e53400jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_2_APPAREL_Photography_BackCenterView_white_c6bbd3a1-a7f9-4dd5-85af-62e48ceb66fb.jpg","t":"jz87972apparelphotographybackcenterviewwhitec6bbd3a1a7f94dd585af62e48ceb66fbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_4_APPAREL_OnModel_BackView_white_55559684-9c6d-4d05-b1a4-56a102efaa9f.jpg","t":"jz87974apparelonmodelbackviewwhite555596849c6d4d05b1a456a102efaa9fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/JZ8797_8_APPAREL_OnModel_StandardUnisexBackView_white_cca27edb-427a-41aa-93bc-30e06044d2b5.jpg","t":"jz87978apparelonmodelstandardunisexbackviewwhitecca27edb427a41aa93bc30e06044d2b5jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -698,7 +752,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

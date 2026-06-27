@@ -530,6 +530,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11225_24Q4_Runner_Go_Corduroy_Natural_Black_Dark_Grey_PDP_LEFT-1000x1000_98de307d-c3c8-4f8c-bffb-0bb45ce1da73.png","t":"a1122524q4runnergocorduroynaturalblackdarkgreypdpleft1000x100098de307dc3c84f8cbffb0bb45ce1da73png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11225_24Q4_Runner_Go_Corduroy_Natural_Black_Dark_Grey_PDP_TD-1000x1000_8291044d-62fb-47a0-a155-7f1d06d8f0f7.png","t":"a1122524q4runnergocorduroynaturalblackdarkgreypdptd1000x10008291044d62fb47a0a1557f1d06d8f0f7png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11225_24Q4_Runner_Go_Corduroy_Natural_Black_Dark_Grey_PDP_SOLE-1000x1000_e274f292-d9bf-4051-9795-e9ff705cefff.png","t":"a1122524q4runnergocorduroynaturalblackdarkgreypdpsole1000x1000e274f292d9bf40519795e9ff705cefffpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11225_24Q4_Runner_Go_Corduroy_Natural_Black_Dark_Grey_PDP_PAIR_3Q-1000x1000_77b7b0bd-939f-428b-a46d-e97530182b67.png","t":"a1122524q4runnergocorduroynaturalblackdarkgreypdppair3q1000x100077b7b0bd939f428ba46de97530182b67png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -703,7 +756,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

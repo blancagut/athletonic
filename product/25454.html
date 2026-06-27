@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB5111-100_PHSFH001-2000_clipped_rev_1_8898f36c-00d0-4a9d-b2f8-cdc7082741b1.png","t":"auroraib5111100phsfh0012000clippedrev18898f36c00d04a9db2f8cdc7082741b1png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB5111-100_PHSBH001-2000_clipped_rev_1_154e92b3-a65e-42d8-a4d7-34fe2187eb30.png","t":"auroraib5111100phsbh0012000clippedrev1154e92b3a65e42d8a4d734fe2187eb30png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB5111-100_PHCYM001-2000_clipped_rev_1_1b5aae87-82fa-4018-b0cf-3493a4039f28.png","t":"auroraib5111100phcym0012000clippedrev11b5aae8782fa4018b0cf3493a4039f28png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB5111-100_PHSYM001-2000_clipped_rev_1_b5bbc30c-55d8-4ba8-8fb6-79b9903f51ee.png","t":"auroraib5111100phsym0012000clippedrev1b5bbc30c55d84ba88fb679b9903f51eepng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/AURORA_IB5111-100_PHSYD001-2000_clipped_rev_1_0e09d626-5243-40b8-b70c-e94af8ffe959.png","t":"auroraib5111100phsyd0012000clippedrev10e09d626524340b8b70ce94af8ffe959png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

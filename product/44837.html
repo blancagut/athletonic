@@ -559,6 +559,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/Revitalizing-Sex-Collection-Capsule_efe5d2cc-2aa7-4cfd-b9a8-8a258293baff.png","t":"revitalizingsexcollectioncapsuleefe5d2cc2aa74cfdb9a88a258293baffpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/op-carousel-vp_ff82b9df-fa8e-42df-94ba-8219a9a0975c.png","t":"opcarouselvpff82b9dffa8e42df94ba8219a9a0975cpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/op-carousel-ut_c23b2adf-c79d-410c-951b-eab6fdb227d6.png","t":"opcarouselutc23b2adfc79d410c951beab6fdb227d6png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/MENO-OP-carousel-alleviate_cacdd06f-6c62-438e-8fbc-a5cce20c208a.png","t":"menoopcarouselalleviatecacdd06f6c62438e8fbca5cce20c208apng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/sfp-vp_1d32633d-bb76-4806-9fc3-da0e8761bd23.png","t":"sfpvp1d32633dbb7648069fc3da0e8761bd23png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/sfp-ut_8c16ebc5-cd9e-4ac0-b571-d4d9ac274488.png","t":"sfput8c16ebc5cd9e4ac0b571d4d9ac274488png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/sfp-meno_3a43366b-4544-432b-a3d3-f73b51f5ddea.png","t":"sfpmeno3a43366b4544432ba3d3f73b51f5ddeapng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -732,7 +785,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

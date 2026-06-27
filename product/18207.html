@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/image-3.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/image-3.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-4_7a836d2c-e6c9-44eb-90be-b0be3ca341e7.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-4_7a836d2c-e6c9-44eb-90be-b0be3ca341e7.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-2_0bb7eef7-0e93-4e3c-88d3-96754621ff4e.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-2_0bb7eef7-0e93-4e3c-88d3-96754621ff4e.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-6_8b2b8ab1-4e23-4708-9a05-af881893a3b9.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-6_8b2b8ab1-4e23-4708-9a05-af881893a3b9.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-3_be9ebede-9305-428e-9073-8d9eba26cd2a.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-3_be9ebede-9305-428e-9073-8d9eba26cd2a.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-5_bb9f634a-ca4a-4bf3-a3ff-d04d926cd55f.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-5_bb9f634a-ca4a-4bf3-a3ff-d04d926cd55f.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -547,6 +550,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/image_d68e38a5-3ff8-4328-ad83-ddd9b0371093.png","t":"imaged68e38a53ff84328ad83ddd9b0371093png"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag_1_8e426e29-e6f7-4fbb-9174-bde6fddbaf8c.jpg","t":"1910gymbag18e426e29e6f74fbb9174bde6fddbaf8cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/image-2.png","t":"image2png"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/image-4.png","t":"image4png"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/image-5.png","t":"image5png"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/image-3.png","t":"image3png"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-4_7a836d2c-e6c9-44eb-90be-b0be3ca341e7.jpg","t":"1910gymbag47a836d2ce6c944eb90beb0be3ca341e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-2_0bb7eef7-0e93-4e3c-88d3-96754621ff4e.jpg","t":"1910gymbag20bb7eef70e934e3c88d396754621ff4ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-6_8b2b8ab1-4e23-4708-9a05-af881893a3b9.jpg","t":"1910gymbag68b2b8ab14e2347089a05af881893a3b9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-3_be9ebede-9305-428e-9073-8d9eba26cd2a.jpg","t":"1910gymbag3be9ebede9305428e90738d9eba26cd2ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910_gym_bag-5_bb9f634a-ca4a-4bf3-a3ff-d04d926cd55f.jpg","t":"1910gymbag5bb9f634aca4a4bf3a3ffd04d926cd55fjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -720,7 +776,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

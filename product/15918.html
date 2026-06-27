@@ -556,6 +556,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nitro-wood-updated-front_1_62000c5b-d9ca-4494-aa68-33033cfcfd3d.png","t":"nitrowoodupdatedfront162000c5bd9ca4494aa6833033cfcfd3dpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nitro-wood-updated-side1_a23ebece-036d-4620-83c9-9a221f36b880.webp","t":"nitrowoodupdatedside1a23ebece036d462083c99a221f36b880webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nitro-wood-updated-side2_1024x1024_2x_42d3b0cc-a485-481c-83e7-98ea5819735e.webp","t":"nitrowoodupdatedside21024x10242x42d3b0cca485481c83e798ea5819735ewebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NitroWood-SFP_0db60f0a-4e62-4156-a678-d19a02a16211.jpg","t":"nitrowoodsfp0db60f0a4e624156a678d19a02a16211jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -729,7 +782,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

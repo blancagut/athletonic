@@ -536,6 +536,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-lemonlime_c2f76e96-360e-4215-b4e8-5e9d30d17fef.png","t":"innogreenslemonlimec2f76e96360e4215b4e85e9d30d17fefpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-paradisepunch1_b1e5c5fa-8226-46d1-8b41-4ea166aefc9c.png","t":"innogreensparadisepunch1b1e5c5fa822646d18b414ea166aefc9cpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/greens-side2_9390abcc-c456-4585-b1d5-9503d413b915.png","t":"greensside29390abccc4564585b1d59503d413b915png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-mangomadness_276fa767-19cf-43ca-aa0d-4e10470b4ad4.png","t":"innogreensmangomadness276fa76719cf43caaa0d4e10470b4ad4png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-strawberrybanana1_b4132e3f-646c-4d2c-bfae-e9e9fe513a52.png","t":"innogreensstrawberrybanana1b4132e3f646c4d2cbfaee9e9fe513a52png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/greens-appleturnover-side1_3f094ffd-6076-45e7-afc9-8bee0fea8355.png","t":"greensappleturnoverside13f094ffd607645e7afc98bee0fea8355png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/InnoGreensSFP-01_1dc596f2-2841-4574-8731-82b02f4a8bf5.jpg","t":"innogreenssfp011dc596f228414574873182b02f4a8bf5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/greens-back_720_47470471-54a5-44f6-971b-39c62894dc48.png","t":"greensback7204747047154a544f6971b39c62894dc48png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -709,7 +762,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

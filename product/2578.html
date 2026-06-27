@@ -525,6 +525,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/1_bc4aa57b-19f4-4667-8737-11f1c392f792.jpg","t":"1bc4aa57b19f44667873711f1c392f792jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/2_69ecc357-88df-4aae-bb90-a2e89227eddf.jpg","t":"269ecc35788df4aaebb90a2e89227eddfjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/3_3f833daf-5c0e-4612-872f-c7fe7a6c0276.jpg","t":"33f833daf5c0e4612872fc7fe7a6c0276jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/4_3a6d8178-504a-4958-90c8-f35197d49114.jpg","t":"43a6d8178504a495890c8f35197d49114jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/5_5fad2db6-34be-41ea-b31b-6842989c727d.jpg","t":"55fad2db634be41eab31b6842989c727djpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/USBOTTOM_ca1cfc0f-b8df-43b6-aac6-b108bc19cf4f.jpg","t":"usbottomca1cfc0fb8df43b6aac6b108bc19cf4fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/INTBOTTOM_6f3d5a27-a0b3-49dc-9e8e-f6bae472da64.jpg","t":"intbottom6f3d5a27a0b349dc9e8ef6bae472da64jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -698,7 +751,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

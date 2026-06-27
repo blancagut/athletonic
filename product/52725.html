@@ -550,6 +550,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/bayern-munich-201516-away_1_caaf5da3-62a9-4c7e-bb65-3c2f2f70b0d7.png","t":"bayernmunich201516away1caaf5da362a94c7ebb653c2f2f70b0d7png"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/379b7407-175a-4a11-b663-e04f5779bd54.jpg","t":"379b7407175a4a11b663e04f5779bd54jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/a76a970f-62c2-413e-8737-ae4e4e9a9627.jpg","t":"a76a970f62c2413e8737ae4e4e9a9627jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/bd6acc04-7496-4d7a-9006-0ae7aeb7a4d1.jpg","t":"bd6acc0474964d7a90060ae7aeb7a4d1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/d9a6f997-3d04-49d9-a5ee-3db73684f5a8.jpg","t":"d9a6f9973d0449d9a5ee3db73684f5a8jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -723,7 +776,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

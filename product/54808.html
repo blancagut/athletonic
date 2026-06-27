@@ -563,6 +563,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/santa-lucia-cotzumalguapa-202122-home.png","t":"santaluciacotzumalguapa202122homepng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/246db701-35a2-4119-8980-18f826630eea.jpg","t":"246db70135a24119898018f826630eeajpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/a355e5ea-c5c0-4256-9880-20db11944838.jpg","t":"a355e5eac5c04256988020db11944838jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/be76f579-edfb-4923-bb26-1da8bfd7da59.jpg","t":"be76f579edfb4923bb261da8bfd7da59jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/365b815b-41fa-425e-b278-2dc1625b9f80.jpg","t":"365b815b41fa425eb2782dc1625b9f80jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/ac55ee37-09bc-4fae-b801-d325de2fddb8.jpg","t":"ac55ee3709bc4faeb801d325de2fddb8jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -736,7 +789,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

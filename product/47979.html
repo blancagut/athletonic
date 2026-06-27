@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12613_26Q1_Dasher-NZ-Relay-Mushroom-Natural-White_PDP_LEFT_cc2aa3ca-5b12-476a-b4f3-706bb28a2731.png","t":"a1261326q1dashernzrelaymushroomnaturalwhitepdpleftcc2aa3ca5b12476ab4f3706bb28a2731png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12613_26Q1_Dasher-NZ-Relay-Mushroom-Natural-White_PDP_TD_1820476f-32ef-44ac-9ec2-290ce9b0126c.png","t":"a1261326q1dashernzrelaymushroomnaturalwhitepdptd1820476f32ef44ac9ec2290ce9b0126cpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12613_26Q1_Dasher-NZ-Relay-Mushroom-Natural-White_PDP_SOLE_d9207602-94bf-47f4-af0f-9066f48b1987.png","t":"a1261326q1dashernzrelaymushroomnaturalwhitepdpsoled920760294bf47f4af0f9066f48b1987png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12613_26Q1_Dasher-NZ-Relay-Mushroom-Natural-White_PDP_PAIR_3Q_89270581-0059-40af-a478-593fec8e6192.png","t":"a1261326q1dashernzrelaymushroomnaturalwhitepdppair3q89270581005940afa478593fec8e6192png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12613_26Q1_Dasher-NZ-Relay-Mushroom-Natural-White_PDP_BACK_a8871d97-cf2a-4b2f-9244-63ae985387f2.png","t":"a1261326q1dashernzrelaymushroomnaturalwhitepdpbacka8871d97cf2a4b2f924463ae985387f2png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

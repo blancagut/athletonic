@@ -164,6 +164,8 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_5_b5ad239b-3a17-4b67-b318-62ef6e301b44.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_5_b5ad239b-3a17-4b67-b318-62ef6e301b44.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_4_9a784da0-6d8f-4907-986e-6405cc2d86a2.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_4_9a784da0-6d8f-4907-986e-6405cc2d86a2.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_6_fe126d7c-0300-4a1a-a6c2-2572027ecff1.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_6_fe126d7c-0300-4a1a-a6c2-2572027ecff1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_7_51b9da6e-be17-458e-a208-b36c2c7fc62a.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_7_51b9da6e-be17-458e-a208-b36c2c7fc62a.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_8_580f8826-daad-4788-8462-828114f94956.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_8_580f8826-daad-4788-8462-828114f94956.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -555,6 +557,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_2_155219a9-9d66-48bd-858d-9615f9a93ed3.jpg","t":"a2smblackneoprenered2155219a99d6648bd858d9615f9a93ed3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_a2_anklet_support_socks_1_ae5faf96-e892-4af4-942f-8ea3a407d475.jpg","t":"rdxa2ankletsupportsocks1ae5faf96e8924af4942f8ea3a407d475jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_a2_anklet_support_socks_2_2fbcae40-59f3-4c28-b243-618349139b0e.jpg","t":"rdxa2ankletsupportsocks22fbcae4059f34c28b243618349139b0ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_1_4fdef519-4302-45cd-b451-363db7718548.jpg","t":"a2smblackneoprenered14fdef519430245cdb451363db7718548jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_3_f66aaf23-42dc-4a6a-b315-cabe1e65565a.jpg","t":"a2smblackneoprenered3f66aaf2342dc4a6ab315cabe1e65565ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_5_b5ad239b-3a17-4b67-b318-62ef6e301b44.jpg","t":"a2smblackneoprenered5b5ad239b3a174b67b31862ef6e301b44jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_4_9a784da0-6d8f-4907-986e-6405cc2d86a2.jpg","t":"a2smblackneoprenered49a784da06d8f4907986e6405cc2d86a2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_6_fe126d7c-0300-4a1a-a6c2-2572027ecff1.jpg","t":"a2smblackneoprenered6fe126d7c03004a1aa6c22572027ecff1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_7_51b9da6e-be17-458e-a208-b36c2c7fc62a.jpg","t":"a2smblackneoprenered751b9da6ebe17458ea208b36c2c7fc62ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a2_sm_black_neoprene_red_8_580f8826-daad-4788-8462-828114f94956.jpg","t":"a2smblackneoprenered8580f8826daad47888462828114f94956jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -728,7 +783,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,11 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/hoistflagn-303979_adbc35db-faa6-4479-9bc8-849a42fc8263-728637.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/hoistflagn-303979_adbc35db-faa6-4479-9bc8-849a42fc8263-728637.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/greenhoistfront88_dc63b2cf-2017-4070-85ec-abfef5bc32a9.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/greenhoistfront88_dc63b2cf-2017-4070-85ec-abfef5bc32a9.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/PURPOSEKELLYGREENMOCK.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/PURPOSEKELLYGREENMOCK.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/doggreenhoist.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/doggreenhoist.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/dogwandergreenhoist_605eb3b4-63d9-40a8-8fda-80aa75777177.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/dogwandergreenhoist_605eb3b4-63d9-40a8-8fda-80aa75777177.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/REARBLACKFLAGTANMOCKTEE_5d0ad1ed-0b6c-4ee8-b319-f42f9c32cc9c.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/REARBLACKFLAGTANMOCKTEE_5d0ad1ed-0b6c-4ee8-b319-f42f9c32cc9c.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/REARBLACKFLAGMOCKTEE_8a5b3042-76fe-4b86-93ad-8ca5483bf833.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/REARBLACKFLAGMOCKTEE_8a5b3042-76fe-4b86-93ad-8ca5483bf833.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/tahitiblueblackflagrear_1_3c3e947d-2367-46b7-9bee-17273ca9dee0.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/tahitiblueblackflagrear_1_3c3e947d-2367-46b7-9bee-17273ca9dee0.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -546,6 +551,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoisttheblackflagfrontmock_83c1837d-15a9-4175-b097-220333af6b34.jpg","t":"hoisttheblackflagfrontmock83c1837d15a94175b097220333af6b34jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoistblackfront.jpg","t":"hoistblackfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/fronthoistblacktee.jpg","t":"fronthoistblackteejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/blackflagrearblacknewusej_5b61dd7d-4954-4b96-be7b-2b192503c95d.jpg","t":"blackflagrearblacknewusej5b61dd7d49544b96be7b2b192503c95djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKFLAGKELLYFRONT.jpg","t":"blackflagkellyfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoistflagn-303979_adbc35db-faa6-4479-9bc8-849a42fc8263-728637.jpg","t":"hoistflagn303979adbc35dbfaa644799bc8849a42fc8263728637jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/greenhoistfront88_dc63b2cf-2017-4070-85ec-abfef5bc32a9.jpg","t":"greenhoistfront88dc63b2cf2017407085ecabfef5bc32a9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PURPOSEKELLYGREENMOCK.jpg","t":"purposekellygreenmockjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/doggreenhoist.jpg","t":"doggreenhoistjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dogwandergreenhoist_605eb3b4-63d9-40a8-8fda-80aa75777177.jpg","t":"dogwandergreenhoist605eb3b463d940a88fda80aa75777177jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REARBLACKFLAGTANMOCKTEE_5d0ad1ed-0b6c-4ee8-b319-f42f9c32cc9c.jpg","t":"rearblackflagtanmocktee5d0ad1ed0b6c4ee8b319f42f9c32cc9cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REARBLACKFLAGMOCKTEE_8a5b3042-76fe-4b86-93ad-8ca5483bf833.jpg","t":"rearblackflagmocktee8a5b304276fe4b8693ad8ca5483bf833jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tahitiblueblackflagrear_1_3c3e947d-2367-46b7-9bee-17273ca9dee0.jpg","t":"tahitiblueblackflagrear13c3e947d236746b79bee17273ca9dee0jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -719,7 +777,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

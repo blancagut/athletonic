@@ -563,6 +563,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9705002d-a053-47d9-9fa1-834a516f84dd/jordan-brooklyn-mens-diamond-mesh-shorts-z7MAqFz6.png","t":"jordanbrooklynmensdiamondmeshshortsjordanbrooklynmensdiamondmeshshortsz7maqfz6png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/38f61940-f024-4037-b98e-7b0973797eec/jordan-brooklyn-mens-diamond-mesh-shorts-z7MAqFz6.png","t":"jordanbrooklynmensdiamondmeshshortsjordanbrooklynmensdiamondmeshshortsz7maqfz6png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ac2f7862-e32e-42a5-9db1-b3f1669551f7/jordan-brooklyn-mens-diamond-mesh-shorts-z7MAqFz6.png","t":"jordanbrooklynmensdiamondmeshshortsjordanbrooklynmensdiamondmeshshortsz7maqfz6png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/88dd08e5-7c46-4ecb-beae-35fcbac27f74/jordan-brooklyn-mens-diamond-mesh-shorts-z7MAqFz6.png","t":"jordanbrooklynmensdiamondmeshshortsjordanbrooklynmensdiamondmeshshortsz7maqfz6png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0a3e7588-cfff-4e9f-ac83-1c8163b6e483/jordan-brooklyn-mens-diamond-mesh-shorts-z7MAqFz6.png","t":"jordanbrooklynmensdiamondmeshshortsjordanbrooklynmensdiamondmeshshortsz7maqfz6png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/91e49551-ac75-4509-b61f-e21f167bdea9/jordan-brooklyn-mens-diamond-mesh-shorts-z7MAqFz6.png","t":"jordanbrooklynmensdiamondmeshshortsjordanbrooklynmensdiamondmeshshortsz7maqfz6png"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5038d21d-789d-447a-8943-d11da931b4cd/jordan-brooklyn-mens-diamond-mesh-shorts-z7MAqFz6.png","t":"jordanbrooklynmensdiamondmeshshortsjordanbrooklynmensdiamondmeshshortsz7maqfz6png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -736,7 +789,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

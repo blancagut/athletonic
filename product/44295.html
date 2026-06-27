@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/2_0bd15ac1-06a8-4b0f-9693-4cbfeef30e58.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/2_0bd15ac1-06a8-4b0f-9693-4cbfeef30e58.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/4_0a58d2e5-b6c3-405f-9467-9a5a594e1c03.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/4_0a58d2e5-b6c3-405f-9467-9a5a594e1c03.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/benefits_D_D_1_4.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/benefits_D_D_1_4.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/benefits_magnesium_1_eeadd2c9-1063-4a09-b350-df1c9ae4d1d2.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0255/9302/0498/products/benefits_magnesium_1_eeadd2c9-1063-4a09-b350-df1c9ae4d1d2.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -560,6 +561,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/community-faves_1_66be56a9-ecf4-4f67-9cf3-7aa53b17bce2.png","t":"communityfaves166be56a9ecf44f679cf37aa53b17bce2png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/reviews_D_D_1_9f3e8313-82a6-4eb3-851e-5a8abb090058.jpg","t":"reviewsdd19f3e831382a64eb3851e5a8abb090058jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/reviews_magnesium_1_8cce3bba-8739-452c-82db-1e7b096183c5.jpg","t":"reviewsmagnesium18cce3bba8739452c82db1e7b096183c5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/5_ea60e0b9-865f-495d-9317-5d959ae36815.png","t":"5ea60e0b9865f495d93175d959ae36815png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/16_2_2c7a016c-c1f4-44ce-b54c-138dcd17e1b8.png","t":"1622c7a016cc1f444ceb54c138dcd17e1b8png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/2_0bd15ac1-06a8-4b0f-9693-4cbfeef30e58.png","t":"20bd15ac106a84b0f96934cbfeef30e58png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/4_0a58d2e5-b6c3-405f-9467-9a5a594e1c03.png","t":"40a58d2e5b6c3405f94679a5a594e1c03png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/benefits_D_D_1_4.jpg","t":"benefitsdd14jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/benefits_magnesium_1_eeadd2c9-1063-4a09-b350-df1c9ae4d1d2.jpg","t":"benefitsmagnesium1eeadd2c910634a09b350df1c9ae4d1d2jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -733,7 +787,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

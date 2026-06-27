@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_RightPocketPhone_da4518cb-ef44-4259-8000-af818df8a73d.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_RightPocketPhone_da4518cb-ef44-4259-8000-af818df8a73d.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_Fabric_15de8b4c-78b8-4194-851e-0c9ad7f91deb.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_Fabric_15de8b4c-78b8-4194-851e-0c9ad7f91deb.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_LeftPocketCashCard_f07a60eb-b7fe-408a-9ccd-fb7fa27c3360.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_LeftPocketCashCard_f07a60eb-b7fe-408a-9ccd-fb7fa27c3360.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_ODGreen_Back_v02-_2.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_ODGreen_Back_v02-_2.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -527,6 +528,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_Front_1471bd67-e3fc-4d54-8e83-6e930ac46170.jpg","t":"repshort7inbeetlefront1471bd67e3fc4d548e836e930ac46170jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_DrawString_e890d305-5f0c-44ee-9c56-11fedb945ff6.jpg","t":"repshort7inbeetledrawstringe890d3055f0c44ee9c5611fedb945ff6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_HipPocketAirpods_3215e85e-49df-4cdb-b14c-f0ef723f57f4.jpg","t":"repshort7inbeetlehippocketairpods3215e85e49df4cdbb14cf0ef723f57f4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_InteriorKeyPocket_1a7699a1-4f56-4012-b614-c8e0b1c9acd2.jpg","t":"repshort7inbeetleinteriorkeypocket1a7699a14f564012b614c8e0b1c9acd2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_LeftPocket_027d810e-904e-4435-a53a-e8e6f8272ed6.jpg","t":"repshort7inbeetleleftpocket027d810e904e4435a53ae8e6f8272ed6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_RightPocketPhone_da4518cb-ef44-4259-8000-af818df8a73d.jpg","t":"repshort7inbeetlerightpocketphoneda4518cbef4442598000af818df8a73djpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_Fabric_15de8b4c-78b8-4194-851e-0c9ad7f91deb.jpg","t":"repshort7inbeetlefabric15de8b4c78b84194851e0c9ad7f91debjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_Beetle_LeftPocketCashCard_f07a60eb-b7fe-408a-9ccd-fb7fa27c3360.jpg","t":"repshort7inbeetleleftpocketcashcardf07a60ebb7fe408a9ccdfb7fa27c3360jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RepShort_7in_ODGreen_Back_v02-_2.jpg","t":"repshort7inodgreenbackv022jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -700,7 +754,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

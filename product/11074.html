@@ -567,6 +567,59 @@ TRX App with 30-Day Free Trial to support every level, every goal</li>
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/TRXCORE-BDL_PROFUSION20274_700x_1d6f1cdd-6f55-471f-8305-07eca73fd80f.png","t":"trxcorebdlprofusion20274700x1d6f1cdd6f55471f830507eca73fd80fpng"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC06885-Edit1_6b628a14-530c-4c62-af43-b914c871e05a.png","t":"dsc06885edit16b628a14530c4c62af43b914c871e05apng"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC01442-Edit_1_1541dadc-0a74-448e-ac3d-10faff49b784.png","t":"dsc01442edit11541dadc0a74448eac3d10faff49b784png"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/Group15783.png","t":"group15783png"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/TRX_Xmount-white_1800x_db29a2d8-04d4-4f3c-84dc-45d41f98b1f9.jpg","t":"trxxmountwhite1800xdb29a2d804d44f3c84dc45d41f98b1f9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/2021-03-25_TRX_SR_Golf_12031.png","t":"20210325trxsrgolf12031png"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/TRXCORE-BDL_PROFUSION20274.jpg","t":"trxcorebdlprofusion20274jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -740,7 +793,12 @@ TRX App with 30-Day Free Trial to support every level, every goal</li>
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

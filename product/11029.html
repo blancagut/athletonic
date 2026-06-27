@@ -580,6 +580,59 @@ TRX App<span> </span>with 30-Day Free Trial to support every level, every goal</
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/f6-TRXTraining_r1_1862_1200x1200_e901dabf-ca94-4f75-8fa2-b5f5d7793218.jpg","t":"f6trxtrainingr118621200x1200e901dabfca944f758fa2b5f5d7793218jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC03078.jpg","t":"dsc03078jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/f4-TRXTraining_r1_1875_1200x1200_3c683694-665b-4266-8fea-699448d0eb53.jpg","t":"f4trxtrainingr118751200x12003c683694665b42668fea699448d0eb53jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC07804-Enhanced-NR-Edit.png","t":"dsc07804enhancednreditpng"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/DSC03138_cc806954-ed42-4cc3-a118-87cb19e9c372.jpg","t":"dsc03138cc806954ed424cc3a11887cb19e9c372jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/DSC04492.jpg","t":"dsc04492jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/trx_ST_Mat_48-comparison.jpg","t":"trxstmat48comparisonjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -753,7 +806,12 @@ TRX App<span> </span>with 30-Day Free Trial to support every level, every goal</
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

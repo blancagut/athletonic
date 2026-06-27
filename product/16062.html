@@ -558,6 +558,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/3x_Inno_Shred_1_3338909c-5c5d-4480-b24b-57ae27a3f3ea.webp","t":"3xinnoshred13338909c5c5d4480b24b57ae27a3f3eawebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-3_325fe15b-8d11-4251-b96a-ab48e1e21286.png","t":"innoshred3325fe15b8d114251b96aab48e1e21286png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-2-2_dd33f0ae-c971-4fa3-8855-a02ebb76ce26.png","t":"innoshred22dd33f0aec9714fa38855a02ebb76ce26png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-1_2f4d3834-a03a-4dad-9e5c-805c28239514.png","t":"innoshred12f4d3834a03a4dad9e5c805c28239514png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred3x_14a2e325-6254-4657-b24e-83328e9f3086.png","t":"innoshred3x14a2e32562544657b24e83328e9f3086png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoShredSFP-01_f1b9a869-81fc-468c-98aa-8b8dfb3c898d.jpg","t":"innoshredsfp01f1b9a86981fc468c98aa8b8dfb3c898djpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -731,7 +784,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

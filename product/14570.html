@@ -523,6 +523,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-15ct-Kids-Variety-Front-V.01_1_71e42166-6697-45c1-9ff4-0165dd15bb19.jpg","t":"cure15ctkidsvarietyfrontv01171e42166669745c19ff40165dd15bb19jpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/cure-kids-mixedberry_63e41439-846c-41ee-aa1f-70a81a50e2be.jpg","t":"curekidsmixedberry63e41439846c41eeaa1f70a81a50e2bejpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/cure-kids-fruitpunch_a9fef25a-1b92-4281-88dc-f9253aacf28f.jpg","t":"curekidsfruitpuncha9fef25a1b92428188dcf9253aacf28fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/cure-kids-pinklemon_0e327bf1-7854-410a-a55b-242f2b383416.jpg","t":"curekidspinklemon0e327bf17854410aa55b242f2b383416jpg"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/KVP_46a539ee-076a-45a5-87f3-979add89a7c9.png","t":"kvp46a539ee076a45a587f3979add89a7c9png"},{"src":"https://cdn.shopify.com/s/files/1/0073/2371/3602/files/Cure-15ct-Kids-Variety-Back-V.01_ac040a3f-7e0d-4516-9a76-89c34a24456c.jpg","t":"cure15ctkidsvarietybackv01ac040a3f7e0d45169a7689c34a24456cjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -696,7 +749,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,11 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Ad_Caurosel_March_9-4_c7033730-dde2-482c-9951-4da9d4492684.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Ad_Caurosel_March_9-4_c7033730-dde2-482c-9951-4da9d4492684.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/products/Winged-Wellness-Shop-Happy-Her-02_72b5176e-6137-4936-8826-f2657e7cc3b2.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/products/Winged-Wellness-Shop-Happy-Her-02_72b5176e-6137-4936-8826-f2657e7cc3b2.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/happy_her_nav.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/happy_her_nav.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_LoveBites_d5a1c8be-f3dc-4bea-8b85-6ab6bce94b4f.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_LoveBites_d5a1c8be-f3dc-4bea-8b85-6ab6bce94b4f.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_HappyHer_2ac07987-9b05-4655-b8b4-f1c581a943d1.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_HappyHer_2ac07987-9b05-4655-b8b4-f1c581a943d1.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Balanced-Babe-04.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Balanced-Babe-04.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Balanced-Babe-03.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Balanced-Babe-03.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Balance-Babe-SFP.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Balance-Babe-SFP.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -572,6 +577,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Frame1686553221_1.png","t":"frame16865532211png"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Gemini_Generated_Image_mke9d7mke9d7mke9_1.png","t":"geminigeneratedimagemke9d7mke9d7mke91png"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Happy-Her-02.jpg","t":"wingedwellnessshophappyher02jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Love-Bites-03_1aa0881a-92d0-43ee-9a69-b984be0ee07b.jpg","t":"wingedwellnessshoplovebites031aa0881a92d043ee9a69b984be0ee07bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Love-Bites-02_2e3c16f9-1e72-456e-b3c7-49987523a100.jpg","t":"wingedwellnessshoplovebites022e3c16f91e72456eb3c749987523a100jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Ad_Caurosel_March_9-4_c7033730-dde2-482c-9951-4da9d4492684.png","t":"adcauroselmarch94c7033730dde2482c99514da9d4492684png"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/products/Winged-Wellness-Shop-Happy-Her-02_72b5176e-6137-4936-8826-f2657e7cc3b2.jpg","t":"wingedwellnessshophappyher0272b5176e613749368826f2657e7cc3b2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/happy_her_nav.png","t":"happyhernavpng"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_LoveBites_d5a1c8be-f3dc-4bea-8b85-6ab6bce94b4f.png","t":"wingedwebsiteimageslovebitesd5a1c8bef3dc4bea8b856ab6bce94b4fpng"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_HappyHer_2ac07987-9b05-4655-b8b4-f1c581a943d1.png","t":"wingedwebsiteimageshappyher2ac079879b054655b8b4f1c581a943d1png"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Balanced-Babe-04.jpg","t":"wingedwellnessshopbalancedbabe04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Balanced-Babe-03.jpg","t":"wingedwellnessshopbalancedbabe03jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Balance-Babe-SFP.jpg","t":"wingedwellnessbalancebabesfpjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -745,7 +803,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

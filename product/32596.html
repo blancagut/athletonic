@@ -530,6 +530,59 @@ This product is made with 100% recycled materials. By reusing materials that hav
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Front_2d8e7565-4672-46b5-8e33-8f0a4bd58909.png","t":"front2d8e7565467246b58e338f0a4bd58909png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Hero_13637a25-1b3c-4aa7-b91f-fb2d7a04f3b2.png","t":"hero13637a251b3c4aa7b91ffb2d7a04f3b2png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Tiro_25_Competition_Short_Men_-_Current_1_2ab5a8d8-c18b-454f-8e01-ac1be45369ab.png","t":"tiro25competitionshortmencurrent12ab5a8d8c18b454f8e01ac1be45369abpng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Left_45e4fd18-4494-44b9-b690-68a8268e8632.png","t":"left45e4fd18449444b9b69068a8268e8632png"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Right_8ce2e78d-f961-4cef-86aa-1169b9bf034c.png","t":"right8ce2e78df9614cef86aa1169b9bf034cpng"},{"src":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Back_3fe57512-b9fe-4278-93f0-860076d5b733.png","t":"back3fe57512b9fe427893f0860076d5b733png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -703,7 +756,12 @@ This product is made with 100% recycled materials. By reusing materials that hav
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

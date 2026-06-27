@@ -567,6 +567,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/6_inch_leather_black_gym_belt_1_4e391ed7-1a9e-4d2a-8fb1-02ca68520fb3.jpg","t":"6inchleatherblackgymbelt14e391ed71a9e4d2a8fb102ca68520fb3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/6_inch_leather_black_gym_belt_2_decf16ec-a6bf-4f17-bb80-9a602dc46f84.jpg","t":"6inchleatherblackgymbelt2decf16eca6bf4f17bb809a602dc46f84jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_6_inch_leather_weightlifting_fitness_gym_belt_full_black_1__2_238a24a5-cb45-4f14-ac44-13f3cfa33c52.jpg","t":"rdx6inchleatherweightliftingfitnessgymbeltfullblack12238a24a5cb454f14ac4413f3cfa33c52jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/6_inch_leather_black_gym_belt_3_023b4439-ff2b-4112-b982-4fe31ab2729b.jpg","t":"6inchleatherblackgymbelt3023b4439ff2b4112b9824fe31ab2729bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/inch_leather_black_gym_belt_4_57472b0e-b447-4d0f-8b48-9dadb2409d7c.jpg","t":"inchleatherblackgymbelt457472b0eb4474d0f8b489dadb2409d7cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/files/rdx_6_inch_leather_weightlifting_fitness_gym_belt_full_black_3__2_1.webp","t":"rdx6inchleatherweightliftingfitnessgymbeltfullblack321webp"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/files/rdx_6_inch_leather_weightlifting_fitness_gym_belt_full_black_5__2_1.webp","t":"rdx6inchleatherweightliftingfitnessgymbeltfullblack521webp"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/files/rdx_6_inch_leather_weightlifting_fitness_gym_belt_full_black_0_2_1.webp","t":"rdx6inchleatherweightliftingfitnessgymbeltfullblack021webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -740,7 +793,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

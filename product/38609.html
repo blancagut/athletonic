@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSUH000-2000_1_e2013f0b-62e4-41d8-8ef2-dc4e3fdd2690.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSUH000-2000_1_e2013f0b-62e4-41d8-8ef2-dc4e3fdd2690.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSYD001-2000_1_15a47f3e-5fb7-4567-b6c7-b391cf2942a3.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSYD001-2000_1_15a47f3e-5fb7-4567-b6c7-b391cf2942a3.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSYD002-2000_1_2ab446e0-5f2a-4996-8790-fe597207057f.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSYD002-2000_1_2ab446e0-5f2a-4996-8790-fe597207057f.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSUD001-2000_1_d6d9dc03-f66a-49b0-80ae-fdc6fd3234cf.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSUD001-2000_1_d6d9dc03-f66a-49b0-80ae-fdc6fd3234cf.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -538,6 +539,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSRH000-2000_1_73bb884b-d40a-4667-b98e-04069978fca7.jpg","t":"auroraim3649640phsrh0002000173bb884bd40a4667b98e04069978fca7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSLH001-2000_73568fb1-dadd-4277-a48f-7ca39030478a.jpg","t":"auroraim3649640phslh001200073568fb1dadd4277a48f7ca39030478ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHCTH001-2000_1_3f569f72-469d-45f2-96a9-38a794dca5c0.jpg","t":"auroraim3649640phcth001200013f569f72469d45f296a938a794dca5c0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHCFH001-2000_d25990ba-e001-42ac-8edd-5c13526bf6d3.jpg","t":"auroraim3649640phcfh0012000d25990bae00142ac8edd5c13526bf6d3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHCBH000-2000_1_e52d171e-c2ae-4d71-8b56-dd6476178d94.jpg","t":"auroraim3649640phcbh00020001e52d171ec2ae4d718b56dd6476178d94jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSUH000-2000_1_e2013f0b-62e4-41d8-8ef2-dc4e3fdd2690.jpg","t":"auroraim3649640phsuh00020001e2013f0b62e441d88ef2dc4e3fdd2690jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSYD001-2000_1_15a47f3e-5fb7-4567-b6c7-b391cf2942a3.jpg","t":"auroraim3649640phsyd0012000115a47f3e5fb74567b6c7b391cf2942a3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSYD002-2000_1_2ab446e0-5f2a-4996-8790-fe597207057f.jpg","t":"auroraim3649640phsyd002200012ab446e05f2a49968790fe597207057fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/AURORA_IM3649-640_PHSUD001-2000_1_d6d9dc03-f66a-49b0-80ae-fdc6fd3234cf.jpg","t":"auroraim3649640phsud00120001d6d9dc03f66a49b080aefdc6fd3234cfjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -711,7 +765,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

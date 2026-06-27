@@ -575,6 +575,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/25-08_3299-01B_IDA_MJS_SHOT_01_HERO_0390_mobile.jpg","t":"2508329901bidamjsshot01hero0390mobilejpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/GOODHEAD_1024x1024_cc30d2a0-a177-42f4-b45a-8bcb9da7caa4.png","t":"goodhead1024x1024cc30d2a0a17742f4b45a8bcb9da7caa4png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Frame_61_c8295f3e-d947-4485-bcb7-f712b3ef366c.jpg","t":"frame61c8295f3ed9474485bcb7f712b3ef366cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/Alt_Ppage-2.jpg","t":"altppage2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/NeuroMatcha_SPF.jpg","t":"neuromatchaspfjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Neuro_Lemon_Good_Head_Stack_bca4cf7a-1d04-4373-a7f6-3603d4f04752.png","t":"neurolemongoodheadstackbca4cf7a1d044373a7f63603d4f04752png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/2301_SuperHair_SFP.jpg","t":"2301superhairsfpjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -748,7 +801,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

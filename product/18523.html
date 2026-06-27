@@ -559,6 +559,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-DESIGN-WEB-PRODUCT_PHOTOS-SOCKS-WHITE-TALL-1_1fd12264-b905-46bd-8009-3a5131d5ee28.webp","t":"r25designwebproductphotossockswhitetall11fd12264b90546bd80093a5131d5ee28webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-DESIGN-WEB-PRODUCT_PHOTOS-SOCKS-WHITE-TALL-2_7d3ca989-6e12-496b-bcdf-2676cb49f677.webp","t":"r25designwebproductphotossockswhitetall27d3ca9896e12496bbcdf2676cb49f677webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-DESIGN-WEB-PRODUCT_PHOTOS-SOCKS-WHITE-TALL-3_30be989a-3af9-42dc-a735-52796beca7b6.webp","t":"r25designwebproductphotossockswhitetall330be989a3af942dca73552796beca7b6webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-DESIGN-WEB-PRODUCT_PHOTOS-SOCKS-WHITE-TALL-4_2d77b94e-ee7c-474b-9118-9e9cb4fb6ca5.webp","t":"r25designwebproductphotossockswhitetall42d77b94eee7c474b91189e9cb4fb6ca5webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-DESIGN-WEB-PRODUCT_PHOTOS-SOCKS-BLK-TALL-1_11b7f9da-e935-44ae-9ec6-60e86ff2b177.webp","t":"r25designwebproductphotossocksblktall111b7f9dae93544ae9ec660e86ff2b177webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-DESIGN-WEB-PRODUCT_PHOTOS-SOCKS-BLK-TALL-2_914f47c9-d16b-478c-b307-23ba26d5c574.webp","t":"r25designwebproductphotossocksblktall2914f47c9d16b478cb30723ba26d5c574webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-DESIGN-WEB-PRODUCT_PHOTOS-SOCKS-BLK-TALL-3_68e502e9-ec61-4b79-ae7b-14388d85e887.webp","t":"r25designwebproductphotossocksblktall368e502e9ec614b79ae7b14388d85e887webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-DESIGN-WEB-PRODUCT_PHOTOS-SOCKS-BLK-TALL-4_ac650b63-2908-4927-8a65-759143d6f453.webp","t":"r25designwebproductphotossocksblktall4ac650b63290849278a65759143d6f453webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -732,7 +785,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

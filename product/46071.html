@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_2_a2dac3ab-3e00-44f8-b4b6-8a962705cc76.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_2_a2dac3ab-3e00-44f8-b4b6-8a962705cc76.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_5_3_ff5d7dc4-8a7f-47cb-b605-a7f7dcd1327e.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_5_3_ff5d7dc4-8a7f-47cb-b605-a7f7dcd1327e.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_5_943abbaf-9c90-4ed8-8d30-27aa81f33116.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_5_943abbaf-9c90-4ed8-8d30-27aa81f33116.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_4_4e87c075-1320-48c5-b045-de711467e18d.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_4_4e87c075-1320-48c5-b045-de711467e18d.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -530,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_1_fa342566-d466-4898-8bb1-5ab007deb827.jpg","t":"poeticfifamj00021fa342566d46648988bb15ab007deb827jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_6_a08c7bad-1903-4be9-8a3b-1b6fa4114b9c.jpg","t":"poeticfifamj00026a08c7bad19034be98a3b1b6fa4114b9cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_8_5cded47f-842d-45d3-b347-57e29bbdbf69.jpg","t":"poeticfifamj000285cded47f842d45d3b34757e29bbdbf69jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_7_fd43baa0-a3e7-4095-9296-7a2698f37d94.jpg","t":"poeticfifamj00027fd43baa0a3e7409592967a2698f37d94jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_3_f8fb36ce-f96b-453b-850d-7c8a0a9c63df.jpg","t":"poeticfifamj00023f8fb36cef96b453b850d7c8a0a9c63dfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_2_a2dac3ab-3e00-44f8-b4b6-8a962705cc76.jpg","t":"poeticfifamj00022a2dac3ab3e0044f8b4b68a962705cc76jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_5_3_ff5d7dc4-8a7f-47cb-b605-a7f7dcd1327e.jpg","t":"poeticfifamj000253ff5d7dc48a7f47cbb605a7f7dcd1327ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_5_943abbaf-9c90-4ed8-8d30-27aa81f33116.jpg","t":"poeticfifamj00025943abbaf9c904ed88d3027aa81f33116jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMJ0002_4_4e87c075-1320-48c5-b045-de711467e18d.jpg","t":"poeticfifamj000244e87c075132048c5b045de711467e18djpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -703,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

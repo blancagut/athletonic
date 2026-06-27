@@ -561,6 +561,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Whey-ChocolatePB-2LB-Main-Image.jpg","t":"wheychocolatepb2lbmainimagejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/grass-fed-whey-farms_514538ed-eca3-4cc9-9dff-0cccb1d383ad.jpg","t":"grassfedwheyfarms514538edeca34cc99dff0cccb1d383adjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Whey-ChocolatePB-2LB-Graphic.jpg","t":"wheychocolatepb2lbgraphicjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/clean-protein-no-gmo-no-hormones_d866155f-10df-47b9-89eb-11bad22ba2b8.jpg","t":"cleanproteinnogmonohormonesd866155f10df47b989eb11bad22ba2b8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Whey-ChocolatePeanutButter-2lb-NutritionGraphic-ScoopsCorrected-_1_a84b2b4f-bc8d-4bd5-a78c-70b85d010c07.jpg","t":"wheychocolatepeanutbutter2lbnutritiongraphicscoopscorrected1a84b2b4fbc8d4bd5a78c70b85d010c07jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/third-party-tested-whey-protein_5fb5aa07-8975-4522-bebb-75df2e7f414f.jpg","t":"thirdpartytestedwheyprotein5fb5aa0789754522bebb75df2e7f414fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/whey-protein-Lifestyle.png","t":"wheyproteinlifestylepng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/whey-protein-shake-how-to_f727d68c-dcad-4f7d-a14a-dd6935bfdade.jpg","t":"wheyproteinshakehowtof727d68cdcad4f7da14add6935bfdadejpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -734,7 +787,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

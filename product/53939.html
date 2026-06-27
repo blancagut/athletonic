@@ -550,6 +550,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/inter-miami-2020-scarf_1.png","t":"intermiami2020scarf1png"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/cf54802d-5374-4490-b079-b76de1ef9676.jpg","t":"cf54802d53744490b079b76de1ef9676jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/aef6992c-9b57-4c7f-9676-2096568e8610.jpg","t":"aef6992c9b574c7f96762096568e8610jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/3aeed687-081b-4b27-bf88-1af1305345bd.jpg","t":"3aeed687081b4b27bf881af1305345bdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/c6e88e33-674f-4f23-b7d5-b04aa64eb0ae.jpg","t":"c6e88e33674f4f23b7d5b04aa64eb0aejpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/43ae7f90-ce2c-4965-8461-b2cd5557222a.jpg","t":"43ae7f90ce2c49658461b2cd5557222ajpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -723,7 +776,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

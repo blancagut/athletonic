@@ -164,6 +164,17 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Frame_53.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Frame_53.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Frame_56.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Frame_56.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Front_57af917a-8f6b-4fde-b042-86a8ba07b26d.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Front_57af917a-8f6b-4fde-b042-86a8ba07b26d.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_SidePocket2.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_SidePocket2.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_Cuff.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_Cuff.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_SidePocket1.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_SidePocket1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_SidePocket2.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_SidePocket2.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Cuff.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Cuff.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_SidePocket1.jpg" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_SidePocket1.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Black_Back.jpg" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Black_Back.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_Back_29d124be-ece2-4051-a24d-9d1c1f158081.jpg" aria-label="View image 16"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_Back_29d124be-ece2-4051-a24d-9d1c1f158081.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_BackPocket.jpg" aria-label="View image 17"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_BackPocket.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Back_54bfcabe-d250-480c-8ff0-19674ad41013.jpg" aria-label="View image 18"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Back_54bfcabe-d250-480c-8ff0-19674ad41013.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_BackPocket.jpg" aria-label="View image 19"><img src="https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_BackPocket.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -536,6 +547,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Black_Front.jpg","t":"foundationpantblackfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_Front_e2886605-cf6e-4830-a0ec-cf152a32a0ad.jpg","t":"foundationpantironfronte2886605cf6e4830a0eccf152a32a0adjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/CLP_Feature-Cards_Foundation-Pant.jpg","t":"clpfeaturecardsfoundationpantjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Frame_57.jpg","t":"frame57jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Frame_54.jpg","t":"frame54jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Frame_53.jpg","t":"frame53jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Frame_56.jpg","t":"frame56jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Front_57af917a-8f6b-4fde-b042-86a8ba07b26d.jpg","t":"foundationpantnavyfront57af917a8f6b4fdeb04286a8ba07b26djpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_SidePocket2.jpg","t":"foundationpantironsidepocket2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_Cuff.jpg","t":"foundationpantironcuffjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_SidePocket1.jpg","t":"foundationpantironsidepocket1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_SidePocket2.jpg","t":"foundationpantnavysidepocket2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Cuff.jpg","t":"foundationpantnavycuffjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_SidePocket1.jpg","t":"foundationpantnavysidepocket1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Black_Back.jpg","t":"foundationpantblackbackjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_Back_29d124be-ece2-4051-a24d-9d1c1f158081.jpg","t":"foundationpantironback29d124beece24051a24d9d1c1f158081jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Iron_BackPocket.jpg","t":"foundationpantironbackpocketjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_Back_54bfcabe-d250-480c-8ff0-19674ad41013.jpg","t":"foundationpantnavyback54bfcabed250480c8ff019674ad41013jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Foundation_Pant_Navy_BackPocket.jpg","t":"foundationpantnavybackpocketjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -709,7 +773,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

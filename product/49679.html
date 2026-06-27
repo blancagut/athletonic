@@ -530,6 +530,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/270be9b4-9c24-4f8c-a808-0ca92f7138e3/jordan-son-of-mars-baby-toddler-shoes-fas9TxEo.png","t":"jordansonofmarsbabytoddlershoesjordansonofmarsbabytoddlershoesfas9txeopng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f7c77edb-7be2-44d6-82b6-0ab0558e19fd/jordan-son-of-mars-baby-toddler-shoes-fas9TxEo.png","t":"jordansonofmarsbabytoddlershoesjordansonofmarsbabytoddlershoesfas9txeopng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/2c52344a-8235-4902-bc7e-eebfbc25da06/jordan-son-of-mars-baby-toddler-shoes-fas9TxEo.png","t":"jordansonofmarsbabytoddlershoesjordansonofmarsbabytoddlershoesfas9txeopng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c41c7dd6-bbb4-4910-83cd-95b6dc19d611/jordan-son-of-mars-baby-toddler-shoes-fas9TxEo.png","t":"jordansonofmarsbabytoddlershoesjordansonofmarsbabytoddlershoesfas9txeopng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/33604c0d-fe15-497b-b97d-6d1b419ff01b/jordan-son-of-mars-baby-toddler-shoes-fas9TxEo.png","t":"jordansonofmarsbabytoddlershoesjordansonofmarsbabytoddlershoesfas9txeopng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/cc9e8b29-d1ea-4d53-af77-43be11b349e5/jordan-son-of-mars-baby-toddler-shoes-fas9TxEo.png","t":"jordansonofmarsbabytoddlershoesjordansonofmarsbabytoddlershoesfas9txeopng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d0362aff-60c0-4e6e-ad97-c6813205e922/jordan-son-of-mars-baby-toddler-shoes-fas9TxEo.png","t":"jordansonofmarsbabytoddlershoesjordansonofmarsbabytoddlershoesfas9txeopng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e41b0c01-a332-4092-b1aa-8c85cb84a076/jordan-son-of-mars-baby-toddler-shoes-fas9TxEo.png","t":"jordansonofmarsbabytoddlershoesjordansonofmarsbabytoddlershoesfas9txeopng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -703,7 +756,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

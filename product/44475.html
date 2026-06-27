@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0873/8300/products/1_1_725x_55ffbca9-14ca-4528-818a-24de493f0233.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0873/8300/products/1_1_725x_55ffbca9-14ca-4528-818a-24de493f0233.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0873/8300/files/THE_Edit_696723e8-129c-490c-a851-a90dbb6cf25d.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0873/8300/files/THE_Edit_696723e8-129c-490c-a851-a90dbb6cf25d.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0873/8300/products/Image-1_97680734-f099-4c44-b1b6-f21558af7142.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0873/8300/products/Image-1_97680734-f099-4c44-b1b6-f21558af7142.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0873/8300/products/Image-2_e34820c8-019d-43db-a415-d4ae7bdd6e7d.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0873/8300/products/Image-2_e34820c8-019d-43db-a415-d4ae7bdd6e7d.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0873/8300/files/ellemacpherson_1694127648_3186896153480149995_1642484585_ec271239-d920-43e1-958c-503ab3b361e3.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0873/8300/files/ellemacpherson_1694127648_3186896153480149995_1642484585_ec271239-d920-43e1-958c-503ab3b361e3.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0873/8300/products/TheHairElixir.png" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0873/8300/products/TheHairElixir.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -560,6 +563,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/HAIR_US__3_Pack_df71bfb9-722a-44bb-9b8a-612375f0d6a1.png","t":"hairus3packdf71bfb9722a44bb9b8a612375f0d6a1png"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/81CXrGaedfL._AC_SL1500.jpg","t":"81cxrgaedflacsl1500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/hair_pdp.jpg","t":"hairpdpjpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/81SjhxdIlNL._AC_SL1500.jpg","t":"81sjhxdilnlacsl1500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/81I9lTqss7L._AC_SL1500.jpg","t":"81i9ltqss7lacsl1500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/1_1_725x_55ffbca9-14ca-4528-818a-24de493f0233.jpg","t":"11725x55ffbca914ca4528818a24de493f0233jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/THE_Edit_696723e8-129c-490c-a851-a90dbb6cf25d.jpg","t":"theedit696723e8129c490ca851a90dbb6cf25djpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/Image-1_97680734-f099-4c44-b1b6-f21558af7142.jpg","t":"image197680734f0994c44b1b6f21558af7142jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/Image-2_e34820c8-019d-43db-a415-d4ae7bdd6e7d.jpg","t":"image2e34820c8019d43dba415d4ae7bdd6e7djpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/ellemacpherson_1694127648_3186896153480149995_1642484585_ec271239-d920-43e1-958c-503ab3b361e3.jpg","t":"ellemacpherson169412764831868961534801499951642484585ec271239d92043e1958c503ab3b361e3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/TheHairElixir.png","t":"thehairelixirpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -733,7 +789,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

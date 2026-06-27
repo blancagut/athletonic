@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-phone_82848eba-3bca-4e4a-93d1-a75f1e6a4fcd.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-phone_82848eba-3bca-4e4a-93d1-a75f1e6a4fcd.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-length_7a76ca1f-92f4-44f8-8527-5a1f14336c2f.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-length_7a76ca1f-92f4-44f8-8527-5a1f14336c2f.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings_1_copy.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings_1_copy.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-back_eecf85eb-986f-4d81-ad79-d37d6c969e35.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-back_eecf85eb-986f-4d81-ad79-d37d6c969e35.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -542,6 +543,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dinosaur-hero.png","t":"dinosaurheropng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-capri_53a77991-a139-44b6-94ca-195b620a0afc.png","t":"dinoverseleggingscapri53a77991a13944b694ca195b620a0afcpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-fulllength_fbb63daf-c2b9-4cca-9f27-78ab19600127.png","t":"dinoverseleggingsfulllengthfbb63dafc2b94cca9f2778ab19600127png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Dinoverse-Sizing-Ruth.png","t":"dinoversesizingruthpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Dinoverse-Sizing-Isley_1c81151e-cecb-4f06-9632-fba3ddaa2769.png","t":"dinoversesizingisley1c81151ececb4f069632fba3ddaa2769png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-phone_82848eba-3bca-4e4a-93d1-a75f1e6a4fcd.png","t":"dinoverseleggingsphone82848eba3bca4e4a93d1a75f1e6a4fcdpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-length_7a76ca1f-92f4-44f8-8527-5a1f14336c2f.png","t":"dinoverseleggingslength7a76ca1f92f444f885275a1f14336c2fpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings_1_copy.jpg","t":"dinoverseleggings1copyjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dinoverse-leggings-back_eecf85eb-986f-4d81-ad79-d37d6c969e35.png","t":"dinoverseleggingsbackeecf85eb986f4d81ad79d37d6c969e35png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -715,7 +769,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

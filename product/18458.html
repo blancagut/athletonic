@@ -558,6 +558,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-2_abd77eb7-812d-4eb2-af85-9fc5e2202716.webp","t":"r25rivalamateurfightgearblue2abd77eb7812d4eb2af859fc5e2202716webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-3_78d6dc6c-2394-42c0-bf33-2c48c1009d67.webp","t":"r25rivalamateurfightgearblue378d6dc6c239442c0bf332c48c1009d67webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-4_22ff5822-89ed-4756-941e-bbd7f8cd6f17.webp","t":"r25rivalamateurfightgearblue422ff582289ed4756941ebbd7f8cd6f17webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-1_9369349a-75a9-479c-8b02-a06ee6f2a0a3.webp","t":"r25rivalamateurfightgearred19369349a75a9479c8b02a06ee6f2a0a3webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-2_060198e5-510c-497f-8aa6-b486f7c77461.webp","t":"r25rivalamateurfightgearred2060198e5510c497f8aa6b486f7c77461webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-3_1758f0ce-6539-4148-86d4-0d01a6163653.webp","t":"r25rivalamateurfightgearred31758f0ce6539414886d40d01a6163653webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-4_31821488-c356-4ae6-8f9c-106d17687f09.webp","t":"r25rivalamateurfightgearred431821488c3564ae68f9c106d17687f09webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -731,7 +784,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

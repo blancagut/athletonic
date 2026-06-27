@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/CreatineHMB_30serv_DragonBerry_1200x1200_fba3fc12-3f3f-42a6-b928-b714d6133528.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/CreatineHMB_30serv_DragonBerry_1200x1200_fba3fc12-3f3f-42a6-b928-b714d6133528.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/MyHMB_BenefitCard_1.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/MyHMB_BenefitCard_1.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Creatine_HMB_NEW_Unflavored_J0125_1_1_88a2fa42-202a-4a2b-aba1-ead306be27c8.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Creatine_HMB_NEW_Unflavored_J0125_1_1_88a2fa42-202a-4a2b-aba1-ead306be27c8.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/HMB_PowerPunch_30Serv_1080x1080_61e793ce-207b-4d16-b165-dace19630feb.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/HMB_PowerPunch_30Serv_1080x1080_61e793ce-207b-4d16-b165-dace19630feb.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/HMB_DragonBerry_30Serv_1080x1080_5048413c-0002-4118-9838-dc4ae8f3bae0.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/HMB_DragonBerry_30Serv_1080x1080_5048413c-0002-4118-9838-dc4ae8f3bae0.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/MyHMB_IngredientCard_1.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/MyHMB_IngredientCard_1.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -551,6 +554,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/CreatineHMB_30serv_Smarties_1200x1200_52fee07a-6b42-4000-af17-41b5bed87fad.webp","t":"creatinehmb30servsmarties1200x120052fee07a6b424000af1741b5bed87fadwebp"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/CreatineHMB_30serv_Smarties_1200x1200_Color.png","t":"creatinehmb30servsmarties1200x1200colorpng"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Creatine_HMB_30Serv_OrangeCreamPop_1200x1200_1.jpg","t":"creatinehmb30servorangecreampop1200x12001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/CreatineHMB_30serv_Unflavored_1200x1200_cdcb4c1e-cd74-40ff-8e94-957d1bf35919.webp","t":"creatinehmb30servunflavored1200x1200cdcb4c1ecd7440ff8e94957d1bf35919webp"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/CreatineHMB_30serv_FruitPunch_1200x1200_685e2fb6-ed7c-45fb-878e-643dd0a1b928.jpg","t":"creatinehmb30servfruitpunch1200x1200685e2fb6ed7c45fb878e643dd0a1b928jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/CreatineHMB_30serv_DragonBerry_1200x1200_fba3fc12-3f3f-42a6-b928-b714d6133528.jpg","t":"creatinehmb30servdragonberry1200x1200fba3fc123f3f42a6b928b714d6133528jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/MyHMB_BenefitCard_1.jpg","t":"myhmbbenefitcard1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Creatine_HMB_NEW_Unflavored_J0125_1_1_88a2fa42-202a-4a2b-aba1-ead306be27c8.png","t":"creatinehmbnewunflavoredj01251188a2fa42202a4a2baba1ead306be27c8png"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/HMB_PowerPunch_30Serv_1080x1080_61e793ce-207b-4d16-b165-dace19630feb.png","t":"hmbpowerpunch30serv1080x108061e793ce207b4d16b165dace19630febpng"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/HMB_DragonBerry_30Serv_1080x1080_5048413c-0002-4118-9838-dc4ae8f3bae0.png","t":"hmbdragonberry30serv1080x10805048413c000241189838dc4ae8f3bae0png"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/MyHMB_IngredientCard_1.jpg","t":"myhmbingredientcard1jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -724,7 +780,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

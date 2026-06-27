@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_LoveBites_2b823718-d71d-4998-86b2-4e8cfad65bc6.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_LoveBites_2b823718-d71d-4998-86b2-4e8cfad65bc6.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/single.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/single.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/2_pack_e74d0748-495e-4dda-a292-e9f0c4a96505.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/2_pack_e74d0748-495e-4dda-a292-e9f0c4a96505.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/3_pack_d73b7ead-1834-423a-a95c-e25d4a719558.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0267/4874/7963/files/3_pack_d73b7ead-1834-423a-a95c-e25d4a719558.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -582,6 +583,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Love-Bites-01_fd2c2ac2-be61-46de-a6b7-51d04b911793.jpg","t":"wingedwellnessshoplovebites01fd2c2ac2be6146dea6b751d04b911793jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Love-Bites-02_2e3c16f9-1e72-456e-b3c7-49987523a100.jpg","t":"wingedwellnessshoplovebites022e3c16f91e72456eb3c749987523a100jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Love-Bites-03_1aa0881a-92d0-43ee-9a69-b984be0ee07b.jpg","t":"wingedwellnessshoplovebites031aa0881a92d043ee9a69b984be0ee07bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Love-Bites-04.jpg","t":"wingedwellnessshoplovebites04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-Wellness-Shop-Love-Bites-05.jpg","t":"wingedwellnessshoplovebites05jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/Winged-websiteimages_LoveBites_2b823718-d71d-4998-86b2-4e8cfad65bc6.png","t":"wingedwebsiteimageslovebites2b823718d71d499886b24e8cfad65bc6png"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/single.png","t":"singlepng"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/2_pack_e74d0748-495e-4dda-a292-e9f0c4a96505.png","t":"2packe74d0748495e4ddaa292e9f0c4a96505png"},{"src":"https://cdn.shopify.com/s/files/1/0267/4874/7963/files/3_pack_d73b7ead-1834-423a-a95c-e25d4a719558.png","t":"3packd73b7ead1834423aa95ce25d4a719558png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -755,7 +809,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

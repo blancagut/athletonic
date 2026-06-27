@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/40-pound-iron-weight-set_cac9cff5-d3d9-4a2e-a612-f8b02cdf67e7.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/40-pound-iron-weight-set_cac9cff5-d3d9-4a2e-a612-f8b02cdf67e7.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/45-pound-iron-plate-3.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/45-pound-iron-plate-3.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/250-set-ls_11672cc4-ddb7-480c-8884-8bac7ddca894.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/250-set-ls_11672cc4-ddb7-480c-8884-8bac7ddca894.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/25-pound-iron-plate-3_26405490-6c39-4d4f-bab7-1297e1309d68.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/25-pound-iron-plate-3_26405490-6c39-4d4f-bab7-1297e1309d68.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/45-pound-iron-plate-4_cd87e2a2-0b28-4a7c-8057-db04b3719baa.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/45-pound-iron-plate-4_cd87e2a2-0b28-4a7c-8057-db04b3719baa.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/35-pound-iron-plate-2_61e33347-8f34-42c7-94d8-16c7378e8231.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/35-pound-iron-plate-2_61e33347-8f34-42c7-94d8-16c7378e8231.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/10-pound-iron-plate-3_59eb700c-9c2f-4acb-a5c2-93b093269174.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/10-pound-iron-plate-3_59eb700c-9c2f-4acb-a5c2-93b093269174.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -558,6 +562,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg","t":"250poundironweightset0c7c49108c6246248a7e06be1ceceec0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/270-pound-iron-weight-set_5762e0ed-1ff8-4969-a26c-26657bc763cf.jpg","t":"270poundironweightset5762e0ed1ff84969a26c26657bc763cfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/180-pound-iron-weight-set_62716022-0806-4f61-83a3-985c7d93fd6c.jpg","t":"180poundironweightset6271602208064f6183a3985c7d93fd6cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/130-pound-iron-weight-set_13a01437-58d8-4e6b-834e-320f7b42835f.jpg","t":"130poundironweightset13a0143758d84e6b834e320f7b42835fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/90-pound-iron-weight-set_c6f12a0a-7b5a-4cf3-b396-322b1e76b124.jpg","t":"90poundironweightsetc6f12a0a7b5a4cf3b396322b1e76b124jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/40-pound-iron-weight-set_cac9cff5-d3d9-4a2e-a612-f8b02cdf67e7.jpg","t":"40poundironweightsetcac9cff5d3d94a2ea612f8b02cdf67e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/45-pound-iron-plate-3.jpg","t":"45poundironplate3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-set-ls_11672cc4-ddb7-480c-8884-8bac7ddca894.jpg","t":"250setls11672cc4ddb7480c88848bac7ddca894jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/25-pound-iron-plate-3_26405490-6c39-4d4f-bab7-1297e1309d68.jpg","t":"25poundironplate3264054906c394d4fbab71297e1309d68jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/45-pound-iron-plate-4_cd87e2a2-0b28-4a7c-8057-db04b3719baa.jpg","t":"45poundironplate4cd87e2a20b284a7c8057db04b3719baajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/35-pound-iron-plate-2_61e33347-8f34-42c7-94d8-16c7378e8231.jpg","t":"35poundironplate261e333478f3442c794d816c7378e8231jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/10-pound-iron-plate-3_59eb700c-9c2f-4acb-a5c2-93b093269174.jpg","t":"10poundironplate359eb700c9c2f4acba5c293b093269174jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -731,7 +788,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

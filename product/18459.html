@@ -164,6 +164,8 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-1_e27f34dc-4f26-4f6f-b949-cdbbf0873557.webp" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-1_e27f34dc-4f26-4f6f-b949-cdbbf0873557.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-2_f9984047-a2ba-4dcd-a139-2b1055fc0df4.webp" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-2_f9984047-a2ba-4dcd-a139-2b1055fc0df4.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-3_abc4d0a2-a410-471d-b141-33b2ffd51376.webp" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-3_abc4d0a2-a410-471d-b141-33b2ffd51376.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-4_e65655da-22cb-4184-bf5f-10d99e6a7d93.webp" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-4_e65655da-22cb-4184-bf5f-10d99e6a7d93.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-5_77b7ceba-3f5f-44f1-bacc-b4bd18de28c6.webp" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-5_77b7ceba-3f5f-44f1-bacc-b4bd18de28c6.webp" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -560,6 +562,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-1_4d26e645-959b-41f4-a640-bb181aac26cb.webp","t":"r25rivalamateurfightgearblue14d26e645959b41f4a640bb181aac26cbwebp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-2_95f6dabc-a2bf-467f-bee6-2ae16906d1ab.webp","t":"r25rivalamateurfightgearblue295f6dabca2bf467fbee62ae16906d1abwebp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-3_a36140ad-ffde-481a-9bdc-eca716fa6cf7.webp","t":"r25rivalamateurfightgearblue3a36140adffde481a9bdceca716fa6cf7webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-4_8b0bf8ed-cf51-4235-9007-02406326aaf1.webp","t":"r25rivalamateurfightgearblue48b0bf8edcf514235900702406326aaf1webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-BLUE-5_b1c3ca40-05d7-46f9-82a1-19267a9e2e98.webp","t":"r25rivalamateurfightgearblue5b1c3ca4005d746f982a119267a9e2e98webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-1_e27f34dc-4f26-4f6f-b949-cdbbf0873557.webp","t":"r25rivalamateurfightgearred1e27f34dc4f264f6fb949cdbbf0873557webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-2_f9984047-a2ba-4dcd-a139-2b1055fc0df4.webp","t":"r25rivalamateurfightgearred2f9984047a2ba4dcda1392b1055fc0df4webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-3_abc4d0a2-a410-471d-b141-33b2ffd51376.webp","t":"r25rivalamateurfightgearred3abc4d0a2a410471db14133b2ffd51376webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-4_e65655da-22cb-4184-bf5f-10d99e6a7d93.webp","t":"r25rivalamateurfightgearred4e65655da22cb4184bf5f10d99e6a7d93webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/R-25-RIVALAMATEURFIGHTGEAR-RED-5_77b7ceba-3f5f-44f1-bacc-b4bd18de28c6.webp","t":"r25rivalamateurfightgearred577b7ceba3f5f44f1baccb4bd18de28c6webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -733,7 +788,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

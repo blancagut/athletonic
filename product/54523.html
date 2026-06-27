@@ -561,6 +561,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/mls-all-star-game-2021-scarf.png","t":"mlsallstargame2021scarfpng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/a4d5e1a7-8a7e-4d40-acf4-7e53eaf49ea2.jpg","t":"a4d5e1a78a7e4d40acf47e53eaf49ea2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/c032e87e-09dd-40a8-ae7c-7536d30c53c0.jpg","t":"c032e87e09dd40a8ae7c7536d30c53c0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/b23e2eb9-21d4-49c9-b2e9-bba039eb65f7.jpg","t":"b23e2eb921d449c9b2e9bba039eb65f7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/3297ad96-aac6-41a4-b61b-a1e3fa3b5caf.jpg","t":"3297ad96aac641a4b61ba1e3fa3b5cafjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/6114506a-2a09-4e5b-9b6a-238d9dcfc514.jpg","t":"6114506a2a094e5b9b6a238d9dcfc514jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -734,7 +787,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

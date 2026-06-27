@@ -549,6 +549,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/preview-12_0e000435-2e70-490e-bad4-2caf657c57ba.webp","t":"preview120e0004352e70490ebad42caf657c57bawebp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/preview-11_ad399051-a0c7-4a51-bb49-8ddb57809bb1.webp","t":"preview11ad399051a0c74a51bb498ddb57809bb1webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/preview-13_31b98f73-c1b3-4cca-a6d2-9403a2dfb5dd.webp","t":"preview1331b98f73c1b34ccaa6d29403a2dfb5ddwebp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/preview-9_12bc463a-43c9-44a5-87eb-2577a81578df.webp","t":"preview912bc463a43c944a587eb2577a81578dfwebp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/preview-15_7cad8335-0c68-4d19-a79a-8c81f2f275fc.webp","t":"preview157cad83350c684d19a79a8c81f2f275fcwebp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/preview-10_62690824-a6bb-474e-abab-65ce4d875c1f.webp","t":"preview1062690824a6bb474eabab65ce4d875c1fwebp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/files/preview-14_3facf600-4bb9-4b9f-9b77-db19eafdf0f9.webp","t":"preview143facf6004bb94b9f9b77db19eafdf0f9webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -722,7 +775,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

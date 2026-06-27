@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11840_25Q3_Wool-Strider-Rugged-Beige-Natural-White-Sole_PDP_LEFT__1_31cc700e-4a2a-4ead-863d-388ac2a01c7a.png","t":"a1184025q3woolstriderruggedbeigenaturalwhitesolepdpleft131cc700e4a2a4ead863d388ac2a01c7apng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11840_25Q3_Wool-Strider-Rugged-Beige-Natural-White-Sole_PDP_TD_7345df92-dd91-4543-9f94-5abdf266cdcb.png","t":"a1184025q3woolstriderruggedbeigenaturalwhitesolepdptd7345df92dd9145439f945abdf266cdcbpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11840_25Q3_Wool-Strider-Rugged-Beige-Natural-White-Sole_PDP_SOLE_d2f77199-d057-4f4a-ba6e-36b46c9439f7.png","t":"a1184025q3woolstriderruggedbeigenaturalwhitesolepdpsoled2f77199d0574f4aba6e36b46c9439f7png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11840_25Q3_Wool-Strider-Rugged-Beige-Natural-White-Sole_PDP_PAIR_3Q_dce23562-bd70-413d-b8c5-b2cf95a3dfc6.png","t":"a1184025q3woolstriderruggedbeigenaturalwhitesolepdppair3qdce23562bd70413db8c5b2cf95a3dfc6png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11840_25Q3_Wool-Strider-Rugged-Beige-Natural-White-Sole_PDP_BACK_d0f7675a-aea6-46a0-908f-6c01ffe887d9.png","t":"a1184025q3woolstriderruggedbeigenaturalwhitesolepdpbackd0f7675aaea646a0908f6c01ffe887d9png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

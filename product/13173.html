@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-athletic-heather-front-67e1809f862e8.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-athletic-heather-front-67e1809f862e8.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-black-back-67e1809f8007a.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-black-back-67e1809f8007a.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-red-back-67e1809f80f51.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-red-back-67e1809f80f51.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-navy-back-67e1809f81fc6.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-navy-back-67e1809f81fc6.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-charcoal-heather-back-67e1809f83ae7.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-charcoal-heather-back-67e1809f83ae7.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-military-green-back-67e1809f8528f.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-military-green-back-67e1809f8528f.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-athletic-heather-back-67e1809f87268.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-athletic-heather-back-67e1809f87268.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -550,6 +554,59 @@ This product is made especially for you as soon as you place an order, which is 
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-black-front-67e1809f7f033.jpg","t":"menspremiumtanktopblackfront67e1809f7f033jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-red-front-67e1809f80823.jpg","t":"menspremiumtanktopredfront67e1809f80823jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-navy-front-67e1809f81699.jpg","t":"menspremiumtanktopnavyfront67e1809f81699jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-charcoal-heather-front-67e1809f82c04.jpg","t":"menspremiumtanktopcharcoalheatherfront67e1809f82c04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-military-green-front-67e1809f846d1.jpg","t":"menspremiumtanktopmilitarygreenfront67e1809f846d1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-athletic-heather-front-67e1809f862e8.jpg","t":"menspremiumtanktopathleticheatherfront67e1809f862e8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-black-back-67e1809f8007a.jpg","t":"menspremiumtanktopblackback67e1809f8007ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-red-back-67e1809f80f51.jpg","t":"menspremiumtanktopredback67e1809f80f51jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-navy-back-67e1809f81fc6.jpg","t":"menspremiumtanktopnavyback67e1809f81fc6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-charcoal-heather-back-67e1809f83ae7.jpg","t":"menspremiumtanktopcharcoalheatherback67e1809f83ae7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-military-green-back-67e1809f8528f.jpg","t":"menspremiumtanktopmilitarygreenback67e1809f8528fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/mens-premium-tank-top-athletic-heather-back-67e1809f87268.jpg","t":"menspremiumtanktopathleticheatherback67e1809f87268jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -723,7 +780,12 @@ This product is made especially for you as soon as you place an order, which is 
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

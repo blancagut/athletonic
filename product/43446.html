@@ -568,6 +568,59 @@ Machine wash cold</li>
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview_76463b73-4bbd-4650-888f-d5a19ad96066.webp","t":"preview76463b734bbd4650888fd5a19ad96066webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-7_fa0766f6-8455-439e-97dd-ff968c91bd35.webp","t":"preview7fa0766f68455439e97ddff968c91bd35webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-6_63a42109-00be-4825-a4c5-eec71cbddbfa.webp","t":"preview663a4210900be4825a4c5eec71cbddbfawebp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-2_d9620e09-a6c6-470f-b2dc-d94a7e28fe3f.webp","t":"preview2d9620e09a6c6470fb2dcd94a7e28fe3fwebp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-3_10b66847-912d-4cd3-b08e-08d6517d8a8b.webp","t":"preview310b66847912d4cd3b08e08d6517d8a8bwebp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-4_3337311f-aed2-4cc4-b86f-58e184ffd835.webp","t":"preview43337311faed24cc4b86f58e184ffd835webp"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-5_db98fd59-8adf-451b-a73d-a6bca44b543b.webp","t":"preview5db98fd598adf451ba73da6bca44b543bwebp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -741,7 +794,12 @@ Machine wash cold</li>
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

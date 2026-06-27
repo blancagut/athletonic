@@ -559,6 +559,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0786/1852/5910/files/HypervoltGo21_02a97ff3-c9f6-406e-a922-e4067e94461e.png","t":"hypervoltgo2102a97ff3c9f6406ea922e4067e94461epng"},{"src":"https://cdn.shopify.com/s/files/1/0786/1852/5910/files/HypervoltGo24_17595148-7201-4e99-949d-312cc7c680d1.png","t":"hypervoltgo241759514872014e99949d312cc7c680d1png"},{"src":"https://cdn.shopify.com/s/files/1/0786/1852/5910/files/HypervoltGo23_988d42e6-e3bd-4854-aa1b-1be396bf74e4.png","t":"hypervoltgo23988d42e6e3bd4854aa1b1be396bf74e4png"},{"src":"https://cdn.shopify.com/s/files/1/0786/1852/5910/files/HypervoltGo25_672b2c83-e79a-4b08-b643-4276b0721a8b.png","t":"hypervoltgo25672b2c83e79a4b08b6434276b0721a8bpng"},{"src":"https://cdn.shopify.com/s/files/1/0786/1852/5910/files/HypervoltGo26_5316f731-854b-4811-9b00-0427db1fb264.png","t":"hypervoltgo265316f731854b48119b000427db1fb264png"},{"src":"https://cdn.shopify.com/s/files/1/0786/1852/5910/files/HypervoltGo22_fe34fe1f-e520-4f4c-821b-075d1a9f691f.png","t":"hypervoltgo22fe34fe1fe5204f4c821b075d1a9f691fpng"},{"src":"https://cdn.shopify.com/s/files/1/0786/1852/5910/files/HypervoltGo27_00c352ea-2714-490e-a864-ce4a28838992.png","t":"hypervoltgo2700c352ea2714490ea864ce4a28838992png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -732,7 +785,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

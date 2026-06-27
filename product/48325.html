@@ -531,6 +531,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11556_25Q3_Cruiser_Blizzard_Blizzard_PDP_LEFT-2000x2000_c7e02c35-b818-43b7-a332-bccf975bdff4.png","t":"a1155625q3cruiserblizzardblizzardpdpleft2000x2000c7e02c35b81843b7a332bccf975bdff4png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11556_25Q3_Cruiser_Blizzard_Blizzard_PDP_TD-2000x2000_e74345f0-d5fd-4433-a1e9-827b5e1d257b.png","t":"a1155625q3cruiserblizzardblizzardpdptd2000x2000e74345f0d5fd4433a1e9827b5e1d257bpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11556_25Q3_Cruiser_Blizzard_Blizzard_PDP_SOLE-2000x2000_59eadda6-fefd-4f00-a0eb-2987be5ddca1.png","t":"a1155625q3cruiserblizzardblizzardpdpsole2000x200059eadda6fefd4f00a0eb2987be5ddca1png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11556_25Q3_Cruiser_Blizzard_Blizzard_PDP_PAIR_3Q-2000x2000_5a9bb480-a3b6-4259-88b7-900155cb7895.png","t":"a1155625q3cruiserblizzardblizzardpdppair3q2000x20005a9bb480a3b6425988b7900155cb7895png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11556_25Q3_Cruiser_Blizzard_Blizzard_PDP_BACK-2000x2000_a0318f5e-628d-4098-8072-24c308c0e721.png","t":"a1155625q3cruiserblizzardblizzardpdpback2000x2000a0318f5e628d4098807224c308c0e721png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +757,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

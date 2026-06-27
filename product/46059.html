@@ -532,6 +532,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMT0061_1_a7284104-7a54-40a9-b90e-b941ac79df74.jpg","t":"poeticfifamt00611a72841047a5440a9b90eb941ac79df74jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMT0061_5_3f244308-5028-45fd-bf13-bf7282551fe8.jpg","t":"poeticfifamt0061578e8fae6360b4aee9313e8051555a157jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMT0061_6_3ee9b66c-5155-481b-b7fd-c1eb6900edba.jpg","t":"poeticfifamt006163ee9b66c5155481bb7fdc1eb6900edbajpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMT0061_8_0c622e87-9ab1-4c93-83f8-4b687cdca46e.jpg","t":"poeticfifamt006180c622e879ab14c9383f84b687cdca46ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMT0061_7_cf55c83e-0648-4c06-a1b0-9a0950d8e0c1.jpg","t":"poeticfifamt00617cf55c83e06484c06a1b09a0950d8e0c1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMT0061_4_924e4ed6-f532-4733-adc3-e2297d88d8aa.jpg","t":"poeticfifamt00614924e4ed6f5324733adc3e2297d88d8aajpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMT0061_2_b73c21a7-b19e-4971-ab10-44ea26fff1bf.jpg","t":"poeticfifamt00612b73c21a7b19e4971ab1044ea26fff1bfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0591/0478/8538/files/Poetic_FIFAMT0061_3_1e0b9d6a-a610-427f-851e-859c67abb2d3.jpg","t":"poeticfifamt006131e0b9d6aa610427f851e859c67abb2d3jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -705,7 +758,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

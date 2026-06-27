@@ -529,6 +529,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/banfield-jacket.png","t":"banfieldjacketpng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/be684519-7b34-404d-bd64-5395b8064ed0.jpg","t":"be6845197b34404dbd645395b8064ed0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/00ba111b-e44d-491b-9f55-2450bcae629c.jpg","t":"00ba111be44d491b9f552450bcae629cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/3fb6c95d-3b30-48be-8c42-70ab24af693b.jpg","t":"3fb6c95d3b3048be8c4270ab24af693bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/5f2e1daa-9f22-4350-b909-5b32d3278911.jpg","t":"5f2e1daa9f224350b9095b32d3278911jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/7a62ec8b-bca0-4554-81d2-78f202e06f28.jpg","t":"7a62ec8bbca0455481d278f202e06f28jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -702,7 +755,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

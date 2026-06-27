@@ -579,6 +579,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/RR-CM-12.337_e81515ae-1ce4-4bdf-b9e7-30bd04b80920.png","t":"rrcm12337e81515ae1ce44bdfb9e730bd04b80920png"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/RR-CM-18.336_8a5aeae3-fdeb-4fd2-9793-c38d75bbdba6.png","t":"rrcm183368a5aeae3fdeb4fd29793c38d75bbdba6png"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/RR-CM-24.335_40860396-11d8-4892-9caf-9d9fdaed2501.png","t":"rrcm243354086039611d848929caf9d9fdaed2501png"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/CROSS_30..35.png","t":"cross3035png"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/CROSS_36.36_148fadd9-c4f2-4bba-86ff-8b5cafd44280.png","t":"cross3636148fadd9c4f24bba86ff8b5cafd44280png"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/CROSS_42.37_d6e29f7f-5e22-47a4-91e5-11c5795c09d6.png","t":"cross4237d6e29f7f5e2247a491e511c5795c09d6png"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/CROSS_42_LOG.38_a7239bfd-f0c8-4601-a380-51465f3bc4e1.png","t":"cross42log38a7239bfdf0c84601a38051465f3bc4e1png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -752,7 +805,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

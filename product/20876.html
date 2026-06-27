@@ -164,6 +164,14 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy43_263800f0-3d66-4787-bdf8-d6b47947f454.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy43_263800f0-3d66-4787-bdf8-d6b47947f454.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy44_4215e2b3-f7e7-4bdc-9f42-9ae001842c58.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy44_4215e2b3-f7e7-4bdc-9f42-9ae001842c58.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy45_ea6eb16e-be0f-4221-99b2-9b76cff37de2.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy45_ea6eb16e-be0f-4221-99b2-9b76cff37de2.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy46_256f4282-fd83-488e-a155-f4dde10635e7.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy46_256f4282-fd83-488e-a155-f4dde10635e7.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy47_c7708059-8362-42e6-af09-a0e03cc236ee.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy47_c7708059-8362-42e6-af09-a0e03cc236ee.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy48_50d1452a-cd52-4593-bcf1-89675140af92.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy48_50d1452a-cd52-4593-bcf1-89675140af92.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy49_b402a62b-1f03-4953-a53e-c76152835cdf.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy49_b402a62b-1f03-4953-a53e-c76152835cdf.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy50_f038aa34-f43b-4d97-b056-fefcc6158e63.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy50_f038aa34-f43b-4d97-b056-fefcc6158e63.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy36_c0aedb6c-3ae1-4a08-92a3-cbc8dc8213eb.jpg" aria-label="View image 14"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy36_c0aedb6c-3ae1-4a08-92a3-cbc8dc8213eb.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy51_42f42e0e-9223-4aed-b2fd-0efebd81423e.jpg" aria-label="View image 15"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy51_42f42e0e-9223-4aed-b2fd-0efebd81423e.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy38_8b698ea0-67fe-4739-9b7b-ebdf4fbe226d.jpg" aria-label="View image 16"><img src="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy38_8b698ea0-67fe-4739-9b7b-ebdf4fbe226d.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -558,6 +566,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy40_45bab2d0-8d85-4bd2-abab-1be4188f1add.jpg","t":"artboard1copy4045bab2d08d854bd2abab1be4188f1addjpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy37_2dd68796-e496-4cfd-9ba1-c96cb73f560e.jpg","t":"artboard1copy372dd68796e4964cfd9ba1c96cb73f560ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy39_31b3ce0e-dd78-4277-bfb7-68ed36ca67ba.jpg","t":"artboard1copy3931b3ce0edd784277bfb768ed36ca67bajpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy41_12705d58-3eb2-4e34-8faa-94fd06695425.jpg","t":"artboard1copy4112705d583eb24e348faa94fd06695425jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy42_d08d6549-d8c2-49cd-a289-f6295dc81391.jpg","t":"artboard1copy42d08d6549d8c249cda289f6295dc81391jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy43_263800f0-3d66-4787-bdf8-d6b47947f454.jpg","t":"artboard1copy43263800f03d664787bdf8d6b47947f454jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy44_4215e2b3-f7e7-4bdc-9f42-9ae001842c58.jpg","t":"artboard1copy444215e2b3f7e74bdc9f429ae001842c58jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy45_ea6eb16e-be0f-4221-99b2-9b76cff37de2.jpg","t":"artboard1copy45ea6eb16ebe0f422199b29b76cff37de2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy46_256f4282-fd83-488e-a155-f4dde10635e7.jpg","t":"artboard1copy46256f4282fd83488ea155f4dde10635e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy47_c7708059-8362-42e6-af09-a0e03cc236ee.jpg","t":"artboard1copy47c7708059836242e6af09a0e03cc236eejpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy48_50d1452a-cd52-4593-bcf1-89675140af92.jpg","t":"artboard1copy4850d1452acd524593bcf189675140af92jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy49_b402a62b-1f03-4953-a53e-c76152835cdf.jpg","t":"artboard1copy49b402a62b1f034953a53ec76152835cdfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy50_f038aa34-f43b-4d97-b056-fefcc6158e63.jpg","t":"artboard1copy50f038aa34f43b4d97b056fefcc6158e63jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy36_c0aedb6c-3ae1-4a08-92a3-cbc8dc8213eb.jpg","t":"artboard1copy36c0aedb6c3ae14a0892a3cbc8dc8213ebjpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy51_42f42e0e-9223-4aed-b2fd-0efebd81423e.jpg","t":"artboard1copy5142f42e0e92234aedb2fd0efebd81423ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/Artboard1copy38_8b698ea0-67fe-4739-9b7b-ebdf4fbe226d.jpg","t":"artboard1copy388b698ea067fe47399b7bebdf4fbe226djpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -731,7 +792,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

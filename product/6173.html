@@ -533,6 +533,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/Lemon_Lime_-_32ct_-_Transparent.png","t":"lemonlime32cttransparentpng"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/c78076e7-e10d-41d7-88db-2d7b73cd41eb_large_85690584-1352-4386-af19-834298a77020.jpg","t":"c78076e7e10d41d788db2d7b73cd41eblarge8569058413524386af19834298a77020jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/b2161073-5aa4-4653-8779-8ef9914a869d_large_7919ca94-cc6b-4246-9a31-f61f8860d232.jpg","t":"b21610735aa4465387798ef9914a869dlarge7919ca94cc6b42469a31f61f8860d232jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/fa7d20c5-b51d-4c65-b9ba-7c43ded591f0_large_b026742d-da4a-431f-9e5a-0942a9381e2d.jpg","t":"fa7d20c5b51d4c65b9ba7c43ded591f0largeb026742dda4a431f9e5a0942a9381e2djpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/409bfa91-8bce-4e88-b584-ebe1e2aec5c2_large_f8bbc815-0854-4c39-93c7-4c59e7cf8d9b.jpg","t":"409bfa918bce4e88b584ebe1e2aec5c2largef8bbc81508544c3993c74c59e7cf8d9bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/e1c3f90c-c723-43b4-88be-49715e4beb2a_large_7a93e1d7-a590-409d-ba36-ae98be3b5d0e.jpg","t":"e1c3f90cc72343b488be49715e4beb2alarge7a93e1d7a590409dba36ae98be3b5d0ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/331c8234-7f40-42ff-abf6-64153d608ab3_large_a19558f6-f71f-4e71-95db-37a6a08d9ae5.jpg","t":"331c82347f4042ffabf664153d608ab3largea19558f6f71f4e7195db37a6a08d9ae5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0267/6839/files/dfb8e02f-c79b-4496-9ef3-47a53ba03cfe_large_c618b498-2d4b-461b-bc0b-526af328d1cf.jpg","t":"dfb8e02fc79b44969ef347a53ba03cfelargec618b4982d4b461bbc0b526af328d1cfjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -706,7 +759,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-front_purple-01.webp" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-front_purple-01.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V24.webp" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V24.webp" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-7_f05c2e15-2cbd-4bbc-9ef5-9d4a3540ff45.webp" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-7_f05c2e15-2cbd-4bbc-9ef5-9d4a3540ff45.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V27.webp" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V27.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-side_grey-01.webp" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-side_grey-01.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-side_purple-01.webp" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-side_purple-01.webp" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-close_purple-01.webp" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-close_purple-01.webp" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -565,6 +569,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V21.webp","t":"womenshighrisebikershortswithpocketsblackv21webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V2-2.webp","t":"womenshighrisebikershortswithpocketsblackv22webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-front_grey-01.webp","t":"rival2024bikershortsfrontgrey01webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V23.webp","t":"womenshighrisebikershortswithpocketsblackv23webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V25.webp","t":"womenshighrisebikershortswithpocketsblackv25webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-front_purple-01.webp","t":"rival2024bikershortsfrontpurple01webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V24.webp","t":"womenshighrisebikershortswithpocketsblackv24webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-7_f05c2e15-2cbd-4bbc-9ef5-9d4a3540ff45.webp","t":"womenshighrisebikershortswithpocketsblack7f05c2e152cbd4bbc9ef59d4a3540ff45webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/Women_sHigh-RiseBikerShortswithPockets-BLACK-V27.webp","t":"womenshighrisebikershortswithpocketsblackv27webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-side_grey-01.webp","t":"rival2024bikershortssidegrey01webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-side_purple-01.webp","t":"rival2024bikershortssidepurple01webp"},{"src":"https://cdn.shopify.com/s/files/1/0549/3247/1998/files/rival-2024-biker-shorts-close_purple-01.webp","t":"rival2024bikershortsclosepurple01webp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -738,7 +795,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

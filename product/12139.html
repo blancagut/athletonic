@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/GRAYFRONTASI_36f66dc8-0812-4686-be05-12c92b182ad6.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/GRAYFRONTASI_36f66dc8-0812-4686-be05-12c92b182ad6.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/whiterearteemockbasicflag_32a4f102-81f5-4fcf-b975-48e06cf10d20.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/whiterearteemockbasicflag_32a4f102-81f5-4fcf-b975-48e06cf10d20.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/basicteemilgrnfront_9547583b-095a-40f8-8f83-93da40ccc8df.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/basicteemilgrnfront_9547583b-095a-40f8-8f83-93da40ccc8df.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/tanbasicrearmocktshirtnewrearwithflagsolid_24171cef-44d9-47bb-9dce-99e26bb76240.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/tanbasicrearmocktshirtnewrearwithflagsolid_24171cef-44d9-47bb-9dce-99e26bb76240.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/redbasictee_b47ea1e3-3d41-4e7e-a44c-fbcb51d3d087.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/redbasictee_b47ea1e3-3d41-4e7e-a44c-fbcb51d3d087.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/reramockteesimplegray_7d191045-c33f-43f1-9ee2-f74598401e66.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/reramockteesimplegray_7d191045-c33f-43f1-9ee2-f74598401e66.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/pinksimplebasictee_655edf1d-a6aa-4cd6-b69a-1e3e62a11c21.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/pinksimplebasictee_655edf1d-a6aa-4cd6-b69a-1e3e62a11c21.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -552,6 +556,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/frontmockblackteesimplenwe.jpg","t":"frontmockblackteesimplenwejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/whitefrontbasicteeprintnew_2d196041-ba4a-41de-bcc4-f2623351d818.jpg","t":"whitefrontbasicteeprintnew2d196041ba4a41debcc4f2623351d818jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/mocktanfrontnewbascsimpel.jpg","t":"mocktanfrontnewbascsimpeljpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/blackrearmockflagtopbasic.jpg","t":"blackrearmockflagtopbasicjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/seafoamtealfront_dd299fda-9040-4dd4-a2f1-b4e9dcc92434.jpg","t":"seafoamtealfrontdd299fda90404dd4a2f1b4e9dcc92434jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/GRAYFRONTASI_36f66dc8-0812-4686-be05-12c92b182ad6.jpg","t":"grayfrontasi36f66dc808124686be0512c92b182ad6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/whiterearteemockbasicflag_32a4f102-81f5-4fcf-b975-48e06cf10d20.jpg","t":"whiterearteemockbasicflag32a4f10281f54fcfb97548e06cf10d20jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/basicteemilgrnfront_9547583b-095a-40f8-8f83-93da40ccc8df.jpg","t":"basicteemilgrnfront9547583b095a40f88f8393da40ccc8dfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tanbasicrearmocktshirtnewrearwithflagsolid_24171cef-44d9-47bb-9dce-99e26bb76240.jpg","t":"tanbasicrearmocktshirtnewrearwithflagsolid24171cef44d947bb9dce99e26bb76240jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/redbasictee_b47ea1e3-3d41-4e7e-a44c-fbcb51d3d087.jpg","t":"redbasicteeb47ea1e33d414e7ea44cfbcb51d3d087jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/reramockteesimplegray_7d191045-c33f-43f1-9ee2-f74598401e66.jpg","t":"reramockteesimplegray7d191045c33f43f19ee2f74598401e66jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/pinksimplebasictee_655edf1d-a6aa-4cd6-b69a-1e3e62a11c21.jpg","t":"pinksimplebasictee655edf1da6aa4cd6b69a1e3e62a11c21jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -725,7 +782,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

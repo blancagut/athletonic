@@ -574,6 +574,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2698_Brand_Peach_JollyRancher_DigitalLaunch_PDPs_February2025-LifestyleD.png","t":"c4bev2698brandpeachjollyrancherdigitallaunchpdpsfebruary2025lifestyledpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2698_Brand_Peach_JollyRancher_DigitalLaunch_PDPs_February2025-LifestyleA_36ef835a-c72e-4610-a26c-0738178bd647.png","t":"c4bev2698brandpeachjollyrancherdigitallaunchpdpsfebruary2025lifestylea36ef835ac72e4610a26c0738178bd647png"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2698_Brand_Peach_JollyRancher_DigitalLaunch_PDPs_February2025-LifestyleB.png","t":"c4bev2698brandpeachjollyrancherdigitallaunchpdpsfebruary2025lifestylebpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/JR-PEACH_6b8185c6-c24e-4be0-8e26-b500a2ee052e.jpg","t":"jrpeach6b8185c6c24e4be08e26b500a2ee052ejpg"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2698_Brand_Peach_JollyRancher_DigitalLaunch_PDPs_February2025-LifestyleC_c7644a65-3d89-4bf4-b19e-44c939048144.png","t":"c4bev2698brandpeachjollyrancherdigitallaunchpdpsfebruary2025lifestylecc7644a653d894bf4b19e44c939048144png"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2698_Brand_Peach_JollyRancher_DigitalLaunch_PaidAd_Family_February2025-1080x1080_2d6b644f-6a82-42e4-8ee6-2fd94080501b.png","t":"c4bev2698brandpeachjollyrancherdigitallaunchpaidadfamilyfebruary20251080x10802d6b644f6a8242e48ee62fd94080501bpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2698_Brand_Peach_JollyRancher_DigitalLaunch_PaidAd_Launch_February2025-1080x1080.png","t":"c4bev2698brandpeachjollyrancherdigitallaunchpaidadlaunchfebruary20251080x1080png"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/C4BEV_2698_Brand_Peach_JollyRancher_DigitalLaunch_PDPs_February2025-Benefits-Peach.png","t":"c4bev2698brandpeachjollyrancherdigitallaunchpdpsfebruary2025benefitspeachpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -747,7 +800,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-chocolatebrownie_a86ff0b4-bc77-4a0b-a5ff-47023b0d37bf.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-chocolatebrownie_a86ff0b4-bc77-4a0b-a5ff-47023b0d37bf.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-cinnamonfrenchtoast_80fabff9-4084-446b-9787-ae41067c4720.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-cinnamonfrenchtoast_80fabff9-4084-446b-9787-ae41067c4720.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-birthdaycake_511baf4c-7954-43d9-9e8a-68d0d35fa3b6.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-birthdaycake_511baf4c-7954-43d9-9e8a-68d0d35fa3b6.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanveganprotein-blueberrycrumble_1_6504b950-a686-4a02-8da5-b08999d91833.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanveganprotein-blueberrycrumble_1_6504b950-a686-4a02-8da5-b08999d91833.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -547,6 +548,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVP-Shortbread-Instagram-Feed-02-copy_a4873391-6c7e-422d-97a4-a19211e2a31d.jpg","t":"cvpshortbreadinstagramfeed02copya48733916c7e422d97a4a19211e2a31djpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-shortbreadcookie-1_a1bc29ea-d518-474a-9aee-33b9a806788b.png","t":"cvpshortbreadcookie1c1d22e2feb0440a28bf1460a3d97436dpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-ssc-black-side1_7e13f1b3-3117-46d1-917f-242d1c427194.png","t":"cvpsscblackside17e13f1b3311746d1917f242d1c427194png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-maplewaffle2_07c0aa36-1e59-4ab8-af28-3d8e1f41774d.png","t":"cleanveganmaplewaffle207c0aa361e594ab8af283d8e1f41774dpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-fruitycereal_1a1ae547-03e0-484c-af2d-d8a41d147fd9.png","t":"cleanveganfruitycereal1a1ae54703e0484caf2dd8a41d147fd9png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-chocolatebrownie_a86ff0b4-bc77-4a0b-a5ff-47023b0d37bf.png","t":"cleanveganchocolatebrowniea86ff0b4bc774a0ba5ff47023b0d37bfpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-cinnamonfrenchtoast_80fabff9-4084-446b-9787-ae41067c4720.png","t":"cleanvegancinnamonfrenchtoast80fabff94084446b9787ae41067c4720png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-birthdaycake_511baf4c-7954-43d9-9e8a-68d0d35fa3b6.png","t":"cleanveganbirthdaycake511baf4c795443d99e8a68d0d35fa3b6png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanveganprotein-blueberrycrumble_1_6504b950-a686-4a02-8da5-b08999d91833.png","t":"cleanveganproteinblueberrycrumble16504b950a6864a028da5b08999d91833png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -720,7 +774,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

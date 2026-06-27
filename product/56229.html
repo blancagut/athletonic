@@ -559,6 +559,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12499/7844/TW25-WristStrapViewOneBlkBody11_327dc730-099c-4619-814d-e0753e85f27f.png__05504.1774549669.jpg","t":"twinsboxingglovesdualdarkcolorspremiumleatherwvelcroblackfistdarkcolorspalmtw25wriststrapviewoneblkbody11327dc730099c4619814de0753e85f27fpng055041774549669jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12499/7846/TW25-WristStrapViewOneBlkBody13_ec5ce229-41de-4aef-8835-a8cd33f6aaf3.png__43718.1774549670.jpg","t":"twinsboxingglovesdualdarkcolorspremiumleatherwvelcroblackfistdarkcolorspalmtw25wriststrapviewoneblkbody13ec5ce22941de4aef8835a8cd33f6aaf3png437181774549670jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12499/7847/TW25-WristStrapViewOneBlkBody14_d5d716c3-9c9c-4c01-8ddd-05694ebb2ff0.png__60903.1774549670.jpg","t":"twinsboxingglovesdualdarkcolorspremiumleatherwvelcroblackfistdarkcolorspalmtw25wriststrapviewoneblkbody14d5d716c39c9c4c018ddd05694ebb2ff0png609031774549670jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12499/7845/TW25-WristStrapViewOneBlkBody15_155a6350-13d0-4828-ba3d-c97d0c2f357f.png__19534.1774549670.jpg","t":"twinsboxingglovesdualdarkcolorspremiumleatherwvelcroblackfistdarkcolorspalmtw25wriststrapviewoneblkbody15155a635013d04828ba3dc97d0c2f357fpng195341774549670jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -732,7 +785,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

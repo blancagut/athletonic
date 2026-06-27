@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54919852.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54919852.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/EB1B1DB2-E290-423B-888E-B054D63B2559.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/EB1B1DB2-E290-423B-888E-B054D63B2559.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54919932.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54919932.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54920065.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54920065.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -615,6 +616,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Hip_Bands.jpg","t":"hipbandsjpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54919694.jpg","t":"model1180hbhipbandsschieksports54919694jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/F0B44F13-6CC2-4835-95B9-19889507FED3.jpg","t":"f0b44f136cc2483595b919889507fed3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54919770.jpg","t":"model1180hbhipbandsschieksports54919770jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/38B0BB5D-668E-47D2-9F0E-FBC5AC771486.jpg","t":"38b0bb5d668e47d29f0efbc5ac771486jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54919852.jpg","t":"model1180hbhipbandsschieksports54919852jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/EB1B1DB2-E290-423B-888E-B054D63B2559.jpg","t":"eb1b1db2e290423b888eb054d63b2559jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54919932.jpg","t":"model1180hbhipbandsschieksports54919932jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Model-1180HB-Hip-Bands-Schiek-Sports-54920065.jpg","t":"model1180hbhipbandsschieksports54920065jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -788,7 +842,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

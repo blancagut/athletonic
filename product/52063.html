@@ -550,6 +550,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/everton-womens-202223-away.png","t":"evertonwomens202223awaypng"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/ffdd03c8-df62-469c-8eef-64c6d71c0f7d.jpg","t":"ffdd03c8df62469c8eef64c6d71c0f7djpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/2df31163-8e87-4b83-8980-d41d5e0a3a68.jpg","t":"2df311638e874b838980d41d5e0a3a68jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/b4f39a3b-c126-4d64-8e2f-acb45e096100.jpg","t":"b4f39a3bc1264d648e2facb45e096100jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/eadd2a16-afb1-488f-9e1d-907c83eaee74.jpg","t":"eadd2a16afb1488f9e1d907c83eaee74jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/f55d4e9a-0aaf-4f2c-9d85-32d26ce60cc8.jpg","t":"f55d4e9a0aaf4f2c9d8532d26ce60cc8jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -723,7 +776,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

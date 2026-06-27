@@ -164,6 +164,11 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_PumpkinSpice_Front_mockup_1_43b07f74-225a-49d2-ad8f-c8539dad6136.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_PumpkinSpice_Front_mockup_1_43b07f74-225a-49d2-ad8f-c8539dad6136.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/chai-shopify_d349b43d-bc1a-46e2-9cec-77810f0af2a5.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/chai-shopify_d349b43d-bc1a-46e2-9cec-77810f0af2a5.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_LemonCookie_Front_mockup_03fc8382-1672-42c9-9c8a-28b885e83434.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_LemonCookie_Front_mockup_03fc8382-1672-42c9-9c8a-28b885e83434.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/unflavored-shopify_9472f60e-2409-4dab-98c1-8d1bd5284254.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/unflavored-shopify_9472f60e-2409-4dab-98c1-8d1bd5284254.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_Strawberry_Front_Custom.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_Strawberry_Front_Custom.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/PBSHOPIFY_5195ccfc-ffde-4d23-adc2-ad2df36224a2.png" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/PBSHOPIFY_5195ccfc-ffde-4d23-adc2-ad2df36224a2.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-20ServingsBag-ChocStrawberry-Front.png" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-20ServingsBag-ChocStrawberry-Front.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2538/3594/files/MatchaShopify_bacf609e-b912-4a43-a77c-90e687f0532f.png" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/2538/3594/files/MatchaShopify_bacf609e-b912-4a43-a77c-90e687f0532f.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -531,6 +536,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_MintChocolate_Front_1.png","t":"protein20servmintchocolatefront1png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Truvani_Mockup_Chocolate-Protein_c272f832-b4b7-4349-871f-06de81c94395.png","t":"truvanimockupchocolateproteinc272f832b4b74349871f06de81c94395png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Truvani_Mockup_Vanilla-Protein_2718435a-ef5e-4adb-93f0-fc59535387b5.png","t":"truvanimockupvanillaprotein2718435aef5e4adb93f0fc59535387b5png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Truvani_Mockup_Chocolate-Peanut-Butter-Protein_daea5426-35a7-412d-8ec3-918ac4c594a8.png","t":"truvanimockupchocolatepeanutbutterproteindaea542635a7412d8ec3918ac4c594a8png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Truvani_Mockup_BC-Protein_e2cab327-2cc5-4b79-964d-6f10b6c64967.png","t":"truvanimockupbcproteine2cab3272cc54b79964d6f10b6c64967png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_PumpkinSpice_Front_mockup_1_43b07f74-225a-49d2-ad8f-c8539dad6136.png","t":"protein20servpumpkinspicefrontmockup143b07f74225a49d2ad8fc8539dad6136png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/chai-shopify_d349b43d-bc1a-46e2-9cec-77810f0af2a5.png","t":"chaishopifyd349b43dbc1a46e29cec77810f0af2a5png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_LemonCookie_Front_mockup_03fc8382-1672-42c9-9c8a-28b885e83434.png","t":"protein20servlemoncookiefrontmockup03fc8382167242c99c8a28b885e83434png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/unflavored-shopify_9472f60e-2409-4dab-98c1-8d1bd5284254.png","t":"unflavoredshopify9472f60e24094dab98c18d1bd5284254png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein_20serv_Strawberry_Front_Custom.png","t":"protein20servstrawberryfrontcustompng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/PBSHOPIFY_5195ccfc-ffde-4d23-adc2-ad2df36224a2.png","t":"pbshopify5195ccfcffde4d23adc2ad2df36224a2png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-20ServingsBag-ChocStrawberry-Front.png","t":"protein20servingsbagchocstrawberryfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/MatchaShopify_bacf609e-b912-4a43-a77c-90e687f0532f.png","t":"matchashopify03654b6e46c44a37be717e3d12d4a909png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -704,7 +762,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

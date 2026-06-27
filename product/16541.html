@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-blackberrylemon_1_293d7d2f-babc-4031-ad94-dea582e186df.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-blackberrylemon_1_293d7d2f-babc-4031-ad94-dea582e186df.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/vegan-blackfriday-stack1.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/vegan-blackfriday-stack1.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cla1200_66f7b9a4-6f81-4930-998c-8d65fdc53bd4.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cla1200_66f7b9a4-6f81-4930-998c-8d65fdc53bd4.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-shortbreadcookie-1_6972c685-5881-40a0-b863-f6593a65bd6a.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-shortbreadcookie-1_6972c685-5881-40a0-b863-f6593a65bd6a.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -557,6 +558,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/CompleteVeganStack_1024x1024_2x_007572e3-3a1c-4fff-8131-19ec2af249f6.webp","t":"completeveganstack1024x10242x007572e33a1c4fff813119ec2af249f6webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-1_8aef60a8-e713-457e-979e-3d237bfa7c8f.png","t":"nightshred18aef60a8e713457e979e3d237bfa7c8fpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innoshred-1_0f23a4ce-0a11-4379-aa00-4f0069eb198d.png","t":"innoshred10f23a4ce0a114379aa004f0069eb198dpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/HMB_2_c6ce5528-5628-4de6-ab3d-b0b266bab61c.png","t":"hmb2c6ce552856284de6ab3db0b266bab61cpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/volcarn-pinkstarblast_1_86f0409c-7389-4303-a811-0abcb866f876.png","t":"volcarnpinkstarblast186f0409c73894303a8110abcb866f876png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/stormmaker-blackberrylemon_1_293d7d2f-babc-4031-ad94-dea582e186df.png","t":"stormmakerblackberrylemon1293d7d2fbabc4031ad94dea582e186dfpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/vegan-blackfriday-stack1.png","t":"veganblackfridaystack1png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cla1200_66f7b9a4-6f81-4930-998c-8d65fdc53bd4.png","t":"cla120066f7b9a46f814930998c8d65fdc53bd4png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-shortbreadcookie-1_6972c685-5881-40a0-b863-f6593a65bd6a.png","t":"cvpshortbreadcookie16972c685588140a0b863f6593a65bd6apng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -730,7 +784,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

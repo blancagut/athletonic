@@ -562,6 +562,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/miami-fc-2019-goalkeeper_1.png","t":"miamifc2019goalkeeper1png"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/e5378ee0-4552-4f06-9af1-f6ff7b1c58be.jpg","t":"e5378ee045524f069af1f6ff7b1c58bejpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/e81f04c5-c587-472d-bcd1-8068678bf0ce.jpg","t":"e81f04c5c587472dbcd18068678bf0cejpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/e3a65c73-26a3-4594-ba0d-ed5c2ede9ba0.jpg","t":"e3a65c7326a34594ba0ded5c2ede9ba0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/abc0eb4f-97fc-47c8-9038-d0b27a19286f.jpg","t":"abc0eb4f97fc47c89038d0b27a19286fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/products/1552d447-f82e-43dd-8a6b-b275aa41870f.jpg","t":"1552d447f82e43dd8a6bb275aa41870fjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -735,7 +788,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

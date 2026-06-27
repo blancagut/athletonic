@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_2_3ac39fb7-eb8e-403a-97c6-19d0ddd24ad9.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_2_3ac39fb7-eb8e-403a-97c6-19d0ddd24ad9.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_3_680021d0-b93e-4026-bcc2-e60cbd8e4f94.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_3_680021d0-b93e-4026-bcc2-e60cbd8e4f94.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_4_f34b53d7-3693-4024-9b49-f09f7efcd461.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_4_f34b53d7-3693-4024-9b49-f09f7efcd461.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_1_c146d7a9-8222-4cb7-8d0e-9e1d623cf5d7.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_1_c146d7a9-8222-4cb7-8d0e-9e1d623cf5d7.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_2_9ba99569-5562-4983-ab17-fdde1d4e4f7d.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_2_9ba99569-5562-4983-ab17-fdde1d4e4f7d.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_3_6092dd58-17e4-4e2c-adc5-97301307f5f9.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_3_6092dd58-17e4-4e2c-adc5-97301307f5f9.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_4_b6302a62-29a6-4436-89f3-fa79db7ae0aa.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_4_b6302a62-29a6-4436-89f3-fa79db7ae0aa.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -547,6 +551,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_pdp_4685e7f8-af08-4b33-9d5d-7f9dcdeaf983.jpg","t":"1910paddlebrownpdp4685e7f8af084b339d5d7f9dcdeaf983jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_pair_d24329a5-b655-40cf-bbde-b97a6ddf96a9.jpg","t":"1910paddleblackwhitepaird24329a5b65540cfbbdeb97a6ddf96a9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_pdp_c81d1b42-e436-4a3f-a7d2-2408cb93761c.jpg","t":"1910paddleblackwhitepdpc81d1b42e4364a3fa7d22408cb93761cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_pdp2_58f8b3fb-45aa-4c83-a7c4-0d8fd1ad5138.jpg","t":"1910paddleblackwhitepdp258f8b3fb45aa4c83a7c40d8fd1ad5138jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_1_5347bebd-943d-4445-bb81-ae062a6089e0.jpg","t":"1910paddlebrown15347bebd943d4445bb81ae062a6089e0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_2_3ac39fb7-eb8e-403a-97c6-19d0ddd24ad9.jpg","t":"1910paddlebrown23ac39fb7eb8e403a97c619d0ddd24ad9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_3_680021d0-b93e-4026-bcc2-e60cbd8e4f94.jpg","t":"1910paddlebrown3680021d0b93e4026bcc2e60cbd8e4f94jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_brown_4_f34b53d7-3693-4024-9b49-f09f7efcd461.jpg","t":"1910paddlebrown4f34b53d7369340249b49f09f7efcd461jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_1_c146d7a9-8222-4cb7-8d0e-9e1d623cf5d7.jpg","t":"1910paddleblackwhite1c146d7a982224cb78d0e9e1d623cf5d7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_2_9ba99569-5562-4983-ab17-fdde1d4e4f7d.jpg","t":"1910paddleblackwhite29ba9956955624983ab17fdde1d4e4f7djpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_3_6092dd58-17e4-4e2c-adc5-97301307f5f9.jpg","t":"1910paddleblackwhite36092dd5817e44e2cadc597301307f5f9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/1910paddle_blackwhite_4_b6302a62-29a6-4436-89f3-fa79db7ae0aa.jpg","t":"1910paddleblackwhite4b6302a6229a6443689f3fa79db7ae0aajpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -720,7 +777,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

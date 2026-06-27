@@ -585,6 +585,59 @@ Machine wash warm</li>
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-21_5c92d24a-20db-4521-b3e8-c12573213e88.jpg","t":"preview215c92d24a20db4521b3e8c12573213e88jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-28_607aab04-52e3-4716-85b7-ed7b7decdc96.jpg","t":"preview28607aab0452e3471685b7ed7b7decdc96jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-26_471d8834-60a5-41b9-8046-1b91cd730efa.jpg","t":"preview26471d883460a541b980461b91cd730efajpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-23_596188c2-15b9-433e-833e-34cba2c0c16e.jpg","t":"preview23596188c215b9433e833e34cba2c0c16ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-22_16ad85ff-24b1-4310-9ace-f7d7a673af76.jpg","t":"preview2216ad85ff24b143109acef7d7a673af76jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-25_a31d1821-7e34-4396-857c-bc8189c2019e.jpg","t":"preview25a31d18217e344396857cbc8189c2019ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-27_9c7f003b-54af-4d77-86a6-2063b5b602ea.jpg","t":"preview279c7f003b54af4d7786a62063b5b602eajpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-24_79f7bdeb-2492-4532-b578-9ad0322a1606.jpg","t":"preview2479f7bdeb24924532b5789ad0322a1606jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -758,7 +811,12 @@ Machine wash warm</li>
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

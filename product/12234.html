@@ -164,6 +164,11 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYOWESYOUSHITPVCPATCH_4.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYOWESYOUSHITPVCPATCH_4.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02742.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02742.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02738.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02738.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02741_c4603781-216a-4052-bb39-bdf5b41d2c78.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02741_c4603781-216a-4052-bb39-bdf5b41d2c78.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02772_f0700118-993e-48ec-b84d-0d04437b988b.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02772_f0700118-993e-48ec-b84d-0d04437b988b.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02740.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02740.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02746.jpg" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02746.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05855.jpg" aria-label="View image 13"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05855.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -567,6 +572,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYOWESYOUSHITPVCPATCH_1.jpg","t":"nobodyowesyoushitpvcpatch1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05849.jpg","t":"dsc05849jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02743.jpg","t":"cia02743jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYOWESYOUSHITPVCPATCH_3.jpg","t":"nobodyowesyoushitpvcpatch3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYOWESYOUSHITPVCPATCH_2.jpg","t":"nobodyowesyoushitpvcpatch2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYOWESYOUSHITPVCPATCH_4.jpg","t":"nobodyowesyoushitpvcpatch4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02742.jpg","t":"cia02742jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02738.jpg","t":"cia02738jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02741_c4603781-216a-4052-bb39-bdf5b41d2c78.jpg","t":"cia02741c4603781216a4052bb39bdf5b41d2c78jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02772_f0700118-993e-48ec-b84d-0d04437b988b.jpg","t":"cia02772f0700118993e48ecb84d0d04437b988bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02740.jpg","t":"cia02740jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02746.jpg","t":"cia02746jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC05855.jpg","t":"dsc05855jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -740,7 +798,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

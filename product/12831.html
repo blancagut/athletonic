@@ -164,6 +164,10 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/edit_TheraPro_Info_Pics_for_Website_2_57135bba-3f8c-46b9-8c89-acb7f68e4d64.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/edit_TheraPro_Info_Pics_for_Website_2_57135bba-3f8c-46b9-8c89-acb7f68e4d64.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/3_0f58a9e5-263c-49b1-aa61-dea63de87603.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/3_0f58a9e5-263c-49b1-aa61-dea63de87603.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/Resized_PEMF_Info_2_f9ac10d1-dba6-434a-b6c9-03e7470e37e9.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/Resized_PEMF_Info_2_f9ac10d1-dba6-434a-b6c9-03e7470e37e9.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/Bag_Sauna.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/Bag_Sauna.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/TheraPro_Controller_3cc1ef22-d4f0-4eb3-8fbd-8666826ae300.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/TheraPro_Controller_3cc1ef22-d4f0-4eb3-8fbd-8666826ae300.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/8_e9e6c445-b2cf-434b-ae93-2c64b135593a.png" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/8_e9e6c445-b2cf-434b-ae93-2c64b135593a.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0939/5400/files/13.png" aria-label="View image 12"><img src="https://cdn.shopify.com/s/files/1/0939/5400/files/13.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -683,6 +687,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/5_9123cbdb-c06b-43fd-b913-aa46c3e309d6.png","t":"59123cbdbc06b43fdb913aa46c3e309d6png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/IMG_5152.jpg","t":"img5152jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1-1-square-pemf_-png_custom_resized.png","t":"11squarepemfpngcustomresizedpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Resized_PEMF_Info_1_fa89bc82-51f2-49bd-a196-b1b04d46efd5.jpg","t":"resizedpemfinfo1fa89bc8251f249bda196b1b04d46efd5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Resized_PEMF_Layers_Info_d3132fac-5216-4668-98dc-e5731f6f7bd9.jpg","t":"resizedpemflayersinfod3132fac5216466898dce5731f6f7bd9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/edit_TheraPro_Info_Pics_for_Website_2_57135bba-3f8c-46b9-8c89-acb7f68e4d64.png","t":"edittheraproinfopicsforwebsite257135bba3f8c46b98c89acb7f68e4d64png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/3_0f58a9e5-263c-49b1-aa61-dea63de87603.png","t":"30f58a9e5263c49b1aa61dea63de87603png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Resized_PEMF_Info_2_f9ac10d1-dba6-434a-b6c9-03e7470e37e9.jpg","t":"resizedpemfinfo2f9ac10d1dba6434ab6c903e7470e37e9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Bag_Sauna.png","t":"bagsaunapng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TheraPro_Controller_3cc1ef22-d4f0-4eb3-8fbd-8666826ae300.png","t":"theraprocontroller3cc1ef22d4f04eb38fbd8666826ae300png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/8_e9e6c445-b2cf-434b-ae93-2c64b135593a.png","t":"8e9e6c445b2cf434bae932c64b135593apng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/13.png","t":"13png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -856,7 +913,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

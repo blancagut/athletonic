@@ -568,6 +568,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/utb-front_25b4a913-0c79-49b3-bd81-91827520cba8.png","t":"utbfront25b4a9130c7949b3bd8191827520cba8png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/1x_HPC_Magnesium.webp","t":"1xhpcmagnesiumwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/FB-compliant_driveforher-1_fa23818e-0cb2-4c2c-85bb-09f620343a12.png","t":"fbcompliantdriveforher1fa23818e0cb24c2c85bb09f620343a12png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/pms-support-side1_56984c0a-5790-4439-a23e-39e687dbb18f.png","t":"pmssupportside156984c0a57904439a23e39e687dbb18fpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/3bottlerenderweb_cf044211-42bb-4ab0-bc4e-294c5920a9d0.webp","t":"3bottlerenderwebcf04421142bb4ab0bc4e294c5920a9d0webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoDrive_SFP_9874e90a-19a6-4c72-b609-66eaead6e425.jpg","t":"innodrivesfp9874e90a19a64c72b60966eaead6e425jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/PMS_SFP_56ec5dcf-eb7e-4d64-b6fd-a6b694671c7a.jpg","t":"pmssfp56ec5dcfeb7e4d64b6fda6b694671c7ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/UTBalance_SFP_a46fb544-c4d5-4728-9d3e-b088b9ce16eb.webp","t":"utbalancesfpa46fb544c4d547289d3eb088b9ce16ebwebp"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -741,7 +794,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -164,6 +164,8 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0088/0387/6924/files/2047_HUMAN_270A_HILMA_Hilma_november7451.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0088/0387/6924/files/2047_HUMAN_270A_HILMA_Hilma_november7451.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0088/0387/6924/files/2047_HUMAN_71A_HILMA_251103_Hilma_SHOT2_MODELS_0850.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0088/0387/6924/files/2047_HUMAN_71A_HILMA_251103_Hilma_SHOT2_MODELS_0850.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0088/0387/6924/files/58.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0088/0387/6924/files/58.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0088/0387/6924/products/Upset_stomach_with_ingredients.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0088/0387/6924/products/Upset_stomach_with_ingredients.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0088/0387/6924/files/heartburn_sfp.png" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0088/0387/6924/files/heartburn_sfp.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -561,6 +563,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/products/usrtestimonialpdp.png","t":"usrtestimonialpdppng"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/files/Untitled_design_38.png","t":"untitleddesign38png"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/files/Hilma_NutritionFacts_PDPs_20231226-STOMF.png","t":"hilmanutritionfactspdps20231226stomfpng"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/products/HID_productcard.png","t":"hidproductcardpng"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/products/Rollover_03_Hilma_Launch_035_v1_5_1_890x1220_crop_center_2x.progressive_2.jpg","t":"rollover03hilmalaunch035v151890x1220cropcenter2xprogressive2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/files/2047_HUMAN_270A_HILMA_Hilma_november7451.jpg","t":"2047human270ahilmahilmanovember7451jpg"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/files/2047_HUMAN_71A_HILMA_251103_Hilma_SHOT2_MODELS_0850.jpg","t":"2047human71ahilma251103hilmashot2models0850jpg"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/files/58.png","t":"58png"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/products/Upset_stomach_with_ingredients.jpg","t":"upsetstomachwithingredientsjpg"},{"src":"https://cdn.shopify.com/s/files/1/0088/0387/6924/files/heartburn_sfp.png","t":"heartburnsfppng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -734,7 +789,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

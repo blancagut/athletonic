@@ -164,6 +164,7 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2440/0931/files/POST_FruityCereal_LEFT.png" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/2440/0931/files/POST_FruityCereal_LEFT.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2440/0931/files/POST_FruityCereal_RIGHT.png" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/2440/0931/files/POST_FruityCereal_RIGHT.png" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2440/0931/files/POST_HOTCOCOA_LEFT_995effd7-3b8b-44c3-90e4-e1f0e154fc80.png" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/2440/0931/files/POST_HOTCOCOA_LEFT_995effd7-3b8b-44c3-90e4-e1f0e154fc80.png" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/2440/0931/files/POST_HOTCOCOA_RIGHT_0e394ad9-48d8-4fa0-9eae-915f0a064c8f.png" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/2440/0931/files/POST_HOTCOCOA_RIGHT_0e394ad9-48d8-4fa0-9eae-915f0a064c8f.png" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -635,6 +636,59 @@ Hot Cocoa Label
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_VANILLAICECREAM_FRONT_2b5a00ba-9f3c-42a2-9465-209f23fc515f.png","t":"postvanillaicecreamfront2b5a00ba9f3c42a29465209f23fc515fpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_FruityCereal_FRONT_d9f8d186-c5ba-4c24-8c72-bebd20ed2055.png","t":"postfruitycerealfrontd9f8d186c5ba4c248c72bebd20ed2055png"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_HOTCOCOA_FRONT_c750e90e-413e-45c5-b2c1-81e0180f9234.png","t":"posthotcocoafrontc750e90e413e45c5b2c181e0180f9234png"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_VANILLAICECREAM_LEFT.png","t":"postvanillaicecreamleftpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_VANILLAICECREAM_RIGHT.png","t":"postvanillaicecreamrightpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_FruityCereal_LEFT.png","t":"postfruitycerealleftpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_FruityCereal_RIGHT.png","t":"postfruitycerealrightpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_HOTCOCOA_LEFT_995effd7-3b8b-44c3-90e4-e1f0e154fc80.png","t":"posthotcocoaleft995effd73b8b44c390e4e1f0e154fc80png"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/POST_HOTCOCOA_RIGHT_0e394ad9-48d8-4fa0-9eae-915f0a064c8f.png","t":"posthotcocoaright0e394ad948d84fa09eae915f0a064c8fpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -808,7 +862,12 @@ Hot Cocoa Label
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

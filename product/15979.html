@@ -567,6 +567,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/pinkstartblast-front_1024x1024_2x_6b0dd5ad-7317-45ef-a793-95e4b41fd1a1.webp","t":"pinkstartblastfront1024x10242x6b0dd5ad731745efa79395e4b41fd1a1webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/3x_FSS_UK.webp","t":"3xfssukwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/innoshred-au1copy_3b3fb7ed-2efb-4fa0-af96-bc4b611b5b50.png","t":"innoshredau1copy3b3fb7ed2efb4fa0af96bc4b611b5b50png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/FB-compliant_driveforher-1_f7c3f15f-cd2c-47e8-aa6b-57f328cdced1.webp","t":"fbcompliantdriveforher1f7c3f15fcd2c47e8aa6b57f328cdced1webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/InnoCleanse_7b1b9836-f068-4c00-b35d-df772f1f1208.webp","t":"innocleanse7b1b9836f0684c00b35ddf772f1f1208webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NSB_MelatoninFree_1_7945ee7a-3f2b-4a77-8e1f-6c28eae66d66.png","t":"nsbmelatoninfree17945ee7a3f2b4a778e1f6c28eae66d66png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/pms-support-side1_14b544c8-5d79-49f2-9762-f83565b3a6f5.png","t":"pmssupportside114b544c85d7949f29762f83565b3a6f5png"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -740,7 +793,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

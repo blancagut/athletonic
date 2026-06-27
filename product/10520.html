@@ -164,6 +164,9 @@
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10560_4_2021.5inUnisexFoamCoreBelt_Floral_LS_7_2021-2000x1333-e98dd1b.jpg" aria-label="View image 6"><img src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10560_4_2021.5inUnisexFoamCoreBelt_Floral_LS_7_2021-2000x1333-e98dd1b.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10560_4_2021.5inUnisexFoamCoreBelt_Floral_LS_8_2021-2000x1333-79f5a45.jpg" aria-label="View image 7"><img src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10560_4_2021.5inUnisexFoamCoreBelt_Floral_LS_8_2021-2000x1333-79f5a45.jpg" alt="" loading="lazy" /></button>
             <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10564_4_2021.5inUnisexFoamCoreBelt_StarsandStripes_LS_10_2021-2000x1334-afeb968.jpg" aria-label="View image 8"><img src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10564_4_2021.5inUnisexFoamCoreBelt_StarsandStripes_LS_10_2021-2000x1334-afeb968.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10564_4_2021.5inUnisexFoamCoreBelt_StarsandStripes_LS_14_2021-2000x1334-84cd1cd.jpg" aria-label="View image 9"><img src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10564_4_2021.5inUnisexFoamCoreBelt_StarsandStripes_LS_14_2021-2000x1334-84cd1cd.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10568_4_2021.5inUnisexFoamCoreBelt_TanCamo_LS_16_2021-2000x1334-66f0aed.jpg" aria-label="View image 10"><img src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10568_4_2021.5inUnisexFoamCoreBelt_TanCamo_LS_16_2021-2000x1334-66f0aed.jpg" alt="" loading="lazy" /></button>
+            <button type="button" class="pdp-thumb" data-pdp-thumb data-src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/foamcorebelt_0004_Background.jpg" aria-label="View image 11"><img src="https://cdn.shopify.com/s/files/1/0918/3022/3129/files/foamcorebelt_0004_Background.jpg" alt="" loading="lazy" /></button>
           </div>
         </div>
 
@@ -572,6 +575,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/foamcorebelt_0000_ywkqrzhkh8sa3gko3k8e.jpg","t":"foamcorebelt0000ywkqrzhkh8sa3gko3k8ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/foamcorebelt_0001_j5kuvlg2ughhttlsaeva.jpg","t":"foamcorebelt0001j5kuvlg2ughhttlsaevajpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/foamcorebelt_0002_oacz2zd5yivpzczrkv5i.jpg","t":"foamcorebelt0002oacz2zd5yivpzczrkv5ijpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/foamcorebelt_0003_cb8meucn8bfdcwm9tdfl.jpg","t":"foamcorebelt0003cb8meucn8bfdcwm9tdfljpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10560_4_2021.5inUnisexFoamCoreBelt_Floral_LS_12_2021-2000x1334-afeb968.jpg","t":"harb10560420215inunisexfoamcorebeltfloralls1220212000x1334afeb968jpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10560_4_2021.5inUnisexFoamCoreBelt_Floral_LS_7_2021-2000x1333-e98dd1b.jpg","t":"harb10560420215inunisexfoamcorebeltfloralls720212000x1333e98dd1bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10560_4_2021.5inUnisexFoamCoreBelt_Floral_LS_8_2021-2000x1333-79f5a45.jpg","t":"harb10560420215inunisexfoamcorebeltfloralls820212000x133379f5a45jpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10564_4_2021.5inUnisexFoamCoreBelt_StarsandStripes_LS_10_2021-2000x1334-afeb968.jpg","t":"harb10564420215inunisexfoamcorebeltstarsandstripesls1020212000x1334afeb968jpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10564_4_2021.5inUnisexFoamCoreBelt_StarsandStripes_LS_14_2021-2000x1334-84cd1cd.jpg","t":"harb10564420215inunisexfoamcorebeltstarsandstripesls1420212000x133484cd1cdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/HARB_10568_4_2021.5inUnisexFoamCoreBelt_TanCamo_LS_16_2021-2000x1334-66f0aed.jpg","t":"harb10568420215inunisexfoamcorebelttancamols1620212000x133466f0aedjpg"},{"src":"https://cdn.shopify.com/s/files/1/0918/3022/3129/files/foamcorebelt_0004_Background.jpg","t":"foamcorebelt0004backgroundjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -745,7 +801,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

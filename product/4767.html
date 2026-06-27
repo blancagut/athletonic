@@ -571,6 +571,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/1-Navitas-MatchaLatte_3.1oz-FOP_f2149bd0-3690-4c17-a528-7191e917906f.png","t":"1navitasmatchalatte31ozfopf2149bd036904c17a5287191e917906fpng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/2-Navitas-MatchaLatte_3.1oz-BOP_69585297-830f-4463-b606-ef62234c7e66.png","t":"2navitasmatchalatte31ozbop69585297830f4463b606ef62234c7e66png"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/3_Navitas_Matcha_Latte_Small_Bag_4d86f292-dc2b-451e-92d5-3733ef1c854e.jpg","t":"3navitasmatchalattesmallbag4d86f292dc2b451e92d53733ef1c854ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/4_Navitas_Matcha_Latte_3239973f-c23a-40c0-a746-d181a8b29697.jpg","t":"4navitasmatchalatte0eeaa0920a6f4398bb348b821911f49cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/matcha-sup-hover-1200x1200_6fc6eaeb-a6ff-430c-9643-d564c57ebb53.jpg","t":"matchasuphover1200x12005385489431ec4fe2834f2a43aba4c2b0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/5-Navitas-Matcha-Latte-11oz-FOP_154b3a72-b108-4fcd-b126-7d87f79153f6.png","t":"5navitasmatchalatte11ozfop154b3a72b1084fcdb1267d87f79153f6png"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/6-Navitas-Matcha-Latte-11oz-BOP_6a6d9999-00ea-4534-8867-1c4f412fa55b.png","t":"6navitasmatchalatte11ozbop6a6d999900ea453488671c4f412fa55bpng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/3_Navitas_Matcha_Latte_Large_Bag_84aec14a-7955-4767-b621-84f97b937a27.jpg","t":"3navitasmatchalattelargebag84aec14a79554767b62184f97b937a27jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -744,7 +797,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

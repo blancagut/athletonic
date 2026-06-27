@@ -572,6 +572,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/mm-front1_e6b58117-2580-4315-b391-cf7a85041e9f.png","t":"mmfront1e6b5811725804315b391cf7a85041e9fpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/aps-front_8bd40cd0-1b1e-47ca-9b88-a374a431cde0.png","t":"apsfront8bd40cd01b1e47ca9b88a374a431cde0png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/lms-3x.webp","t":"lms3xwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/tdrive-ag-front_1_7167194a-0989-43e1-9067-1ad79ba63215.webp","t":"tdriveagfront17167194a098943e190671ad79ba63215webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/hmb-plus-front_65cb2ab5-6f6b-4d6f-931d-3be85c4cdb37.webp","t":"hmbplusfront65cb2ab56f6b4d6f931d3be85c4cdb37webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/Nitrowood-Aggressive_ea11452b-818d-421e-b0a5-f1fff0209110.webp","t":"nitrowoodaggressiveea11452b818d421eb0a5f1fff0209110webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nightshred-black-short1_54fa4720-cefd-4009-be1b-8a626cc6ce33.png","t":"nightshredblackshort154fa4720cefd4009be1b8a626cc6ce33png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShredPNG_fcac6b39-b5d0-4f48-bd3e-753f20904aba.png","t":"nightshredpngfcac6b39b5d04f48bd3e753f20904abapng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -745,7 +798,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

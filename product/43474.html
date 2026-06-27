@@ -583,6 +583,59 @@ Machine wash cold</li>
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-3_21de5ed7-86cf-4b3a-9cdc-61263497f7f3.jpg","t":"preview321de5ed786cf4b3a9cdc61263497f7f3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-4_bc869116-23cc-45a3-a2ac-a721bf69e80b.jpg","t":"preview4bc86911623cc45a3a2aca721bf69e80bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-5_28572e37-709a-40d4-bd80-b085f2ecf036.jpg","t":"preview528572e37709a40d4bd80b085f2ecf036jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-6_914c905d-39cb-44be-8cc9-c60633a45790.jpg","t":"preview6914c905d39cb44be8cc9c60633a45790jpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-7_628c38ff-d869-4214-bf87-c0efd50b303d.jpg","t":"preview7628c38ffd8694214bf87c0efd50b303djpg"},{"src":"https://cdn.shopify.com/s/files/1/0367/6903/8381/products/preview-8_8efec2a1-deda-478e-9ecb-a8dcf0a3ff99.jpg","t":"preview88efec2a1deda478e9ecba8dcf0a3ff99jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -756,7 +809,12 @@ Machine wash cold</li>
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>

@@ -566,6 +566,59 @@
           });
         });
 
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/napoli-202223-goalkeeper_d9947445-71a7-406d-a052-99cc7d424876.png","t":"napoli202223goalkeeperd994744571a7406da05299cc7d424876png"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/f9d551d6-5258-4ce7-ac1d-238a9d96a317.jpg","t":"f9d551d652584ce7ac1d238a9d96a317jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/01b770bf-9bd5-491b-80e5-df6a8efbefc3.jpg","t":"01b770bf9bd5491b80e5df6a8efbefc3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/90d337eb-c361-44a0-80da-c38c50e5b72f.jpg","t":"90d337ebc36144a080dac38c50e5b72fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0254/6699/4784/files/a3fe0b5f-b881-4a4a-a699-653dde3e3e25.jpg","t":"a3fe0b5fb8814a4aa699653dde3e3e25jpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
+          mainImg.src = src;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
         var addBtn = document.querySelector("[data-pdp-add-button]");
         var note = document.querySelector("[data-pdp-cta-note]");
@@ -739,7 +792,12 @@
             if (note) note.textContent = "";
           }
         }
-        selects.forEach(function (s) { s.addEventListener("change", refresh); });
+        selects.forEach(function (s) {
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
+        });
         refresh();
       })();
     </script>
