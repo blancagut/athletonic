@@ -53,7 +53,7 @@ export async function listView(config) {
       ${
         config.statuses
           ? `<select aria-label="Filter by status">
-               <option value="">All statuses</option>
+               <option value="">${escapeHtml(config.statusEmptyLabel || "All statuses")}</option>
                ${optionList(config.statuses, "")}
              </select>`
           : ""

@@ -35,6 +35,23 @@ async function getAuthedUser(req) {
 }
 
 /**
+ * Resolve the authenticated Supabase user when a Bearer token is present.
+ * Returns null for anonymous requests (no Authorization header), but throws
+ * 401 when a token is present and invalid so callers never silently degrade.
+ */
+async function getOptionalAuthedUser(req) {
+  const token = getBearerToken(req);
+  if (!token) return null;
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data || !data.user) {
+    throw authError(401, "invalid_token", "Your session is invalid or has expired.");
+  }
+  return data.user;
+}
+
+/**
  * Read the role for a given user id from public.profiles using the service role.
  */
 async function getRole(userId) {
@@ -102,6 +119,7 @@ module.exports = {
   ADMIN_ROLES,
   getBearerToken,
   getAuthedUser,
+  getOptionalAuthedUser,
   getRole,
   requireAdmin,
   requireSuperAdmin,

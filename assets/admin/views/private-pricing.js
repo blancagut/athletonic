@@ -10,15 +10,26 @@ const STATUSES = [
 function codeBlock(accessCode) {
   return `
     <div class="admin-callout">
-      <p class="admin-metric-sub">This access code is shown once. Share it securely with the approved customer.</p>
+      <p class="admin-metric-sub">This access code is a fallback for guests and is shown once. Customers who sign in with the granted email get wholesale pricing automatically.</p>
       <p class="admin-mono admin-code-display">${escapeHtml(accessCode)}</p>
     </div>
   `;
 }
 
+function accountLinkLabel(grant) {
+  return grant && grant.auth_user_id
+    ? "Linked — auto-applies on sign-in"
+    : "Not linked — applies on sign-in or via code";
+}
+
 function openCreateGrant(app, reload) {
-  const modal = openModal("Create private pricing access", `
+  const modal = openModal("Create wholesale access", `
     <form id="private-pricing-create">
+      <p class="admin-metric-sub">
+        When the customer signs in with this email, wholesale pricing is applied
+        automatically at checkout — no code needed. The access code below is a
+        fallback for guests and is shown only once.
+      </p>
       <div class="admin-field">
         <label>Email</label>
         <input name="email" type="email" autocomplete="off" required />
@@ -56,6 +67,7 @@ function openCreateGrant(app, reload) {
           <dt>Email</dt><dd>${escapeHtml(result.grant.email)}</dd>
           <dt>Status</dt><dd>${statusBadge(result.grant.status)}</dd>
           <dt>Profile</dt><dd>${escapeHtml(result.grant.profile)}</dd>
+          <dt>Account</dt><dd>${escapeHtml(accountLinkLabel(result.grant))}</dd>
         </dl>
       `;
       reload();
@@ -66,10 +78,11 @@ function openCreateGrant(app, reload) {
 }
 
 async function openGrant(app, grant, reload) {
-  const modal = openModal(`Private access for ${grant.email}`, `
+  const modal = openModal(`Wholesale access for ${grant.email}`, `
     <dl class="admin-kv">
       <dt>Email</dt><dd>${escapeHtml(grant.email)}</dd>
       <dt>Status</dt><dd>${statusBadge(grant.status)}</dd>
+      <dt>Account</dt><dd>${escapeHtml(accountLinkLabel(grant))}</dd>
       <dt>Code hint</dt><dd>${grant.code_hint ? `Ends in ${escapeHtml(grant.code_hint)}` : "—"}</dd>
       <dt>Profile</dt><dd>${escapeHtml(grant.profile || "private_access")}</dd>
       <dt>Usage</dt><dd>${Number(grant.usage_count || 0)}</dd>
@@ -157,7 +170,7 @@ async function openGrant(app, grant, reload) {
 }
 
 export default {
-  title: "Private pricing",
+  title: "Private pricing / wholesale access",
   async render(mount, app, context = {}) {
     let controls;
 
@@ -181,6 +194,7 @@ export default {
       columns: [
         { label: "Email", render: (r) => escapeHtml(r.email) },
         { label: "Status", render: (r) => statusBadge(r.status) },
+        { label: "Account", render: (r) => (r.auth_user_id ? "Linked" : "—") },
         { label: "Hint", render: (r) => (r.code_hint ? `Ends ${escapeHtml(r.code_hint)}` : "—") },
         { label: "Profile", render: (r) => escapeHtml(r.profile || "private_access") },
         { label: "Usage", render: (r) => String(Number(r.usage_count || 0)) },

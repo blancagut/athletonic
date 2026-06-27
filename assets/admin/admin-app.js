@@ -9,6 +9,7 @@ import users from "./views/users.js";
 import settings from "./views/settings.js";
 import audit from "./views/audit.js";
 import privatePricing from "./views/private-pricing.js";
+import wholesaleApplications from "./views/wholesale-applications.js";
 
 window.__athletonicAdminModuleLoaded = true;
 
@@ -18,6 +19,7 @@ const VIEWS = {
   returns,
   intents,
   catalog,
+  wholesaleApplications,
   privatePricing,
   users,
   settings,
@@ -122,7 +124,7 @@ async function renderRoute() {
   const view = VIEWS[route];
 
   // Guard super-admin-only routes.
-  if (["users", "settings", "privatePricing"].includes(route) && app.user.role !== "super_admin") {
+  if (["users", "settings", "privatePricing", "wholesaleApplications"].includes(route) && app.user.role !== "super_admin") {
     app.navigate(DEFAULT_ROUTE);
     return;
   }

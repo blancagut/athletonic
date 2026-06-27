@@ -1,21 +1,17 @@
 const { getShippingCents, validateCart } = require("./catalog");
 const {
-  accessCodeProvided,
   applyPrivatePricing,
-  verifyPrivatePricingGrant,
+  resolvePrivatePricingGrant,
 } = require("./private-pricing");
 
 async function buildCheckoutPricing(options) {
-  const accessCode = options.accessCode;
-  const hasAccessCode = accessCodeProvided(accessCode);
   const supabase = options.supabase || null;
-  const privateGrant = hasAccessCode
-    ? await verifyPrivatePricingGrant(supabase, {
-        email: options.email,
-        accessCode,
-        clientIp: options.clientIp,
-      })
-    : null;
+  const privateGrant = await resolvePrivatePricingGrant(supabase, {
+    email: options.email,
+    accessCode: options.accessCode,
+    clientIp: options.clientIp,
+    authUserId: options.authUserId || null,
+  });
 
   const { items, subtotalCents, currency } = validateCart(options.cart, {
     priceBasis: privateGrant ? "regular" : "current",

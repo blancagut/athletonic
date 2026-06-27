@@ -15,6 +15,7 @@ const LIST_SELECT = `
   status,
   code_hint,
   profile,
+  auth_user_id,
   expires_at,
   usage_count,
   last_used_at,

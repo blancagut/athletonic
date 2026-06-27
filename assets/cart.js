@@ -1217,35 +1217,12 @@
     }
     var dealNote = "";
     if (variantOffer) {
-      var variantEnds = "";
-      if (variantOffer.expires_at) {
-        var variantDate = new Date(variantOffer.expires_at);
-        if (!isNaN(variantDate)) {
-          variantEnds = " through " + variantDate.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-        }
-      }
       dealNote = '<p class="product-deal-note">' +
-        esc((variantOffer.note || "Select eligible options for this offer.") + variantEnds) +
+        esc("Limited offer") +
         "</p>";
     } else if (p.deal) {
-      var ends = "";
-      if (p.deal.expires_at) {
-        var d = new Date(p.deal.expires_at);
-        if (!isNaN(d)) {
-          ends = " through " + d.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-        }
-      }
-      var dealText = p.deal.discount_percent
-        ? p.deal.discount_percent + "% off"
-        : "Limited offer";
       dealNote = '<p class="product-deal-note">' +
-        esc(dealText + ends) + "</p>";
+        esc("Limited offer") + "</p>";
     }
     var purchasable = p.purchasable !== false && p.ready_for_sale !== false;
     var mustChooseOptions = Boolean(p.requires_variant_selection || variantOffer);
@@ -1537,7 +1514,8 @@
       if (products.length) {
         html += '<ul class="sdd-results">';
         products.forEach(function (p) {
-          var href = baseHref() + "product/" + p.id + ".html";
+          var pdpHref = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
+          var href = (p.has_pdp === false && p.url) ? p.url : pdpHref;
           html += '<li role="option" aria-selected="false" class="sdd-item sdd-item--product" data-href="' + esc(href) + '">'
                 + '<img class="sdd-thumb" src="' + esc(p.image) + '" alt="" width="44" height="44" loading="lazy" decoding="async">'
                 + '<div class="sdd-item-body">'
@@ -1625,8 +1603,8 @@
 
     /* ── Run search query ── */
     function runSearch(q) {
-      loadCatalog().then(function (products) {
-        renderResults(q, searchProducts(products, q, getCategory()));
+      loadSearchIndex().then(function (products) {
+        renderResults(q, filterCatalogFull(products, q, getCategory()).slice(0, MAX_RESULTS));
       });
     }
 

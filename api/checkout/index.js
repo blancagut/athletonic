@@ -1,5 +1,6 @@
 const { normalizeAttribution, normalizeEmail } = require("../_lib/catalog");
 const { buildCheckoutPricing, publicQuotePayload } = require("../_lib/checkout-pricing");
+const { getOptionalAuthedUser } = require("../_lib/auth");
 const {
   getClientIp,
   getSiteUrl,
@@ -104,18 +105,27 @@ module.exports = async function handler(req, res) {
       ...(hasAccessCode ? ["ATHLETONIC_PRIVATE_PRICING_SECRET"] : []),
     ]);
 
-    const customerEmail = normalizeEmail(body.email);
     const attribution = normalizeAttribution(body.attribution);
     const supabase = getSupabaseAdmin();
     const stripe = getStripe();
     const siteUrl = getSiteUrl(req);
     const clientIp = getClientIp(req);
+
+    // Authenticated checkout: trust the verified token identity, never the
+    // client-supplied email, so a signed-in user cannot apply another
+    // account's wholesale pricing by spoofing body.email.
+    const authedUser = await getOptionalAuthedUser(req);
+    const customerEmail = authedUser
+      ? normalizeEmail(authedUser.email)
+      : normalizeEmail(body.email);
+
     const pricing = await buildCheckoutPricing({
       supabase,
       email: customerEmail,
       cart: body.cart,
       accessCode: body.access_code,
       clientIp,
+      authUserId: authedUser ? authedUser.id : null,
     });
 
     const checkoutCart = pricing.items.map((item) => ({

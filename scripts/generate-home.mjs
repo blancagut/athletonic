@@ -113,6 +113,8 @@ const displayOnlyFragments = [
   "plp",
 ];
 
+const PDP_GALLERY_IMAGE_LIMIT = 8;
+
 const combatGloveBrands = new Set([
   "century_martial_arts",
   "everlast",
@@ -654,6 +656,50 @@ function productImageScore(image) {
   return score;
 }
 
+function pdpGalleryImages(curated, imageList = [], limit = PDP_GALLERY_IMAGE_LIMIT) {
+  const seen = new Set();
+  const result = [];
+
+  function addUrl(url) {
+    if (!url || isBlockedImage(url)) return false;
+    const key = imageKey(url);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    result.push(url);
+    return true;
+  }
+
+  addUrl(curated?.image);
+
+  const candidates = imageList
+    .filter((image) => image?.url && !isBlockedImage(image.url))
+    .map((image, index) => ({
+      ...image,
+      _index: index,
+      _key: imageKey(image.url),
+      _score: productImageScore(image),
+    }))
+    .filter((image) => image._key && !seen.has(image._key))
+    .sort((a, b) => {
+      const score = a._score - b._score;
+      if (score !== 0) return score;
+      const position = Number(a.position || 0) - Number(b.position || 0);
+      if (position !== 0) return position;
+      return a._index - b._index;
+    });
+
+  for (const image of candidates) {
+    if (result.length >= limit) break;
+    addUrl(image.url);
+  }
+
+  if (result.length === 0 && curated?.image) {
+    result.push(curated.image);
+  }
+
+  return result.slice(0, limit);
+}
+
 function bestImagesForProducts(productIds) {
   const ids = productIds
     .map((id) => Number(id))
@@ -845,26 +891,7 @@ function productCard(product, pathPrefix = "./") {
   const displayCompare = variantOffer
     ? Number(variantOffer.original_price_cents || 0) / 100
     : Number(deal?.original_price || 0);
-  const displayDiscount = variantOffer
-    ? Number(variantOffer.discount_percent || 0)
-    : Number(deal?.discount_percent || 0);
-  const offerNote = variantOffer
-    ? variantOffer.note || "Select eligible options for this offer."
-    : deal
-      ? `${displayDiscount >= 5 ? `${displayDiscount}% off` : "Limited offer"}`
-    : "";
-  const dealEnds = deal?.expires_at
-    ? new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-      }).format(new Date(deal.expires_at))
-    : "";
-  const variantOfferEnds = variantOffer?.expires_at
-    ? new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-      }).format(new Date(variantOffer.expires_at))
-    : "";
+  const offerNote = deal || variantOffer ? "Limited offer" : "";
   const searchText = [brand, name, label, product.sectionTitle, product.sectionEyebrow]
     .filter(Boolean)
     .join(" ")
@@ -889,9 +916,7 @@ function productCard(product, pathPrefix = "./") {
               </div>
               ${
                 deal || variantOffer
-                  ? `<p class="product-deal-note">${html(
-                      `${offerNote}${variantOfferEnds ? ` through ${variantOfferEnds}` : dealEnds ? ` through ${dealEnds}` : ""}`
-                    )}</p>`
+                  ? `<p class="product-deal-note">${html(offerNote)}</p>`
                   : ""
               }
               ${
@@ -1788,20 +1813,10 @@ function renderHomeHero(featuredOffers = []) {
   const primaryCompare = Number(
     primaryOffer.deal?.original_price || primaryOffer.variantOffer?.original_price || 0
   );
-  const primaryDiscount = Number(
-    primaryOffer.deal?.discount_percent || primaryOffer.variantOffer?.discount_percent || 0
-  );
   const primaryNote = primaryOffer.variantOffer
-    ? primaryOffer.variantOffer.note || "Select options for this offer."
+    ? "Limited offer"
     : primaryOffer.deal
-      ? `${primaryDiscount >= 5 ? `${primaryDiscount}% off` : "Limited offer"}${
-          primaryOffer.deal.expires_at
-            ? ` through ${new Intl.DateTimeFormat("en-US", {
-                month: "short",
-                day: "numeric",
-              }).format(new Date(primaryOffer.deal.expires_at))}`
-            : ""
-        }`
+      ? "Limited offer"
       : "Real catalog offer";
 
   return `
@@ -1843,15 +1858,10 @@ function renderHomeHero(featuredOffers = []) {
               const compare = Number(
                 product.deal?.original_price || product.variantOffer?.original_price || 0
               );
-              const discount = Number(
-                product.deal?.discount_percent || product.variantOffer?.discount_percent || 0
-              );
               const note = product.variantOffer
-                ? product.variantOffer.note || "Select options for this offer."
+                ? "Limited offer"
                 : product.deal
-                  ? discount >= 5
-                    ? `${discount}% off`
-                    : "Limited offer"
+                  ? "Limited offer"
                   : "Value pick";
               return `
           <article class="hero-deal hero-deal-compact">
@@ -2668,25 +2678,10 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
     .filter((variant) => variant.key && variant.price_cents > 0);
   const variantPricingJson = JSON.stringify(variantPricing).replace(/</g, "\\u003c");
   const variantOfferNote = pdpVariantOffer
-    ? `<p class="pdp-variant-deal-note" data-pdp-variant-deal-note>${html(
-        pdpVariantOffer.note || "Select eligible options for this offer."
-      )}</p>`
+    ? `<p class="pdp-variant-deal-note" data-pdp-variant-deal-note>Limited offer</p>`
     : "";
 
-  // Build image list: curated.image first (already best on home), then rest deduped
-  const seen = new Set();
-  const images = [];
-  if (curated.image) {
-    images.push(curated.image);
-    seen.add(curated.image);
-  }
-  for (const img of imageList || []) {
-    if (img.url && !seen.has(img.url)) {
-      images.push(img.url);
-      seen.add(img.url);
-    }
-  }
-  if (images.length === 0 && curated.image) images.push(curated.image);
+  const images = pdpGalleryImages(curated, imageList);
 
   const options = safeParseJson(fullRow?.options, []);
   const normalizedPdpOptions = normalizedOptionsForProduct(
@@ -3058,7 +3053,7 @@ ${mobileBottomNav(pathPrefix)}
             }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
+              if (variantDealNote) variantDealNote.textContent = "Limited offer";
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;

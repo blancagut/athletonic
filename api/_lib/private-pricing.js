@@ -179,7 +179,101 @@ async function verifyPrivatePricingGrant(supabase, options) {
     email: grant.email,
     profile: grant.profile || "private_access",
     code_hint: grant.code_hint || null,
+    source: "access_code",
   };
+}
+
+function grantIsActive(grant) {
+  if (!grant || grant.status !== "active") return false;
+  const expiresAt = grant.expires_at ? Date.parse(grant.expires_at) : null;
+  return !expiresAt || (Number.isFinite(expiresAt) && expiresAt > Date.now());
+}
+
+/**
+ * Resolve an active wholesale grant for an authenticated account, without
+ * requiring an access code. Looks up by linked auth_user_id first, then by
+ * email. When matched by email and the grant is not yet linked to the auth
+ * account, the auth_user_id is backfilled so future lookups are direct.
+ * Does NOT require ATHLETONIC_PRIVATE_PRICING_SECRET.
+ */
+async function findAccountPrivatePricingGrant(supabase, options) {
+  const authUserId = options.authUserId || null;
+  const email = options.email || null;
+  if (!authUserId) return null;
+
+  const selectColumns =
+    "id, email, status, code_hint, profile, expires_at, auth_user_id";
+
+  let grant = null;
+  let matchedByEmail = false;
+
+  const byUser = await supabase
+    .from("private_pricing_grants")
+    .select(selectColumns)
+    .eq("auth_user_id", authUserId)
+    .maybeSingle();
+  if (byUser.error) throw byUser.error;
+  grant = byUser.data || null;
+
+  if (!grant && email) {
+    const byEmail = await supabase
+      .from("private_pricing_grants")
+      .select(selectColumns)
+      .eq("email", email)
+      .maybeSingle();
+    if (byEmail.error) throw byEmail.error;
+    grant = byEmail.data || null;
+    matchedByEmail = Boolean(grant);
+  }
+
+  if (!grantIsActive(grant)) return null;
+
+  if (matchedByEmail && !grant.auth_user_id) {
+    const { error } = await supabase
+      .from("private_pricing_grants")
+      .update({ auth_user_id: authUserId })
+      .eq("id", grant.id)
+      .is("auth_user_id", null);
+    if (!error) grant.auth_user_id = authUserId;
+  }
+
+  return {
+    id: grant.id,
+    email: grant.email,
+    profile: grant.profile || "private_access",
+    code_hint: grant.code_hint || null,
+    auth_user_id: grant.auth_user_id || authUserId,
+    source: "account",
+  };
+}
+
+/**
+ * Resolve the private pricing grant to apply for a checkout/quote.
+ *  - If an access code is provided, use the existing access-code flow.
+ *  - Otherwise, if the request is authenticated, look up an active grant
+ *    linked to the account (by auth_user_id or email).
+ * Returns null when no grant applies.
+ */
+async function resolvePrivatePricingGrant(supabase, options) {
+  if (!supabase) return null;
+  const accessCode = options.accessCode;
+
+  if (accessCodeProvided(accessCode)) {
+    return verifyPrivatePricingGrant(supabase, {
+      email: options.email,
+      accessCode,
+      clientIp: options.clientIp,
+    });
+  }
+
+  if (options.authUserId) {
+    return findAccountPrivatePricingGrant(supabase, {
+      authUserId: options.authUserId,
+      email: options.email,
+    });
+  }
+
+  return null;
 }
 
 async function recordPrivatePricingUsage(supabase, grantId) {
@@ -246,6 +340,7 @@ function applyPrivatePricing(items, grant) {
     lineDiscounts,
     pricingContext: {
       mode: "private_access",
+      source: grant.source || "access_code",
       rules_version: PRIVATE_PRICING_RULES_VERSION,
       grant_id: grant.id,
       profile: grant.profile || "private_access",
@@ -267,5 +362,7 @@ module.exports = {
   normalizeAccessCode,
   sanitizeProfile,
   verifyPrivatePricingGrant,
+  findAccountPrivatePricingGrant,
+  resolvePrivatePricingGrant,
   recordPrivatePricingUsage,
 };

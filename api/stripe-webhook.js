@@ -1,4 +1,6 @@
 const { handleError, json, methodNotAllowed, readRawBody, requireEnv } = require("./_lib/http");
+const { sendOrderConfirmationEmail } = require("./_lib/email");
+const { fetchOrderById } = require("./_lib/orders");
 const { getStripe } = require("./_lib/stripe");
 const { getSupabaseAdmin } = require("./_lib/supabase");
 
@@ -86,6 +88,28 @@ async function handleCheckoutPaid(supabase, stripe, sessionLike) {
   return { order_id: orderId };
 }
 
+async function sendOrderConfirmationIfPossible(supabase, req, orderId) {
+  if (!orderId || !process.env.RESEND_API_KEY) return;
+
+  const { order, error } = await fetchOrderById(supabase, orderId);
+  if (error || !order) {
+    console.error("order_confirmation_lookup_failed", error || { orderId });
+    return;
+  }
+
+  try {
+    const proto = req.headers["x-forwarded-proto"] || "https";
+    const host = req.headers["x-forwarded-host"] || req.headers.host;
+    const siteUrl = (process.env.ATHLETONIC_SITE_URL || `${proto}://${host}`).replace(/\/$/, "");
+    await sendOrderConfirmationEmail({ order, siteUrl });
+  } catch (error) {
+    console.error("order_confirmation_email_failed", {
+      orderId,
+      message: error.message,
+    });
+  }
+}
+
 async function handleCheckoutExpired(supabase, session) {
   const orderId = session.metadata?.order_id;
   if (!orderId) return { order_id: null };
@@ -143,6 +167,7 @@ module.exports = async function handler(req, res) {
         event.type === "checkout.session.async_payment_succeeded"
       ) {
         result = await handleCheckoutPaid(supabase, stripe, event.data.object);
+        await sendOrderConfirmationIfPossible(supabase, req, result.order_id);
       } else if (event.type === "checkout.session.expired") {
         result = await handleCheckoutExpired(supabase, event.data.object);
       }
