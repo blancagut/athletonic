@@ -1669,7 +1669,7 @@ function purchaseMetaByProductId(productIds) {
         v.option1,
         v.option2,
         v.option3,
-        coalesce(v.available, 0) as variant_available
+        case when coalesce(v.price, 0) > 0 then 1 else 0 end as variant_available
       from products p
       left join variants v on v.product_row_id = p.id
       where p.id in (${chunk.join(",")})
@@ -2703,7 +2703,7 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
         optionValues,
         price_cents: Math.round(Number(variant?.price || 0) * 100),
         compare_at_cents: Math.round(Number(variant?.compare_at_price || 0) * 100),
-        available: Boolean(Number(variant?.available)),
+        available: Math.round(Number(variant?.price || 0) * 100) > 0,
       };
     })
     .filter((variant) => variant.key && variant.price_cents > 0);

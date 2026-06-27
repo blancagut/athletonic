@@ -1153,10 +1153,13 @@
     if (b.includes(lq))   return 1;
     return 0;
   }
+  function productHasDisplayPrice(p) {
+    return Number(p.price_cents || p.priceCents || 0) > 0 || Number(p.price || 0) > 0;
+  }
   function searchProducts(products, q, category) {
     var lq = q.toLowerCase();
     var res = products.filter(function (p) {
-      if (!p.available) return false;
+      if (!productHasDisplayPrice(p)) return false;
       if (category && category !== "all" && p.section_id !== category) return false;
       if (!lq) return true;
       return (
@@ -1178,7 +1181,7 @@
     var lq = (q || "").trim().toLowerCase();
     var tokens = queryTokens(lq);
     var res = products.filter(function (p) {
-      if (p.available === false) return false;
+      if (!productHasDisplayPrice(p)) return false;
       if (category && category !== "all" && p.section_id !== category) return false;
       return matchesProductQuery(p, lq, tokens);
     });
@@ -1224,7 +1227,7 @@
       dealNote = '<p class="product-deal-note">' +
         esc("Limited offer") + "</p>";
     }
-    var purchasable = p.purchasable !== false && p.ready_for_sale !== false;
+    var purchasable = productHasDisplayPrice(p) && p.purchasable !== false && p.ready_for_sale !== false;
     var mustChooseOptions = Boolean(p.requires_variant_selection || variantOffer);
     var actionHtml = !purchasable
       ? '<button class="add-cart-button" type="button" disabled aria-disabled="true">Unavailable</button>'

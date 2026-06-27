@@ -48,7 +48,7 @@ function normalizeVariant(product, rawVariant) {
     compare_at_price_cents:
       compareAtPriceCents > priceCents ? compareAtPriceCents : null,
     currency: String(rawVariant.currency || product.currency || "USD").toUpperCase(),
-    available: rawVariant.available === true && priceCents > 0,
+    available: priceCents > 0,
     weight_grams: Number.isInteger(Number(rawVariant.weight_grams))
       ? Number(rawVariant.weight_grams)
       : null,
@@ -62,6 +62,7 @@ function normalizeProduct(product) {
 
   const priceCents = intCents(product.price_cents);
   const variants = Array.isArray(product.variants) ? product.variants : [];
+  const hasPricedVariant = variants.some((variant) => intCents(variant?.price_cents) > 0);
   const normalized = {
     id,
     external_product_id: product.external_product_id || null,
@@ -79,7 +80,7 @@ function normalizeProduct(product) {
         ? intCents(product.compare_at_price_cents)
         : null,
     currency: String(product.currency || catalog.currency || "USD").toUpperCase(),
-    available: product.available === true,
+    available: priceCents > 0 || hasPricedVariant,
     purchasable: product.purchasable !== false && product.ready_for_sale !== false,
     ready_for_sale: product.ready_for_sale !== false,
     has_variants: product.has_variants === true || variants.length > 0,

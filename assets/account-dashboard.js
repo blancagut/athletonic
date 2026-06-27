@@ -99,7 +99,7 @@
   }
 
   function usableProduct(product) {
-    return product && product.id && product.image && product.available === true && Number(product.price_cents) > 0;
+    return product && product.id && product.image && Number(product.price_cents) > 0;
   }
 
   function renderSummary(orders) {

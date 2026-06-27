@@ -17,6 +17,7 @@ const catalogData = require("../data/athletonic-catalog.json");
 
 const SYN_UNPURCHASABLE = "__test_unpurchasable__";
 const SYN_UNAVAILABLE = "__test_unavailable__";
+const SYN_FLAGGED_UNAVAILABLE_WITH_PRICE = "__test_flagged_unavailable_with_price__";
 const SYN_VARIANT = "__test_variant_required__";
 
 catalogData.products.push({
@@ -31,7 +32,15 @@ catalogData.products.push({
 catalogData.products.push({
   id: SYN_UNAVAILABLE,
   brand: "Test",
-  name: "Synthetic Unavailable",
+  name: "Synthetic No Price",
+  price_cents: 0,
+  currency: "USD",
+  available: false,
+});
+catalogData.products.push({
+  id: SYN_FLAGGED_UNAVAILABLE_WITH_PRICE,
+  brand: "Test",
+  name: "Synthetic Flagged Unavailable With Price",
   price_cents: 1234,
   currency: "USD",
   available: false,
@@ -121,6 +130,14 @@ test("a product explicitly marked purchasable:false is still rejected", () => {
 
 test("an unavailable product is rejected", () => {
   expectReject([{ productId: SYN_UNAVAILABLE, quantity: 1 }], "product_unavailable");
+});
+
+test("a priced product validates even when an old availability flag is false", () => {
+  const result = validateCart([
+    { productId: SYN_FLAGGED_UNAVAILABLE_WITH_PRICE, quantity: 1 },
+  ]);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].unit_amount_cents, 1234);
 });
 
 test("a variant-required product with no chosen option is rejected", () => {
