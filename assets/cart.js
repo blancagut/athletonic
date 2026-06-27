@@ -1211,13 +1211,6 @@
     var currency = p.currency || "USD";
     var label = sectionLabel(p);
     var variantOffer = p.variant_offer || null;
-    if (variantOffer) {
-      price = (Number(variantOffer.sale_price_cents) || 0) / 100;
-      priceStr = price.toFixed(2);
-      compare = variantOffer.original_price_cents
-        ? (Number(variantOffer.original_price_cents) || 0) / 100
-        : compare;
-    }
     var dealNote = "";
     if (variantOffer) {
       dealNote = '<p class="product-deal-note">' +
