@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign In | Athletonic</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://athletonic.com/es/pages/login.html" />
+    <!-- hreflang:start -->
+    <link rel="alternate" hreflang="en" href="https://athletonic.com/pages/login.html" />
+    <link rel="alternate" hreflang="es" href="https://athletonic.com/es/pages/login.html" />
+    <link rel="alternate" hreflang="x-default" href="https://athletonic.com/pages/login.html" />
+    <!-- hreflang:end -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      /* ── Login page layout ── */
+      .login-page {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        background: #f5f8fb;
+      }
+
+      .login-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 24px;
+        background: var(--blue);
+        border-bottom: 3px solid var(--teal);
+      }
+
+      .login-top-bar .brand-logo {
+        height: 36px;
+        width: auto;
+      }
+
+      .login-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 16px 60px;
+        gap: 14px;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 420px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .login-card-head {
+        padding: 24px 24px 0;
+        text-align: center;
+      }
+
+      .login-card-head h1 {
+        margin: 0 0 6px;
+        color: var(--blue);
+        font-size: 24px;
+        font-weight: 850;
+        letter-spacing: 0;
+        text-transform: none;
+        line-height: 1.2;
+      }
+
+      .login-card-head p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      /* Forgot-password header (back button row) */
+      .login-back-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 16px 0;
+      }
+
+      .login-back-row button {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 0;
+        background: none;
+        color: #0066c0;
+        cursor: pointer;
+        font-size: 13px;
+        padding: 0;
+      }
+
+      .login-back-row button:hover {
+        text-decoration: underline;
+      }
+
+      .login-back-row button svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* Divider below card */
+      .login-divider {
+        width: 100%;
+        max-width: 420px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .login-divider::before,
+      .login-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+
+      .login-guest {
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
+      }
+
+      .login-guest a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--white);
+        color: var(--blue);
+        font-size: 14px;
+        font-weight: 850;
+        text-decoration: none;
+        transition: background 0.15s ease;
+      }
+
+      .login-guest a:hover {
+        background: var(--gray);
+      }
+
+      .login-legal {
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+        max-width: 380px;
+        line-height: 1.55;
+      }
+
+      .login-legal a {
+        color: #0066c0;
+      }
+
+      .login-legal a:hover {
+        text-decoration: underline;
+      }
+
+      /* Overrides inside the card */
+      .login-card .auth-form {
+        padding: 20px 24px 24px;
+        border-top: 0;
+      }
+
+      .login-card .auth-tabs {
+        padding: 14px 24px 0;
+      }
+
+      .login-card .account-form input {
+        box-sizing: border-box;
+      }
+
+      /* "Forgot password?" — plain text link, not a full button */
+      #btn-to-forgot {
+        display: inline;
+        min-height: 0;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        color: #0066c0;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 0;
+        text-transform: none;
+        text-decoration: underline;
+      }
+
+      #btn-to-forgot:hover {
+        color: #c7511f;
+      }
+
+      /* Shrink the form-note wrapping the forgot button */
+      .login-card #form-signin .form-note {
+        margin: -4px 0 0;
+      }
+
+      /* Forgot-password panel doesn't have tabs */
+      .forgot-head {
+        padding: 20px 24px 0;
+      }
+
+      .forgot-head h2 {
+        margin: 0 0 6px;
+        color: var(--blue);
+        font-size: 20px;
+        font-weight: 850;
+      }
+
+      .forgot-head p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 480px) {
+        .login-wrap {
+          padding: 24px 12px 48px;
+        }
+
+        .login-card-head {
+          padding: 18px 18px 0;
+        }
+
+        .login-card .auth-tabs {
+          padding: 12px 18px 0;
+        }
+
+        .login-card .auth-form {
+          padding: 16px 18px 20px;
+        }
+
+        .forgot-head {
+          padding: 16px 18px 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="login-page">
+
+    <!-- ── Minimal header ── -->
+    <header class="login-top-bar">
+      <a href="/es/" aria-label="Inicio de Athletonic">
+        <img class="brand-logo" src="/assets/logo.png" alt="Athletonic" width="1536" height="1024" decoding="async" />
+      </a>
+    </header>
+
+    <!-- ── Main ── -->
+    <div class="login-wrap">
+
+      <!-- Card -->
+      <div class="login-card" id="login-card">
+
+        <!-- Sign in / Create account view (default) -->
+        <div id="view-auth">
+          <div class="login-card-head">
+            <h1>Your Account</h1>
+            <p>Sign in for faster checkout, order tracking, and returns.</p>
+          </div>
+
+          <!-- Tabs -->
+          <div class="auth-tabs" role="tablist" aria-label="Account options" id="auth-tabs">
+            <button role="tab" id="tab-signin" aria-selected="true" aria-controls="panel-signin" type="button">Iniciar sesión</button>
+            <button role="tab" id="tab-create" aria-selected="false" aria-controls="panel-create" type="button">Create account</button>
+          </div>
+
+          <!-- Sign in panel -->
+          <div id="panel-signin" role="tabpanel" aria-labelledby="tab-signin">
+            <form class="auth-form account-form" id="form-signin" novalidate>
+              <label for="signin-email">Correo electrónico</label>
+              <input
+                id="signin-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              />
+
+              <label for="signin-password">Password</label>
+              <input
+                id="signin-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Your password"
+                required
+              />
+
+              <button type="submit" id="btn-signin">Iniciar sesión</button>
+
+              <p class="form-status" id="signin-status" aria-live="polite"></p>
+
+              <p class="form-note">
+                <button type="button" id="btn-to-forgot">Forgot password?</button>
+              </p>
+            </form>
+          </div>
+
+          <!-- Create account panel -->
+          <div id="panel-create" role="tabpanel" aria-labelledby="tab-create" hidden>
+            <form class="auth-form account-form" id="form-create" novalidate>
+              <label for="create-name">Full name</label>
+              <input
+                id="create-name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                placeholder="Your name"
+              />
+
+              <label for="create-email">Correo electrónico</label>
+              <input
+                id="create-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              />
+
+              <label for="create-password">Password</label>
+              <input
+                id="create-password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                placeholder="At least 8 characters"
+                required
+                minlength="8"
+              />
+
+              <button type="submit" id="btn-create">Create account</button>
+
+              <p class="form-status" id="create-status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+
+        <!-- Forgot password view -->
+        <div id="view-forgot" hidden>
+          <div class="login-back-row">
+            <button type="button" id="btn-back-signin">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              Back to sign in
+            </button>
+          </div>
+
+          <div class="forgot-head">
+            <h2>Reset your password</h2>
+            <p>Enter your email and we'll send you a link to create a new password.</p>
+          </div>
+
+          <form class="auth-form account-form" id="form-forgot" novalidate>
+            <label for="forgot-email">Correo electrónico</label>
+            <input
+              id="forgot-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+            />
+
+            <button type="submit" id="btn-forgot-submit">Send reset link</button>
+
+            <p class="form-status" id="forgot-status" aria-live="polite"></p>
+          </form>
+        </div>
+
+      </div>
+      <!-- /login-card -->
+
+      <div class="login-divider">or</div>
+
+      <div class="login-guest">
+        <a id="guest-link" href="/es/">Continue as guest</a>
+      </div>
+
+      <p class="login-legal">
+        By signing in or creating an account you agree to our
+        <a href="/es/pages/conditions-of-use.html">Condiciones de uso</a>
+        and <a href="/es/pages/privacy.html">Privacy Policy</a>.
+      </p>
+
+    </div>
+    <!-- /login-wrap -->
+
+    <script>
+      window.ATHLETONIC_SUPABASE_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
+      window.ATHLETONIC_SUPABASE_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="/assets/login.js" defer></script>
+
+  </body>
+</html>

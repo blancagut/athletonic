@@ -8,6 +8,11 @@ import {
   rmSync,
 } from "node:fs";
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
+import {
+  loadEsDict,
+  toSpanishHtml,
+  hreflangBlock,
+} from "./lib/i18n-shared.mjs";
 
 const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
 const SUPABASE_PUBLIC_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
@@ -4206,6 +4211,7 @@ const page = `<!doctype html>
       content="Athletonic.com is a performance store for supplements, sports nutrition, hydration, recovery, apparel, and fitness essentials."
     />
     ${canonicalLink("/")}
+    ${hreflangBlock("/", SITE_ORIGIN)}
     ${assetHeadLinks("./")}
     <link rel="stylesheet" href="./styles.css?v=home-marketplace-fix-2" />
   </head>
@@ -4326,6 +4332,21 @@ ${mobileBottomNav("./")}
 `;
 
 writeFileSync(new URL("../index.html", import.meta.url), cleanGeneratedText(page));
+
+/* ------------------------------------------------------------
+ *  Spanish (/es/) home twin
+ *  Reuses the shared dictionary so the localized layer stays in sync
+ *  with the client runtime and the static page build.
+ * ---------------------------------------------------------- */
+const enHome = cleanGeneratedText(page);
+const esHome = toSpanishHtml(enHome, {
+  enPath: "/",
+  baseDir: "/",
+  dict: loadEsDict(),
+  origin: SITE_ORIGIN,
+});
+mkdirSync(new URL("../es/", import.meta.url), { recursive: true });
+writeFileSync(new URL("../es/index.html", import.meta.url), esHome);
 console.log(
   `Generated ${totalProducts} products across ${populatedSections.length} sections.`
 );

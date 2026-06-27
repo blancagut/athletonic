@@ -403,7 +403,10 @@
   }
 
   function hydrateEmailFields() {
-    const email = storageGet(GUEST_EMAIL_KEY, "");
+    const session = getStoredAuthSession();
+    const sessionEmail =
+      session && session.user && session.user.email ? session.user.email : "";
+    const email = sessionEmail || storageGet(GUEST_EMAIL_KEY, "");
     if (accountEmail) accountEmail.value = email;
     if (checkoutEmail) checkoutEmail.value = email;
     if (accountLabel) {
@@ -627,8 +630,14 @@
   }
 
   async function submitCheckout(email) {
+    const session = getStoredAuthSession();
+    const sessionEmail =
+      session && session.user && session.user.email ? session.user.email : "";
+    // When signed in, the server trusts the token identity over body.email,
+    // so send the account email to keep the client display consistent.
+    const effectiveEmail = sessionEmail || email;
     const payload = {
-      email,
+      email: effectiveEmail,
       cart: cart.map((item) => ({
         productId: item.productId || item.id,
         variant_id: item.variantId || "",
@@ -641,11 +650,16 @@
       attribution: captureAttribution(),
     };
 
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    if (session && session.access_token) {
+      headers.Authorization = "Bearer " + session.access_token;
+    }
+
     const response = await fetch("/api/checkout", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(payload),
     });
 
@@ -1748,4 +1762,31 @@
   } else {
     init();
   }
+})();
+
+/* ============================================================
+ *  i18n loader
+ *  Loads the localization runtime (assets/i18n.js) on every page.
+ *  cart.js is already present on all pages, so this guarantees the
+ *  language switcher + translations run site-wide without editing
+ *  each HTML file. The path prefix mirrors pagePathPrefix() above.
+ * ============================================================ */
+(function () {
+  if (window.AthletonicI18n) return;
+  /* Resolve i18n.js relative to THIS script's own location so it works
+     at any directory depth (root, /pages/, /product/, and the localized
+     /es/ tree) and under file:// previews. Falls back to the pathname
+     heuristic if the script element can't be located. */
+  var base = null;
+  var self =
+    document.currentScript ||
+    document.querySelector('script[src*="assets/cart.js"]');
+  if (self && self.src) base = self.src.replace(/assets\/cart\.js.*$/, "");
+  if (base === null) {
+    base = /\/(pages|product)\//.test(window.location.pathname) ? "../" : "./";
+  }
+  var s = document.createElement("script");
+  s.src = base + "assets/i18n.js";
+  s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
 })();
