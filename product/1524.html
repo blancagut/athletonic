@@ -165,7 +165,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Optimum Nutrition</p>
-          <h1 class="pdp-title">GOLD STANDARD Pro Gainer</h1>
+          <h1 class="pdp-title" data-pdp-title>GOLD STANDARD Pro Gainer</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="7699" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$76.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -540,56 +540,27 @@
           });
         });
 
-        // Variant-aware main image: switch to the image matching the selected
-        // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
-        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1114032_Image_01.png","t":"on1114032image01png"},{"src":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1114091_Image_01.png","t":"on1114091image01png"},{"src":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1114092_Image_01.png","t":"on1114092image01png"},{"src":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1114033_Image_01.png","t":"on1114033image01png"}];
-        function variantValueGroup(value) {
-          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
-          return {
-            compact: words.join(""),
-            words: words.filter(function (w) { return w.length >= 3; }),
-          };
-        }
-        function pickVariantImage(values) {
-          if (!galleryImages.length) return null;
-          var groups = values
-            .map(variantValueGroup)
-            .filter(function (g) { return g.compact; });
-          if (!groups.length) return null;
-          var best = null;
-          var bestScore = 0;
-          galleryImages.forEach(function (img) {
-            var blob = img.t || "";
-            if (!blob) return;
-            var score = 0;
-            groups.forEach(function (group) {
-              if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
-                return;
-              }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
-            });
-            if (score > bestScore) {
-              bestScore = score;
-              best = img.src;
-            }
-          });
-          return bestScore > 0 ? best : null;
-        }
-        function applyVariantImage(values) {
-          var src = pickVariantImage(values || []);
-          if (!src || !mainImg) return;
+        var baseImgSrc = mainImg ? mainImg.getAttribute("src") : "";
+        var baseImgAlt = mainImg ? mainImg.getAttribute("alt") : "";
+        var titleEl = document.querySelector("[data-pdp-title]");
+        var baseTitle = titleEl ? titleEl.textContent.trim() : "";
+
+        // Exact option -> image mapping keeps flavor and size photos aligned.
+        function setMainImage(src, alt) {
+          if (!mainImg || !src) return;
           mainImg.src = src;
+          mainImg.alt = alt || baseImgAlt;
           thumbs.forEach(function (b) {
             b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
+        function resetMainImage() {
+          if (!mainImg || !baseImgSrc) return;
+          mainImg.src = baseImgSrc;
+          mainImg.alt = baseImgAlt;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === baseImgSrc);
           });
         }
 
@@ -603,8 +574,10 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Double Chocolate / 5.09 lb","optionValues":["Double Chocolate","5.09 lb"],"price_cents":7699,"compare_at_cents":0,"available":true},{"key":"Double Chocolate / 10.19 lb","optionValues":["Double Chocolate","10.19 lb"],"price_cents":11799,"compare_at_cents":0,"available":true},{"key":"Vanilla Custard / 5.09 lb","optionValues":["Vanilla Custard","5.09 lb"],"price_cents":7699,"compare_at_cents":0,"available":true},{"key":"Vanilla Custard / 10.19 lb","optionValues":["Vanilla Custard","10.19 lb"],"price_cents":11799,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"key":"Double Chocolate / 5.09 lb","optionValues":["Double Chocolate","5.09 lb"],"price_cents":7699,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1114033_Image_01.png"},{"key":"Double Chocolate / 10.19 lb","optionValues":["Double Chocolate","10.19 lb"],"price_cents":11799,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1114032_Image_01.png"},{"key":"Vanilla Custard / 5.09 lb","optionValues":["Vanilla Custard","5.09 lb"],"price_cents":7699,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1114091_Image_01.png"},{"key":"Vanilla Custard / 10.19 lb","optionValues":["Vanilla Custard","10.19 lb"],"price_cents":11799,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1114092_Image_01.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : baseTitle;
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : baseImgSrc;
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
@@ -663,6 +636,39 @@
           }
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
+          }
+        }
+
+        function variantFlavorLabel(variant) {
+          return variant && variant.optionValues && variant.optionValues.length ? variant.optionValues[0] : "";
+        }
+
+        function variantImageAlt(variant) {
+          return variant && variant.optionValues && variant.optionValues.length
+            ? baseTitle + ", " + variant.optionValues.join(", ")
+            : baseImgAlt;
+        }
+
+        function applyVariantPresentation(variant) {
+          if (!variant) {
+            resetMainImage();
+            if (titleEl) titleEl.textContent = baseTitle;
+            if (addBtn) {
+              addBtn.dataset.cartName = baseCartName;
+              addBtn.dataset.cartImage = baseCartImage;
+            }
+            return;
+          }
+          if (variant.image) {
+            setMainImage(variant.image, variantImageAlt(variant));
+          }
+          var flavor = variantFlavorLabel(variant);
+          if (titleEl) {
+            titleEl.textContent = flavor ? baseTitle + " — " + flavor : baseTitle;
+          }
+          if (addBtn) {
+            addBtn.dataset.cartName = flavor ? baseTitle + " — " + flavor : baseCartName;
+            addBtn.dataset.cartImage = variant.image || baseCartImage;
           }
         }
 
@@ -738,12 +744,14 @@
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
+              applyVariantPresentation(null);
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
             }
+            applyVariantPresentation(currentVariant);
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
@@ -764,6 +772,7 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            applyVariantPresentation(null);
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             resetToBasePrice();
             addBtn.disabled = true;
@@ -773,7 +782,6 @@
         }
         selects.forEach(function (s) {
           s.addEventListener("change", function () {
-            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
             refresh();
           });
         });
