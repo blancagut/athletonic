@@ -614,7 +614,7 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Chocolate / 1 lb","optionValues":["Chocolate","1 lb"],"price_cents":3299,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163669_Image_01.png"},{"key":"Chocolate / 2 lb","optionValues":["Chocolate","2 lb"],"price_cents":4599,"compare_at_cents":4999,"available":false,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-naturally-flavored-100-whey_Image_01_c84f82f4-f737-4e2e-a61f-7a56495a7cea.png"},{"key":"Vanilla / 1 lb","optionValues":["Vanilla","1 lb"],"price_cents":3299,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163801_Image_01.png"},{"key":"Vanilla / 2 lb","optionValues":["Vanilla","2 lb"],"price_cents":4599,"compare_at_cents":4999,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163820_Image_01.png"}];
+        var variantPricing = [{"key":"Chocolate / 1 lb","optionValues":["Chocolate","1 lb"],"price_cents":3299,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163669_Image_01.png"},{"key":"Chocolate / 2 lb","optionValues":["Chocolate","2 lb"],"price_cents":4599,"compare_at_cents":4999,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-naturally-flavored-100-whey_Image_01_c84f82f4-f737-4e2e-a61f-7a56495a7cea.png"},{"key":"Vanilla / 1 lb","optionValues":["Vanilla","1 lb"],"price_cents":3299,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163801_Image_01.png"},{"key":"Vanilla / 2 lb","optionValues":["Vanilla","2 lb"],"price_cents":4599,"compare_at_cents":4999,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163820_Image_01.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : baseTitle;
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : baseImgSrc;
@@ -792,13 +792,6 @@
               return;
             }
             applyVariantPresentation(currentVariant);
-            if (currentVariant && !currentVariant.available) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Unavailable";
-              setDisplayPrice(currentVariant, "");
-              if (note) note.textContent = "This option is currently out of stock.";
-              return;
-            }
             if (selectedDeal) {
               setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
