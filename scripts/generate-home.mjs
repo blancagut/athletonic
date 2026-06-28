@@ -1848,12 +1848,14 @@ function normalizedCatalogProductRecord(product, fullRow, imageList = [], varian
 }
 
 function externalCatalogProductRecord(record) {
+  const variants = officialCatalogVariantRecords(record);
+  const defaultVariant = variants[0] || null;
   return {
     id: String(record.id),
     brand_slug: record.brand_slug,
     brand: record.brand,
     name: record.name,
-    sku: null,
+    sku: record.sku || defaultVariant?.sku || null,
     url: record.url ?? null,
     image: record.image ?? null,
     image_width: record.image_width || 640,
@@ -1867,15 +1869,15 @@ function externalCatalogProductRecord(record) {
     source_available: true,
     purchasable: true,
     ready_for_sale: true,
-    has_variants: false,
+    has_variants: variants.length > 0,
     has_pdp: true,
-    external_only: true,
-    default_variant_id: null,
+    external_only: false,
+    default_variant_id: defaultVariant?.variant_id || null,
     section_id: record.section_id,
     section_title: sectionTitleForCatalogId(record.section_id),
-    requires_variant_selection: true,
+    requires_variant_selection: variants.length > 1,
     search: record.search,
-    variants: [],
+    variants,
     deal: null,
   };
 }
@@ -2514,6 +2516,18 @@ function loadOfficialCatalogSearchRecords() {
       const brandLabel = String(product?.brand ?? source.brandSlug).trim() || source.brandSlug;
       const idSeed = product?.sku || product?.product_name || url;
       const id = `official-${source.brandSlug}-${slugifyIndexToken(idSeed)}`;
+      const internalUrl = `/product/${id}.html`;
+      const draftRecord = {
+        available_sizes: Array.isArray(product?.available_sizes) ? product.available_sizes : [],
+        available_colors: Array.isArray(product?.available_colors) ? product.available_colors : [],
+        available_variants: Array.isArray(product?.available_variants) ? product.available_variants : [],
+        id,
+        image,
+        images: Array.isArray(product?.images) ? product.images.filter(Boolean) : [],
+        price_cents: Math.round(price * 100),
+        sku: product?.sku || null,
+      };
+      const variantCount = officialCatalogVariantRecords(draftRecord).length;
       records.push({
         id,
         name,
@@ -2528,8 +2542,8 @@ function loadOfficialCatalogSearchRecords() {
         available_variants: Array.isArray(product?.available_variants) ? product.available_variants : [],
         images: Array.isArray(product?.images) ? product.images.filter(Boolean) : [],
         section_id: category,
-        url,
-        external_url: url,
+        url: internalUrl,
+        external_url: null,
         image,
         image_width: 640,
         image_height: 640,
@@ -2539,8 +2553,8 @@ function loadOfficialCatalogSearchRecords() {
           .join(" ")
           .toLowerCase(),
         has_pdp: true,
-        external_only: true,
-        requires_variant_selection: true,
+        external_only: false,
+        requires_variant_selection: variantCount > 1,
       });
     }
   }
@@ -2564,6 +2578,59 @@ function officialCatalogOptionSpecs(record) {
   return specs;
 }
 
+function officialCatalogOptionCombos(record) {
+  const specs = officialCatalogOptionSpecs(record);
+  if (!specs.length) {
+    return [{ title: "Default", values: [] }];
+  }
+  let combos = [{ title: "", values: [] }];
+  for (const spec of specs) {
+    const values = spec.values.filter((value) => String(value || "").trim());
+    combos = combos.flatMap((combo) =>
+      values.map((value) => ({
+        title: [combo.title, value].filter(Boolean).join(" / "),
+        values: [
+          ...combo.values,
+          {
+            position: combo.values.length + 1,
+            name: spec.name,
+            value,
+          },
+        ],
+      }))
+    );
+  }
+  return combos;
+}
+
+function officialCatalogVariantRecords(record) {
+  const priceCents = Number(record?.price_cents || 0);
+  const image = record?.image || (Array.isArray(record?.images) ? record.images[0] : null);
+  return officialCatalogOptionCombos(record).map((combo, index) => {
+    const suffix = combo.values.map((entry) => slugifyIndexToken(entry.value)).filter(Boolean).join("-");
+    const variantId = [record.id, suffix || "default"].filter(Boolean).join("::");
+    return {
+      variant_id: variantId,
+      key: combo.title,
+      title: combo.title,
+      sku: record?.sku || null,
+      option_values: combo.values,
+      selected_options: combo.values.reduce((acc, entry) => {
+        acc[entry.name] = entry.value;
+        return acc;
+      }, {}),
+      price_cents: priceCents,
+      regular_price_cents: priceCents,
+      compare_at_price_cents: null,
+      currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+      available: true,
+      source_available: true,
+      image_url: image,
+      _index: index,
+    };
+  });
+}
+
 function officialCatalogPdpRow(record) {
   const optionSpecs = officialCatalogOptionSpecs(record);
   return {
@@ -2573,6 +2640,23 @@ function officialCatalogPdpRow(record) {
     options: JSON.stringify(optionSpecs),
     available: 1,
   };
+}
+
+function officialCatalogVariantRows(record) {
+  return officialCatalogVariantRecords(record).map((variant) => {
+    const optionValues = Array.isArray(variant.option_values) ? variant.option_values : [];
+    return {
+      variant_id: variant.variant_id,
+      title: variant.title,
+      sku: variant.sku,
+      option1: optionValues[0]?.value || "",
+      option2: optionValues[1]?.value || "",
+      option3: optionValues[2]?.value || "",
+      price: Number(record?.price_cents || 0) / 100,
+      compare_at_price: null,
+      available: 1,
+    };
+  });
 }
 
 function categoryForRow(row) {
@@ -3220,9 +3304,7 @@ ${galleryHtml}
               onSale ? "" : "hidden"
             }>${html(productDealLabel)}</span>
           </div>
-          <p class="pdp-availability">${
-            externalOnly ? "In stock · Available in Athletonic catalog" : "In stock · Sold by Athletonic"
-          }</p>
+          <p class="pdp-availability">In stock · Sold by Athletonic</p>
 ${variantOfferNote}
 ${variantSelectorsHtml}
           <div class="pdp-cta-row">
@@ -7143,7 +7225,9 @@ for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
           alt: officialRecord.name || product.name,
         }))
       : (batchImages.get(numericId) || []);
-    const variantRows = officialRecord ? [] : (batchVariants.get(numericId) || []);
+    const variantRows = officialRecord
+      ? officialCatalogVariantRows(officialRecord)
+      : (batchVariants.get(numericId) || []);
     const peers = (indexRecordsBySection.get(record.section_id) || [])
       .filter((peer) => peer.id !== record.id)
       .slice(0, 4)

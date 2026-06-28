@@ -1192,6 +1192,14 @@ def apply_topking_rules(products: List[Dict[str, Any]]) -> None:
                 base_price = 18.95
             elif "sauna suit" in text:
                 base_price = 45.95
+            elif "competition boxing ring" in text:
+                base_price = 1999.95
+            elif "ring skirt" in text:
+                base_price = 299.95
+            elif "corner pad" in text:
+                base_price = 149.95
+            elif "rope spacer" in text or "rope clamp" in text:
+                base_price = 29.95
             elif "mma glove" in text:
                 base_price = fallback_min.get("mma gloves")
             elif is_boxing_glove_product(product):
