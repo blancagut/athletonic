@@ -5,11 +5,10 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures as cf
-import html
 import json
 import math
-import sys
 import re
+import sys
 import threading
 import time
 from collections import defaultdict
@@ -20,17 +19,15 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 )
-REQUEST_TIMEOUT = 60
-TOPKING_PAGE_SIZE = 32
+REQUEST_TIMEOUT = 45
 RETRY_ATTEMPTS = 4
+TOPKING_PAGE_SIZE = 32
 TOPKING_REQUEST_DELAY = 0.35
 
 BOON_BASE = "https://www.boonsport.com"
@@ -45,9 +42,6 @@ def get_session() -> requests.Session:
     session = getattr(_thread_local, "session", None)
     if session is None:
         session = requests.Session()
-        adapter = HTTPAdapter(max_retries=0, pool_connections=20, pool_maxsize=20)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
         session.headers.update({"User-Agent": USER_AGENT})
         _thread_local.session = session
     return session
@@ -129,20 +123,6 @@ def compact_html(html_text: Optional[str]) -> Optional[str]:
     return text or None
 
 
-def join_categories(categories: Sequence[str]) -> Optional[str]:
-    items: List[str] = []
-    seen: set[str] = set()
-    for raw in categories:
-        item = normalize_space(raw)
-        if not item or item in seen:
-            continue
-        seen.add(item)
-        items.append(item)
-    if not items:
-        return None
-    return " | ".join(items)
-
-
 def merge_unique(existing: List[str], new_values: Iterable[str]) -> List[str]:
     seen = set(existing)
     for value in new_values:
@@ -156,25 +136,18 @@ def merge_unique(existing: List[str], new_values: Iterable[str]) -> List[str]:
     return existing
 
 
-def extract_urls(text: str) -> List[str]:
-    return re.findall(r"https?://[^\s)\]]+", text)
-
-
-def find_price(text: str) -> Optional[float | int]:
-    m = re.search(r"([0-9][0-9,]*(?:\.[0-9]+)?)\s*THB\s*฿\s*([0-9][0-9,]*(?:\.[0-9]+)?)", text, re.I)
-    if not m:
+def join_categories(categories: Sequence[str]) -> Optional[str]:
+    items: List[str] = []
+    seen: set[str] = set()
+    for raw in categories:
+        item = normalize_space(raw)
+        if not item or item in seen:
+            continue
+        seen.add(item)
+        items.append(item)
+    if not items:
         return None
-    price = m.group(2) or m.group(1)
-    price = price.replace(",", "")
-    if "." in price:
-        try:
-            return float(price)
-        except ValueError:
-            return None
-    try:
-        return int(price)
-    except ValueError:
-        return None
+    return " | ".join(items)
 
 
 def parse_number(value: str) -> Optional[float | int]:
@@ -252,7 +225,7 @@ COLOR_CODE_MAP = {
     "YW": "YELLOW",
     "LB": "LIGHT BLUE",
     "SB": "SKY BLUE",
-    "NV": "NAVY",
+    "NV": "NAVY BLUE",
     "BR": "BROWN",
     "BE": "BEIGE",
     "GD": "GOLD",
@@ -397,9 +370,7 @@ def product_id_from_url(url: str) -> str:
     parts = path.split("/")
     if len(parts) < 2:
         return path
-    if parts[0] in {"product", "th"} and len(parts) >= 3 and parts[1] == "product":
-        return parts[2]
-    if parts[0] == "product":
+    if parts[0] == "product" and len(parts) >= 2:
         return parts[1]
     if parts[0] == "th" and len(parts) >= 3 and parts[1] == "product":
         return parts[2]
@@ -412,6 +383,260 @@ def canonical_topking_url(url: str) -> str:
     if path.startswith("/th/"):
         path = path[len("/th") :]
     return f"{TOPKING_BASE}{path}"
+
+
+def parse_boon_sitemap() -> Tuple[List[str], List[str]]:
+    xml_text = fetch_text(f"{BOON_BASE}/sitemap.xml")
+    sitemap_urls = re.findall(r"<loc>([^<]+)</loc>", xml_text)
+    product_urls: List[str] = []
+    collection_urls: List[str] = []
+    for sitemap_url in sitemap_urls:
+        if "sitemap_products" in sitemap_url:
+            product_xml = fetch_text(sitemap_url)
+            product_urls.extend(re.findall(r"<loc>([^<]+/products/[^<]+)</loc>", product_xml))
+        elif "sitemap_collections" in sitemap_url:
+            collection_xml = fetch_text(sitemap_url)
+            collection_urls.extend(re.findall(r"<loc>([^<]+/collections/[^<]+)</loc>", collection_xml))
+    product_urls = [u for u in dict.fromkeys(product_urls) if "/products/" in urlparse(u).path]
+    collection_urls = [u for u in dict.fromkeys(collection_urls) if "/collections/" in urlparse(u).path]
+    return product_urls, collection_urls
+
+
+def extract_boon_collection_title(soup: BeautifulSoup) -> Optional[str]:
+    h1 = soup.find("h1")
+    title = normalize_space(h1.get_text(" ", strip=True)) if h1 else None
+    if not title:
+        return None
+    title = re.sub(r"(?i)^official boon® sport\s*", "", title).strip()
+    title = re.sub(r"(?i)^boon sport\s*", "", title).strip()
+    return title or None
+
+
+def parse_boon_collection_page(url: str) -> Tuple[str, List[str], Optional[str]]:
+    html_text = fetch_text(url)
+    soup = BeautifulSoup(html_text, "lxml")
+    title = extract_boon_collection_title(soup) or urlparse(url).path.rsplit("/", 1)[-1]
+    product_urls: List[str] = []
+    for holder in soup.select("div.card--holder"):
+        a = holder.find("a", href=lambda href: bool(href and href.startswith("/products/")))
+        if not a:
+            continue
+        href = a.get("href")
+        if href:
+            product_urls.append(urljoin(BOON_BASE, href))
+    product_urls = list(dict.fromkeys(product_urls))
+    next_link = soup.find("link", rel="next")
+    next_url = urljoin(url, next_link.get("href")) if next_link and next_link.get("href") else None
+    return title, product_urls, next_url
+
+
+def parse_boon_collection_pages(collection_urls: Sequence[str]) -> Dict[str, List[str]]:
+    def crawl_branch(start_url: str) -> Tuple[str, List[str]]:
+        title, product_urls, next_url = parse_boon_collection_page(start_url)
+        visited_pages = {start_url}
+        while next_url and next_url not in visited_pages:
+            visited_pages.add(next_url)
+            try:
+                _, more_products, next_url = parse_boon_collection_page(next_url)
+            except Exception as exc:  # noqa: BLE001
+                print(f"[boon] collection page failed: {next_url} ({exc})", file=sys.stderr, flush=True)
+                break
+            product_urls = merge_unique(product_urls, more_products)
+        return title, product_urls
+
+    category_map: Dict[str, List[str]] = defaultdict(list)
+    with cf.ThreadPoolExecutor(max_workers=4) as executor:
+        future_map = {executor.submit(crawl_branch, url): url for url in collection_urls}
+        for idx, future in enumerate(cf.as_completed(future_map), start=1):
+            url = future_map[future]
+            try:
+                title, product_urls = future.result()
+            except Exception as exc:  # noqa: BLE001
+                print(f"[boon] collection page failed: {url} ({exc})", file=sys.stderr, flush=True)
+                continue
+            category_map[title] = merge_unique(category_map[title], product_urls)
+            if idx % 20 == 0:
+                print(f"[boon] collections done: {idx}/{len(collection_urls)}", file=sys.stderr, flush=True)
+    return category_map
+
+
+def parse_boon_product_json(raw: Dict[str, Any], product_url: str) -> Dict[str, Any]:
+    variants_raw = raw.get("variants", []) or []
+    options_raw = raw.get("options", []) or []
+    tags_raw = raw.get("tags", []) or []
+    if isinstance(tags_raw, str):
+        tags = [tag.strip() for tag in tags_raw.split(",") if tag.strip()]
+    else:
+        tags = [str(tag).strip() for tag in tags_raw if str(tag).strip()]
+
+    title = raw.get("title")
+    description = raw.get("body_html") or raw.get("description")
+    currency = "THB"
+
+    prices: List[float | int] = []
+    for variant in variants_raw:
+        price = variant.get("price")
+        if price in (None, "", 0, "0", "0.00", 0.0):
+            continue
+        parsed = parse_number(str(price))
+        if parsed is not None:
+            prices.append(parsed)
+    price = min(prices) if prices else parse_number(str(raw.get("price"))) or None
+
+    available = any(bool(v.get("available", True)) for v in variants_raw) if variants_raw else bool(raw.get("available"))
+    stock_status = "in stock" if available else "out of stock"
+
+    sku_values = [normalize_space(str(v.get("sku"))) for v in variants_raw if normalize_space(str(v.get("sku")))]
+    sku = sku_values[0] if len(set(sku_values)) == 1 else (sku_values[0] if sku_values else None)
+
+    variant_titles = [normalize_space(str(v.get("title"))) for v in variants_raw if normalize_space(str(v.get("title")))]
+    if variant_titles == ["Default Title"]:
+        variant_titles = []
+
+    size_values: List[str] = []
+    color_values: List[str] = []
+    for opt in options_raw:
+        name = normalize_space(str(opt.get("name") or ""))
+        values = [normalize_space(str(v)) for v in (opt.get("values") or []) if normalize_space(str(v))]
+        name_l = name.lower()
+        if any(k in name_l for k in ["size", "oz", "weight", "measure"]):
+            size_values.extend(values)
+        elif "color" in name_l or "colour" in name_l:
+            color_values.extend(values)
+        else:
+            for value in values:
+                if re.search(r"\b(?:\d+oz|xs|s|m|l|xl|xxl|xxxl)\b", value, re.I):
+                    size_values.append(value)
+                elif re.search(
+                    r"\b(?:black|white|red|blue|green|yellow|orange|purple|pink|grey|gray|brown|beige|gold|silver|burgundy|navy|olive|multi|camo|camouflage|thai flag)\b",
+                    value,
+                    re.I,
+                ):
+                    color_values.append(value)
+
+    merged_tokens = " ".join([title or "", description or "", " ".join(tags)])
+    if not size_values:
+        size_values = detect_tokens(title or merged_tokens, SIZE_PATTERNS)
+    if not color_values:
+        color_values = detect_tokens(title or merged_tokens, COLOR_PATTERNS)
+
+    materials = detect_tokens(merged_tokens, MATERIAL_PATTERNS)
+    material = materials[0] if materials else None
+    country_of_origin = "Thailand" if re.search(r"hand-?made in thailand|made in thailand|\bthailand\b", merged_tokens, re.I) else None
+
+    weights = [variant.get("grams") for variant in variants_raw if variant.get("grams") not in (None, "", 0, "0")]
+    weight = None
+    if weights:
+        parsed_weights = [parse_number(str(w)) for w in weights]
+        parsed_weights = [w for w in parsed_weights if w is not None]
+        if parsed_weights:
+            weight = parsed_weights[0]
+
+    images: List[str] = []
+    for img in raw.get("images", []) or []:
+        if not img:
+            continue
+        if isinstance(img, dict):
+            src = img.get("src") or img.get("url")
+        else:
+            src = img
+        if not src:
+            continue
+        src = str(src)
+        images.append(src if src.startswith("http") else f"https:{src}")
+    images = list(dict.fromkeys(images))
+
+    return {
+        "product_name": title,
+        "sku": sku,
+        "product_url": product_url,
+        "full_description": compact_html(description),
+        "price": price,
+        "currency": currency,
+        "available_sizes": size_values,
+        "available_colors": color_values,
+        "available_variants": variant_titles or merge_unique([], size_values + color_values),
+        "material": material,
+        "weight": weight,
+        "country_of_origin": country_of_origin,
+        "stock_status": stock_status,
+        "images": images,
+        "short_description": None,
+    }
+
+
+def fetch_boon_products_bulk() -> List[Dict[str, Any]]:
+    products: List[Dict[str, Any]] = []
+    page = 1
+    while True:
+        data = fetch_json(f"{BOON_BASE}/products.json?limit=250&page={page}")
+        batch = data.get("products", []) or []
+        if not batch:
+            break
+        products.extend(batch)
+        if len(batch) < 250:
+            break
+        page += 1
+    return products
+
+
+def build_boon_catalog() -> Dict[str, ProductAccumulator]:
+    product_urls, collection_urls = parse_boon_sitemap()
+    print(f"[boon] sitemap: {len(collection_urls)} collections, {len(product_urls)} products", file=sys.stderr, flush=True)
+    collection_map = parse_boon_collection_pages(collection_urls)
+    print(f"[boon] collections with products: {len(collection_map)}", file=sys.stderr, flush=True)
+
+    product_map: Dict[str, ProductAccumulator] = {}
+    for category, urls in collection_map.items():
+        for url in urls:
+            key = urlparse(url).path.rsplit("/", 1)[-1]
+            acc = product_map.get(key)
+            if acc is None:
+                acc = ProductAccumulator(brand="Boon", product_key=key)
+                product_map[key] = acc
+            acc.product_url = acc.product_url or url
+            acc.merge_categories([category])
+
+    bulk_products = fetch_boon_products_bulk()
+    print(f"[boon] bulk products fetched: {len(bulk_products)}", file=sys.stderr, flush=True)
+    for idx, raw in enumerate(bulk_products, start=1):
+        handle = normalize_space(str(raw.get("handle")))
+        if not handle:
+            continue
+        product_url = f"{BOON_BASE}/products/{handle}"
+        parsed = parse_boon_product_json(raw, product_url)
+        acc = product_map.get(handle)
+        if acc is None:
+            acc = ProductAccumulator(brand="Boon", product_key=handle)
+            product_map[handle] = acc
+        acc.product_url = acc.product_url or parsed.get("product_url")
+        acc.product_name = acc.product_name or parsed.get("product_name")
+        acc.sku = acc.sku or parsed.get("sku")
+        acc.full_description = acc.full_description or parsed.get("full_description")
+        acc.price = acc.price if acc.price not in (None, 0, 0.0) else parsed.get("price")
+        acc.currency = acc.currency or parsed.get("currency")
+        acc.merge_sizes(parsed.get("available_sizes") or [])
+        acc.merge_colors(parsed.get("available_colors") or [])
+        acc.merge_variants(parsed.get("available_variants") or [])
+        acc.material = acc.material or parsed.get("material")
+        acc.weight = acc.weight or parsed.get("weight")
+        acc.country_of_origin = acc.country_of_origin or parsed.get("country_of_origin")
+        acc.stock_status = acc.stock_status or parsed.get("stock_status")
+        acc.merge_images(parsed.get("images") or [])
+        if idx % 50 == 0:
+            print(f"[boon] bulk products done: {idx}/{len(bulk_products)}", file=sys.stderr, flush=True)
+
+    for acc in product_map.values():
+        merged_text = " ".join([acc.product_name or "", acc.full_description or "", acc.short_description or ""]).lower()
+        if acc.material is None:
+            for token in MATERIAL_PATTERNS:
+                if token in merged_text:
+                    acc.material = token
+                    break
+        if acc.country_of_origin is None and re.search(r"hand-?made in thailand|made in thailand|\bthailand\b", merged_text, re.I):
+            acc.country_of_origin = "Thailand"
+
+    return product_map
 
 
 def parse_topking_sitemap() -> Tuple[List[str], List[str]]:
@@ -427,7 +652,6 @@ def parse_topking_sitemap() -> Tuple[List[str], List[str]]:
             product_urls.append(url)
         elif path.startswith("/category/"):
             category_urls.append(url)
-    # stable dedupe
     product_urls = list(dict.fromkeys(product_urls))
     category_urls = list(dict.fromkeys(category_urls))
     return product_urls, category_urls
@@ -470,7 +694,10 @@ def parse_topking_category_page(text: str, url: str) -> Tuple[str, int, List[Dic
         )
         if sku:
             sku = sku.rstrip(".")
-        price = find_price(body)
+        price = None
+        m = re.search(r"([0-9][0-9,]*(?:\.[0-9]+)?)\s*THB\s*฿\s*([0-9][0-9,]*(?:\.[0-9]+)?)", body, re.I)
+        if m:
+            price = parse_number(m.group(2) or m.group(1))
         status = "in stock" if "Add to Cart" in body else None
         if "Sold out" in body or "Out of stock" in body:
             status = "out of stock"
@@ -503,14 +730,6 @@ def fetch_topking_page(url: str) -> str:
         return fetch_text(jina_url(url))
 
 
-def topking_category_pages(base_url: str, total_products: int) -> List[str]:
-    page_count = max(1, math.ceil(total_products / TOPKING_PAGE_SIZE))
-    urls = [base_url]
-    for page in range(2, page_count + 1):
-        urls.append(f"{base_url}&p={page}")
-    return urls
-
-
 def parse_topking_product_page(text: str, requested_url: str) -> Dict[str, Any]:
     title_match = re.search(r"^Title:\s*(.+)$", text, re.M)
     title = normalize_space(title_match.group(1)) if title_match else None
@@ -531,7 +750,6 @@ def parse_topking_product_page(text: str, requested_url: str) -> Dict[str, Any]:
     if full_description == "":
         full_description = None
 
-    # Product images sit between the product breadcrumb and the product title.
     image_urls: List[str] = []
     if title:
         pre_title = text.split(f"# {title}", 1)[0]
@@ -579,190 +797,6 @@ def parse_topking_product_page(text: str, requested_url: str) -> Dict[str, Any]:
     }
 
 
-def extract_boon_collection_title(soup: BeautifulSoup) -> Optional[str]:
-    h1 = soup.find("h1")
-    title = normalize_space(h1.get_text(" ", strip=True)) if h1 else None
-    if not title:
-        return None
-    title = re.sub(r"(?i)^official boon® sport\s*", "", title).strip()
-    title = re.sub(r"(?i)^boon sport\s*", "", title).strip()
-    return title or None
-
-
-def parse_boon_collection_page(url: str) -> Tuple[str, List[str], Optional[str]]:
-    html_text = fetch_text(url)
-    soup = BeautifulSoup(html_text, "lxml")
-    title = extract_boon_collection_title(soup) or urlparse(url).path.rsplit("/", 1)[-1]
-
-    product_urls: List[str] = []
-    for holder in soup.select("div.card--holder"):
-        a = holder.find("a", href=lambda href: bool(href and href.startswith("/products/")))
-        if not a:
-            continue
-        href = a.get("href")
-        if href:
-            product_urls.append(urljoin(BOON_BASE, href))
-    product_urls = list(dict.fromkeys(product_urls))
-
-    next_link = soup.find("link", rel="next")
-    next_url = urljoin(url, next_link.get("href")) if next_link and next_link.get("href") else None
-    return title, product_urls, next_url
-
-
-def parse_boon_product_json(raw: Dict[str, Any], product_url: str) -> Dict[str, Any]:
-    variants_raw = raw.get("variants", []) or []
-    options_raw = raw.get("options", []) or []
-    tags_raw = raw.get("tags", []) or []
-    if isinstance(tags_raw, str):
-        tags = [tag.strip() for tag in tags_raw.split(",") if tag.strip()]
-    else:
-        tags = [str(tag).strip() for tag in tags_raw if str(tag).strip()]
-
-    title = raw.get("title")
-    description = raw.get("description")
-    currency = "THB"
-
-    prices: List[float | int] = []
-    for variant in variants_raw:
-        price = variant.get("price")
-        if price in (None, "", 0, "0", "0.00", 0.0):
-            continue
-        parsed = parse_number(str(price))
-        if parsed is not None:
-            prices.append(parsed)
-    price = min(prices) if prices else parse_number(str(raw.get("price"))) or None
-
-    available = any(bool(v.get("available", True)) for v in variants_raw) if variants_raw else bool(raw.get("available"))
-    stock_status = "in stock" if available else "out of stock"
-
-    sku_values = [normalize_space(str(v.get("sku"))) for v in variants_raw if normalize_space(str(v.get("sku")))]
-    sku = sku_values[0] if len(set(sku_values)) == 1 else (sku_values[0] if sku_values else None)
-
-    variant_titles = [normalize_space(str(v.get("title"))) for v in variants_raw if normalize_space(str(v.get("title")))]
-    if variant_titles == ["Default Title"]:
-        variant_titles = []
-
-    size_values: List[str] = []
-    color_values: List[str] = []
-    for opt in options_raw:
-        name = normalize_space(str(opt.get("name") or ""))
-        values = [normalize_space(str(v)) for v in (opt.get("values") or []) if normalize_space(str(v))]
-        name_l = name.lower()
-        if any(k in name_l for k in ["size", "oz", "weight", "measure"]):
-            size_values.extend(values)
-        elif "color" in name_l or "colour" in name_l:
-            color_values.extend(values)
-        else:
-            # Infer by value contents when the option is unlabeled.
-            for value in values:
-                if re.search(r"\b(?:\d+oz|xs|s|m|l|xl|xxl|xxxl)\b", value, re.I):
-                    size_values.append(value)
-                elif re.search(
-                    r"\b(?:black|white|red|blue|green|yellow|orange|purple|pink|grey|gray|brown|beige|gold|silver|burgundy|navy|olive|multi|camo|camouflage|thai flag)\b",
-                    value,
-                    re.I,
-                ):
-                    color_values.append(value)
-
-    merged_tokens = " ".join([title or "", description or "", " ".join(tags)])
-    if not size_values:
-        size_values = detect_tokens(title or merged_tokens, SIZE_PATTERNS)
-    if not color_values:
-        color_values = detect_tokens(title or merged_tokens, COLOR_PATTERNS)
-
-    materials = detect_tokens(merged_tokens, MATERIAL_PATTERNS)
-    material = materials[0] if materials else None
-    country_of_origin = "Thailand" if re.search(r"hand-?made in thailand|made in thailand|\bthailand\b", merged_tokens, re.I) else None
-
-    weights = [variant.get("weight") for variant in variants_raw if variant.get("weight") not in (None, "", 0, "0")]
-    weight = None
-    if weights:
-        parsed_weights = [parse_number(str(w)) for w in weights]
-        parsed_weights = [w for w in parsed_weights if w is not None]
-        if parsed_weights:
-            weight = parsed_weights[0]
-
-    images = [img for img in raw.get("images", []) if img]
-    images = [img if img.startswith("http") else f"https:{img}" for img in images]
-    images = list(dict.fromkeys(images))
-
-    short_desc = None
-    # Search later if HTML contains a distinct meta description.
-    return {
-        "product_name": title,
-        "sku": sku,
-        "product_url": product_url,
-        "full_description": compact_html(description),
-        "price": price,
-        "currency": currency,
-        "available_sizes": size_values,
-        "available_colors": color_values,
-        "available_variants": variant_titles or merge_unique([], size_values + color_values),
-        "material": material,
-        "weight": weight,
-        "country_of_origin": country_of_origin,
-        "stock_status": stock_status,
-        "images": images,
-        "short_description": short_desc,
-        "tags": tags,
-    }
-
-
-def parse_boon_product_page_meta(url: str) -> Optional[str]:
-    html_text = fetch_text(url)
-    soup = BeautifulSoup(html_text, "lxml")
-    meta = soup.find("meta", attrs={"name": "description"})
-    if meta and meta.get("content"):
-        return normalize_space(meta.get("content"))
-    og = soup.find("meta", attrs={"property": "og:description"})
-    if og and og.get("content"):
-        return normalize_space(og.get("content"))
-    return None
-
-
-def parse_boon_collection_pages(collection_urls: Sequence[str]) -> Dict[str, List[str]]:
-    category_map: Dict[str, List[str]] = defaultdict(list)
-    visited_pages: set[str] = set()
-    queue = list(collection_urls)
-
-    while queue:
-        url = queue.pop(0)
-        if url in visited_pages:
-            continue
-        visited_pages.add(url)
-        try:
-            title, product_urls, next_url = parse_boon_collection_page(url)
-        except Exception as exc:  # noqa: BLE001
-            print(f"[boon] collection page failed: {url} ({exc})", file=sys.stderr, flush=True)
-            continue
-        category_map[title] = merge_unique(category_map[title], product_urls)
-        if next_url and next_url not in visited_pages:
-            queue.append(next_url)
-    return category_map
-
-
-def parse_boon_sitemap() -> Tuple[List[str], List[str]]:
-    xml_text = fetch_text(f"{BOON_BASE}/sitemap.xml")
-    # Shopify sitemap index links other sitemaps, so follow only products + collections.
-    sitemap_urls = re.findall(r"<loc>([^<]+)</loc>", xml_text)
-    product_urls: List[str] = []
-    collection_urls: List[str] = []
-    for sitemap_url in sitemap_urls:
-        if "sitemap_products" in sitemap_url:
-            product_xml = fetch_text(sitemap_url)
-            product_urls.extend(re.findall(r"<loc>([^<]+/products/[^<]+)</loc>", product_xml))
-        elif "sitemap_collections" in sitemap_url:
-            collection_xml = fetch_text(sitemap_url)
-            collection_urls.extend(re.findall(r"<loc>([^<]+/collections/[^<]+)</loc>", collection_xml))
-    product_urls = [u for u in dict.fromkeys(product_urls) if "/products/" in urlparse(u).path]
-    collection_urls = [u for u in dict.fromkeys(collection_urls) if "/collections/" in urlparse(u).path]
-    return product_urls, collection_urls
-
-
-def merge_category_strings(existing: List[str], new: Iterable[str]) -> List[str]:
-    return merge_unique(existing, new)
-
-
 def build_topking_catalog() -> Dict[str, ProductAccumulator]:
     product_urls, category_urls = parse_topking_sitemap()
     print(f"[topking] sitemap: {len(category_urls)} categories, {len(product_urls)} products", file=sys.stderr, flush=True)
@@ -771,7 +805,6 @@ def build_topking_catalog() -> Dict[str, ProductAccumulator]:
     category_failures: List[str] = []
     product_failures: List[str] = []
 
-    # Fetch first pages to discover category labels and how many paginated pages exist.
     first_page_results: List[Tuple[str, int, List[Dict[str, Any]], str]] = []
     with cf.ThreadPoolExecutor(max_workers=2) as executor:
         future_map = {executor.submit(fetch_topking_page, url): url for url in category_urls}
@@ -811,7 +844,6 @@ def build_topking_catalog() -> Dict[str, ProductAccumulator]:
             if card.get("category"):
                 acc.merge_categories([card["category"]])
 
-    # Fetch remaining category pages.
     if page_jobs:
         print(f"[topking] category pages to fetch: {len(page_jobs)}", file=sys.stderr, flush=True)
         with cf.ThreadPoolExecutor(max_workers=2) as executor:
@@ -846,7 +878,6 @@ def build_topking_catalog() -> Dict[str, ProductAccumulator]:
                 if idx % 20 == 0:
                     print(f"[topking] category pagination done: {idx}/{len(page_jobs)}", file=sys.stderr, flush=True)
 
-    # Fetch product pages for all sitemap products plus anything discovered on category cards.
     discovered_urls = [acc.product_url for acc in product_map.values() if acc.product_url]
     unique_product_urls = list(dict.fromkeys([*product_urls, *discovered_urls]))
     print(f"[topking] product pages to fetch: {len(unique_product_urls)}", file=sys.stderr, flush=True)
@@ -880,7 +911,6 @@ def build_topking_catalog() -> Dict[str, ProductAccumulator]:
             acc.merge_variants(data.get("available_variants") or [])
             acc.material = acc.material or data.get("material")
             acc.country_of_origin = acc.country_of_origin or data.get("country_of_origin")
-            # Keep category-page prices if present.
             if acc.price in (None, 0, 0.0) and data.get("price") not in (None, "", 0, 0.0):
                 acc.price = data.get("price")
             if idx % 50 == 0:
@@ -890,89 +920,6 @@ def build_topking_catalog() -> Dict[str, ProductAccumulator]:
         print(f"[topking] category failures: {len(category_failures)}", file=sys.stderr, flush=True)
     if product_failures:
         print(f"[topking] product failures: {len(product_failures)}", file=sys.stderr, flush=True)
-    return product_map
-
-
-def build_boon_catalog() -> Dict[str, ProductAccumulator]:
-    product_urls, collection_urls = parse_boon_sitemap()
-    print(f"[boon] sitemap: {len(collection_urls)} collections, {len(product_urls)} products", file=sys.stderr, flush=True)
-    collection_map = parse_boon_collection_pages(collection_urls)
-    print(f"[boon] collections with products: {len(collection_map)}", file=sys.stderr, flush=True)
-
-    product_map: Dict[str, ProductAccumulator] = {}
-
-    # Merge collection membership first.
-    for category, urls in collection_map.items():
-        for url in urls:
-            key = urlparse(url).path.rsplit("/", 1)[-1]
-            # The Shopify handle is stable within /products/<handle>.
-            acc = product_map.get(key)
-            if acc is None:
-                acc = ProductAccumulator(brand="Boon", product_key=key)
-                product_map[key] = acc
-            acc.product_url = acc.product_url or url
-            acc.merge_categories([category])
-
-    discovered_urls = [acc.product_url for acc in product_map.values() if acc.product_url]
-    unique_product_urls = list(dict.fromkeys([*product_urls, *discovered_urls]))
-    print(f"[boon] product pages to fetch: {len(unique_product_urls)}", file=sys.stderr, flush=True)
-
-    with cf.ThreadPoolExecutor(max_workers=8) as executor:
-        future_map = {executor.submit(fetch_json, f"{url}.js"): url for url in unique_product_urls}
-        for idx, future in enumerate(cf.as_completed(future_map), start=1):
-            product_url = future_map[future]
-            try:
-                raw = future.result()
-            except Exception as exc:  # noqa: BLE001
-                print(f"[boon] product page failed: {product_url} ({exc})", file=sys.stderr, flush=True)
-                continue
-            # Shopify .js endpoint returns the product object directly.
-            parsed = parse_boon_product_json(raw, product_url)
-            key = urlparse(product_url).path.rsplit("/", 1)[-1]
-            acc = product_map.get(key)
-            if acc is None:
-                acc = ProductAccumulator(brand="Boon", product_key=key)
-                product_map[key] = acc
-            acc.product_url = acc.product_url or parsed.get("product_url")
-            acc.product_name = acc.product_name or parsed.get("product_name")
-            acc.sku = acc.sku or parsed.get("sku")
-            acc.full_description = acc.full_description or parsed.get("full_description")
-            acc.price = acc.price if acc.price not in (None, 0, 0.0) else parsed.get("price")
-            acc.currency = acc.currency or parsed.get("currency")
-            acc.merge_sizes(parsed.get("available_sizes") or [])
-            acc.merge_colors(parsed.get("available_colors") or [])
-            acc.merge_variants(parsed.get("available_variants") or [])
-            acc.material = acc.material or parsed.get("material")
-            acc.weight = acc.weight or parsed.get("weight")
-            acc.country_of_origin = acc.country_of_origin or parsed.get("country_of_origin")
-            acc.stock_status = acc.stock_status or parsed.get("stock_status")
-            acc.merge_images(parsed.get("images") or [])
-            if idx % 50 == 0:
-                print(f"[boon] product pages done: {idx}/{len(unique_product_urls)}", file=sys.stderr, flush=True)
-
-    # Enrich short descriptions and better categories from product pages.
-    with cf.ThreadPoolExecutor(max_workers=6) as executor:
-        future_map = {executor.submit(parse_boon_product_page_meta, acc.product_url): key for key, acc in product_map.items() if acc.product_url}
-        for future in cf.as_completed(future_map):
-            key = future_map[future]
-            try:
-                short_desc = future.result()
-            except Exception:
-                short_desc = None
-            if short_desc:
-                product_map[key].short_description = short_desc
-
-    # Enrich country/material heuristically from product descriptions.
-    for acc in product_map.values():
-        merged_text = " ".join([acc.product_name or "", acc.full_description or "", acc.short_description or ""]).lower()
-        if acc.material is None:
-            for token in MATERIAL_PATTERNS:
-                if token in merged_text:
-                    acc.material = token
-                    break
-        if acc.country_of_origin is None and re.search(r"hand-?made in thailand|made in thailand|\bthailand\b", merged_text, re.I):
-            acc.country_of_origin = "Thailand"
-
     return product_map
 
 
@@ -1007,9 +954,23 @@ def validate_image_urls(products: Sequence[Dict[str, Any]]) -> None:
 
 def finalize_products(product_map: Dict[str, ProductAccumulator]) -> List[Dict[str, Any]]:
     products = [acc.finalize() for acc in product_map.values()]
-    # Stable order: brand then product name then url.
     products.sort(key=lambda p: (p["brand"] or "", p["product_name"] or "", p["product_url"] or ""))
     return products
+
+
+def apply_boon_price_rules(products: List[Dict[str, Any]]) -> None:
+    for product in products:
+        if product.get("brand") != "Boon":
+            continue
+        text = f"{product.get('product_name') or ''} {product.get('category') or ''}".lower()
+        if "lace" in text and "glove" in text:
+            product["price"] = 139
+            product["currency"] = "USD"
+        elif any(token in text for token in ["glove", "shinguard", "shin guard", "helmet", "headgear", "head gear"]):
+            product["price"] = 149
+            product["currency"] = "USD"
+        elif product.get("price") is not None:
+            product["currency"] = "USD"
 
 
 def main() -> None:
@@ -1049,8 +1010,7 @@ def main() -> None:
             existing.merge_categories(acc.categories)
 
     products = finalize_products(combined_map)
-
-    # Basic completeness checks.
+    apply_boon_price_rules(products)
     seen_keys = set()
     for product in products:
         key = (product["brand"], product["product_url"])
