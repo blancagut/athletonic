@@ -1,4 +1,4 @@
-const { handleError, json, methodNotAllowed, requireEnv } = require("../_lib/http");
+const { handleError, json, methodNotAllowed } = require("../_lib/http");
 const { loadProductsWithOverrides } = require("../_lib/catalog");
 const { getSupabaseAdmin } = require("../_lib/supabase");
 
@@ -9,8 +9,6 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
-
     const rawIds = String(
       (req.query && req.query.ids) ||
       (req.url && new URL(req.url, "http://localhost").searchParams.get("ids")) ||
@@ -27,9 +25,11 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const products = await loadProductsWithOverrides(ids, {
-      supabase: getSupabaseAdmin(),
-    });
+    const supabase =
+      process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? getSupabaseAdmin()
+        : null;
+    const products = await loadProductsWithOverrides(ids, { supabase });
 
     json(res, 200, { products });
   } catch (error) {
