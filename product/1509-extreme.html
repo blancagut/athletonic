@@ -156,6 +156,7 @@
             <div class="pdp-gallery-main">
               <img id="pdp-main-image" src="https://m.media-amazon.com/images/I/71YOCRJ9czL._AC_SL1500_.jpg" alt="Optimum Nutrition Gold Standard 100% Whey Protein Powder, Extreme Milk Chocolate, 5 Pound (Packaging May Vary)" />
             </div>
+            <div class="pdp-thumbs" data-pdp-thumbs role="tablist" aria-label="Extreme Milk Chocolate size photos"></div>
           </div>
 
           <div class="pdp-info">
@@ -167,7 +168,6 @@
               <span class="pdp-discount" data-pdp-discount >Limited offer</span>
             </div>
             <p class="pdp-availability">In stock · Sold by Athletonic</p>
-            <p class="pdp-variant-deal-note" data-pdp-source-note>Images are synced against Amazon US variant pages. Verified Amazon US prices are used where they are surfaced publicly; all selection logic now stays isolated inside this flavor group.</p>
             <p class="pdp-cta-note">Extreme Milk Chocolate only. Sizes and photos are isolated to this flavor so the offer pricing no longer leaks into other flavors.</p>
 
             <div class="pdp-variants" data-pdp-variants>
@@ -438,12 +438,12 @@
   var variants = JSON.parse(document.getElementById("athletonic-variant-data").textContent || "[]");
   var page = JSON.parse(document.getElementById("athletonic-page-data").textContent || "{}");
   var mainImg = document.getElementById("pdp-main-image");
+  var thumbsWrap = document.querySelector("[data-pdp-thumbs]");
   var priceEl = document.querySelector("[data-pdp-price]");
   var compareEl = document.querySelector("[data-pdp-compare]");
   var discountEl = document.querySelector("[data-pdp-discount]");
   var addBtn = document.querySelector("[data-pdp-add-button]");
   var selectionNote = document.querySelector("[data-pdp-selection-note]");
-  var sourceNote = document.querySelector("[data-pdp-source-note]");
   var flavorSelect = document.querySelector('[data-variant-select="flavor"]');
   var sizeSelect = document.querySelector('[data-variant-select="size"]');
 
@@ -512,10 +512,52 @@
     return null;
   }
 
+  function syncActiveThumb(variant) {
+    if (!thumbsWrap) return;
+    Array.prototype.forEach.call(thumbsWrap.querySelectorAll("[data-pdp-thumb]"), function (button) {
+      var isActive = !!variant && button.getAttribute("data-size") === variant.size;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  }
+
+  function renderThumbs() {
+    if (!thumbsWrap) return;
+    thumbsWrap.innerHTML = "";
+    variants.forEach(function (variant, index) {
+      if (!variant.image) return;
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "pdp-thumb";
+      button.setAttribute("data-pdp-thumb", "");
+      button.setAttribute("data-size", variant.size || "");
+      button.setAttribute("aria-label", "Show " + (variant.size || ("image " + (index + 1))));
+      button.setAttribute("aria-pressed", "false");
+      button.title = variant.size || "";
+
+      var image = document.createElement("img");
+      image.src = variant.image;
+      image.alt = variant.size || "";
+      image.loading = "lazy";
+      button.appendChild(image);
+
+      button.addEventListener("click", function () {
+        if (sizeSelect) {
+          sizeSelect.value = variant.size;
+          refresh();
+          return;
+        }
+        renderVariant(variant);
+      });
+
+      thumbsWrap.appendChild(button);
+    });
+  }
+
   function renderVariant(variant) {
     if (!variant) {
       if (selectionNote) selectionNote.textContent = "This combination is not available right now.";
-      if (sourceNote) sourceNote.textContent = "Flavor and size combinations are limited to valid Amazon US variants only.";
+      syncActiveThumb(null);
       if (addBtn) {
         addBtn.disabled = true;
         addBtn.textContent = "Unavailable";
@@ -527,6 +569,7 @@
       mainImg.src = variant.image;
       mainImg.alt = variant.title || page.name;
     }
+    syncActiveThumb(variant);
 
     if (priceEl) priceEl.textContent = money(variant.price_cents);
 
@@ -554,16 +597,6 @@
       selectionNote.textContent = page.options.indexOf("Flavor") !== -1
         ? ("Flavor: " + variant.flavor + " / Size: " + variant.size)
         : ("Size: " + variant.size);
-    }
-
-    if (sourceNote) {
-      if (hasCompare && variant.verified_amazon_us_price) {
-        sourceNote.textContent = "This selected option is using a verified Amazon US offer price and matching image.";
-      } else if (variant.verified_amazon_us_price) {
-        sourceNote.textContent = "This selected option is using a verified Amazon US price and matching image.";
-      } else {
-        sourceNote.textContent = "This selected option is using the corrected USD matrix for this flavor group with the matching Amazon image.";
-      }
     }
   }
 
@@ -596,6 +629,8 @@
       sizeSelect.value = initialVariant.size;
     }
   }
+
+  renderThumbs();
 
   if (sizeSelect) {
     sizeSelect.addEventListener("change", refresh);
