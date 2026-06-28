@@ -198,7 +198,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Bloom Nutrition</p>
-          <h1 class="pdp-title">Greens &amp; Superfoods</h1>
+          <h1 class="pdp-title" data-pdp-title>Greens &amp; Superfoods</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="3399" data-base-compare-cents="3999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$33.99</strong>
             <span class="pdp-compare" data-pdp-compare >$39.99</span>
@@ -247,6 +247,9 @@
               data-cart-price="33.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0143/0952/3556/files/30ct_Greens_Mango_Shopify_ec0a3432-e9c7-4935-a429-43fe6e03cbea.jpg"
+              data-cart-variant-id="40264038973540"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Mango&quot;,&quot;Servings&quot;:&quot;30ct&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -642,17 +645,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Mango / 30ct","optionValues":["Mango","30ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Mango / 60ct","optionValues":["Mango","60ct"],"price_cents":6999,"compare_at_cents":6999,"available":true},{"key":"Strawberry Kiwi / 30ct","optionValues":["Strawberry Kiwi","30ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Strawberry Kiwi / 60ct","optionValues":["Strawberry Kiwi","60ct"],"price_cents":6999,"compare_at_cents":6999,"available":true},{"key":"Berry / 30ct","optionValues":["Berry","30ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Berry / 60ct","optionValues":["Berry","60ct"],"price_cents":6999,"compare_at_cents":6999,"available":true},{"key":"Watermelon / 25ct","optionValues":["Watermelon","25ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Peach / 25ct","optionValues":["Peach","25ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Pineapple / 25ct","optionValues":["Pineapple","25ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Orange Passionfruit / 30ct","optionValues":["Orange Passionfruit","30ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Coconut / 30ct","optionValues":["Coconut","30ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Coconut / 60ct","optionValues":["Coconut","60ct"],"price_cents":6999,"compare_at_cents":6999,"available":true},{"key":"Citrus / 30ct","optionValues":["Citrus","30ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Citrus / 60ct","optionValues":["Citrus","60ct"],"price_cents":6999,"compare_at_cents":6999,"available":true},{"key":"Original / 30ct","optionValues":["Original","30ct"],"price_cents":3399,"compare_at_cents":3999,"available":true},{"key":"Original / 60ct","optionValues":["Original","60ct"],"price_cents":6999,"compare_at_cents":6999,"available":true}];
+        var variantPricing = [{"variant_id":"40264038973540","key":"Mango / 30ct","title":"Mango / 30ct","sku":null,"optionValues":["Mango","30ct"],"option_values":[{"position":1,"name":"Flavor","value":"Mango"},{"position":2,"name":"Servings","value":"30ct"}],"selected_options":{"Flavor":"Mango","Servings":"30ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/30ct_Greens_Mango_Shopify_ec0a3432-e9c7-4935-a429-43fe6e03cbea.jpg"},{"variant_id":"40264044576868","key":"Mango / 60ct","title":"Mango / 60ct","sku":null,"optionValues":["Mango","60ct"],"option_values":[{"position":1,"name":"Flavor","value":"Mango"},{"position":2,"name":"Servings","value":"60ct"}],"selected_options":{"Flavor":"Mango","Servings":"60ct"},"price_cents":6999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/60ct_Greens_Mango_Shopify_6df803a8-ab72-4e14-92e3-35049b256b65.jpg"},{"variant_id":"41971363938404","key":"Strawberry Kiwi / 30ct","title":"Strawberry Kiwi / 30ct","sku":null,"optionValues":["Strawberry Kiwi","30ct"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Kiwi"},{"position":2,"name":"Servings","value":"30ct"}],"selected_options":{"Flavor":"Strawberry Kiwi","Servings":"30ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/30ct_Greens_StrawberryKiwi_Shopify_2437679c-6d1b-446c-b1ef-b64db98a3131.jpg"},{"variant_id":"42016564379748","key":"Strawberry Kiwi / 60ct","title":"Strawberry Kiwi / 60ct","sku":null,"optionValues":["Strawberry Kiwi","60ct"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Kiwi"},{"position":2,"name":"Servings","value":"60ct"}],"selected_options":{"Flavor":"Strawberry Kiwi","Servings":"60ct"},"price_cents":6999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/60ct_Greens_StrawberryKiwi_Shopify_98975c49-91ac-483d-8812-081d3c59b160.jpg"},{"variant_id":"31472189931620","key":"Berry / 30ct","title":"Berry / 30ct","sku":null,"optionValues":["Berry","30ct"],"option_values":[{"position":1,"name":"Flavor","value":"Berry"},{"position":2,"name":"Servings","value":"30ct"}],"selected_options":{"Flavor":"Berry","Servings":"30ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/30ct_Greens_StrawberryKiwi_Shopify_2437679c-6d1b-446c-b1ef-b64db98a3131.jpg"},{"variant_id":"33005672857700","key":"Berry / 60ct","title":"Berry / 60ct","sku":null,"optionValues":["Berry","60ct"],"option_values":[{"position":1,"name":"Flavor","value":"Berry"},{"position":2,"name":"Servings","value":"60ct"}],"selected_options":{"Flavor":"Berry","Servings":"60ct"},"price_cents":6999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/60ct_Greens_StrawberryKiwi_Shopify_98975c49-91ac-483d-8812-081d3c59b160.jpg"},{"variant_id":"46042250444900","key":"Watermelon / 25ct","title":"Watermelon / 25ct","sku":null,"optionValues":["Watermelon","25ct"],"option_values":[{"position":1,"name":"Flavor","value":"Watermelon"},{"position":2,"name":"Servings","value":"25ct"}],"selected_options":{"Flavor":"Watermelon","Servings":"25ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/greens_25ct_WATERMELON_digitallisting_01.jpg"},{"variant_id":"46042250936420","key":"Peach / 25ct","title":"Peach / 25ct","sku":null,"optionValues":["Peach","25ct"],"option_values":[{"position":1,"name":"Flavor","value":"Peach"},{"position":2,"name":"Servings","value":"25ct"}],"selected_options":{"Flavor":"Peach","Servings":"25ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/greens_25ct_peach_digitallisting_01.png"},{"variant_id":"44327136067684","key":"Pineapple / 25ct","title":"Pineapple / 25ct","sku":null,"optionValues":["Pineapple","25ct"],"option_values":[{"position":1,"name":"Flavor","value":"Pineapple"},{"position":2,"name":"Servings","value":"25ct"}],"selected_options":{"Flavor":"Pineapple","Servings":"25ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/Shopify_Pineapple_25ct_1.jpg"},{"variant_id":"42266891583588","key":"Orange Passionfruit / 30ct","title":"Orange Passionfruit / 30ct","sku":null,"optionValues":["Orange Passionfruit","30ct"],"option_values":[{"position":1,"name":"Flavor","value":"Orange Passionfruit"},{"position":2,"name":"Servings","value":"30ct"}],"selected_options":{"Flavor":"Orange Passionfruit","Servings":"30ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/30ct_Greens_Mango_Shopify_ec0a3432-e9c7-4935-a429-43fe6e03cbea.jpg"},{"variant_id":"39357017161828","key":"Coconut / 30ct","title":"Coconut / 30ct","sku":null,"optionValues":["Coconut","30ct"],"option_values":[{"position":1,"name":"Flavor","value":"Coconut"},{"position":2,"name":"Servings","value":"30ct"}],"selected_options":{"Flavor":"Coconut","Servings":"30ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/30ct_Greens_Coconut_Shopify_5481f570-dd43-46d6-b28e-2305dee9060c.jpg"},{"variant_id":"39426155118692","key":"Coconut / 60ct","title":"Coconut / 60ct","sku":null,"optionValues":["Coconut","60ct"],"option_values":[{"position":1,"name":"Flavor","value":"Coconut"},{"position":2,"name":"Servings","value":"60ct"}],"selected_options":{"Flavor":"Coconut","Servings":"60ct"},"price_cents":6999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/60ct_Greens_Coconut_Shopify_dd5bcf2d-9416-4d58-9e31-0b6e2ef1ef6b.jpg"},{"variant_id":"32499602784356","key":"Citrus / 30ct","title":"Citrus / 30ct","sku":null,"optionValues":["Citrus","30ct"],"option_values":[{"position":1,"name":"Flavor","value":"Citrus"},{"position":2,"name":"Servings","value":"30ct"}],"selected_options":{"Flavor":"Citrus","Servings":"30ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/30ct_Greens_Citrus_Shopify_a592f175-7bb3-4d34-8465-0915d9245855.jpg"},{"variant_id":"33005683867748","key":"Citrus / 60ct","title":"Citrus / 60ct","sku":null,"optionValues":["Citrus","60ct"],"option_values":[{"position":1,"name":"Flavor","value":"Citrus"},{"position":2,"name":"Servings","value":"60ct"}],"selected_options":{"Flavor":"Citrus","Servings":"60ct"},"price_cents":6999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/60ctGreens_Citrus_Shopify_a3e08953-4bf5-4771-805f-1209723c98fe.jpg"},{"variant_id":"31472189898852","key":"Original / 30ct","title":"Original / 30ct","sku":null,"optionValues":["Original","30ct"],"option_values":[{"position":1,"name":"Flavor","value":"Original"},{"position":2,"name":"Servings","value":"30ct"}],"selected_options":{"Flavor":"Original","Servings":"30ct"},"price_cents":3399,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/30ct_Greens_Original_78f4ccae-bfac-4875-85dc-e47d7ffe3cb8.jpg"},{"variant_id":"33005679116388","key":"Original / 60ct","title":"Original / 60ct","sku":null,"optionValues":["Original","60ct"],"option_values":[{"position":1,"name":"Flavor","value":"Original"},{"position":2,"name":"Servings","value":"60ct"}],"selected_options":{"Flavor":"Original","Servings":"60ct"},"price_cents":6999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/60ct_Greens_Original_Shopify_d3d89cd7-7980-486a-8cae-6a9e112f9489.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -682,6 +697,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -699,16 +718,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Bloom Nutrition | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -731,23 +773,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -760,10 +806,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -771,21 +817,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -796,12 +836,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

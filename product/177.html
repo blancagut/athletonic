@@ -221,6 +221,9 @@
               data-cart-price="26.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-milk-chocolate-1lb.png"
+              data-cart-variant-id="41079718150240"
+              data-cart-selected-options="{&quot;Size&quot;:&quot;2 lb.&quot;,&quot;Flavor&quot;:&quot;Milk Chocolate&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -315,7 +318,7 @@
                 <strong>$20.99</strong>
 
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -543,20 +546,57 @@
           });
         });
 
-        // Variant-aware main image: use the official image mapped to the
-        // selected variant instead of guessing from gallery filenames.
-        var baseImgSrc = mainImg ? mainImg.getAttribute("src") || "" : "";
-        var baseImgAlt = mainImg ? mainImg.getAttribute("alt") || "" : "";
-        function setMainImage(src, alt) {
-          if (!mainImg || !src) return;
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-milk-chocolate-1lb.png","t":"mtnitrotechmilkchocolate1lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-milk-vanilla-1lb.png","t":"mtnitrotechmilkvanilla1lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-WheyProtein-2000x2000-07-V3_new.jpg","t":"muscletechnitrotechwheyprotein2000x200007v3newjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-chocolate.jpg","t":"muscletechnitrotech2lbchocolate4d3387f73fa4494fa1d0bc7f66619038jpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-vanilla.jpg","t":"muscletechnitrotech2lbvanillajpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-cookies.jpg","t":"muscletechnitrotech2lbcookiesjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-strawberry.jpg","t":"muscletechnitrotech2lbstrawberryjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-chocolate_b41dd573-44db-4742-9dc7-ea3802c05012.jpg","t":"muscletechnitrotech4lbchocolateb41dd57344db47429dc7ea3802c05012jpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-vanilla_7df6e4b5-5480-4c65-9c42-cee8a77f5a4f.jpg","t":"muscletechnitrotech4lbvanilla7df6e4b554804c659c42cee8a77f5a4fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-cookies_c3ee7f27-85d9-4031-9ff6-917508135d33.jpg","t":"muscletechnitrotech4lbcookiesc3ee7f2785d940319ff6917508135d33jpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-strawberry_f7cf09f7-979f-442f-bf09-8fb923310b0f.jpg","t":"muscletechnitrotech4lbstrawberryf7cf09f7979f442fbf098fb923310b0fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2000x2000-07_new.jpg","t":"muscletechnitrotech2000x200007newjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-WheyProtein-2000x2000-01-V2-new.jpg","t":"muscletechnitrotechwheyprotein2000x200001v2newjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-WheyProtein-2000x2000-02-V3_new.jpg","t":"muscletechnitrotechwheyprotein2000x200002v3newjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-WheyProtein-2000x2000-03-V2_new.jpg","t":"muscletechnitrotechwheyprotein2000x200003v2newjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-WheyProtein-2000x2000-05-V2_new.jpg","t":"muscletechnitrotechwheyprotein2000x200005v2newjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-WheyProtein-2000x2000-06-V2_Product-Replacement.jpg","t":"muscletechnitrotechwheyprotein2000x200006v2productreplacementjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
           mainImg.src = src;
-          if (alt) mainImg.alt = alt;
           thumbs.forEach(function (b) {
             b.classList.toggle("is-active", b.getAttribute("data-src") === src);
           });
-        }
-        function resetMainImage() {
-          setMainImage(baseImgSrc, baseImgAlt);
         }
 
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
@@ -567,60 +607,23 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"2 lb. / Milk Chocolate","optionValues":["2 lb.","Milk Chocolate"],"price_cents":4499,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-chocolate.jpg?v=1764974667"},{"key":"2 lb. / Vanilla Cream","optionValues":["2 lb.","Vanilla Cream"],"price_cents":4499,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-vanilla.jpg?v=1764974667"},{"key":"2 lb. / Strawberry","optionValues":["2 lb.","Strawberry"],"price_cents":4499,"compare_at_cents":0,"available":false,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-strawberry.jpg?v=1764974667"},{"key":"2 lb. / Cookies & Cream","optionValues":["2 lb.","Cookies & Cream"],"price_cents":4499,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-cookies.jpg?v=1764974667"},{"key":"4 lb. / Milk Chocolate","optionValues":["4 lb.","Milk Chocolate"],"price_cents":7999,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-chocolate_b41dd573-44db-4742-9dc7-ea3802c05012.jpg?v=1764974667"},{"key":"4 lb. / Vanilla Cream","optionValues":["4 lb.","Vanilla Cream"],"price_cents":7999,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-vanilla_7df6e4b5-5480-4c65-9c42-cee8a77f5a4f.jpg?v=1764974667"},{"key":"4 lb. / Strawberry","optionValues":["4 lb.","Strawberry"],"price_cents":7999,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-strawberry_f7cf09f7-979f-442f-bf09-8fb923310b0f.jpg?v=1764974667"},{"key":"4 lb. / Cookies & Cream","optionValues":["4 lb.","Cookies & Cream"],"price_cents":7999,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-cookies_c3ee7f27-85d9-4031-9ff6-917508135d33.jpg?v=1764974667"},{"key":"1.5 lb. / Milk Chocolate","optionValues":["1.5 lb.","Milk Chocolate"],"price_cents":2699,"compare_at_cents":0,"available":false,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-milk-chocolate-1lb.png?v=1764974667"},{"key":"1.5 lb. / Vanilla Cream","optionValues":["1.5 lb.","Vanilla Cream"],"price_cents":2699,"compare_at_cents":0,"available":false,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-milk-vanilla-1lb.png?v=1764974667"}];
+        var variantPricing = [{"variant_id":"41079718150240","key":"2 lb. / Milk Chocolate","title":"2 lb. / Milk Chocolate","sku":null,"optionValues":["2 lb.","Milk Chocolate"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavor","value":"Milk Chocolate"}],"selected_options":{"Size":"2 lb.","Flavor":"Milk Chocolate"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-chocolate.jpg"},{"variant_id":"41079718215776","key":"2 lb. / Vanilla Cream","title":"2 lb. / Vanilla Cream","sku":null,"optionValues":["2 lb.","Vanilla Cream"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavor","value":"Vanilla Cream"}],"selected_options":{"Size":"2 lb.","Flavor":"Vanilla Cream"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-vanilla.jpg"},{"variant_id":"41079718281312","key":"2 lb. / Strawberry","title":"2 lb. / Strawberry","sku":null,"optionValues":["2 lb.","Strawberry"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavor","value":"Strawberry"}],"selected_options":{"Size":"2 lb.","Flavor":"Strawberry"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-strawberry.jpg"},{"variant_id":"41079718346848","key":"2 lb. / Cookies & Cream","title":"2 lb. / Cookies & Cream","sku":null,"optionValues":["2 lb.","Cookies & Cream"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavor","value":"Cookies & Cream"}],"selected_options":{"Size":"2 lb.","Flavor":"Cookies & Cream"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-2lb-cookies.jpg"},{"variant_id":"41079718183008","key":"4 lb. / Milk Chocolate","title":"4 lb. / Milk Chocolate","sku":null,"optionValues":["4 lb.","Milk Chocolate"],"option_values":[{"position":1,"name":"Size","value":"4 lb."},{"position":2,"name":"Flavor","value":"Milk Chocolate"}],"selected_options":{"Size":"4 lb.","Flavor":"Milk Chocolate"},"price_cents":7999,"regular_price_cents":7999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-chocolate_b41dd573-44db-4742-9dc7-ea3802c05012.jpg"},{"variant_id":"41079718248544","key":"4 lb. / Vanilla Cream","title":"4 lb. / Vanilla Cream","sku":null,"optionValues":["4 lb.","Vanilla Cream"],"option_values":[{"position":1,"name":"Size","value":"4 lb."},{"position":2,"name":"Flavor","value":"Vanilla Cream"}],"selected_options":{"Size":"4 lb.","Flavor":"Vanilla Cream"},"price_cents":7999,"regular_price_cents":7999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-vanilla_7df6e4b5-5480-4c65-9c42-cee8a77f5a4f.jpg"},{"variant_id":"41079718314080","key":"4 lb. / Strawberry","title":"4 lb. / Strawberry","sku":null,"optionValues":["4 lb.","Strawberry"],"option_values":[{"position":1,"name":"Size","value":"4 lb."},{"position":2,"name":"Flavor","value":"Strawberry"}],"selected_options":{"Size":"4 lb.","Flavor":"Strawberry"},"price_cents":7999,"regular_price_cents":7999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-strawberry_f7cf09f7-979f-442f-bf09-8fb923310b0f.jpg"},{"variant_id":"41079829725280","key":"4 lb. / Cookies & Cream","title":"4 lb. / Cookies & Cream","sku":null,"optionValues":["4 lb.","Cookies & Cream"],"option_values":[{"position":1,"name":"Size","value":"4 lb."},{"position":2,"name":"Flavor","value":"Cookies & Cream"}],"selected_options":{"Size":"4 lb.","Flavor":"Cookies & Cream"},"price_cents":7999,"regular_price_cents":7999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/MuscleTech-NitroTech-4lb-cookies_c3ee7f27-85d9-4031-9ff6-917508135d33.jpg"},{"variant_id":"41283623682144","key":"1.5 lb. / Milk Chocolate","title":"1.5 lb. / Milk Chocolate","sku":null,"optionValues":["1.5 lb.","Milk Chocolate"],"option_values":[{"position":1,"name":"Size","value":"1.5 lb."},{"position":2,"name":"Flavor","value":"Milk Chocolate"}],"selected_options":{"Size":"1.5 lb.","Flavor":"Milk Chocolate"},"price_cents":2699,"regular_price_cents":2699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-milk-chocolate-1lb.png"},{"variant_id":"41283621912672","key":"1.5 lb. / Vanilla Cream","title":"1.5 lb. / Vanilla Cream","sku":null,"optionValues":["1.5 lb.","Vanilla Cream"],"option_values":[{"position":1,"name":"Size","value":"1.5 lb."},{"position":2,"name":"Flavor","value":"Vanilla Cream"}],"selected_options":{"Size":"1.5 lb.","Flavor":"Vanilla Cream"},"price_cents":2699,"regular_price_cents":2699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-milk-vanilla-1lb.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
-        var baseCartName = addBtn ? addBtn.dataset.cartName || "" : "";
-        var baseCartImage = addBtn ? addBtn.dataset.cartImage || "" : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
         var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
-        var titleEl = document.querySelector("[data-pdp-title]");
-        var baseTitle = titleEl ? titleEl.textContent.trim() : "";
-
-        function isSizeLike(value) {
-          return /(^|[^a-z])(lb|lbs|kg|g|oz|serv|serving|servings|pack|packs|count|ct)([^a-z]|$)/i.test(String(value || ""));
-        }
-
-        function orderedVariantValues(values) {
-          var list = (values || []).filter(Boolean);
-          return list
-            .filter(function (value) { return !isSizeLike(value); })
-            .concat(list.filter(function (value) { return isSizeLike(value); }));
-        }
-
-        function variantPresentationLabel(variant) {
-          return orderedVariantValues(variant && variant.optionValues).join(" / ");
-        }
-
-        function variantImageAlt(variant) {
-          var label = variantPresentationLabel(variant);
-          return label ? baseTitle + " — " + label : baseImgAlt || baseTitle;
-        }
-
-        function applyVariantPresentation(variant) {
-          if (!variant) {
-            resetMainImage();
-            if (titleEl) titleEl.textContent = baseTitle;
-            if (addBtn) {
-              addBtn.dataset.cartName = baseCartName;
-              addBtn.dataset.cartImage = baseCartImage;
-            }
-            return;
-          }
-          var label = variantPresentationLabel(variant);
-          if (titleEl) {
-            titleEl.textContent = label ? baseTitle + " — " + label : baseTitle;
-          }
-          setMainImage(variant.image || baseImgSrc, variantImageAlt(variant));
-          if (addBtn) {
-            addBtn.dataset.cartName = titleEl ? titleEl.textContent : baseCartName;
-            addBtn.dataset.cartImage = variant.image || baseCartImage;
-          }
-        }
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
           return String(value || "")
@@ -675,6 +678,24 @@
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
           }
+        }
+
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — MuscleTech | Athletonic")
+            : baseDocumentTitle;
         }
 
         function selectedVariant() {
@@ -741,30 +762,29 @@
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
             addBtn.disabled = false;
-            applyVariantPresentation(null);
             return;
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
-              applyVariantPresentation(null);
               if (note) note.textContent = "This combination is not available right now.";
               return;
             }
-            applyVariantPresentation(currentVariant);
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
               setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
@@ -778,18 +798,25 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
-            addBtn.dataset.cartName = baseCartName;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
             addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             resetToBasePrice();
-            applyVariantPresentation(null);
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) {
-          s.addEventListener("change", refresh);
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
         });
         refresh();
       })();

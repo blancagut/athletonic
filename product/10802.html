@@ -165,7 +165,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Iron Bull Strength</p>
-          <h1 class="pdp-title">Commercial Rubber Dumbbells</h1>
+          <h1 class="pdp-title" data-pdp-title>Commercial Rubber Dumbbells</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="5000" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$50.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -236,6 +236,9 @@
               data-cart-price="50"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0268/4682/2569/files/commercial-dumbbells.webp"
+              data-cart-variant-id="43758501134505"
+              data-cart-selected-options="{&quot;Weight&quot;:&quot;5LB Pair&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -645,17 +648,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"5LB Pair","optionValues":["5LB Pair"],"price_cents":5000,"compare_at_cents":0,"available":true},{"key":"7.5LB Pair","optionValues":["7.5LB Pair"],"price_cents":6500,"compare_at_cents":0,"available":true},{"key":"10LB Pair","optionValues":["10LB Pair"],"price_cents":7000,"compare_at_cents":0,"available":true},{"key":"12.5LB Pair","optionValues":["12.5LB Pair"],"price_cents":9000,"compare_at_cents":0,"available":true},{"key":"15LB Pair","optionValues":["15LB Pair"],"price_cents":10500,"compare_at_cents":0,"available":true},{"key":"17.5LB Pair","optionValues":["17.5LB Pair"],"price_cents":12500,"compare_at_cents":0,"available":true},{"key":"20LB Pair","optionValues":["20LB Pair"],"price_cents":14000,"compare_at_cents":0,"available":true},{"key":"22.5LB Pair","optionValues":["22.5LB Pair"],"price_cents":16000,"compare_at_cents":0,"available":true},{"key":"25LB Pair","optionValues":["25LB Pair"],"price_cents":17500,"compare_at_cents":0,"available":true},{"key":"27.5LB Pair","optionValues":["27.5LB Pair"],"price_cents":19500,"compare_at_cents":0,"available":true},{"key":"30LB Pair","optionValues":["30LB Pair"],"price_cents":21000,"compare_at_cents":0,"available":true},{"key":"35LB Pair","optionValues":["35LB Pair"],"price_cents":24500,"compare_at_cents":0,"available":true},{"key":"40LB Pair","optionValues":["40LB Pair"],"price_cents":28000,"compare_at_cents":0,"available":true},{"key":"45LB Pair","optionValues":["45LB Pair"],"price_cents":31500,"compare_at_cents":0,"available":true},{"key":"50LB Pair","optionValues":["50LB Pair"],"price_cents":35000,"compare_at_cents":0,"available":true},{"key":"55LB Pair","optionValues":["55LB Pair"],"price_cents":38500,"compare_at_cents":0,"available":true},{"key":"60LB Pair","optionValues":["60LB Pair"],"price_cents":42000,"compare_at_cents":0,"available":true},{"key":"65LB Pair","optionValues":["65LB Pair"],"price_cents":45500,"compare_at_cents":0,"available":true},{"key":"70LB Pair","optionValues":["70LB Pair"],"price_cents":49000,"compare_at_cents":0,"available":true},{"key":"75LB Pair","optionValues":["75LB Pair"],"price_cents":52500,"compare_at_cents":0,"available":true},{"key":"80LB Pair","optionValues":["80LB Pair"],"price_cents":56000,"compare_at_cents":0,"available":true},{"key":"85LB Pair","optionValues":["85LB Pair"],"price_cents":59500,"compare_at_cents":0,"available":true},{"key":"90LB Pair","optionValues":["90LB Pair"],"price_cents":63000,"compare_at_cents":0,"available":true},{"key":"95LB Pair","optionValues":["95LB Pair"],"price_cents":66500,"compare_at_cents":0,"available":true},{"key":"100LB Pair","optionValues":["100LB Pair"],"price_cents":70000,"compare_at_cents":0,"available":true},{"key":"105LB Pair","optionValues":["105LB Pair"],"price_cents":73500,"compare_at_cents":0,"available":true},{"key":"110LB Pair","optionValues":["110LB Pair"],"price_cents":77000,"compare_at_cents":0,"available":true},{"key":"115LB Pair","optionValues":["115LB Pair"],"price_cents":80500,"compare_at_cents":0,"available":true},{"key":"120LB Pair","optionValues":["120LB Pair"],"price_cents":84000,"compare_at_cents":0,"available":true},{"key":"125LB Pair","optionValues":["125LB Pair"],"price_cents":87500,"compare_at_cents":0,"available":true},{"key":"130LB Pair","optionValues":["130LB Pair"],"price_cents":91000,"compare_at_cents":0,"available":true},{"key":"135LB Pair","optionValues":["135LB Pair"],"price_cents":94500,"compare_at_cents":0,"available":true},{"key":"140LB Pair","optionValues":["140LB Pair"],"price_cents":98000,"compare_at_cents":0,"available":true},{"key":"145LB Pair","optionValues":["145LB Pair"],"price_cents":101500,"compare_at_cents":0,"available":true},{"key":"150LB Pair","optionValues":["150LB Pair"],"price_cents":105000,"compare_at_cents":0,"available":true},{"key":"5-50LB Set","optionValues":["5-50LB Set"],"price_cents":192500,"compare_at_cents":0,"available":true},{"key":"55-75LB Set","optionValues":["55-75LB Set"],"price_cents":227500,"compare_at_cents":0,"available":true},{"key":"80-100LB Set","optionValues":["80-100LB Set"],"price_cents":315000,"compare_at_cents":0,"available":true},{"key":"5-75LB Set","optionValues":["5-75LB Set"],"price_cents":420000,"compare_at_cents":0,"available":true},{"key":"5-100LB Set","optionValues":["5-100LB Set"],"price_cents":630000,"compare_at_cents":0,"available":true},{"key":"105-150LB Set","optionValues":["105-150LB Set"],"price_cents":765000,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"43758501134505","key":"5LB Pair","title":"5LB Pair","sku":null,"optionValues":["5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"5LB Pair"}],"selected_options":{"Weight":"5LB Pair"},"price_cents":5000,"regular_price_cents":5000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199287465","key":"7.5LB Pair","title":"7.5LB Pair","sku":null,"optionValues":["7.5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"7.5LB Pair"}],"selected_options":{"Weight":"7.5LB Pair"},"price_cents":6500,"regular_price_cents":6500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758501167273","key":"10LB Pair","title":"10LB Pair","sku":null,"optionValues":["10LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"10LB Pair"}],"selected_options":{"Weight":"10LB Pair"},"price_cents":7000,"regular_price_cents":7000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199320233","key":"12.5LB Pair","title":"12.5LB Pair","sku":null,"optionValues":["12.5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"12.5LB Pair"}],"selected_options":{"Weight":"12.5LB Pair"},"price_cents":9000,"regular_price_cents":9000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43758501200041","key":"15LB Pair","title":"15LB Pair","sku":null,"optionValues":["15LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"15LB Pair"}],"selected_options":{"Weight":"15LB Pair"},"price_cents":10500,"regular_price_cents":10500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199353001","key":"17.5LB Pair","title":"17.5LB Pair","sku":null,"optionValues":["17.5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"17.5LB Pair"}],"selected_options":{"Weight":"17.5LB Pair"},"price_cents":12500,"regular_price_cents":12500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758501232809","key":"20LB Pair","title":"20LB Pair","sku":null,"optionValues":["20LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"20LB Pair"}],"selected_options":{"Weight":"20LB Pair"},"price_cents":14000,"regular_price_cents":14000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"44963199385769","key":"22.5LB Pair","title":"22.5LB Pair","sku":null,"optionValues":["22.5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"22.5LB Pair"}],"selected_options":{"Weight":"22.5LB Pair"},"price_cents":16000,"regular_price_cents":16000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758501265577","key":"25LB Pair","title":"25LB Pair","sku":null,"optionValues":["25LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"25LB Pair"}],"selected_options":{"Weight":"25LB Pair"},"price_cents":17500,"regular_price_cents":17500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199418537","key":"27.5LB Pair","title":"27.5LB Pair","sku":null,"optionValues":["27.5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"27.5LB Pair"}],"selected_options":{"Weight":"27.5LB Pair"},"price_cents":19500,"regular_price_cents":19500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758501298345","key":"30LB Pair","title":"30LB Pair","sku":null,"optionValues":["30LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"30LB Pair"}],"selected_options":{"Weight":"30LB Pair"},"price_cents":21000,"regular_price_cents":21000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758501331113","key":"35LB Pair","title":"35LB Pair","sku":null,"optionValues":["35LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"35LB Pair"}],"selected_options":{"Weight":"35LB Pair"},"price_cents":24500,"regular_price_cents":24500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758501363881","key":"40LB Pair","title":"40LB Pair","sku":null,"optionValues":["40LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"40LB Pair"}],"selected_options":{"Weight":"40LB Pair"},"price_cents":28000,"regular_price_cents":28000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758501396649","key":"45LB Pair","title":"45LB Pair","sku":null,"optionValues":["45LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"45LB Pair"}],"selected_options":{"Weight":"45LB Pair"},"price_cents":31500,"regular_price_cents":31500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758501429417","key":"50LB Pair","title":"50LB Pair","sku":null,"optionValues":["50LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"50LB Pair"}],"selected_options":{"Weight":"50LB Pair"},"price_cents":35000,"regular_price_cents":35000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199451305","key":"55LB Pair","title":"55LB Pair","sku":null,"optionValues":["55LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"55LB Pair"}],"selected_options":{"Weight":"55LB Pair"},"price_cents":38500,"regular_price_cents":38500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199484073","key":"60LB Pair","title":"60LB Pair","sku":null,"optionValues":["60LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"60LB Pair"}],"selected_options":{"Weight":"60LB Pair"},"price_cents":42000,"regular_price_cents":42000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199516841","key":"65LB Pair","title":"65LB Pair","sku":null,"optionValues":["65LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"65LB Pair"}],"selected_options":{"Weight":"65LB Pair"},"price_cents":45500,"regular_price_cents":45500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199549609","key":"70LB Pair","title":"70LB Pair","sku":null,"optionValues":["70LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"70LB Pair"}],"selected_options":{"Weight":"70LB Pair"},"price_cents":49000,"regular_price_cents":49000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199582377","key":"75LB Pair","title":"75LB Pair","sku":null,"optionValues":["75LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"75LB Pair"}],"selected_options":{"Weight":"75LB Pair"},"price_cents":52500,"regular_price_cents":52500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199615145","key":"80LB Pair","title":"80LB Pair","sku":null,"optionValues":["80LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"80LB Pair"}],"selected_options":{"Weight":"80LB Pair"},"price_cents":56000,"regular_price_cents":56000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199647913","key":"85LB Pair","title":"85LB Pair","sku":null,"optionValues":["85LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"85LB Pair"}],"selected_options":{"Weight":"85LB Pair"},"price_cents":59500,"regular_price_cents":59500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199680681","key":"90LB Pair","title":"90LB Pair","sku":null,"optionValues":["90LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"90LB Pair"}],"selected_options":{"Weight":"90LB Pair"},"price_cents":63000,"regular_price_cents":63000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199713449","key":"95LB Pair","title":"95LB Pair","sku":null,"optionValues":["95LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"95LB Pair"}],"selected_options":{"Weight":"95LB Pair"},"price_cents":66500,"regular_price_cents":66500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44963199746217","key":"100LB Pair","title":"100LB Pair","sku":null,"optionValues":["100LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"100LB Pair"}],"selected_options":{"Weight":"100LB Pair"},"price_cents":70000,"regular_price_cents":70000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562555561","key":"105LB Pair","title":"105LB Pair","sku":null,"optionValues":["105LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"105LB Pair"}],"selected_options":{"Weight":"105LB Pair"},"price_cents":73500,"regular_price_cents":73500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562588329","key":"110LB Pair","title":"110LB Pair","sku":null,"optionValues":["110LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"110LB Pair"}],"selected_options":{"Weight":"110LB Pair"},"price_cents":77000,"regular_price_cents":77000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562621097","key":"115LB Pair","title":"115LB Pair","sku":null,"optionValues":["115LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"115LB Pair"}],"selected_options":{"Weight":"115LB Pair"},"price_cents":80500,"regular_price_cents":80500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562653865","key":"120LB Pair","title":"120LB Pair","sku":null,"optionValues":["120LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"120LB Pair"}],"selected_options":{"Weight":"120LB Pair"},"price_cents":84000,"regular_price_cents":84000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562686633","key":"125LB Pair","title":"125LB Pair","sku":null,"optionValues":["125LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"125LB Pair"}],"selected_options":{"Weight":"125LB Pair"},"price_cents":87500,"regular_price_cents":87500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562719401","key":"130LB Pair","title":"130LB Pair","sku":null,"optionValues":["130LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"130LB Pair"}],"selected_options":{"Weight":"130LB Pair"},"price_cents":91000,"regular_price_cents":91000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562752169","key":"135LB Pair","title":"135LB Pair","sku":null,"optionValues":["135LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"135LB Pair"}],"selected_options":{"Weight":"135LB Pair"},"price_cents":94500,"regular_price_cents":94500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562784937","key":"140LB Pair","title":"140LB Pair","sku":null,"optionValues":["140LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"140LB Pair"}],"selected_options":{"Weight":"140LB Pair"},"price_cents":98000,"regular_price_cents":98000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562817705","key":"145LB Pair","title":"145LB Pair","sku":null,"optionValues":["145LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"145LB Pair"}],"selected_options":{"Weight":"145LB Pair"},"price_cents":101500,"regular_price_cents":101500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46255562850473","key":"150LB Pair","title":"150LB Pair","sku":null,"optionValues":["150LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"150LB Pair"}],"selected_options":{"Weight":"150LB Pair"},"price_cents":105000,"regular_price_cents":105000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43758484357289","key":"5-50LB Set","title":"5-50LB Set","sku":null,"optionValues":["5-50LB Set"],"option_values":[{"position":1,"name":"Weight","value":"5-50LB Set"}],"selected_options":{"Weight":"5-50LB Set"},"price_cents":192500,"regular_price_cents":192500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/rubber-dumbbell-set-ironbull.webp"},{"variant_id":"43758484455593","key":"55-75LB Set","title":"55-75LB Set","sku":null,"optionValues":["55-75LB Set"],"option_values":[{"position":1,"name":"Weight","value":"55-75LB Set"}],"selected_options":{"Weight":"55-75LB Set"},"price_cents":227500,"regular_price_cents":227500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/rubber-dumbbell-set-ironbull.webp"},{"variant_id":"43758484488361","key":"80-100LB Set","title":"80-100LB Set","sku":null,"optionValues":["80-100LB Set"],"option_values":[{"position":1,"name":"Weight","value":"80-100LB Set"}],"selected_options":{"Weight":"80-100LB Set"},"price_cents":315000,"regular_price_cents":315000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/rubber-dumbbell-set-ironbull.webp"},{"variant_id":"43758484390057","key":"5-75LB Set","title":"5-75LB Set","sku":null,"optionValues":["5-75LB Set"],"option_values":[{"position":1,"name":"Weight","value":"5-75LB Set"}],"selected_options":{"Weight":"5-75LB Set"},"price_cents":420000,"regular_price_cents":420000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/rubber-dumbbell-set-ironbull.webp"},{"variant_id":"43758484422825","key":"5-100LB Set","title":"5-100LB Set","sku":null,"optionValues":["5-100LB Set"],"option_values":[{"position":1,"name":"Weight","value":"5-100LB Set"}],"selected_options":{"Weight":"5-100LB Set"},"price_cents":630000,"regular_price_cents":630000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/rubber-dumbbell-set-ironbull.webp"},{"variant_id":"46255562883241","key":"105-150LB Set","title":"105-150LB Set","sku":null,"optionValues":["105-150LB Set"],"option_values":[{"position":1,"name":"Weight","value":"105-150LB Set"}],"selected_options":{"Weight":"105-150LB Set"},"price_cents":765000,"regular_price_cents":765000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/rubber-dumbbell-set-ironbull.webp"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -685,6 +700,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -702,16 +721,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Iron Bull Strength | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -734,23 +776,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -763,10 +809,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -774,21 +820,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -799,12 +839,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

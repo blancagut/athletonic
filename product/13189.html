@@ -185,7 +185,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">jym</p>
-          <h1 class="pdp-title">Pro JYM Protein Powder</h1>
+          <h1 class="pdp-title" data-pdp-title>Pro JYM Protein Powder</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="4499" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$44.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -229,6 +229,9 @@
               data-cart-price="44.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRJ02CR200_24414_060422_V1.1ii_FRONT_SHADOW-1200.png"
+              data-cart-variant-id="42657261912239"
+              data-cart-selected-options="{&quot;Size&quot;:&quot;22 Servings&quot;,&quot;Flavor&quot;:&quot;Tahitian Vanilla Bean&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -338,10 +341,10 @@
               <h3><a class="product-card-link" href="../product/1509.html">GOLD STANDARD 100% WHEY</a></h3>
               <p>Protein</p>
               <div class="product-price-line">
-                <strong>$79.99</strong>
-                <span>$89.99</span>
+                <strong>$20.99</strong>
+
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -630,17 +633,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"22 Servings / Tahitian Vanilla Bean","optionValues":["22 Servings","Tahitian Vanilla Bean"],"price_cents":4499,"compare_at_cents":0,"available":true},{"key":"22 Servings / Rocky Road","optionValues":["22 Servings","Rocky Road"],"price_cents":4499,"compare_at_cents":0,"available":true},{"key":"22 Servings / Chocolate Cookie Crunch","optionValues":["22 Servings","Chocolate Cookie Crunch"],"price_cents":4499,"compare_at_cents":0,"available":true},{"key":"22 Servings / Chocolate Mousse","optionValues":["22 Servings","Chocolate Mousse"],"price_cents":4499,"compare_at_cents":0,"available":true},{"key":"22 Servings / Chocolate Peanut Butter","optionValues":["22 Servings","Chocolate Peanut Butter"],"price_cents":4499,"compare_at_cents":0,"available":true},{"key":"45 Servings / Tahitian Vanilla Bean","optionValues":["45 Servings","Tahitian Vanilla Bean"],"price_cents":7499,"compare_at_cents":0,"available":true},{"key":"45 Servings / Rocky Road","optionValues":["45 Servings","Rocky Road"],"price_cents":7499,"compare_at_cents":0,"available":true},{"key":"45 Servings / Chocolate Cookie Crunch","optionValues":["45 Servings","Chocolate Cookie Crunch"],"price_cents":7499,"compare_at_cents":0,"available":true},{"key":"45 Servings / Chocolate Mousse","optionValues":["45 Servings","Chocolate Mousse"],"price_cents":7499,"compare_at_cents":0,"available":true},{"key":"45 Servings / S'mores","optionValues":["45 Servings","S'mores"],"price_cents":7499,"compare_at_cents":0,"available":true},{"key":"45 Servings / Chocolate Peanut Butter","optionValues":["45 Servings","Chocolate Peanut Butter"],"price_cents":7499,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"42657261912239","key":"22 Servings / Tahitian Vanilla Bean","title":"22 Servings / Tahitian Vanilla Bean","sku":null,"optionValues":["22 Servings","Tahitian Vanilla Bean"],"option_values":[{"position":1,"name":"Size","value":"22 Servings"},{"position":2,"name":"Flavor","value":"Tahitian Vanilla Bean"}],"selected_options":{"Size":"22 Servings","Flavor":"Tahitian Vanilla Bean"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42852635508911","key":"22 Servings / Rocky Road","title":"22 Servings / Rocky Road","sku":null,"optionValues":["22 Servings","Rocky Road"],"option_values":[{"position":1,"name":"Size","value":"22 Servings"},{"position":2,"name":"Flavor","value":"Rocky Road"}],"selected_options":{"Size":"22 Servings","Flavor":"Rocky Road"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"42551847583919","key":"22 Servings / Chocolate Cookie Crunch","title":"22 Servings / Chocolate Cookie Crunch","sku":null,"optionValues":["22 Servings","Chocolate Cookie Crunch"],"option_values":[{"position":1,"name":"Size","value":"22 Servings"},{"position":2,"name":"Flavor","value":"Chocolate Cookie Crunch"}],"selected_options":{"Size":"22 Servings","Flavor":"Chocolate Cookie Crunch"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42562555510959","key":"22 Servings / Chocolate Mousse","title":"22 Servings / Chocolate Mousse","sku":null,"optionValues":["22 Servings","Chocolate Mousse"],"option_values":[{"position":1,"name":"Size","value":"22 Servings"},{"position":2,"name":"Flavor","value":"Chocolate Mousse"}],"selected_options":{"Size":"22 Servings","Flavor":"Chocolate Mousse"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42327088332975","key":"22 Servings / Chocolate Peanut Butter","title":"22 Servings / Chocolate Peanut Butter","sku":null,"optionValues":["22 Servings","Chocolate Peanut Butter"],"option_values":[{"position":1,"name":"Size","value":"22 Servings"},{"position":2,"name":"Flavor","value":"Chocolate Peanut Butter"}],"selected_options":{"Size":"22 Servings","Flavor":"Chocolate Peanut Butter"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"42327088398511","key":"45 Servings / Tahitian Vanilla Bean","title":"45 Servings / Tahitian Vanilla Bean","sku":null,"optionValues":["45 Servings","Tahitian Vanilla Bean"],"option_values":[{"position":1,"name":"Size","value":"45 Servings"},{"position":2,"name":"Flavor","value":"Tahitian Vanilla Bean"}],"selected_options":{"Size":"45 Servings","Flavor":"Tahitian Vanilla Bean"},"price_cents":7499,"regular_price_cents":7499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42359858036911","key":"45 Servings / Rocky Road","title":"45 Servings / Rocky Road","sku":null,"optionValues":["45 Servings","Rocky Road"],"option_values":[{"position":1,"name":"Size","value":"45 Servings"},{"position":2,"name":"Flavor","value":"Rocky Road"}],"selected_options":{"Size":"45 Servings","Flavor":"Rocky Road"},"price_cents":7499,"regular_price_cents":7499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"42551854629039","key":"45 Servings / Chocolate Cookie Crunch","title":"45 Servings / Chocolate Cookie Crunch","sku":null,"optionValues":["45 Servings","Chocolate Cookie Crunch"],"option_values":[{"position":1,"name":"Size","value":"45 Servings"},{"position":2,"name":"Flavor","value":"Chocolate Cookie Crunch"}],"selected_options":{"Size":"45 Servings","Flavor":"Chocolate Cookie Crunch"},"price_cents":7499,"regular_price_cents":7499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42562557247663","key":"45 Servings / Chocolate Mousse","title":"45 Servings / Chocolate Mousse","sku":null,"optionValues":["45 Servings","Chocolate Mousse"],"option_values":[{"position":1,"name":"Size","value":"45 Servings"},{"position":2,"name":"Flavor","value":"Chocolate Mousse"}],"selected_options":{"Size":"45 Servings","Flavor":"Chocolate Mousse"},"price_cents":7499,"regular_price_cents":7499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42551856464047","key":"45 Servings / S'mores","title":"45 Servings / S'mores","sku":null,"optionValues":["45 Servings","S'mores"],"option_values":[{"position":1,"name":"Size","value":"45 Servings"},{"position":2,"name":"Flavor","value":"S'mores"}],"selected_options":{"Size":"45 Servings","Flavor":"S'mores"},"price_cents":7499,"regular_price_cents":7499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42852569088175","key":"45 Servings / Chocolate Peanut Butter","title":"45 Servings / Chocolate Peanut Butter","sku":null,"optionValues":["45 Servings","Chocolate Peanut Butter"],"option_values":[{"position":1,"name":"Size","value":"45 Servings"},{"position":2,"name":"Flavor","value":"Chocolate Peanut Butter"}],"selected_options":{"Size":"45 Servings","Flavor":"Chocolate Peanut Butter"},"price_cents":7499,"regular_price_cents":7499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -670,6 +685,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -687,16 +706,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — jym | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -719,23 +761,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -748,10 +794,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -759,21 +805,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -784,12 +824,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

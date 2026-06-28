@@ -312,7 +312,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Key Nutrients</p>
-          <h1 class="pdp-title">Electrolyte Recovery Plus Powder (Sugar-Free)</h1>
+          <h1 class="pdp-title" data-pdp-title>Electrolyte Recovery Plus Powder (Sugar-Free)</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="1999" data-base-compare-cents="1999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$19.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -361,6 +361,9 @@
               data-cart-price="19.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Main_Image_9988f650-54cc-4b26-aa05-6058b74ee571.png"
+              data-cart-variant-id="41129829040296"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Lemonade&quot;,&quot;Size&quot;:&quot;90 servings&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -765,17 +768,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Lemonade / 90 servings","optionValues":["Lemonade","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Lemonade / 20 servings","optionValues":["Lemonade","20 servings"],"price_cents":1999,"compare_at_cents":1999,"available":true},{"key":"Lemonade / 270 servings","optionValues":["Lemonade","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Peach Mango / 90 servings","optionValues":["Peach Mango","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Peach Mango / 20 servings","optionValues":["Peach Mango","20 servings"],"price_cents":1999,"compare_at_cents":1999,"available":true},{"key":"Peach Mango / 270 servings","optionValues":["Peach Mango","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Cherry Pom / 90 servings","optionValues":["Cherry Pom","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Cherry Pom / 270 servings","optionValues":["Cherry Pom","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Blue Raspberry / 90 servings","optionValues":["Blue Raspberry","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Blue Raspberry / 20 servings","optionValues":["Blue Raspberry","20 servings"],"price_cents":1999,"compare_at_cents":1999,"available":true},{"key":"Blue Raspberry / 270 servings","optionValues":["Blue Raspberry","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Watermelon / 90 servings","optionValues":["Watermelon","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Watermelon / 20 servings","optionValues":["Watermelon","20 servings"],"price_cents":1999,"compare_at_cents":2299,"available":true},{"key":"Watermelon / 270 servings","optionValues":["Watermelon","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Pink Lemonade / 90 servings","optionValues":["Pink Lemonade","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Pink Lemonade / 20 servings","optionValues":["Pink Lemonade","20 servings"],"price_cents":1999,"compare_at_cents":1999,"available":true},{"key":"Pink Lemonade / 270 servings","optionValues":["Pink Lemonade","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Orange / 90 servings","optionValues":["Orange","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Orange / 20 servings","optionValues":["Orange","20 servings"],"price_cents":1999,"compare_at_cents":1999,"available":true},{"key":"Orange / 270 servings","optionValues":["Orange","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Fan Favorites / 270 servings","optionValues":["Fan Favorites","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Pineapple Coconut / 90 servings","optionValues":["Pineapple Coconut","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Pineapple Coconut / 20 servings","optionValues":["Pineapple Coconut","20 servings"],"price_cents":1999,"compare_at_cents":2299,"available":true},{"key":"Pineapple Coconut / 270 servings","optionValues":["Pineapple Coconut","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true},{"key":"Strawberry Lemonade / 90 servings","optionValues":["Strawberry Lemonade","90 servings"],"price_cents":3999,"compare_at_cents":4450,"available":true},{"key":"Strawberry Lemonade / 270 servings","optionValues":["Strawberry Lemonade","270 servings"],"price_cents":9975,"compare_at_cents":11999,"available":true}];
+        var variantPricing = [{"variant_id":"41129829040296","key":"Lemonade / 90 servings","title":"Lemonade / 90 servings","sku":null,"optionValues":["Lemonade","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Lemonade"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Lemonade","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Lemonade_90s.webp"},{"variant_id":"44605512712440","key":"Lemonade / 20 servings","title":"Lemonade / 20 servings","sku":null,"optionValues":["Lemonade","20 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Lemonade"},{"position":2,"name":"Size","value":"20 servings"}],"selected_options":{"Flavor":"Lemonade","Size":"20 servings"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":1999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Lemonade_90s.webp"},{"variant_id":"43780727013624","key":"Lemonade / 270 servings","title":"Lemonade / 270 servings","sku":null,"optionValues":["Lemonade","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Lemonade"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Lemonade","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Lemonade_90s.webp"},{"variant_id":"41129829073064","key":"Peach Mango / 90 servings","title":"Peach Mango / 90 servings","sku":null,"optionValues":["Peach Mango","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Peach Mango"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Peach Mango","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/peach_mango_packet_20pk_v2.webp"},{"variant_id":"44605512777976","key":"Peach Mango / 20 servings","title":"Peach Mango / 20 servings","sku":null,"optionValues":["Peach Mango","20 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Peach Mango"},{"position":2,"name":"Size","value":"20 servings"}],"selected_options":{"Flavor":"Peach Mango","Size":"20 servings"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":1999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/peach_mango_packet_20pk_v2.webp"},{"variant_id":"43780727046392","key":"Peach Mango / 270 servings","title":"Peach Mango / 270 servings","sku":null,"optionValues":["Peach Mango","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Peach Mango"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Peach Mango","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/peach_mango_packet_20pk_v2.webp"},{"variant_id":"41129829105832","key":"Cherry Pom / 90 servings","title":"Cherry Pom / 90 servings","sku":null,"optionValues":["Cherry Pom","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Cherry Pom"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Cherry Pom","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Cherry_Pom_Packet_20pk_v1.webp"},{"variant_id":"43780727079160","key":"Cherry Pom / 270 servings","title":"Cherry Pom / 270 servings","sku":null,"optionValues":["Cherry Pom","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Cherry Pom"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Cherry Pom","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Cherry_Pom_Packet_20pk_v1.webp"},{"variant_id":"41129829236904","key":"Blue Raspberry / 90 servings","title":"Blue Raspberry / 90 servings","sku":null,"optionValues":["Blue Raspberry","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Raspberry"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Blue Raspberry","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Blue_Raspberry_20pk_v1.webp"},{"variant_id":"44605512974584","key":"Blue Raspberry / 20 servings","title":"Blue Raspberry / 20 servings","sku":null,"optionValues":["Blue Raspberry","20 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Raspberry"},{"position":2,"name":"Size","value":"20 servings"}],"selected_options":{"Flavor":"Blue Raspberry","Size":"20 servings"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":1999,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Blue_Raspberry_20pk_v1.webp"},{"variant_id":"43780727144696","key":"Blue Raspberry / 270 servings","title":"Blue Raspberry / 270 servings","sku":null,"optionValues":["Blue Raspberry","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Raspberry"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Blue Raspberry","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Blue_Raspberry_20pk_v1.webp"},{"variant_id":"41129829269672","key":"Watermelon / 90 servings","title":"Watermelon / 90 servings","sku":null,"optionValues":["Watermelon","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Watermelon"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Watermelon","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/watermelon_packet_40pk_v2.webp"},{"variant_id":"44605513040120","key":"Watermelon / 20 servings","title":"Watermelon / 20 servings","sku":null,"optionValues":["Watermelon","20 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Watermelon"},{"position":2,"name":"Size","value":"20 servings"}],"selected_options":{"Flavor":"Watermelon","Size":"20 servings"},"price_cents":1999,"regular_price_cents":2299,"compare_at_cents":2299,"compare_at_price_cents":2299,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/watermelon_packet_40pk_v2.webp"},{"variant_id":"43780727177464","key":"Watermelon / 270 servings","title":"Watermelon / 270 servings","sku":null,"optionValues":["Watermelon","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Watermelon"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Watermelon","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/watermelon_packet_40pk_v2.webp"},{"variant_id":"41253785010344","key":"Pink Lemonade / 90 servings","title":"Pink Lemonade / 90 servings","sku":null,"optionValues":["Pink Lemonade","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Pink Lemonade"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Pink Lemonade","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/b098tvflk7_-_pink_lemonade_40_pack_-_main_image_refresh.webp"},{"variant_id":"44605513105656","key":"Pink Lemonade / 20 servings","title":"Pink Lemonade / 20 servings","sku":null,"optionValues":["Pink Lemonade","20 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Pink Lemonade"},{"position":2,"name":"Size","value":"20 servings"}],"selected_options":{"Flavor":"Pink Lemonade","Size":"20 servings"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":1999,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/b098tvflk7_-_pink_lemonade_40_pack_-_main_image_refresh.webp"},{"variant_id":"43780727210232","key":"Pink Lemonade / 270 servings","title":"Pink Lemonade / 270 servings","sku":null,"optionValues":["Pink Lemonade","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Pink Lemonade"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Pink Lemonade","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/b098tvflk7_-_pink_lemonade_40_pack_-_main_image_refresh.webp"},{"variant_id":"43519908905208","key":"Orange / 90 servings","title":"Orange / 90 servings","sku":null,"optionValues":["Orange","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Orange"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Orange","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/orange_packet_40pk_v2.webp"},{"variant_id":"44605513236728","key":"Orange / 20 servings","title":"Orange / 20 servings","sku":null,"optionValues":["Orange","20 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Orange"},{"position":2,"name":"Size","value":"20 servings"}],"selected_options":{"Flavor":"Orange","Size":"20 servings"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":1999,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/orange_packet_40pk_v2.webp"},{"variant_id":"43780727275768","key":"Orange / 270 servings","title":"Orange / 270 servings","sku":null,"optionValues":["Orange","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Orange"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Orange","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/orange_packet_40pk_v2.webp"},{"variant_id":"43920202268920","key":"Fan Favorites / 270 servings","title":"Fan Favorites / 270 servings","sku":null,"optionValues":["Fan Favorites","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Fan Favorites"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Fan Favorites","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/fan_favorites.webp"},{"variant_id":"44116222345464","key":"Pineapple Coconut / 90 servings","title":"Pineapple Coconut / 90 servings","sku":null,"optionValues":["Pineapple Coconut","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Pineapple Coconut"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Pineapple Coconut","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Pineapple_Coconut_20s.webp"},{"variant_id":"45637410095352","key":"Pineapple Coconut / 20 servings","title":"Pineapple Coconut / 20 servings","sku":null,"optionValues":["Pineapple Coconut","20 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Pineapple Coconut"},{"position":2,"name":"Size","value":"20 servings"}],"selected_options":{"Flavor":"Pineapple Coconut","Size":"20 servings"},"price_cents":1999,"regular_price_cents":2299,"compare_at_cents":2299,"compare_at_price_cents":2299,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Pineapple_Coconut_20s.webp"},{"variant_id":"45369902792952","key":"Pineapple Coconut / 270 servings","title":"Pineapple Coconut / 270 servings","sku":null,"optionValues":["Pineapple Coconut","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Pineapple Coconut"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Pineapple Coconut","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Pineapple_Coconut_20s.webp"},{"variant_id":"44116315603192","key":"Strawberry Lemonade / 90 servings","title":"Strawberry Lemonade / 90 servings","sku":null,"optionValues":["Strawberry Lemonade","90 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Lemonade"},{"position":2,"name":"Size","value":"90 servings"}],"selected_options":{"Flavor":"Strawberry Lemonade","Size":"90 servings"},"price_cents":3999,"regular_price_cents":4450,"compare_at_cents":4450,"compare_at_price_cents":4450,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Strawberry_Lemonade_3pk_v1.webp"},{"variant_id":"45369938084088","key":"Strawberry Lemonade / 270 servings","title":"Strawberry Lemonade / 270 servings","sku":null,"optionValues":["Strawberry Lemonade","270 servings"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Lemonade"},{"position":2,"name":"Size","value":"270 servings"}],"selected_options":{"Flavor":"Strawberry Lemonade","Size":"270 servings"},"price_cents":9975,"regular_price_cents":11999,"compare_at_cents":11999,"compare_at_price_cents":11999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/Strawberry_Lemonade_3pk_v1.webp"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -805,6 +820,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -822,16 +841,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Key Nutrients | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -854,23 +896,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -883,10 +929,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -894,21 +940,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -919,12 +959,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

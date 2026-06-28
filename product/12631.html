@@ -194,7 +194,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Bear KompleX</p>
-          <h1 class="pdp-title">Women's Strike Joggers</h1>
+          <h1 class="pdp-title" data-pdp-title>Women's Strike Joggers</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="7600" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$76.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -244,6 +244,9 @@
               data-cart-price="76"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"
+              data-cart-variant-id="61633305543026"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Emerald&quot;,&quot;Size&quot;:&quot;XS&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -627,17 +630,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Emerald / XS","optionValues":["Emerald","XS"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Emerald / Small","optionValues":["Emerald","Small"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Emerald / Medium","optionValues":["Emerald","Medium"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Emerald / Large","optionValues":["Emerald","Large"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Emerald / XL","optionValues":["Emerald","XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Emerald / 2XL","optionValues":["Emerald","2XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Black / XS","optionValues":["Black","XS"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Black / Small","optionValues":["Black","Small"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Black / Medium","optionValues":["Black","Medium"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Black / Large","optionValues":["Black","Large"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Black / XL","optionValues":["Black","XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Black / 2XL","optionValues":["Black","2XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Slate Blue / XS","optionValues":["Slate Blue","XS"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Slate Blue / Small","optionValues":["Slate Blue","Small"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Slate Blue / Medium","optionValues":["Slate Blue","Medium"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Slate Blue / Large","optionValues":["Slate Blue","Large"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Slate Blue / XL","optionValues":["Slate Blue","XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Slate Blue / 2XL","optionValues":["Slate Blue","2XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Taupe / XS","optionValues":["Taupe","XS"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Taupe / Small","optionValues":["Taupe","Small"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Taupe / Medium","optionValues":["Taupe","Medium"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Taupe / Large","optionValues":["Taupe","Large"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Taupe / XL","optionValues":["Taupe","XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Taupe / 2XL","optionValues":["Taupe","2XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Charcoal / XS","optionValues":["Charcoal","XS"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Charcoal / Small","optionValues":["Charcoal","Small"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Charcoal / Medium","optionValues":["Charcoal","Medium"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Charcoal / Large","optionValues":["Charcoal","Large"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Charcoal / XL","optionValues":["Charcoal","XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Charcoal / 2XL","optionValues":["Charcoal","2XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Olive / XS","optionValues":["Olive","XS"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Olive / Small","optionValues":["Olive","Small"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Olive / Medium","optionValues":["Olive","Medium"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Olive / Large","optionValues":["Olive","Large"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Olive / XL","optionValues":["Olive","XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Olive / 2XL","optionValues":["Olive","2XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Lilac / XS","optionValues":["Lilac","XS"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Lilac / Small","optionValues":["Lilac","Small"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Lilac / Medium","optionValues":["Lilac","Medium"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Lilac / Large","optionValues":["Lilac","Large"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Lilac / XL","optionValues":["Lilac","XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Lilac / 2XL","optionValues":["Lilac","2XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Gray / XS","optionValues":["Gray","XS"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Gray / Small","optionValues":["Gray","Small"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Gray / Medium","optionValues":["Gray","Medium"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Gray / Large","optionValues":["Gray","Large"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Gray / XL","optionValues":["Gray","XL"],"price_cents":7600,"compare_at_cents":0,"available":true},{"key":"Gray / 2XL","optionValues":["Gray","2XL"],"price_cents":7600,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"61633305543026","key":"Emerald / XS","title":"Emerald / XS","sku":null,"optionValues":["Emerald","XS"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Emerald","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633305575794","key":"Emerald / Small","title":"Emerald / Small","sku":null,"optionValues":["Emerald","Small"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Emerald","Size":"Small"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305608562","key":"Emerald / Medium","title":"Emerald / Medium","sku":null,"optionValues":["Emerald","Medium"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Emerald","Size":"Medium"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305641330","key":"Emerald / Large","title":"Emerald / Large","sku":null,"optionValues":["Emerald","Large"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Emerald","Size":"Large"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305674098","key":"Emerald / XL","title":"Emerald / XL","sku":null,"optionValues":["Emerald","XL"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Emerald","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305706866","key":"Emerald / 2XL","title":"Emerald / 2XL","sku":null,"optionValues":["Emerald","2XL"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Emerald","Size":"2XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305739634","key":"Black / XS","title":"Black / XS","sku":null,"optionValues":["Black","XS"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633305772402","key":"Black / Small","title":"Black / Small","sku":null,"optionValues":["Black","Small"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black","Size":"Small"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305805170","key":"Black / Medium","title":"Black / Medium","sku":null,"optionValues":["Black","Medium"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black","Size":"Medium"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305837938","key":"Black / Large","title":"Black / Large","sku":null,"optionValues":["Black","Large"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black","Size":"Large"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305870706","key":"Black / XL","title":"Black / XL","sku":null,"optionValues":["Black","XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633305903474","key":"Black / 2XL","title":"Black / 2XL","sku":null,"optionValues":["Black","2XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633305936242","key":"Slate Blue / XS","title":"Slate Blue / XS","sku":null,"optionValues":["Slate Blue","XS"],"option_values":[{"position":1,"name":"Color","value":"Slate Blue"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Slate Blue","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633305969010","key":"Slate Blue / Small","title":"Slate Blue / Small","sku":null,"optionValues":["Slate Blue","Small"],"option_values":[{"position":1,"name":"Color","value":"Slate Blue"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Slate Blue","Size":"Small"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306001778","key":"Slate Blue / Medium","title":"Slate Blue / Medium","sku":null,"optionValues":["Slate Blue","Medium"],"option_values":[{"position":1,"name":"Color","value":"Slate Blue"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Slate Blue","Size":"Medium"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306034546","key":"Slate Blue / Large","title":"Slate Blue / Large","sku":null,"optionValues":["Slate Blue","Large"],"option_values":[{"position":1,"name":"Color","value":"Slate Blue"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Slate Blue","Size":"Large"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306067314","key":"Slate Blue / XL","title":"Slate Blue / XL","sku":null,"optionValues":["Slate Blue","XL"],"option_values":[{"position":1,"name":"Color","value":"Slate Blue"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Slate Blue","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306100082","key":"Slate Blue / 2XL","title":"Slate Blue / 2XL","sku":null,"optionValues":["Slate Blue","2XL"],"option_values":[{"position":1,"name":"Color","value":"Slate Blue"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Slate Blue","Size":"2XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306132850","key":"Taupe / XS","title":"Taupe / XS","sku":null,"optionValues":["Taupe","XS"],"option_values":[{"position":1,"name":"Color","value":"Taupe"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Taupe","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306165618","key":"Taupe / Small","title":"Taupe / Small","sku":null,"optionValues":["Taupe","Small"],"option_values":[{"position":1,"name":"Color","value":"Taupe"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Taupe","Size":"Small"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306198386","key":"Taupe / Medium","title":"Taupe / Medium","sku":null,"optionValues":["Taupe","Medium"],"option_values":[{"position":1,"name":"Color","value":"Taupe"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Taupe","Size":"Medium"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306231154","key":"Taupe / Large","title":"Taupe / Large","sku":null,"optionValues":["Taupe","Large"],"option_values":[{"position":1,"name":"Color","value":"Taupe"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Taupe","Size":"Large"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306263922","key":"Taupe / XL","title":"Taupe / XL","sku":null,"optionValues":["Taupe","XL"],"option_values":[{"position":1,"name":"Color","value":"Taupe"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Taupe","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306296690","key":"Taupe / 2XL","title":"Taupe / 2XL","sku":null,"optionValues":["Taupe","2XL"],"option_values":[{"position":1,"name":"Color","value":"Taupe"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Taupe","Size":"2XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306329458","key":"Charcoal / XS","title":"Charcoal / XS","sku":null,"optionValues":["Charcoal","XS"],"option_values":[{"position":1,"name":"Color","value":"Charcoal"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Charcoal","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306362226","key":"Charcoal / Small","title":"Charcoal / Small","sku":null,"optionValues":["Charcoal","Small"],"option_values":[{"position":1,"name":"Color","value":"Charcoal"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Charcoal","Size":"Small"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306394994","key":"Charcoal / Medium","title":"Charcoal / Medium","sku":null,"optionValues":["Charcoal","Medium"],"option_values":[{"position":1,"name":"Color","value":"Charcoal"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Charcoal","Size":"Medium"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306427762","key":"Charcoal / Large","title":"Charcoal / Large","sku":null,"optionValues":["Charcoal","Large"],"option_values":[{"position":1,"name":"Color","value":"Charcoal"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Charcoal","Size":"Large"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306460530","key":"Charcoal / XL","title":"Charcoal / XL","sku":null,"optionValues":["Charcoal","XL"],"option_values":[{"position":1,"name":"Color","value":"Charcoal"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Charcoal","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306493298","key":"Charcoal / 2XL","title":"Charcoal / 2XL","sku":null,"optionValues":["Charcoal","2XL"],"option_values":[{"position":1,"name":"Color","value":"Charcoal"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Charcoal","Size":"2XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306526066","key":"Olive / XS","title":"Olive / XS","sku":null,"optionValues":["Olive","XS"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Olive","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306558834","key":"Olive / Small","title":"Olive / Small","sku":null,"optionValues":["Olive","Small"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Olive","Size":"Small"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306591602","key":"Olive / Medium","title":"Olive / Medium","sku":null,"optionValues":["Olive","Medium"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Olive","Size":"Medium"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306624370","key":"Olive / Large","title":"Olive / Large","sku":null,"optionValues":["Olive","Large"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Olive","Size":"Large"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306657138","key":"Olive / XL","title":"Olive / XL","sku":null,"optionValues":["Olive","XL"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Olive","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306689906","key":"Olive / 2XL","title":"Olive / 2XL","sku":null,"optionValues":["Olive","2XL"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Olive","Size":"2XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306722674","key":"Lilac / XS","title":"Lilac / XS","sku":null,"optionValues":["Lilac","XS"],"option_values":[{"position":1,"name":"Color","value":"Lilac"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Lilac","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306755442","key":"Lilac / Small","title":"Lilac / Small","sku":null,"optionValues":["Lilac","Small"],"option_values":[{"position":1,"name":"Color","value":"Lilac"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Lilac","Size":"Small"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306788210","key":"Lilac / Medium","title":"Lilac / Medium","sku":null,"optionValues":["Lilac","Medium"],"option_values":[{"position":1,"name":"Color","value":"Lilac"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Lilac","Size":"Medium"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633306820978","key":"Lilac / Large","title":"Lilac / Large","sku":null,"optionValues":["Lilac","Large"],"option_values":[{"position":1,"name":"Color","value":"Lilac"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Lilac","Size":"Large"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306853746","key":"Lilac / XL","title":"Lilac / XL","sku":null,"optionValues":["Lilac","XL"],"option_values":[{"position":1,"name":"Color","value":"Lilac"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Lilac","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306886514","key":"Lilac / 2XL","title":"Lilac / 2XL","sku":null,"optionValues":["Lilac","2XL"],"option_values":[{"position":1,"name":"Color","value":"Lilac"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Lilac","Size":"2XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306919282","key":"Gray / XS","title":"Gray / XS","sku":null,"optionValues":["Gray","XS"],"option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Gray","Size":"XS"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-joggers-taupe-xs-women-s-strike-joggers-42284882100465.jpg"},{"variant_id":"61633306952050","key":"Gray / Small","title":"Gray / Small","sku":null,"optionValues":["Gray","Small"],"option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Gray","Size":"Small"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633306984818","key":"Gray / Medium","title":"Gray / Medium","sku":null,"optionValues":["Gray","Medium"],"option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Gray","Size":"Medium"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633307017586","key":"Gray / Large","title":"Gray / Large","sku":null,"optionValues":["Gray","Large"],"option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Gray","Size":"Large"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633307050354","key":"Gray / XL","title":"Gray / XL","sku":null,"optionValues":["Gray","XL"],"option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Gray","Size":"XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633307083122","key":"Gray / 2XL","title":"Gray / 2XL","sku":null,"optionValues":["Gray","2XL"],"option_values":[{"position":1,"name":"Color","value":"Gray"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Gray","Size":"2XL"},"price_cents":7600,"regular_price_cents":7600,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -667,6 +682,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -684,16 +703,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Bear KompleX | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -716,23 +758,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -745,10 +791,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -756,21 +802,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -781,12 +821,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

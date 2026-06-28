@@ -164,7 +164,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Promix</p>
-          <h1 class="pdp-title">Mix and Match Protein Bundle</h1>
+          <h1 class="pdp-title" data-pdp-title>Mix and Match Protein Bundle</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="12240" data-base-compare-cents="13600" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$122.40</strong>
             <span class="pdp-compare" data-pdp-compare >$136.00</span>
@@ -210,6 +210,9 @@
               data-cart-price="122.4"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"
+              data-cart-variant-id="43173659770969"
+              data-cart-selected-options="{&quot;Whey Isolate Flavor 1 - 30 servings/bag&quot;:&quot;Unflavored&quot;,&quot;Whey Isolate Flavor 2 - 30 servings/bag&quot;:&quot;Unflavored&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -308,10 +311,10 @@
               <h3><a class="product-card-link" href="../product/1509.html">GOLD STANDARD 100% WHEY</a></h3>
               <p>Protein</p>
               <div class="product-price-line">
-                <strong>$79.99</strong>
-                <span>$89.99</span>
+                <strong>$20.99</strong>
+
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -600,17 +603,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Unflavored / Unflavored","optionValues":["Unflavored","Unflavored"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Unflavored / Vanilla","optionValues":["Unflavored","Vanilla"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Unflavored / Chocolate","optionValues":["Unflavored","Chocolate"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Unflavored / Strawberry Milk","optionValues":["Unflavored","Strawberry Milk"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Unflavored / Cookies and Cream","optionValues":["Unflavored","Cookies and Cream"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Vanilla / Unflavored","optionValues":["Vanilla","Unflavored"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Vanilla / Vanilla","optionValues":["Vanilla","Vanilla"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Vanilla / Chocolate","optionValues":["Vanilla","Chocolate"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Vanilla / Strawberry Milk","optionValues":["Vanilla","Strawberry Milk"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Vanilla / Cookies and Cream","optionValues":["Vanilla","Cookies and Cream"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Chocolate / Unflavored","optionValues":["Chocolate","Unflavored"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Chocolate / Vanilla","optionValues":["Chocolate","Vanilla"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Chocolate / Chocolate","optionValues":["Chocolate","Chocolate"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Chocolate / Strawberry Milk","optionValues":["Chocolate","Strawberry Milk"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Chocolate / Cookies and Cream","optionValues":["Chocolate","Cookies and Cream"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Strawberry Milk / Unflavored","optionValues":["Strawberry Milk","Unflavored"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Strawberry Milk / Vanilla","optionValues":["Strawberry Milk","Vanilla"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Strawberry Milk / Chocolate","optionValues":["Strawberry Milk","Chocolate"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Strawberry Milk / Strawberry Milk","optionValues":["Strawberry Milk","Strawberry Milk"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Strawberry Milk / Cookies and Cream","optionValues":["Strawberry Milk","Cookies and Cream"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Cookies and Cream / Unflavored","optionValues":["Cookies and Cream","Unflavored"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Cookies and Cream / Vanilla","optionValues":["Cookies and Cream","Vanilla"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Cookies and Cream / Chocolate","optionValues":["Cookies and Cream","Chocolate"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Cookies and Cream / Strawberry Milk","optionValues":["Cookies and Cream","Strawberry Milk"],"price_cents":12240,"compare_at_cents":13600,"available":true},{"key":"Cookies and Cream / Cookies and Cream","optionValues":["Cookies and Cream","Cookies and Cream"],"price_cents":12240,"compare_at_cents":13600,"available":true}];
+        var variantPricing = [{"variant_id":"43173659770969","key":"Unflavored / Unflavored","title":"Unflavored / Unflavored","sku":null,"optionValues":["Unflavored","Unflavored"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Unflavored"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Unflavored"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Unflavored","Whey Isolate Flavor 2 - 30 servings/bag":"Unflavored"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173659836505","key":"Unflavored / Vanilla","title":"Unflavored / Vanilla","sku":null,"optionValues":["Unflavored","Vanilla"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Unflavored"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Vanilla"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Unflavored","Whey Isolate Flavor 2 - 30 servings/bag":"Vanilla"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173659803737","key":"Unflavored / Chocolate","title":"Unflavored / Chocolate","sku":null,"optionValues":["Unflavored","Chocolate"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Unflavored"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Chocolate"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Unflavored","Whey Isolate Flavor 2 - 30 servings/bag":"Chocolate"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173668421721","key":"Unflavored / Strawberry Milk","title":"Unflavored / Strawberry Milk","sku":null,"optionValues":["Unflavored","Strawberry Milk"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Unflavored"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Strawberry Milk"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Unflavored","Whey Isolate Flavor 2 - 30 servings/bag":"Strawberry Milk"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173668454489","key":"Unflavored / Cookies and Cream","title":"Unflavored / Cookies and Cream","sku":null,"optionValues":["Unflavored","Cookies and Cream"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Unflavored"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Cookies and Cream"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Unflavored","Whey Isolate Flavor 2 - 30 servings/bag":"Cookies and Cream"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"},{"variant_id":"43173659967577","key":"Vanilla / Unflavored","title":"Vanilla / Unflavored","sku":null,"optionValues":["Vanilla","Unflavored"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Vanilla"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Unflavored"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Vanilla","Whey Isolate Flavor 2 - 30 servings/bag":"Unflavored"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":null},{"variant_id":"43173660033113","key":"Vanilla / Vanilla","title":"Vanilla / Vanilla","sku":null,"optionValues":["Vanilla","Vanilla"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Vanilla"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Vanilla"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Vanilla","Whey Isolate Flavor 2 - 30 servings/bag":"Vanilla"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173660000345","key":"Vanilla / Chocolate","title":"Vanilla / Chocolate","sku":null,"optionValues":["Vanilla","Chocolate"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Vanilla"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Chocolate"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Vanilla","Whey Isolate Flavor 2 - 30 servings/bag":"Chocolate"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":null},{"variant_id":"43173668552793","key":"Vanilla / Strawberry Milk","title":"Vanilla / Strawberry Milk","sku":null,"optionValues":["Vanilla","Strawberry Milk"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Vanilla"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Strawberry Milk"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Vanilla","Whey Isolate Flavor 2 - 30 servings/bag":"Strawberry Milk"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":null},{"variant_id":"43173668585561","key":"Vanilla / Cookies and Cream","title":"Vanilla / Cookies and Cream","sku":null,"optionValues":["Vanilla","Cookies and Cream"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Vanilla"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Cookies and Cream"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Vanilla","Whey Isolate Flavor 2 - 30 servings/bag":"Cookies and Cream"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"},{"variant_id":"43173659869273","key":"Chocolate / Unflavored","title":"Chocolate / Unflavored","sku":null,"optionValues":["Chocolate","Unflavored"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Chocolate"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Unflavored"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Chocolate","Whey Isolate Flavor 2 - 30 servings/bag":"Unflavored"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":null},{"variant_id":"43173659934809","key":"Chocolate / Vanilla","title":"Chocolate / Vanilla","sku":null,"optionValues":["Chocolate","Vanilla"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Chocolate"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Vanilla"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Chocolate","Whey Isolate Flavor 2 - 30 servings/bag":"Vanilla"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173659902041","key":"Chocolate / Chocolate","title":"Chocolate / Chocolate","sku":null,"optionValues":["Chocolate","Chocolate"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Chocolate"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Chocolate"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Chocolate","Whey Isolate Flavor 2 - 30 servings/bag":"Chocolate"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173668487257","key":"Chocolate / Strawberry Milk","title":"Chocolate / Strawberry Milk","sku":null,"optionValues":["Chocolate","Strawberry Milk"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Chocolate"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Strawberry Milk"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Chocolate","Whey Isolate Flavor 2 - 30 servings/bag":"Strawberry Milk"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173668520025","key":"Chocolate / Cookies and Cream","title":"Chocolate / Cookies and Cream","sku":null,"optionValues":["Chocolate","Cookies and Cream"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Chocolate"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Cookies and Cream"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Chocolate","Whey Isolate Flavor 2 - 30 servings/bag":"Cookies and Cream"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"},{"variant_id":"43173660065881","key":"Strawberry Milk / Unflavored","title":"Strawberry Milk / Unflavored","sku":null,"optionValues":["Strawberry Milk","Unflavored"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Strawberry Milk"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Unflavored"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Strawberry Milk","Whey Isolate Flavor 2 - 30 servings/bag":"Unflavored"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":null},{"variant_id":"43173660131417","key":"Strawberry Milk / Vanilla","title":"Strawberry Milk / Vanilla","sku":null,"optionValues":["Strawberry Milk","Vanilla"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Strawberry Milk"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Vanilla"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Strawberry Milk","Whey Isolate Flavor 2 - 30 servings/bag":"Vanilla"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173660098649","key":"Strawberry Milk / Chocolate","title":"Strawberry Milk / Chocolate","sku":null,"optionValues":["Strawberry Milk","Chocolate"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Strawberry Milk"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Chocolate"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Strawberry Milk","Whey Isolate Flavor 2 - 30 servings/bag":"Chocolate"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":null},{"variant_id":"43173668618329","key":"Strawberry Milk / Strawberry Milk","title":"Strawberry Milk / Strawberry Milk","sku":null,"optionValues":["Strawberry Milk","Strawberry Milk"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Strawberry Milk"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Strawberry Milk"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Strawberry Milk","Whey Isolate Flavor 2 - 30 servings/bag":"Strawberry Milk"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":null},{"variant_id":"43173668651097","key":"Strawberry Milk / Cookies and Cream","title":"Strawberry Milk / Cookies and Cream","sku":null,"optionValues":["Strawberry Milk","Cookies and Cream"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Strawberry Milk"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Cookies and Cream"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Strawberry Milk","Whey Isolate Flavor 2 - 30 servings/bag":"Cookies and Cream"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"},{"variant_id":"43173660164185","key":"Cookies and Cream / Unflavored","title":"Cookies and Cream / Unflavored","sku":null,"optionValues":["Cookies and Cream","Unflavored"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Cookies and Cream"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Unflavored"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Cookies and Cream","Whey Isolate Flavor 2 - 30 servings/bag":"Unflavored"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"},{"variant_id":"43173660229721","key":"Cookies and Cream / Vanilla","title":"Cookies and Cream / Vanilla","sku":null,"optionValues":["Cookies and Cream","Vanilla"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Cookies and Cream"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Vanilla"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Cookies and Cream","Whey Isolate Flavor 2 - 30 servings/bag":"Vanilla"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"},{"variant_id":"43173660196953","key":"Cookies and Cream / Chocolate","title":"Cookies and Cream / Chocolate","sku":null,"optionValues":["Cookies and Cream","Chocolate"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Cookies and Cream"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Chocolate"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Cookies and Cream","Whey Isolate Flavor 2 - 30 servings/bag":"Chocolate"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"},{"variant_id":"43173668683865","key":"Cookies and Cream / Strawberry Milk","title":"Cookies and Cream / Strawberry Milk","sku":null,"optionValues":["Cookies and Cream","Strawberry Milk"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Cookies and Cream"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Strawberry Milk"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Cookies and Cream","Whey Isolate Flavor 2 - 30 servings/bag":"Strawberry Milk"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"},{"variant_id":"43173668716633","key":"Cookies and Cream / Cookies and Cream","title":"Cookies and Cream / Cookies and Cream","sku":null,"optionValues":["Cookies and Cream","Cookies and Cream"],"option_values":[{"position":1,"name":"Whey Isolate Flavor 1 - 30 servings/bag","value":"Cookies and Cream"},{"position":2,"name":"Whey Isolate Flavor 2 - 30 servings/bag","value":"Cookies and Cream"}],"selected_options":{"Whey Isolate Flavor 1 - 30 servings/bag":"Cookies and Cream","Whey Isolate Flavor 2 - 30 servings/bag":"Cookies and Cream"},"price_cents":12240,"regular_price_cents":13600,"compare_at_cents":13600,"compare_at_price_cents":13600,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/1MixandMatch_Hero_PDP.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -640,6 +655,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -657,16 +676,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Promix | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -689,23 +731,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -718,10 +764,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -729,21 +775,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -754,12 +794,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

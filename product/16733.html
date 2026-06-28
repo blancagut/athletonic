@@ -197,7 +197,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">truvani</p>
-          <h1 class="pdp-title">Truvani Plant Based Protein Powder</h1>
+          <h1 class="pdp-title" data-pdp-title>Truvani Plant Based Protein Powder</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="2999" data-base-compare-cents="2999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$29.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -248,6 +248,9 @@
               data-cart-price="29.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/2538/3594/files/Truvani_Mockup_Chocolate-Protein_0bcc47d8-295a-4fe2-ae15-657ededd3677.png"
+              data-cart-variant-id="44010947510317"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Lemon Cookie (IT'S BACK!)&quot;,&quot;Size&quot;:&quot;20 Servings&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -352,10 +355,10 @@
               <h3><a class="product-card-link" href="../product/1509.html">GOLD STANDARD 100% WHEY</a></h3>
               <p>Protein</p>
               <div class="product-price-line">
-                <strong>$79.99</strong>
-                <span>$89.99</span>
+                <strong>$20.99</strong>
+
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -644,17 +647,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Lemon Cookie (IT'S BACK!) / 20 Servings","optionValues":["Lemon Cookie (IT'S BACK!)","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Lemon Cookie (IT'S BACK!) / 10 Servings","optionValues":["Lemon Cookie (IT'S BACK!)","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Vanilla / 20 Servings","optionValues":["Vanilla","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Vanilla / 10 Servings","optionValues":["Vanilla","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Chocolate / 20 Servings","optionValues":["Chocolate","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Chocolate / 10 Servings","optionValues":["Chocolate","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Chocolate Peanut Butter / 20 Servings","optionValues":["Chocolate Peanut Butter","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Chocolate Peanut Butter / 10 Servings","optionValues":["Chocolate Peanut Butter","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Mint Chocolate / 20 Servings","optionValues":["Mint Chocolate","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Mint Chocolate / 10 Servings","optionValues":["Mint Chocolate","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Strawberry / 20 Servings","optionValues":["Strawberry","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Strawberry / 10 Servings","optionValues":["Strawberry","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Chocolate Strawberry / 20 Servings","optionValues":["Chocolate Strawberry","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Chocolate Strawberry / 10 Servings","optionValues":["Chocolate Strawberry","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Peanut Butter / 20 Servings","optionValues":["Peanut Butter","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Peanut Butter / 10 Servings","optionValues":["Peanut Butter","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Vanilla Chai / 20 Servings","optionValues":["Vanilla Chai","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Vanilla Chai / 10 Servings","optionValues":["Vanilla Chai","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Pumpkin Spice / 20 Servings","optionValues":["Pumpkin Spice","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Pumpkin Spice / 10 Servings","optionValues":["Pumpkin Spice","10 Servings"],"price_cents":2999,"compare_at_cents":2999,"available":true},{"key":"Matcha / 20 Servings","optionValues":["Matcha","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Matcha / 10 Servings","optionValues":["Matcha","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Banana Cinnamon / 20 Servings","optionValues":["Banana Cinnamon","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Banana Cinnamon / 10 Servings","optionValues":["Banana Cinnamon","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true},{"key":"Unflavored & Unsweetened / 20 Servings","optionValues":["Unflavored & Unsweetened","20 Servings"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Unflavored & Unsweetened / 10 Servings","optionValues":["Unflavored & Unsweetened","10 Servings"],"price_cents":2999,"compare_at_cents":5999,"available":true}];
+        var variantPricing = [{"variant_id":"44010947510317","key":"Lemon Cookie (IT'S BACK!) / 20 Servings","title":"Lemon Cookie (IT'S BACK!) / 20 Servings","sku":null,"optionValues":["Lemon Cookie (IT'S BACK!)","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Lemon Cookie (IT'S BACK!)"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Lemon Cookie (IT'S BACK!)","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-20ServingsBag-ChocStrawberry-Front.png"},{"variant_id":"44010947543085","key":"Lemon Cookie (IT'S BACK!) / 10 Servings","title":"Lemon Cookie (IT'S BACK!) / 10 Servings","sku":null,"optionValues":["Lemon Cookie (IT'S BACK!)","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Lemon Cookie (IT'S BACK!)"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Lemon Cookie (IT'S BACK!)","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Lemon_Front.png"},{"variant_id":"44010947313709","key":"Vanilla / 20 Servings","title":"Vanilla / 20 Servings","sku":null,"optionValues":["Vanilla","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Vanilla","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Vanilla_Front.png"},{"variant_id":"44010947346477","key":"Vanilla / 10 Servings","title":"Vanilla / 10 Servings","sku":null,"optionValues":["Vanilla","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Vanilla","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Vanilla_Front.png"},{"variant_id":"44010947248173","key":"Chocolate / 20 Servings","title":"Chocolate / 20 Servings","sku":null,"optionValues":["Chocolate","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Chocolate","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Chocolate_Front.png"},{"variant_id":"44010947280941","key":"Chocolate / 10 Servings","title":"Chocolate / 10 Servings","sku":null,"optionValues":["Chocolate","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Chocolate","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Chocolate_Front.png"},{"variant_id":"44010947379245","key":"Chocolate Peanut Butter / 20 Servings","title":"Chocolate Peanut Butter / 20 Servings","sku":null,"optionValues":["Chocolate Peanut Butter","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Peanut Butter"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Chocolate Peanut Butter","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Truvani_Mockup_Chocolate-Peanut-Butter-Protein_3a238365-fd5d-4bf5-bdb8-914135ac3f91.png"},{"variant_id":"44010947412013","key":"Chocolate Peanut Butter / 10 Servings","title":"Chocolate Peanut Butter / 10 Servings","sku":null,"optionValues":["Chocolate Peanut Butter","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Peanut Butter"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Chocolate Peanut Butter","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Chocolate_Front.png"},{"variant_id":"44010947444781","key":"Mint Chocolate / 20 Servings","title":"Mint Chocolate / 20 Servings","sku":null,"optionValues":["Mint Chocolate","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Mint Chocolate"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Mint Chocolate","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/mint-chocolate-hero.jpg"},{"variant_id":"44010947477549","key":"Mint Chocolate / 10 Servings","title":"Mint Chocolate / 10 Servings","sku":null,"optionValues":["Mint Chocolate","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Mint Chocolate"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Mint Chocolate","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Chocolate_Front.png"},{"variant_id":"44010947575853","key":"Strawberry / 20 Servings","title":"Strawberry / 20 Servings","sku":null,"optionValues":["Strawberry","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Strawberry","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-20ServingsBag-ChocStrawberry-Front.png"},{"variant_id":"44010947608621","key":"Strawberry / 10 Servings","title":"Strawberry / 10 Servings","sku":null,"optionValues":["Strawberry","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Strawberry","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-10ServingsBag-ChocStrawberry-Front.png"},{"variant_id":"44010947641389","key":"Chocolate Strawberry / 20 Servings","title":"Chocolate Strawberry / 20 Servings","sku":null,"optionValues":["Chocolate Strawberry","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Strawberry"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Chocolate Strawberry","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-20ServingsBag-ChocStrawberry-Front.png"},{"variant_id":"44010947674157","key":"Chocolate Strawberry / 10 Servings","title":"Chocolate Strawberry / 10 Servings","sku":null,"optionValues":["Chocolate Strawberry","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Strawberry"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Chocolate Strawberry","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-10ServingsBag-ChocStrawberry-Front.png"},{"variant_id":"44010947837997","key":"Peanut Butter / 20 Servings","title":"Peanut Butter / 20 Servings","sku":null,"optionValues":["Peanut Butter","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Peanut Butter"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Peanut Butter","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_PeanutButter.png"},{"variant_id":"44010947870765","key":"Peanut Butter / 10 Servings","title":"Peanut Butter / 10 Servings","sku":null,"optionValues":["Peanut Butter","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Peanut Butter"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Peanut Butter","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_PeanutButter.png"},{"variant_id":"44010947182637","key":"Vanilla Chai / 20 Servings","title":"Vanilla Chai / 20 Servings","sku":null,"optionValues":["Vanilla Chai","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Chai"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Vanilla Chai","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_VanillaChai_Front_62b9e78e-c7ce-4dfc-92d6-2cdc6d49ad7a.png"},{"variant_id":"44010947215405","key":"Vanilla Chai / 10 Servings","title":"Vanilla Chai / 10 Servings","sku":null,"optionValues":["Vanilla Chai","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Chai"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Vanilla Chai","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_VanillaChai_Front_62b9e78e-c7ce-4dfc-92d6-2cdc6d49ad7a.png"},{"variant_id":"44156779429933","key":"Pumpkin Spice / 20 Servings","title":"Pumpkin Spice / 20 Servings","sku":null,"optionValues":["Pumpkin Spice","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Pumpkin Spice"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Pumpkin Spice","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_PumpkinSpice_Front.png"},{"variant_id":"44156779462701","key":"Pumpkin Spice / 10 Servings","title":"Pumpkin Spice / 10 Servings","sku":null,"optionValues":["Pumpkin Spice","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Pumpkin Spice"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Pumpkin Spice","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":2999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_PumpkinSpice_Front.png"},{"variant_id":"44010947706925","key":"Matcha / 20 Servings","title":"Matcha / 20 Servings","sku":null,"optionValues":["Matcha","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Matcha"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Matcha","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Matcha_Front_ce574ea5-572b-41c3-8d8a-6332fc34b6bd.png"},{"variant_id":"44010947739693","key":"Matcha / 10 Servings","title":"Matcha / 10 Servings","sku":null,"optionValues":["Matcha","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Matcha"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Matcha","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Matcha_Front_ce574ea5-572b-41c3-8d8a-6332fc34b6bd.png"},{"variant_id":"44010947772461","key":"Banana Cinnamon / 20 Servings","title":"Banana Cinnamon / 20 Servings","sku":null,"optionValues":["Banana Cinnamon","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Banana Cinnamon"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Banana Cinnamon","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-20ServingsBag-ChocStrawberry-Front.png"},{"variant_id":"44010947805229","key":"Banana Cinnamon / 10 Servings","title":"Banana Cinnamon / 10 Servings","sku":null,"optionValues":["Banana Cinnamon","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Banana Cinnamon"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Banana Cinnamon","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Banana_Front.png"},{"variant_id":"44010947903533","key":"Unflavored & Unsweetened / 20 Servings","title":"Unflavored & Unsweetened / 20 Servings","sku":null,"optionValues":["Unflavored & Unsweetened","20 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Unflavored & Unsweetened"},{"position":2,"name":"Size","value":"20 Servings"}],"selected_options":{"Flavor":"Unflavored & Unsweetened","Size":"20 Servings"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein-20ServingsBag-ChocStrawberry-Front.png"},{"variant_id":"44010947936301","key":"Unflavored & Unsweetened / 10 Servings","title":"Unflavored & Unsweetened / 10 Servings","sku":null,"optionValues":["Unflavored & Unsweetened","10 Servings"],"option_values":[{"position":1,"name":"Flavor","value":"Unflavored & Unsweetened"},{"position":2,"name":"Size","value":"10 Servings"}],"selected_options":{"Flavor":"Unflavored & Unsweetened","Size":"10 Servings"},"price_cents":2999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/Protein10ServingsBag_Unflavored_Front.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -684,6 +699,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -701,16 +720,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — truvani | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -733,23 +775,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -762,10 +808,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -773,21 +819,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -798,12 +838,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

@@ -181,7 +181,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Gorilla Mind</p>
-          <h1 class="pdp-title">Energy Drink</h1>
+          <h1 class="pdp-title" data-pdp-title>Energy Drink</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="3499" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$34.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -227,6 +227,9 @@
               data-cart-price="34.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RootBeer_1500x1500_e0a8c279-af06-4d07-9754-f303e9a584ed.png"
+              data-cart-variant-id="44874268934189"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Root Beer&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -629,17 +632,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Root Beer","optionValues":["Root Beer"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Red Gummy Fish","optionValues":["Red Gummy Fish"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Rainbow Sherbet","optionValues":["Rainbow Sherbet"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Variety Pack #1","optionValues":["Variety Pack #1"],"price_cents":3999,"compare_at_cents":0,"available":true},{"key":"Variety Pack #2","optionValues":["Variety Pack #2"],"price_cents":3999,"compare_at_cents":0,"available":true},{"key":"Black Cherry Vanilla","optionValues":["Black Cherry Vanilla"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"White Frost","optionValues":["White Frost"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Wild Grape","optionValues":["Wild Grape"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Rocket Frost","optionValues":["Rocket Frost"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Blue Raspberry","optionValues":["Blue Raspberry"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Strawberry Candy","optionValues":["Strawberry Candy"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Blackberry Lemonade","optionValues":["Blackberry Lemonade"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"White Gummy Bear","optionValues":["White Gummy Bear"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Citrus Rain","optionValues":["Citrus Rain"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Tiger's Blood","optionValues":["Tiger's Blood"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Orange Rush","optionValues":["Orange Rush"],"price_cents":3499,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"44874268934189","key":"Root Beer","title":"Root Beer","sku":null,"optionValues":["Root Beer"],"option_values":[{"position":1,"name":"Flavor","value":"Root Beer"}],"selected_options":{"Flavor":"Root Beer"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RootBeer_1500x1500_e0a8c279-af06-4d07-9754-f303e9a584ed.png"},{"variant_id":"44421840076845","key":"Red Gummy Fish","title":"Red Gummy Fish","sku":null,"optionValues":["Red Gummy Fish"],"option_values":[{"position":1,"name":"Flavor","value":"Red Gummy Fish"}],"selected_options":{"Flavor":"Red Gummy Fish"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RedGummyFish_1500x1500_2c1cccb6-cdcf-4006-b11a-6f1e973f40ad.png"},{"variant_id":"44635637579821","key":"Rainbow Sherbet","title":"Rainbow Sherbet","sku":null,"optionValues":["Rainbow Sherbet"],"option_values":[{"position":1,"name":"Flavor","value":"Rainbow Sherbet"}],"selected_options":{"Flavor":"Rainbow Sherbet"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RainbowSherbet_1500x1500_0cc4726f-be06-4d78-81e9-6e8c610e34cf.png"},{"variant_id":"44159840059437","key":"Variety Pack #1","title":"Variety Pack #1","sku":null,"optionValues":["Variety Pack #1"],"option_values":[{"position":1,"name":"Flavor","value":"Variety Pack #1"}],"selected_options":{"Flavor":"Variety Pack #1"},"price_cents":3999,"regular_price_cents":3999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_VarietyPack1_1500x1500_4571ee9d-63c5-45c2-8b22-3ab9e6c23a9e.png"},{"variant_id":"44159840092205","key":"Variety Pack #2","title":"Variety Pack #2","sku":null,"optionValues":["Variety Pack #2"],"option_values":[{"position":1,"name":"Flavor","value":"Variety Pack #2"}],"selected_options":{"Flavor":"Variety Pack #2"},"price_cents":3999,"regular_price_cents":3999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_VarietyPack2_1500x1500_89e40a12-f856-4c4c-9320-54b009ab0fa0.png"},{"variant_id":"41605560893485","key":"Black Cherry Vanilla","title":"Black Cherry Vanilla","sku":null,"optionValues":["Black Cherry Vanilla"],"option_values":[{"position":1,"name":"Flavor","value":"Black Cherry Vanilla"}],"selected_options":{"Flavor":"Black Cherry Vanilla"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_BlackCherryVanilla_1500x1500_d2bfdaef-f123-445a-a5fb-166650d0a71c.png"},{"variant_id":"41605560860717","key":"White Frost","title":"White Frost","sku":null,"optionValues":["White Frost"],"option_values":[{"position":1,"name":"Flavor","value":"White Frost"}],"selected_options":{"Flavor":"White Frost"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_WhiteFrost_1500x1500_c3d4b712-c797-4142-816e-a29f287174cd.png"},{"variant_id":"41703881670701","key":"Wild Grape","title":"Wild Grape","sku":null,"optionValues":["Wild Grape"],"option_values":[{"position":1,"name":"Flavor","value":"Wild Grape"}],"selected_options":{"Flavor":"Wild Grape"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_WildGrape_1500x1500_9303035b-dbb9-4149-adff-2bbdc56d3135.png"},{"variant_id":"42825908486189","key":"Rocket Frost","title":"Rocket Frost","sku":null,"optionValues":["Rocket Frost"],"option_values":[{"position":1,"name":"Flavor","value":"Rocket Frost"}],"selected_options":{"Flavor":"Rocket Frost"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RocketFrost_1500x1500_26ebe914-a404-473d-95aa-836ebb968b1e.png"},{"variant_id":"43474632376365","key":"Blue Raspberry","title":"Blue Raspberry","sku":null,"optionValues":["Blue Raspberry"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Raspberry"}],"selected_options":{"Flavor":"Blue Raspberry"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_BlueRaspberry_1500x1500_887b8298-73a1-4eb8-8135-a216f649dbbe.png"},{"variant_id":"41633321418797","key":"Strawberry Candy","title":"Strawberry Candy","sku":null,"optionValues":["Strawberry Candy"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Candy"}],"selected_options":{"Flavor":"Strawberry Candy"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_StrawberryCandy_1500x1500_667c135a-a1a5-47b8-9091-9a691d275410.png"},{"variant_id":"42184340701229","key":"Blackberry Lemonade","title":"Blackberry Lemonade","sku":null,"optionValues":["Blackberry Lemonade"],"option_values":[{"position":1,"name":"Flavor","value":"Blackberry Lemonade"}],"selected_options":{"Flavor":"Blackberry Lemonade"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_BlackberryLemonade_1500x1500_b3e2bc98-6d86-4e92-9d58-2b3ca9e61aea.png"},{"variant_id":"43259260600365","key":"White Gummy Bear","title":"White Gummy Bear","sku":null,"optionValues":["White Gummy Bear"],"option_values":[{"position":1,"name":"Flavor","value":"White Gummy Bear"}],"selected_options":{"Flavor":"White Gummy Bear"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_WhiteGummyBear_1500x1500_e4a55776-4c10-4a67-8bca-415fc94e1ff2.png"},{"variant_id":"43947026513965","key":"Citrus Rain","title":"Citrus Rain","sku":null,"optionValues":["Citrus Rain"],"option_values":[{"position":1,"name":"Flavor","value":"Citrus Rain"}],"selected_options":{"Flavor":"Citrus Rain"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_CitrusRain_1500x1500_050ec494-f43d-4aa8-ba50-bfa4838333a2.png"},{"variant_id":"41672416788525","key":"Tiger's Blood","title":"Tiger's Blood","sku":null,"optionValues":["Tiger's Blood"],"option_values":[{"position":1,"name":"Flavor","value":"Tiger's Blood"}],"selected_options":{"Flavor":"Tiger's Blood"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_TigersBlood_1500x1500_46cca994-95dd-4e5b-8817-4f45fe1e3de5.png"},{"variant_id":"41605560959021","key":"Orange Rush","title":"Orange Rush","sku":null,"optionValues":["Orange Rush"],"option_values":[{"position":1,"name":"Flavor","value":"Orange Rush"}],"selected_options":{"Flavor":"Orange Rush"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_OrangeRush_1500x1500_6007ee74-761c-459f-971f-94964564f354.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -669,6 +684,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -686,16 +705,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Gorilla Mind | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -718,23 +760,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -747,10 +793,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -758,21 +804,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -783,12 +823,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

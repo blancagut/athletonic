@@ -177,7 +177,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Nike</p>
-          <h1 class="pdp-title">Maxfly 2</h1>
+          <h1 class="pdp-title" data-pdp-title>Maxfly 2</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="20000" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$200.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -228,6 +228,9 @@
               data-cart-price="200"
               data-cart-currency="USD"
               data-cart-image="https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8ca13321-6dd8-4ca8-8235-2ee8a65a97be/maxfly-2-track-field-sprinting-spikes-fBfStC.png"
+              data-cart-variant-id="c200961f-13a6-5e51-aac4-688a8d5b85fc"
+              data-cart-selected-options="{&quot;Size&quot;:&quot;4&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -611,17 +614,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"4","optionValues":["4"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"4.5","optionValues":["4.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"5","optionValues":["5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"5.5","optionValues":["5.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"6","optionValues":["6"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"6.5","optionValues":["6.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"7","optionValues":["7"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"7.5","optionValues":["7.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"8","optionValues":["8"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"8.5","optionValues":["8.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"9","optionValues":["9"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"9.5","optionValues":["9.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"10","optionValues":["10"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"10.5","optionValues":["10.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"11","optionValues":["11"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"11.5","optionValues":["11.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"12","optionValues":["12"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"12.5","optionValues":["12.5"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"13","optionValues":["13"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"14","optionValues":["14"],"price_cents":20000,"compare_at_cents":0,"available":true},{"key":"15","optionValues":["15"],"price_cents":20000,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"c200961f-13a6-5e51-aac4-688a8d5b85fc","key":"4","title":"4","sku":null,"optionValues":["4"],"option_values":[{"position":1,"name":"Size","value":"4"}],"selected_options":{"Size":"4"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"f6d8324f-2bc6-5985-ab8a-81f293aa5027","key":"4.5","title":"4.5","sku":null,"optionValues":["4.5"],"option_values":[{"position":1,"name":"Size","value":"4.5"}],"selected_options":{"Size":"4.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"9bf220a8-7f3f-52b7-9b72-43a7b188ce6a","key":"5","title":"5","sku":null,"optionValues":["5"],"option_values":[{"position":1,"name":"Size","value":"5"}],"selected_options":{"Size":"5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"22613d7b-00e0-52f8-b446-6ccff925e638","key":"5.5","title":"5.5","sku":null,"optionValues":["5.5"],"option_values":[{"position":1,"name":"Size","value":"5.5"}],"selected_options":{"Size":"5.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"3945f4fa-ff8f-54ba-b057-faf4b0849593","key":"6","title":"6","sku":null,"optionValues":["6"],"option_values":[{"position":1,"name":"Size","value":"6"}],"selected_options":{"Size":"6"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"65783655-0cee-55bb-8fde-a2ddab54a971","key":"6.5","title":"6.5","sku":null,"optionValues":["6.5"],"option_values":[{"position":1,"name":"Size","value":"6.5"}],"selected_options":{"Size":"6.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"4b7911c4-3645-5ce9-a65d-cd6d2d2d3b22","key":"7","title":"7","sku":null,"optionValues":["7"],"option_values":[{"position":1,"name":"Size","value":"7"}],"selected_options":{"Size":"7"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"c82d446e-a525-5c91-b4ad-96e21716e9af","key":"7.5","title":"7.5","sku":null,"optionValues":["7.5"],"option_values":[{"position":1,"name":"Size","value":"7.5"}],"selected_options":{"Size":"7.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"7745972d-ff56-57d6-b6ba-f37f793ab267","key":"8","title":"8","sku":null,"optionValues":["8"],"option_values":[{"position":1,"name":"Size","value":"8"}],"selected_options":{"Size":"8"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"5d0d0b96-0631-5927-afee-2e8b4b632ec7","key":"8.5","title":"8.5","sku":null,"optionValues":["8.5"],"option_values":[{"position":1,"name":"Size","value":"8.5"}],"selected_options":{"Size":"8.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"445e9410-4cb1-5332-8219-2aed4593fbcd","key":"9","title":"9","sku":null,"optionValues":["9"],"option_values":[{"position":1,"name":"Size","value":"9"}],"selected_options":{"Size":"9"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"38099960-b7af-5aa7-828c-226e235462a9","key":"9.5","title":"9.5","sku":null,"optionValues":["9.5"],"option_values":[{"position":1,"name":"Size","value":"9.5"}],"selected_options":{"Size":"9.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"8730ed1c-21b2-5271-af27-45f9a4d4b481","key":"10","title":"10","sku":null,"optionValues":["10"],"option_values":[{"position":1,"name":"Size","value":"10"}],"selected_options":{"Size":"10"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"62da54da-d0c2-5113-aafc-d53534803244","key":"10.5","title":"10.5","sku":null,"optionValues":["10.5"],"option_values":[{"position":1,"name":"Size","value":"10.5"}],"selected_options":{"Size":"10.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"5fcedd90-54b0-5d26-9ffb-cce3478eccc0","key":"11","title":"11","sku":null,"optionValues":["11"],"option_values":[{"position":1,"name":"Size","value":"11"}],"selected_options":{"Size":"11"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"b1cbf133-bb21-5c45-a6dd-4e28b85be3cf","key":"11.5","title":"11.5","sku":null,"optionValues":["11.5"],"option_values":[{"position":1,"name":"Size","value":"11.5"}],"selected_options":{"Size":"11.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"29835261-f2e6-5eaf-9785-d006f0e32a9e","key":"12","title":"12","sku":null,"optionValues":["12"],"option_values":[{"position":1,"name":"Size","value":"12"}],"selected_options":{"Size":"12"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"b3f68d89-3e6c-5de0-b92c-1c6371a7257b","key":"12.5","title":"12.5","sku":null,"optionValues":["12.5"],"option_values":[{"position":1,"name":"Size","value":"12.5"}],"selected_options":{"Size":"12.5"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"a8ba710a-b757-53c1-933c-70213499f1ee","key":"13","title":"13","sku":null,"optionValues":["13"],"option_values":[{"position":1,"name":"Size","value":"13"}],"selected_options":{"Size":"13"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"b2a5772a-7d10-5e8d-b468-6c31b8b1969b","key":"14","title":"14","sku":null,"optionValues":["14"],"option_values":[{"position":1,"name":"Size","value":"14"}],"selected_options":{"Size":"14"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"90f5a5f2-88d6-5721-9114-04dbaa5e36d5","key":"15","title":"15","sku":null,"optionValues":["15"],"option_values":[{"position":1,"name":"Size","value":"15"}],"selected_options":{"Size":"15"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -651,6 +666,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -668,16 +687,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Nike | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -700,23 +742,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -729,10 +775,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -740,21 +786,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -765,12 +805,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

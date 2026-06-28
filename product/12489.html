@@ -174,7 +174,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Bear KompleX</p>
-          <h1 class="pdp-title">Nobody Is Coming To Save You Men's T-Shirt</h1>
+          <h1 class="pdp-title" data-pdp-title>Nobody Is Coming To Save You Men's T-Shirt</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="3200" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$32.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -222,6 +222,9 @@
               data-cart-price="32"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"
+              data-cart-variant-id="61813818032498"
+              data-cart-selected-options="{&quot;COLOR&quot;:&quot;S&quot;,&quot;Size&quot;:&quot;BLACK&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -615,17 +618,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"S / BLACK","optionValues":["S","BLACK"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"S / WHITE","optionValues":["S","WHITE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"S / TAHITI BLUE","optionValues":["S","TAHITI BLUE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"S / MILITARY GREEN","optionValues":["S","MILITARY GREEN"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"S / YELLOW","optionValues":["S","YELLOW"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"S / GRAY","optionValues":["S","GRAY"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"M / BLACK","optionValues":["M","BLACK"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"M / WHITE","optionValues":["M","WHITE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"M / TAHITI BLUE","optionValues":["M","TAHITI BLUE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"M / MILITARY GREEN","optionValues":["M","MILITARY GREEN"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"M / YELLOW","optionValues":["M","YELLOW"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"M / GRAY","optionValues":["M","GRAY"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"L / BLACK","optionValues":["L","BLACK"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"L / WHITE","optionValues":["L","WHITE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"L / TAHITI BLUE","optionValues":["L","TAHITI BLUE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"L / MILITARY GREEN","optionValues":["L","MILITARY GREEN"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"L / YELLOW","optionValues":["L","YELLOW"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"L / GRAY","optionValues":["L","GRAY"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"XL / BLACK","optionValues":["XL","BLACK"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"XL / WHITE","optionValues":["XL","WHITE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"XL / TAHITI BLUE","optionValues":["XL","TAHITI BLUE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"XL / MILITARY GREEN","optionValues":["XL","MILITARY GREEN"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"XL / YELLOW","optionValues":["XL","YELLOW"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"XL / GRAY","optionValues":["XL","GRAY"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"2XL / BLACK","optionValues":["2XL","BLACK"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"2XL / WHITE","optionValues":["2XL","WHITE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"2XL / TAHITI BLUE","optionValues":["2XL","TAHITI BLUE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"2XL / MILITARY GREEN","optionValues":["2XL","MILITARY GREEN"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"2XL / YELLOW","optionValues":["2XL","YELLOW"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"2XL / GRAY","optionValues":["2XL","GRAY"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"3XL / BLACK","optionValues":["3XL","BLACK"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"3XL / WHITE","optionValues":["3XL","WHITE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"3XL / TAHITI BLUE","optionValues":["3XL","TAHITI BLUE"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"3XL / MILITARY GREEN","optionValues":["3XL","MILITARY GREEN"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"3XL / YELLOW","optionValues":["3XL","YELLOW"],"price_cents":3200,"compare_at_cents":0,"available":true},{"key":"3XL / GRAY","optionValues":["3XL","GRAY"],"price_cents":3200,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"61813818032498","key":"S / BLACK","title":"S / BLACK","sku":null,"optionValues":["S","BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"BLACK"}],"selected_options":{"COLOR":"S","Size":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"},{"variant_id":"61813818065266","key":"S / WHITE","title":"S / WHITE","sku":null,"optionValues":["S","WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"WHITE"}],"selected_options":{"COLOR":"S","Size":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COMINGTOSAVEYOUWHITEREARMOCK.jpg"},{"variant_id":"61813818098034","key":"S / TAHITI BLUE","title":"S / TAHITI BLUE","sku":null,"optionValues":["S","TAHITI BLUE"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"TAHITI BLUE"}],"selected_options":{"COLOR":"S","Size":"TAHITI BLUE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TAHITIBLUESAVEYOUREARMOCK_64ae0f3a-d0c3-4695-a66f-f751c2124c2f.jpg"},{"variant_id":"61813818130802","key":"S / MILITARY GREEN","title":"S / MILITARY GREEN","sku":null,"optionValues":["S","MILITARY GREEN"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"MILITARY GREEN"}],"selected_options":{"COLOR":"S","Size":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUMILGREENREARMOCK_03cef74e-7783-43ca-af2e-f906e7161303.jpg"},{"variant_id":"61813818163570","key":"S / YELLOW","title":"S / YELLOW","sku":null,"optionValues":["S","YELLOW"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"YELLOW"}],"selected_options":{"COLOR":"S","Size":"YELLOW"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/saveyourearmockyellownobodyiscoming_1.jpg"},{"variant_id":"61813818196338","key":"S / GRAY","title":"S / GRAY","sku":null,"optionValues":["S","GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"GRAY"}],"selected_options":{"COLOR":"S","Size":"GRAY"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/ISCOMINGSAVEYOUGRAYREARMOCK_08d6a833-f4cd-457a-851d-11417325c30a.jpg"},{"variant_id":"61813818229106","key":"M / BLACK","title":"M / BLACK","sku":null,"optionValues":["M","BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"BLACK"}],"selected_options":{"COLOR":"M","Size":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"},{"variant_id":"61813818261874","key":"M / WHITE","title":"M / WHITE","sku":null,"optionValues":["M","WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"WHITE"}],"selected_options":{"COLOR":"M","Size":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COMINGTOSAVEYOUWHITEREARMOCK.jpg"},{"variant_id":"61813818294642","key":"M / TAHITI BLUE","title":"M / TAHITI BLUE","sku":null,"optionValues":["M","TAHITI BLUE"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"TAHITI BLUE"}],"selected_options":{"COLOR":"M","Size":"TAHITI BLUE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TAHITIBLUESAVEYOUREARMOCK_64ae0f3a-d0c3-4695-a66f-f751c2124c2f.jpg"},{"variant_id":"61813818327410","key":"M / MILITARY GREEN","title":"M / MILITARY GREEN","sku":null,"optionValues":["M","MILITARY GREEN"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"MILITARY GREEN"}],"selected_options":{"COLOR":"M","Size":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUMILGREENREARMOCK_03cef74e-7783-43ca-af2e-f906e7161303.jpg"},{"variant_id":"61813818360178","key":"M / YELLOW","title":"M / YELLOW","sku":null,"optionValues":["M","YELLOW"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"YELLOW"}],"selected_options":{"COLOR":"M","Size":"YELLOW"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/saveyourearmockyellownobodyiscoming_1.jpg"},{"variant_id":"61813818392946","key":"M / GRAY","title":"M / GRAY","sku":null,"optionValues":["M","GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"GRAY"}],"selected_options":{"COLOR":"M","Size":"GRAY"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/ISCOMINGSAVEYOUGRAYREARMOCK_08d6a833-f4cd-457a-851d-11417325c30a.jpg"},{"variant_id":"61813818425714","key":"L / BLACK","title":"L / BLACK","sku":null,"optionValues":["L","BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"BLACK"}],"selected_options":{"COLOR":"L","Size":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"},{"variant_id":"61813818458482","key":"L / WHITE","title":"L / WHITE","sku":null,"optionValues":["L","WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"WHITE"}],"selected_options":{"COLOR":"L","Size":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"},{"variant_id":"61813818491250","key":"L / TAHITI BLUE","title":"L / TAHITI BLUE","sku":null,"optionValues":["L","TAHITI BLUE"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"TAHITI BLUE"}],"selected_options":{"COLOR":"L","Size":"TAHITI BLUE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TAHITIBLUESAVEYOUREARMOCK_64ae0f3a-d0c3-4695-a66f-f751c2124c2f.jpg"},{"variant_id":"61813818524018","key":"L / MILITARY GREEN","title":"L / MILITARY GREEN","sku":null,"optionValues":["L","MILITARY GREEN"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"MILITARY GREEN"}],"selected_options":{"COLOR":"L","Size":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUMILGREENREARMOCK_03cef74e-7783-43ca-af2e-f906e7161303.jpg"},{"variant_id":"61813818556786","key":"L / YELLOW","title":"L / YELLOW","sku":null,"optionValues":["L","YELLOW"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"YELLOW"}],"selected_options":{"COLOR":"L","Size":"YELLOW"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/saveyourearmockyellownobodyiscoming_1.jpg"},{"variant_id":"61813818589554","key":"L / GRAY","title":"L / GRAY","sku":null,"optionValues":["L","GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"GRAY"}],"selected_options":{"COLOR":"L","Size":"GRAY"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"},{"variant_id":"61813818622322","key":"XL / BLACK","title":"XL / BLACK","sku":null,"optionValues":["XL","BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"BLACK"}],"selected_options":{"COLOR":"XL","Size":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"},{"variant_id":"61813818655090","key":"XL / WHITE","title":"XL / WHITE","sku":null,"optionValues":["XL","WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"WHITE"}],"selected_options":{"COLOR":"XL","Size":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COMINGTOSAVEYOUWHITEREARMOCK.jpg"},{"variant_id":"61813818687858","key":"XL / TAHITI BLUE","title":"XL / TAHITI BLUE","sku":null,"optionValues":["XL","TAHITI BLUE"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"TAHITI BLUE"}],"selected_options":{"COLOR":"XL","Size":"TAHITI BLUE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TAHITIBLUESAVEYOUREARMOCK_64ae0f3a-d0c3-4695-a66f-f751c2124c2f.jpg"},{"variant_id":"61813818720626","key":"XL / MILITARY GREEN","title":"XL / MILITARY GREEN","sku":null,"optionValues":["XL","MILITARY GREEN"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"MILITARY GREEN"}],"selected_options":{"COLOR":"XL","Size":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUMILGREENREARMOCK_03cef74e-7783-43ca-af2e-f906e7161303.jpg"},{"variant_id":"61813818753394","key":"XL / YELLOW","title":"XL / YELLOW","sku":null,"optionValues":["XL","YELLOW"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"YELLOW"}],"selected_options":{"COLOR":"XL","Size":"YELLOW"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/saveyourearmockyellownobodyiscoming_1.jpg"},{"variant_id":"61813818786162","key":"XL / GRAY","title":"XL / GRAY","sku":null,"optionValues":["XL","GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"GRAY"}],"selected_options":{"COLOR":"XL","Size":"GRAY"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/ISCOMINGSAVEYOUGRAYREARMOCK_08d6a833-f4cd-457a-851d-11417325c30a.jpg"},{"variant_id":"61813818818930","key":"2XL / BLACK","title":"2XL / BLACK","sku":null,"optionValues":["2XL","BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"BLACK"}],"selected_options":{"COLOR":"2XL","Size":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"},{"variant_id":"61813818851698","key":"2XL / WHITE","title":"2XL / WHITE","sku":null,"optionValues":["2XL","WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"WHITE"}],"selected_options":{"COLOR":"2XL","Size":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COMINGTOSAVEYOUWHITEREARMOCK.jpg"},{"variant_id":"61813818884466","key":"2XL / TAHITI BLUE","title":"2XL / TAHITI BLUE","sku":null,"optionValues":["2XL","TAHITI BLUE"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"TAHITI BLUE"}],"selected_options":{"COLOR":"2XL","Size":"TAHITI BLUE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TAHITIBLUESAVEYOUREARMOCK_64ae0f3a-d0c3-4695-a66f-f751c2124c2f.jpg"},{"variant_id":"61813818917234","key":"2XL / MILITARY GREEN","title":"2XL / MILITARY GREEN","sku":null,"optionValues":["2XL","MILITARY GREEN"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"MILITARY GREEN"}],"selected_options":{"COLOR":"2XL","Size":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUMILGREENREARMOCK_03cef74e-7783-43ca-af2e-f906e7161303.jpg"},{"variant_id":"61813818950002","key":"2XL / YELLOW","title":"2XL / YELLOW","sku":null,"optionValues":["2XL","YELLOW"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"YELLOW"}],"selected_options":{"COLOR":"2XL","Size":"YELLOW"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/saveyourearmockyellownobodyiscoming_1.jpg"},{"variant_id":"61813818982770","key":"2XL / GRAY","title":"2XL / GRAY","sku":null,"optionValues":["2XL","GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"GRAY"}],"selected_options":{"COLOR":"2XL","Size":"GRAY"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/ISCOMINGSAVEYOUGRAYREARMOCK_08d6a833-f4cd-457a-851d-11417325c30a.jpg"},{"variant_id":"61813819015538","key":"3XL / BLACK","title":"3XL / BLACK","sku":null,"optionValues":["3XL","BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"3XL"},{"position":2,"name":"Size","value":"BLACK"}],"selected_options":{"COLOR":"3XL","Size":"BLACK"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUREARMOCKBLACK.jpg"},{"variant_id":"61813819048306","key":"3XL / WHITE","title":"3XL / WHITE","sku":null,"optionValues":["3XL","WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"3XL"},{"position":2,"name":"Size","value":"WHITE"}],"selected_options":{"COLOR":"3XL","Size":"WHITE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COMINGTOSAVEYOUWHITEREARMOCK.jpg"},{"variant_id":"61813819081074","key":"3XL / TAHITI BLUE","title":"3XL / TAHITI BLUE","sku":null,"optionValues":["3XL","TAHITI BLUE"],"option_values":[{"position":1,"name":"COLOR","value":"3XL"},{"position":2,"name":"Size","value":"TAHITI BLUE"}],"selected_options":{"COLOR":"3XL","Size":"TAHITI BLUE"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TAHITIBLUESAVEYOUREARMOCK_64ae0f3a-d0c3-4695-a66f-f751c2124c2f.jpg"},{"variant_id":"61813819113842","key":"3XL / MILITARY GREEN","title":"3XL / MILITARY GREEN","sku":null,"optionValues":["3XL","MILITARY GREEN"],"option_values":[{"position":1,"name":"COLOR","value":"3XL"},{"position":2,"name":"Size","value":"MILITARY GREEN"}],"selected_options":{"COLOR":"3XL","Size":"MILITARY GREEN"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SAVEYOUMILGREENREARMOCK_03cef74e-7783-43ca-af2e-f906e7161303.jpg"},{"variant_id":"61813819146610","key":"3XL / YELLOW","title":"3XL / YELLOW","sku":null,"optionValues":["3XL","YELLOW"],"option_values":[{"position":1,"name":"COLOR","value":"3XL"},{"position":2,"name":"Size","value":"YELLOW"}],"selected_options":{"COLOR":"3XL","Size":"YELLOW"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/saveyourearmockyellownobodyiscoming_1.jpg"},{"variant_id":"61813819179378","key":"3XL / GRAY","title":"3XL / GRAY","sku":null,"optionValues":["3XL","GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"3XL"},{"position":2,"name":"Size","value":"GRAY"}],"selected_options":{"COLOR":"3XL","Size":"GRAY"},"price_cents":3200,"regular_price_cents":3200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/ISCOMINGSAVEYOUGRAYREARMOCK_08d6a833-f4cd-457a-851d-11417325c30a.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -655,6 +670,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -672,16 +691,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Bear KompleX | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -704,23 +746,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -733,10 +779,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -744,21 +790,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -769,12 +809,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

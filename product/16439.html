@@ -169,7 +169,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Inno Supps</p>
-          <h1 class="pdp-title">2x Inno Greens</h1>
+          <h1 class="pdp-title" data-pdp-title>2x Inno Greens</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="11998" data-base-compare-cents="13998" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$119.98</strong>
             <span class="pdp-compare" data-pdp-compare >$139.98</span>
@@ -211,6 +211,9 @@
               data-cart-price="119.98"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/products/greensdouble.png"
+              data-cart-variant-id="40031126880392"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Strawberry Banana&quot;,&quot;Flavor #2&quot;:&quot;Strawberry Banana&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -606,17 +609,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Strawberry Banana / Strawberry Banana","optionValues":["Strawberry Banana","Strawberry Banana"],"price_cents":11998,"compare_at_cents":13998,"available":true},{"key":"Strawberry Banana / Paradise Punch","optionValues":["Strawberry Banana","Paradise Punch"],"price_cents":11998,"compare_at_cents":13998,"available":true},{"key":"Strawberry Banana / Apple Turnover","optionValues":["Strawberry Banana","Apple Turnover"],"price_cents":11998,"compare_at_cents":13998,"available":true},{"key":"Paradise Punch / Strawberry Banana","optionValues":["Paradise Punch","Strawberry Banana"],"price_cents":11998,"compare_at_cents":13998,"available":true},{"key":"Paradise Punch / Paradise Punch","optionValues":["Paradise Punch","Paradise Punch"],"price_cents":11998,"compare_at_cents":13998,"available":true},{"key":"Paradise Punch / Apple Turnover","optionValues":["Paradise Punch","Apple Turnover"],"price_cents":11998,"compare_at_cents":13998,"available":true},{"key":"Apple Turnover / Strawberry Banana","optionValues":["Apple Turnover","Strawberry Banana"],"price_cents":11998,"compare_at_cents":13998,"available":true},{"key":"Apple Turnover / Paradise Punch","optionValues":["Apple Turnover","Paradise Punch"],"price_cents":11998,"compare_at_cents":13998,"available":true},{"key":"Apple Turnover / Apple Turnover","optionValues":["Apple Turnover","Apple Turnover"],"price_cents":11998,"compare_at_cents":13998,"available":true}];
+        var variantPricing = [{"variant_id":"40031126880392","key":"Strawberry Banana / Strawberry Banana","title":"Strawberry Banana / Strawberry Banana","sku":null,"optionValues":["Strawberry Banana","Strawberry Banana"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Banana"},{"position":2,"name":"Flavor #2","value":"Strawberry Banana"}],"selected_options":{"Flavor":"Strawberry Banana","Flavor #2":"Strawberry Banana"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-strawberrybanana1_c2c1db5c-4450-492a-ae38-2264af37a990.png"},{"variant_id":"40031131041928","key":"Strawberry Banana / Paradise Punch","title":"Strawberry Banana / Paradise Punch","sku":null,"optionValues":["Strawberry Banana","Paradise Punch"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Banana"},{"position":2,"name":"Flavor #2","value":"Paradise Punch"}],"selected_options":{"Flavor":"Strawberry Banana","Flavor #2":"Paradise Punch"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-paradisepunch1_145d8e7e-28a1-4a49-82d3-7ebbef734840.png"},{"variant_id":"40274370658440","key":"Strawberry Banana / Apple Turnover","title":"Strawberry Banana / Apple Turnover","sku":null,"optionValues":["Strawberry Banana","Apple Turnover"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Banana"},{"position":2,"name":"Flavor #2","value":"Apple Turnover"}],"selected_options":{"Flavor":"Strawberry Banana","Flavor #2":"Apple Turnover"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-strawberrybanana1_c2c1db5c-4450-492a-ae38-2264af37a990.png"},{"variant_id":"40031126945928","key":"Paradise Punch / Strawberry Banana","title":"Paradise Punch / Strawberry Banana","sku":null,"optionValues":["Paradise Punch","Strawberry Banana"],"option_values":[{"position":1,"name":"Flavor","value":"Paradise Punch"},{"position":2,"name":"Flavor #2","value":"Strawberry Banana"}],"selected_options":{"Flavor":"Paradise Punch","Flavor #2":"Strawberry Banana"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-paradisepunch1_145d8e7e-28a1-4a49-82d3-7ebbef734840.png"},{"variant_id":"40031131173000","key":"Paradise Punch / Paradise Punch","title":"Paradise Punch / Paradise Punch","sku":null,"optionValues":["Paradise Punch","Paradise Punch"],"option_values":[{"position":1,"name":"Flavor","value":"Paradise Punch"},{"position":2,"name":"Flavor #2","value":"Paradise Punch"}],"selected_options":{"Flavor":"Paradise Punch","Flavor #2":"Paradise Punch"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-paradisepunch1_145d8e7e-28a1-4a49-82d3-7ebbef734840.png"},{"variant_id":"40274370691208","key":"Paradise Punch / Apple Turnover","title":"Paradise Punch / Apple Turnover","sku":null,"optionValues":["Paradise Punch","Apple Turnover"],"option_values":[{"position":1,"name":"Flavor","value":"Paradise Punch"},{"position":2,"name":"Flavor #2","value":"Apple Turnover"}],"selected_options":{"Flavor":"Paradise Punch","Flavor #2":"Apple Turnover"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-paradisepunch1_145d8e7e-28a1-4a49-82d3-7ebbef734840.png"},{"variant_id":"40274370723976","key":"Apple Turnover / Strawberry Banana","title":"Apple Turnover / Strawberry Banana","sku":null,"optionValues":["Apple Turnover","Strawberry Banana"],"option_values":[{"position":1,"name":"Flavor","value":"Apple Turnover"},{"position":2,"name":"Flavor #2","value":"Strawberry Banana"}],"selected_options":{"Flavor":"Apple Turnover","Flavor #2":"Strawberry Banana"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-strawberrybanana1_c2c1db5c-4450-492a-ae38-2264af37a990.png"},{"variant_id":"40274370756744","key":"Apple Turnover / Paradise Punch","title":"Apple Turnover / Paradise Punch","sku":null,"optionValues":["Apple Turnover","Paradise Punch"],"option_values":[{"position":1,"name":"Flavor","value":"Apple Turnover"},{"position":2,"name":"Flavor #2","value":"Paradise Punch"}],"selected_options":{"Flavor":"Apple Turnover","Flavor #2":"Paradise Punch"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/innogreens-paradisepunch1_145d8e7e-28a1-4a49-82d3-7ebbef734840.png"},{"variant_id":"40274370789512","key":"Apple Turnover / Apple Turnover","title":"Apple Turnover / Apple Turnover","sku":null,"optionValues":["Apple Turnover","Apple Turnover"],"option_values":[{"position":1,"name":"Flavor","value":"Apple Turnover"},{"position":2,"name":"Flavor #2","value":"Apple Turnover"}],"selected_options":{"Flavor":"Apple Turnover","Flavor #2":"Apple Turnover"},"price_cents":11998,"regular_price_cents":13998,"compare_at_cents":13998,"compare_at_price_cents":13998,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -646,6 +661,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -663,16 +682,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Inno Supps | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -695,23 +737,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -724,10 +770,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -735,21 +781,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -760,12 +800,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

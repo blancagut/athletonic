@@ -166,7 +166,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Inno Supps</p>
-          <h1 class="pdp-title">Inferno Shred Stack</h1>
+          <h1 class="pdp-title" data-pdp-title>Inferno Shred Stack</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="13999" data-base-compare-cents="18996" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$139.99</strong>
             <span class="pdp-compare" data-pdp-compare >$189.96</span>
@@ -210,6 +210,9 @@
               data-cart-price="139.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/101525_ISS_Carousel_Front.webp"
+              data-cart-variant-id="42889296773256"
+              data-cart-selected-options="{&quot;Volcarn 2000 Flavor&quot;:&quot;Rainbow Sherbert&quot;,&quot;Night Shred Black Type&quot;:&quot;Night Shred Black With Melatonin&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -661,17 +664,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Rainbow Sherbert / Night Shred Black With Melatonin","optionValues":["Rainbow Sherbert","Night Shred Black With Melatonin"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Rainbow Sherbert / Night Shred Black Melatonin Free","optionValues":["Rainbow Sherbert","Night Shred Black Melatonin Free"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Pink Starblast / Night Shred Black With Melatonin","optionValues":["Pink Starblast","Night Shred Black With Melatonin"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Pink Starblast / Night Shred Black Melatonin Free","optionValues":["Pink Starblast","Night Shred Black Melatonin Free"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Candy Peach Rings / Night Shred Black With Melatonin","optionValues":["Candy Peach Rings","Night Shred Black With Melatonin"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Candy Peach Rings / Night Shred Black Melatonin Free","optionValues":["Candy Peach Rings","Night Shred Black Melatonin Free"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Lemon Lime / Night Shred Black With Melatonin","optionValues":["Lemon Lime","Night Shred Black With Melatonin"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Lemon Lime / Night Shred Black Melatonin Free","optionValues":["Lemon Lime","Night Shred Black Melatonin Free"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Tropical Blast / Night Shred Black With Melatonin","optionValues":["Tropical Blast","Night Shred Black With Melatonin"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Tropical Blast / Night Shred Black Melatonin Free","optionValues":["Tropical Blast","Night Shred Black Melatonin Free"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Sour Kids Candy / Night Shred Black With Melatonin","optionValues":["Sour Kids Candy","Night Shred Black With Melatonin"],"price_cents":13999,"compare_at_cents":18996,"available":true},{"key":"Sour Kids Candy / Night Shred Black Melatonin Free","optionValues":["Sour Kids Candy","Night Shred Black Melatonin Free"],"price_cents":13999,"compare_at_cents":18996,"available":true}];
+        var variantPricing = [{"variant_id":"42889296773256","key":"Rainbow Sherbert / Night Shred Black With Melatonin","title":"Rainbow Sherbert / Night Shred Black With Melatonin","sku":null,"optionValues":["Rainbow Sherbert","Night Shred Black With Melatonin"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Rainbow Sherbert"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black With Melatonin"}],"selected_options":{"Volcarn 2000 Flavor":"Rainbow Sherbert","Night Shred Black Type":"Night Shred Black With Melatonin"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889296806024","key":"Rainbow Sherbert / Night Shred Black Melatonin Free","title":"Rainbow Sherbert / Night Shred Black Melatonin Free","sku":null,"optionValues":["Rainbow Sherbert","Night Shred Black Melatonin Free"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Rainbow Sherbert"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black Melatonin Free"}],"selected_options":{"Volcarn 2000 Flavor":"Rainbow Sherbert","Night Shred Black Type":"Night Shred Black Melatonin Free"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889296838792","key":"Pink Starblast / Night Shred Black With Melatonin","title":"Pink Starblast / Night Shred Black With Melatonin","sku":null,"optionValues":["Pink Starblast","Night Shred Black With Melatonin"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Pink Starblast"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black With Melatonin"}],"selected_options":{"Volcarn 2000 Flavor":"Pink Starblast","Night Shred Black Type":"Night Shred Black With Melatonin"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889296871560","key":"Pink Starblast / Night Shred Black Melatonin Free","title":"Pink Starblast / Night Shred Black Melatonin Free","sku":null,"optionValues":["Pink Starblast","Night Shred Black Melatonin Free"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Pink Starblast"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black Melatonin Free"}],"selected_options":{"Volcarn 2000 Flavor":"Pink Starblast","Night Shred Black Type":"Night Shred Black Melatonin Free"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889296904328","key":"Candy Peach Rings / Night Shred Black With Melatonin","title":"Candy Peach Rings / Night Shred Black With Melatonin","sku":null,"optionValues":["Candy Peach Rings","Night Shred Black With Melatonin"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Candy Peach Rings"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black With Melatonin"}],"selected_options":{"Volcarn 2000 Flavor":"Candy Peach Rings","Night Shred Black Type":"Night Shred Black With Melatonin"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889296937096","key":"Candy Peach Rings / Night Shred Black Melatonin Free","title":"Candy Peach Rings / Night Shred Black Melatonin Free","sku":null,"optionValues":["Candy Peach Rings","Night Shred Black Melatonin Free"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Candy Peach Rings"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black Melatonin Free"}],"selected_options":{"Volcarn 2000 Flavor":"Candy Peach Rings","Night Shred Black Type":"Night Shred Black Melatonin Free"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889296969864","key":"Lemon Lime / Night Shred Black With Melatonin","title":"Lemon Lime / Night Shred Black With Melatonin","sku":null,"optionValues":["Lemon Lime","Night Shred Black With Melatonin"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Lemon Lime"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black With Melatonin"}],"selected_options":{"Volcarn 2000 Flavor":"Lemon Lime","Night Shred Black Type":"Night Shred Black With Melatonin"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889297002632","key":"Lemon Lime / Night Shred Black Melatonin Free","title":"Lemon Lime / Night Shred Black Melatonin Free","sku":null,"optionValues":["Lemon Lime","Night Shred Black Melatonin Free"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Lemon Lime"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black Melatonin Free"}],"selected_options":{"Volcarn 2000 Flavor":"Lemon Lime","Night Shred Black Type":"Night Shred Black Melatonin Free"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889297035400","key":"Tropical Blast / Night Shred Black With Melatonin","title":"Tropical Blast / Night Shred Black With Melatonin","sku":null,"optionValues":["Tropical Blast","Night Shred Black With Melatonin"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Tropical Blast"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black With Melatonin"}],"selected_options":{"Volcarn 2000 Flavor":"Tropical Blast","Night Shred Black Type":"Night Shred Black With Melatonin"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889297068168","key":"Tropical Blast / Night Shred Black Melatonin Free","title":"Tropical Blast / Night Shred Black Melatonin Free","sku":null,"optionValues":["Tropical Blast","Night Shred Black Melatonin Free"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Tropical Blast"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black Melatonin Free"}],"selected_options":{"Volcarn 2000 Flavor":"Tropical Blast","Night Shred Black Type":"Night Shred Black Melatonin Free"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889297100936","key":"Sour Kids Candy / Night Shred Black With Melatonin","title":"Sour Kids Candy / Night Shred Black With Melatonin","sku":null,"optionValues":["Sour Kids Candy","Night Shred Black With Melatonin"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Sour Kids Candy"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black With Melatonin"}],"selected_options":{"Volcarn 2000 Flavor":"Sour Kids Candy","Night Shred Black Type":"Night Shred Black With Melatonin"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null},{"variant_id":"42889297133704","key":"Sour Kids Candy / Night Shred Black Melatonin Free","title":"Sour Kids Candy / Night Shred Black Melatonin Free","sku":null,"optionValues":["Sour Kids Candy","Night Shred Black Melatonin Free"],"option_values":[{"position":1,"name":"Volcarn 2000 Flavor","value":"Sour Kids Candy"},{"position":2,"name":"Night Shred Black Type","value":"Night Shred Black Melatonin Free"}],"selected_options":{"Volcarn 2000 Flavor":"Sour Kids Candy","Night Shred Black Type":"Night Shred Black Melatonin Free"},"price_cents":13999,"regular_price_cents":18996,"compare_at_cents":18996,"compare_at_price_cents":18996,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -701,6 +716,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -718,16 +737,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Inno Supps | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -750,23 +792,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -779,10 +825,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -790,21 +836,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -815,12 +855,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

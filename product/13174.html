@@ -171,7 +171,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">jym</p>
-          <h1 class="pdp-title">JYM Long Sleeve Logo Tee</h1>
+          <h1 class="pdp-title" data-pdp-title>JYM Long Sleeve Logo Tee</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="2999" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$29.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -218,6 +218,9 @@
               data-cart-price="29.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"
+              data-cart-variant-id="45011523862703"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Black Heather&quot;,&quot;Size&quot;:&quot;XS&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -664,17 +667,29 @@ This product is made especially for you as soon as you place an order, which is 
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Black Heather / XS","optionValues":["Black Heather","XS"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Black Heather / S","optionValues":["Black Heather","S"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Black Heather / M","optionValues":["Black Heather","M"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Black Heather / L","optionValues":["Black Heather","L"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Black Heather / XL","optionValues":["Black Heather","XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Black Heather / 2XL","optionValues":["Black Heather","2XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Forest / XS","optionValues":["Heather Forest","XS"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Forest / S","optionValues":["Heather Forest","S"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Forest / M","optionValues":["Heather Forest","M"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Forest / L","optionValues":["Heather Forest","L"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Forest / XL","optionValues":["Heather Forest","XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Forest / 2XL","optionValues":["Heather Forest","2XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Dark Grey Heather / XS","optionValues":["Dark Grey Heather","XS"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Dark Grey Heather / S","optionValues":["Dark Grey Heather","S"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Dark Grey Heather / M","optionValues":["Dark Grey Heather","M"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Dark Grey Heather / L","optionValues":["Dark Grey Heather","L"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Dark Grey Heather / XL","optionValues":["Dark Grey Heather","XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Dark Grey Heather / 2XL","optionValues":["Dark Grey Heather","2XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Sport Dark Navy / XS","optionValues":["Heather Sport Dark Navy","XS"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Sport Dark Navy / S","optionValues":["Heather Sport Dark Navy","S"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Sport Dark Navy / M","optionValues":["Heather Sport Dark Navy","M"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Sport Dark Navy / L","optionValues":["Heather Sport Dark Navy","L"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Sport Dark Navy / XL","optionValues":["Heather Sport Dark Navy","XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Heather Sport Dark Navy / 2XL","optionValues":["Heather Sport Dark Navy","2XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Athletic Heather / XS","optionValues":["Athletic Heather","XS"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Athletic Heather / S","optionValues":["Athletic Heather","S"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Athletic Heather / M","optionValues":["Athletic Heather","M"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Athletic Heather / L","optionValues":["Athletic Heather","L"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Athletic Heather / XL","optionValues":["Athletic Heather","XL"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Athletic Heather / 2XL","optionValues":["Athletic Heather","2XL"],"price_cents":2999,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"45011523862703","key":"Black Heather / XS","title":"Black Heather / XS","sku":null,"optionValues":["Black Heather","XS"],"option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black Heather","Size":"XS"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011523895471","key":"Black Heather / S","title":"Black Heather / S","sku":null,"optionValues":["Black Heather","S"],"option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Black Heather","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011523928239","key":"Black Heather / M","title":"Black Heather / M","sku":null,"optionValues":["Black Heather","M"],"option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Black Heather","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011523961007","key":"Black Heather / L","title":"Black Heather / L","sku":null,"optionValues":["Black Heather","L"],"option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Black Heather","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011523993775","key":"Black Heather / XL","title":"Black Heather / XL","sku":null,"optionValues":["Black Heather","XL"],"option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black Heather","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011524026543","key":"Black Heather / 2XL","title":"Black Heather / 2XL","sku":null,"optionValues":["Black Heather","2XL"],"option_values":[{"position":1,"name":"Color","value":"Black Heather"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black Heather","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011524059311","key":"Heather Forest / XS","title":"Heather Forest / XS","sku":null,"optionValues":["Heather Forest","XS"],"option_values":[{"position":1,"name":"Color","value":"Heather Forest"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Heather Forest","Size":"XS"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-heather-forest-front-67e1823709487.jpg"},{"variant_id":"45011524092079","key":"Heather Forest / S","title":"Heather Forest / S","sku":null,"optionValues":["Heather Forest","S"],"option_values":[{"position":1,"name":"Color","value":"Heather Forest"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Heather Forest","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-heather-forest-front-67e1823709487.jpg"},{"variant_id":"45011524124847","key":"Heather Forest / M","title":"Heather Forest / M","sku":null,"optionValues":["Heather Forest","M"],"option_values":[{"position":1,"name":"Color","value":"Heather Forest"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Heather Forest","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-heather-forest-front-67e1823709487.jpg"},{"variant_id":"45011524157615","key":"Heather Forest / L","title":"Heather Forest / L","sku":null,"optionValues":["Heather Forest","L"],"option_values":[{"position":1,"name":"Color","value":"Heather Forest"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Heather Forest","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-heather-forest-front-67e1823709487.jpg"},{"variant_id":"45011524190383","key":"Heather Forest / XL","title":"Heather Forest / XL","sku":null,"optionValues":["Heather Forest","XL"],"option_values":[{"position":1,"name":"Color","value":"Heather Forest"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Heather Forest","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-heather-forest-front-67e1823709487.jpg"},{"variant_id":"45011524223151","key":"Heather Forest / 2XL","title":"Heather Forest / 2XL","sku":null,"optionValues":["Heather Forest","2XL"],"option_values":[{"position":1,"name":"Color","value":"Heather Forest"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Heather Forest","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-heather-forest-front-67e1823709487.jpg"},{"variant_id":"45011524255919","key":"Dark Grey Heather / XS","title":"Dark Grey Heather / XS","sku":null,"optionValues":["Dark Grey Heather","XS"],"option_values":[{"position":1,"name":"Color","value":"Dark Grey Heather"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Dark Grey Heather","Size":"XS"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-dark-grey-heather-front-67e182370b95b.jpg"},{"variant_id":"45011524288687","key":"Dark Grey Heather / S","title":"Dark Grey Heather / S","sku":null,"optionValues":["Dark Grey Heather","S"],"option_values":[{"position":1,"name":"Color","value":"Dark Grey Heather"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Dark Grey Heather","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-dark-grey-heather-front-67e182370b95b.jpg"},{"variant_id":"45011524321455","key":"Dark Grey Heather / M","title":"Dark Grey Heather / M","sku":null,"optionValues":["Dark Grey Heather","M"],"option_values":[{"position":1,"name":"Color","value":"Dark Grey Heather"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Dark Grey Heather","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-dark-grey-heather-front-67e182370b95b.jpg"},{"variant_id":"45011524354223","key":"Dark Grey Heather / L","title":"Dark Grey Heather / L","sku":null,"optionValues":["Dark Grey Heather","L"],"option_values":[{"position":1,"name":"Color","value":"Dark Grey Heather"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Dark Grey Heather","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-dark-grey-heather-front-67e182370b95b.jpg"},{"variant_id":"45011524386991","key":"Dark Grey Heather / XL","title":"Dark Grey Heather / XL","sku":null,"optionValues":["Dark Grey Heather","XL"],"option_values":[{"position":1,"name":"Color","value":"Dark Grey Heather"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Dark Grey Heather","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-dark-grey-heather-front-67e182370b95b.jpg"},{"variant_id":"45011524419759","key":"Dark Grey Heather / 2XL","title":"Dark Grey Heather / 2XL","sku":null,"optionValues":["Dark Grey Heather","2XL"],"option_values":[{"position":1,"name":"Color","value":"Dark Grey Heather"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Dark Grey Heather","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-dark-grey-heather-front-67e182370b95b.jpg"},{"variant_id":"45011524452527","key":"Heather Sport Dark Navy / XS","title":"Heather Sport Dark Navy / XS","sku":null,"optionValues":["Heather Sport Dark Navy","XS"],"option_values":[{"position":1,"name":"Color","value":"Heather Sport Dark Navy"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Heather Sport Dark Navy","Size":"XS"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011524485295","key":"Heather Sport Dark Navy / S","title":"Heather Sport Dark Navy / S","sku":null,"optionValues":["Heather Sport Dark Navy","S"],"option_values":[{"position":1,"name":"Color","value":"Heather Sport Dark Navy"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Heather Sport Dark Navy","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011524518063","key":"Heather Sport Dark Navy / M","title":"Heather Sport Dark Navy / M","sku":null,"optionValues":["Heather Sport Dark Navy","M"],"option_values":[{"position":1,"name":"Color","value":"Heather Sport Dark Navy"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Heather Sport Dark Navy","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011524550831","key":"Heather Sport Dark Navy / L","title":"Heather Sport Dark Navy / L","sku":null,"optionValues":["Heather Sport Dark Navy","L"],"option_values":[{"position":1,"name":"Color","value":"Heather Sport Dark Navy"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Heather Sport Dark Navy","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011524583599","key":"Heather Sport Dark Navy / XL","title":"Heather Sport Dark Navy / XL","sku":null,"optionValues":["Heather Sport Dark Navy","XL"],"option_values":[{"position":1,"name":"Color","value":"Heather Sport Dark Navy"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Heather Sport Dark Navy","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011524616367","key":"Heather Sport Dark Navy / 2XL","title":"Heather Sport Dark Navy / 2XL","sku":null,"optionValues":["Heather Sport Dark Navy","2XL"],"option_values":[{"position":1,"name":"Color","value":"Heather Sport Dark Navy"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Heather Sport Dark Navy","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-black-heather-front-67e1823707a24.jpg"},{"variant_id":"45011524649135","key":"Athletic Heather / XS","title":"Athletic Heather / XS","sku":null,"optionValues":["Athletic Heather","XS"],"option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Athletic Heather","Size":"XS"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-athletic-heather-front-67e1823711a89.jpg"},{"variant_id":"45011524681903","key":"Athletic Heather / S","title":"Athletic Heather / S","sku":null,"optionValues":["Athletic Heather","S"],"option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Athletic Heather","Size":"S"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-athletic-heather-front-67e1823711a89.jpg"},{"variant_id":"45011524714671","key":"Athletic Heather / M","title":"Athletic Heather / M","sku":null,"optionValues":["Athletic Heather","M"],"option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Athletic Heather","Size":"M"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-athletic-heather-front-67e1823711a89.jpg"},{"variant_id":"45011524747439","key":"Athletic Heather / L","title":"Athletic Heather / L","sku":null,"optionValues":["Athletic Heather","L"],"option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Athletic Heather","Size":"L"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-athletic-heather-front-67e1823711a89.jpg"},{"variant_id":"45011524780207","key":"Athletic Heather / XL","title":"Athletic Heather / XL","sku":null,"optionValues":["Athletic Heather","XL"],"option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Athletic Heather","Size":"XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-athletic-heather-front-67e1823711a89.jpg"},{"variant_id":"45011524812975","key":"Athletic Heather / 2XL","title":"Athletic Heather / 2XL","sku":null,"optionValues":["Athletic Heather","2XL"],"option_values":[{"position":1,"name":"Color","value":"Athletic Heather"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Athletic Heather","Size":"2XL"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/unisex-long-sleeve-tee-athletic-heather-front-67e1823711a89.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -704,6 +719,10 @@ This product is made especially for you as soon as you place an order, which is 
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -721,16 +740,39 @@ This product is made especially for you as soon as you place an order, which is 
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — jym | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -753,23 +795,27 @@ This product is made especially for you as soon as you place an order, which is 
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -782,10 +828,10 @@ This product is made especially for you as soon as you place an order, which is 
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -793,21 +839,15 @@ This product is made especially for you as soon as you place an order, which is 
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -818,12 +858,15 @@ This product is made especially for you as soon as you place an order, which is 
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

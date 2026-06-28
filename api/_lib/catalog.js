@@ -24,6 +24,23 @@ function optionLabel(optionValues) {
   return optionValues.map((entry) => `${entry.name}: ${entry.value}`).join(" / ");
 }
 
+function explicitBoolean(value) {
+  return value === true || value === false ? value : null;
+}
+
+function resolveAvailability(value, fallback, priceCents = 0) {
+  const explicit = explicitBoolean(value);
+  if (explicit === false && intCents(priceCents) > 0) {
+    return true;
+  }
+  return explicit === null ? fallback : explicit;
+}
+
+function normalizeImageUrl(value) {
+  const imageUrl = String(value || "").trim();
+  return imageUrl || null;
+}
+
 function normalizeVariant(product, rawVariant) {
   const variantId = String(rawVariant.variant_id || "").trim();
   if (!variantId) return null;
@@ -48,7 +65,9 @@ function normalizeVariant(product, rawVariant) {
     compare_at_price_cents:
       compareAtPriceCents > priceCents ? compareAtPriceCents : null,
     currency: String(rawVariant.currency || product.currency || "USD").toUpperCase(),
-    available: priceCents > 0,
+    available: resolveAvailability(rawVariant.available, priceCents > 0, priceCents),
+    _has_explicit_availability: explicitBoolean(rawVariant.available) !== null,
+    image_url: normalizeImageUrl(rawVariant.image_url || rawVariant.image),
     weight_grams: Number.isInteger(Number(rawVariant.weight_grams))
       ? Number(rawVariant.weight_grams)
       : null,
@@ -62,7 +81,6 @@ function normalizeProduct(product) {
 
   const priceCents = intCents(product.price_cents);
   const variants = Array.isArray(product.variants) ? product.variants : [];
-  const hasPricedVariant = variants.some((variant) => intCents(variant?.price_cents) > 0);
   const normalized = {
     id,
     external_product_id: product.external_product_id || null,
@@ -80,7 +98,7 @@ function normalizeProduct(product) {
         ? intCents(product.compare_at_price_cents)
         : null,
     currency: String(product.currency || catalog.currency || "USD").toUpperCase(),
-    available: priceCents > 0 || hasPricedVariant,
+    available: false,
     purchasable: product.purchasable !== false && product.ready_for_sale !== false,
     ready_for_sale: product.ready_for_sale !== false,
     has_variants: product.has_variants === true || variants.length > 0,
@@ -93,6 +111,18 @@ function normalizeProduct(product) {
   normalized.variants = variants
     .map((variant) => normalizeVariant(normalized, variant))
     .filter(Boolean);
+
+  const hasPricedVariant = normalized.variants.some((variant) => variant.price_cents > 0);
+  const hasExplicitVariantAvailability = normalized.variants.some(
+    (variant) => variant._has_explicit_availability
+  );
+  const hasAvailableVariant = normalized.variants.some((variant) => variant.available !== false);
+  const fallbackAvailable =
+    hasExplicitVariantAvailability && normalized.variants.length > 0
+      ? hasAvailableVariant || priceCents > 0
+      : priceCents > 0 || hasPricedVariant;
+  normalized.available = resolveAvailability(product.available, fallbackAvailable, priceCents);
+
   return normalized;
 }
 
@@ -270,6 +300,7 @@ function validateCart(cart, options = {}) {
       );
     }
 
+    const lineImageUrl = variant?.image_url || product.image || null;
     merged.set(mergeKey, {
       product_id: productId,
       variant_id: variant ? variant.variant_id : null,
@@ -277,7 +308,7 @@ function validateCart(cart, options = {}) {
       brand: product.brand,
       name: product.name,
       variant: variantLabel,
-      image_url: product.image || null,
+      image_url: lineImageUrl,
       quantity,
       unit_amount_cents: unitAmountCents,
       currency: variant?.currency || product.currency || "USD",
@@ -290,7 +321,8 @@ function validateCart(cart, options = {}) {
         brand: product.brand,
         name: product.name,
         url: product.url || null,
-        image: product.image || null,
+        image: lineImageUrl,
+        image_url: lineImageUrl,
         price_cents: unitAmountCents,
         public_price_cents: variant?.price_cents || product.price_cents,
         regular_price_cents: variant?.regular_price_cents || product.price_cents,

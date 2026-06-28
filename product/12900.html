@@ -177,7 +177,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Bear KompleX</p>
-          <h1 class="pdp-title">Hex Bar Weight Sets</h1>
+          <h1 class="pdp-title" data-pdp-title>Hex Bar Weight Sets</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="39500" data-base-compare-cents="54500" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$395.00</strong>
             <span class="pdp-compare" data-pdp-compare >$545.00</span>
@@ -212,6 +212,9 @@
               data-cart-price="395"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/hex-hero_6280ced5-e5a4-416d-bab5-17a2f92976ad.jpg"
+              data-cart-variant-id="60659634700658"
+              data-cart-selected-options="{&quot;Style&quot;:&quot;Trap Bar + 180lbs&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -654,17 +657,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Trap Bar + 180lbs","optionValues":["Trap Bar + 180lbs"],"price_cents":42500,"compare_at_cents":59500,"available":true},{"key":"Trap Bar + 250lbs","optionValues":["Trap Bar + 250lbs"],"price_cents":51500,"compare_at_cents":72000,"available":true},{"key":"Trap Bar + 270lbs","optionValues":["Trap Bar + 270lbs"],"price_cents":53500,"compare_at_cents":76500,"available":true},{"key":"Trap Bar + 160lbs Bumper","optionValues":["Trap Bar + 160lbs Bumper"],"price_cents":39500,"compare_at_cents":54500,"available":true},{"key":"Trap Bar + 250lbs Bumper","optionValues":["Trap Bar + 250lbs Bumper"],"price_cents":51000,"compare_at_cents":71500,"available":true}];
+        var variantPricing = [{"variant_id":"60659634700658","key":"Trap Bar + 180lbs","title":"Trap Bar + 180lbs","sku":null,"optionValues":["Trap Bar + 180lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 180lbs"}],"selected_options":{"Style":"Trap Bar + 180lbs"},"price_cents":42500,"regular_price_cents":59500,"compare_at_cents":59500,"compare_at_price_cents":59500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"},{"variant_id":"60659634733426","key":"Trap Bar + 250lbs","title":"Trap Bar + 250lbs","sku":null,"optionValues":["Trap Bar + 250lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 250lbs"}],"selected_options":{"Style":"Trap Bar + 250lbs"},"price_cents":51500,"regular_price_cents":72000,"compare_at_cents":72000,"compare_at_price_cents":72000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"},{"variant_id":"60659634766194","key":"Trap Bar + 270lbs","title":"Trap Bar + 270lbs","sku":null,"optionValues":["Trap Bar + 270lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 270lbs"}],"selected_options":{"Style":"Trap Bar + 270lbs"},"price_cents":53500,"regular_price_cents":76500,"compare_at_cents":76500,"compare_at_price_cents":76500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"},{"variant_id":"60659634798962","key":"Trap Bar + 160lbs Bumper","title":"Trap Bar + 160lbs Bumper","sku":null,"optionValues":["Trap Bar + 160lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 160lbs Bumper"}],"selected_options":{"Style":"Trap Bar + 160lbs Bumper"},"price_cents":39500,"regular_price_cents":54500,"compare_at_cents":54500,"compare_at_price_cents":54500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"},{"variant_id":"60659634831730","key":"Trap Bar + 250lbs Bumper","title":"Trap Bar + 250lbs Bumper","sku":null,"optionValues":["Trap Bar + 250lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 250lbs Bumper"}],"selected_options":{"Style":"Trap Bar + 250lbs Bumper"},"price_cents":51000,"regular_price_cents":71500,"compare_at_cents":71500,"compare_at_price_cents":71500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -694,6 +709,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -711,16 +730,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Bear KompleX | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -743,23 +785,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -772,10 +818,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -783,21 +829,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -808,12 +848,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

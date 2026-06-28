@@ -206,7 +206,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">1st Phorm</p>
-          <h1 class="pdp-title">Runaround Short</h1>
+          <h1 class="pdp-title" data-pdp-title>Runaround Short</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="4500" data-base-compare-cents="5500" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$45.00</strong>
             <span class="pdp-compare" data-pdp-compare >$55.00</span>
@@ -253,6 +253,9 @@
               data-cart-price="45"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_watermelon_0001.jpg"
+              data-cart-variant-id="43911459733590"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Watermelon&quot;,&quot;Size&quot;:&quot;XS&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -653,17 +656,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Watermelon / XS","optionValues":["Watermelon","XS"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Watermelon / Small","optionValues":["Watermelon","Small"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Watermelon / Medium","optionValues":["Watermelon","Medium"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Watermelon / Large","optionValues":["Watermelon","Large"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Watermelon / XL","optionValues":["Watermelon","XL"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Watermelon / 2XL","optionValues":["Watermelon","2XL"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Black / XS","optionValues":["Black","XS"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Black / Small","optionValues":["Black","Small"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Black / Medium","optionValues":["Black","Medium"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Black / Large","optionValues":["Black","Large"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Black / XL","optionValues":["Black","XL"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Black / 2XL","optionValues":["Black","2XL"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Limeade / XS","optionValues":["Limeade","XS"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Limeade / Small","optionValues":["Limeade","Small"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Limeade / Medium","optionValues":["Limeade","Medium"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Limeade / Large","optionValues":["Limeade","Large"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Limeade / XL","optionValues":["Limeade","XL"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Limeade / 2XL","optionValues":["Limeade","2XL"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Iris / XS","optionValues":["Iris","XS"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Iris / Small","optionValues":["Iris","Small"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Iris / Medium","optionValues":["Iris","Medium"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Iris / Large","optionValues":["Iris","Large"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Iris / XL","optionValues":["Iris","XL"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Iris / 2XL","optionValues":["Iris","2XL"],"price_cents":4500,"compare_at_cents":5500,"available":true},{"key":"Blue Jay OUT OF STOCK- / XS","optionValues":["Blue Jay OUT OF STOCK-","XS"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Blue Jay OUT OF STOCK- / Small","optionValues":["Blue Jay OUT OF STOCK-","Small"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Blue Jay OUT OF STOCK- / Medium","optionValues":["Blue Jay OUT OF STOCK-","Medium"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Blue Jay OUT OF STOCK- / Large","optionValues":["Blue Jay OUT OF STOCK-","Large"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Blue Jay OUT OF STOCK- / XL","optionValues":["Blue Jay OUT OF STOCK-","XL"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"Blue Jay OUT OF STOCK- / 2XL","optionValues":["Blue Jay OUT OF STOCK-","2XL"],"price_cents":5500,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"43911459733590","key":"Watermelon / XS","title":"Watermelon / XS","sku":null,"optionValues":["Watermelon","XS"],"option_values":[{"position":1,"name":"Color","value":"Watermelon"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Watermelon","Size":"XS"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_watermelon_0001.jpg"},{"variant_id":"43911459766358","key":"Watermelon / Small","title":"Watermelon / Small","sku":null,"optionValues":["Watermelon","Small"],"option_values":[{"position":1,"name":"Color","value":"Watermelon"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Watermelon","Size":"Small"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_watermelon_0001.jpg"},{"variant_id":"43911459799126","key":"Watermelon / Medium","title":"Watermelon / Medium","sku":null,"optionValues":["Watermelon","Medium"],"option_values":[{"position":1,"name":"Color","value":"Watermelon"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Watermelon","Size":"Medium"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_watermelon_0001.jpg"},{"variant_id":"43911459831894","key":"Watermelon / Large","title":"Watermelon / Large","sku":null,"optionValues":["Watermelon","Large"],"option_values":[{"position":1,"name":"Color","value":"Watermelon"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Watermelon","Size":"Large"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_watermelon_0001.jpg"},{"variant_id":"43911459864662","key":"Watermelon / XL","title":"Watermelon / XL","sku":null,"optionValues":["Watermelon","XL"],"option_values":[{"position":1,"name":"Color","value":"Watermelon"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Watermelon","Size":"XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_watermelon_0001.jpg"},{"variant_id":"43911459897430","key":"Watermelon / 2XL","title":"Watermelon / 2XL","sku":null,"optionValues":["Watermelon","2XL"],"option_values":[{"position":1,"name":"Color","value":"Watermelon"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Watermelon","Size":"2XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_watermelon_0001.jpg"},{"variant_id":"43911459930198","key":"Black / XS","title":"Black / XS","sku":null,"optionValues":["Black","XS"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_black_0002.jpg"},{"variant_id":"43911459962966","key":"Black / Small","title":"Black / Small","sku":null,"optionValues":["Black","Small"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black","Size":"Small"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_black_0002.jpg"},{"variant_id":"43911459995734","key":"Black / Medium","title":"Black / Medium","sku":null,"optionValues":["Black","Medium"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black","Size":"Medium"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_black_0002.jpg"},{"variant_id":"43911460028502","key":"Black / Large","title":"Black / Large","sku":null,"optionValues":["Black","Large"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black","Size":"Large"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_black_0002.jpg"},{"variant_id":"43911460061270","key":"Black / XL","title":"Black / XL","sku":null,"optionValues":["Black","XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_black_0002.jpg"},{"variant_id":"43911460094038","key":"Black / 2XL","title":"Black / 2XL","sku":null,"optionValues":["Black","2XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_black_0002.jpg"},{"variant_id":"43911459536982","key":"Limeade / XS","title":"Limeade / XS","sku":null,"optionValues":["Limeade","XS"],"option_values":[{"position":1,"name":"Color","value":"Limeade"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Limeade","Size":"XS"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_limeade_0001.jpg"},{"variant_id":"43911459569750","key":"Limeade / Small","title":"Limeade / Small","sku":null,"optionValues":["Limeade","Small"],"option_values":[{"position":1,"name":"Color","value":"Limeade"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Limeade","Size":"Small"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_limeade_0001.jpg"},{"variant_id":"43911459602518","key":"Limeade / Medium","title":"Limeade / Medium","sku":null,"optionValues":["Limeade","Medium"],"option_values":[{"position":1,"name":"Color","value":"Limeade"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Limeade","Size":"Medium"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_limeade_0001.jpg"},{"variant_id":"43911459635286","key":"Limeade / Large","title":"Limeade / Large","sku":null,"optionValues":["Limeade","Large"],"option_values":[{"position":1,"name":"Color","value":"Limeade"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Limeade","Size":"Large"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_limeade_0001.jpg"},{"variant_id":"43911459668054","key":"Limeade / XL","title":"Limeade / XL","sku":null,"optionValues":["Limeade","XL"],"option_values":[{"position":1,"name":"Color","value":"Limeade"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Limeade","Size":"XL"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_limeade_0001.jpg"},{"variant_id":"43911459700822","key":"Limeade / 2XL","title":"Limeade / 2XL","sku":null,"optionValues":["Limeade","2XL"],"option_values":[{"position":1,"name":"Color","value":"Limeade"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Limeade","Size":"2XL"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_limeade_0001.jpg"},{"variant_id":"43911459340374","key":"Iris / XS","title":"Iris / XS","sku":null,"optionValues":["Iris","XS"],"option_values":[{"position":1,"name":"Color","value":"Iris"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Iris","Size":"XS"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_iris_0001.jpg"},{"variant_id":"43911459373142","key":"Iris / Small","title":"Iris / Small","sku":null,"optionValues":["Iris","Small"],"option_values":[{"position":1,"name":"Color","value":"Iris"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Iris","Size":"Small"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_iris_0001.jpg"},{"variant_id":"43911459405910","key":"Iris / Medium","title":"Iris / Medium","sku":null,"optionValues":["Iris","Medium"],"option_values":[{"position":1,"name":"Color","value":"Iris"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Iris","Size":"Medium"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_iris_0001.jpg"},{"variant_id":"43911459438678","key":"Iris / Large","title":"Iris / Large","sku":null,"optionValues":["Iris","Large"],"option_values":[{"position":1,"name":"Color","value":"Iris"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Iris","Size":"Large"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_iris_0001.jpg"},{"variant_id":"43911459471446","key":"Iris / XL","title":"Iris / XL","sku":null,"optionValues":["Iris","XL"],"option_values":[{"position":1,"name":"Color","value":"Iris"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Iris","Size":"XL"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_iris_0001.jpg"},{"variant_id":"43911459504214","key":"Iris / 2XL","title":"Iris / 2XL","sku":null,"optionValues":["Iris","2XL"],"option_values":[{"position":1,"name":"Color","value":"Iris"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Iris","Size":"2XL"},"price_cents":4500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshort_iris_0001.jpg"},{"variant_id":"44425896689750","key":"Blue Jay OUT OF STOCK- / XS","title":"Blue Jay OUT OF STOCK- / XS","sku":null,"optionValues":["Blue Jay OUT OF STOCK-","XS"],"option_values":[{"position":1,"name":"Color","value":"Blue Jay OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Blue Jay OUT OF STOCK-","Size":"XS"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshorts_bluejay_0003.jpg"},{"variant_id":"44425896722518","key":"Blue Jay OUT OF STOCK- / Small","title":"Blue Jay OUT OF STOCK- / Small","sku":null,"optionValues":["Blue Jay OUT OF STOCK-","Small"],"option_values":[{"position":1,"name":"Color","value":"Blue Jay OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Blue Jay OUT OF STOCK-","Size":"Small"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshorts_bluejay_0003.jpg"},{"variant_id":"44425896755286","key":"Blue Jay OUT OF STOCK- / Medium","title":"Blue Jay OUT OF STOCK- / Medium","sku":null,"optionValues":["Blue Jay OUT OF STOCK-","Medium"],"option_values":[{"position":1,"name":"Color","value":"Blue Jay OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Blue Jay OUT OF STOCK-","Size":"Medium"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshorts_bluejay_0003.jpg"},{"variant_id":"44425896788054","key":"Blue Jay OUT OF STOCK- / Large","title":"Blue Jay OUT OF STOCK- / Large","sku":null,"optionValues":["Blue Jay OUT OF STOCK-","Large"],"option_values":[{"position":1,"name":"Color","value":"Blue Jay OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Blue Jay OUT OF STOCK-","Size":"Large"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshorts_bluejay_0003.jpg"},{"variant_id":"44425896820822","key":"Blue Jay OUT OF STOCK- / XL","title":"Blue Jay OUT OF STOCK- / XL","sku":null,"optionValues":["Blue Jay OUT OF STOCK-","XL"],"option_values":[{"position":1,"name":"Color","value":"Blue Jay OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Blue Jay OUT OF STOCK-","Size":"XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshorts_bluejay_0003.jpg"},{"variant_id":"44425896853590","key":"Blue Jay OUT OF STOCK- / 2XL","title":"Blue Jay OUT OF STOCK- / 2XL","sku":null,"optionValues":["Blue Jay OUT OF STOCK-","2XL"],"option_values":[{"position":1,"name":"Color","value":"Blue Jay OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Blue Jay OUT OF STOCK-","Size":"2XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_runaroundshorts_bluejay_0003.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -693,6 +708,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -710,16 +729,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — 1st Phorm | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -742,23 +784,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -771,10 +817,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -782,21 +828,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -807,12 +847,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

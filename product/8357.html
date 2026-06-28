@@ -187,7 +187,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">1st Phorm</p>
-          <h1 class="pdp-title">Women's Genesis Short Sleeve</h1>
+          <h1 class="pdp-title" data-pdp-title>Women's Genesis Short Sleeve</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="4000" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$40.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -236,6 +236,9 @@
               data-cart-price="40"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shirts_genesisshortsleeve_voltage_0002.jpg"
+              data-cart-variant-id="43910992035926"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Voltage&quot;,&quot;Size&quot;:&quot;XS&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -669,17 +672,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Voltage / XS","optionValues":["Voltage","XS"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Voltage / Small","optionValues":["Voltage","Small"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Voltage / Medium","optionValues":["Voltage","Medium"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Voltage / Large","optionValues":["Voltage","Large"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Voltage / XL","optionValues":["Voltage","XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Voltage / 2XL","optionValues":["Voltage","2XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Primal Green / XS","optionValues":["Primal Green","XS"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Primal Green / Small","optionValues":["Primal Green","Small"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Primal Green / Medium","optionValues":["Primal Green","Medium"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Primal Green / Large","optionValues":["Primal Green","Large"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Primal Green / XL","optionValues":["Primal Green","XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Primal Green / 2XL","optionValues":["Primal Green","2XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Black / XS","optionValues":["Black","XS"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Black / Small","optionValues":["Black","Small"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Black / Medium","optionValues":["Black","Medium"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Black / Large","optionValues":["Black","Large"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Black / XL","optionValues":["Black","XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Black / 2XL","optionValues":["Black","2XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / XS","optionValues":["White OUT OF STOCK-","XS"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / Small","optionValues":["White OUT OF STOCK-","Small"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / Medium","optionValues":["White OUT OF STOCK-","Medium"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / Large","optionValues":["White OUT OF STOCK-","Large"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / XL","optionValues":["White OUT OF STOCK-","XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / 2XL","optionValues":["White OUT OF STOCK-","2XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Navy OUT OF STOCK- / XS","optionValues":["Navy OUT OF STOCK-","XS"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Navy OUT OF STOCK- / Small","optionValues":["Navy OUT OF STOCK-","Small"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Navy OUT OF STOCK- / Medium","optionValues":["Navy OUT OF STOCK-","Medium"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Navy OUT OF STOCK- / Large","optionValues":["Navy OUT OF STOCK-","Large"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Navy OUT OF STOCK- / XL","optionValues":["Navy OUT OF STOCK-","XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Navy OUT OF STOCK- / 2XL","optionValues":["Navy OUT OF STOCK-","2XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Hydro OUT OF STOCK- / XS","optionValues":["Hydro OUT OF STOCK-","XS"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Hydro OUT OF STOCK- / Small","optionValues":["Hydro OUT OF STOCK-","Small"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Hydro OUT OF STOCK- / Medium","optionValues":["Hydro OUT OF STOCK-","Medium"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Hydro OUT OF STOCK- / Large","optionValues":["Hydro OUT OF STOCK-","Large"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Hydro OUT OF STOCK- / XL","optionValues":["Hydro OUT OF STOCK-","XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Hydro OUT OF STOCK- / 2XL","optionValues":["Hydro OUT OF STOCK-","2XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Dark Brown OUT OF STOCK- / XS","optionValues":["Dark Brown OUT OF STOCK-","XS"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Dark Brown OUT OF STOCK- / Small","optionValues":["Dark Brown OUT OF STOCK-","Small"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Dark Brown OUT OF STOCK- / Medium","optionValues":["Dark Brown OUT OF STOCK-","Medium"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Dark Brown OUT OF STOCK- / Large","optionValues":["Dark Brown OUT OF STOCK-","Large"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Dark Brown OUT OF STOCK- / XL","optionValues":["Dark Brown OUT OF STOCK-","XL"],"price_cents":4000,"compare_at_cents":0,"available":true},{"key":"Dark Brown OUT OF STOCK- / 2XL","optionValues":["Dark Brown OUT OF STOCK-","2XL"],"price_cents":4000,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"43910992035926","key":"Voltage / XS","title":"Voltage / XS","sku":null,"optionValues":["Voltage","XS"],"option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Voltage","Size":"XS"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shirts_genesisshortsleeve_voltage_0002.jpg"},{"variant_id":"43910992068694","key":"Voltage / Small","title":"Voltage / Small","sku":null,"optionValues":["Voltage","Small"],"option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Voltage","Size":"Small"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shirts_genesisshortsleeve_voltage_0002.jpg"},{"variant_id":"43910992101462","key":"Voltage / Medium","title":"Voltage / Medium","sku":null,"optionValues":["Voltage","Medium"],"option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Voltage","Size":"Medium"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shirts_genesisshortsleeve_voltage_0002.jpg"},{"variant_id":"43910992134230","key":"Voltage / Large","title":"Voltage / Large","sku":null,"optionValues":["Voltage","Large"],"option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Voltage","Size":"Large"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shirts_genesisshortsleeve_voltage_0002.jpg"},{"variant_id":"43910992166998","key":"Voltage / XL","title":"Voltage / XL","sku":null,"optionValues":["Voltage","XL"],"option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Voltage","Size":"XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shirts_genesisshortsleeve_voltage_0002.jpg"},{"variant_id":"43910992199766","key":"Voltage / 2XL","title":"Voltage / 2XL","sku":null,"optionValues":["Voltage","2XL"],"option_values":[{"position":1,"name":"Color","value":"Voltage"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Voltage","Size":"2XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shirts_genesisshortsleeve_voltage_0002.jpg"},{"variant_id":"43444121665622","key":"Primal Green / XS","title":"Primal Green / XS","sku":null,"optionValues":["Primal Green","XS"],"option_values":[{"position":1,"name":"Color","value":"Primal Green"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Primal Green","Size":"XS"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_tshirts_genesisshortsleeve_primalgreen_0001.jpg"},{"variant_id":"43444121698390","key":"Primal Green / Small","title":"Primal Green / Small","sku":null,"optionValues":["Primal Green","Small"],"option_values":[{"position":1,"name":"Color","value":"Primal Green"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Primal Green","Size":"Small"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_tshirts_genesisshortsleeve_primalgreen_0001.jpg"},{"variant_id":"43444121731158","key":"Primal Green / Medium","title":"Primal Green / Medium","sku":null,"optionValues":["Primal Green","Medium"],"option_values":[{"position":1,"name":"Color","value":"Primal Green"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Primal Green","Size":"Medium"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_tshirts_genesisshortsleeve_primalgreen_0001.jpg"},{"variant_id":"43444121763926","key":"Primal Green / Large","title":"Primal Green / Large","sku":null,"optionValues":["Primal Green","Large"],"option_values":[{"position":1,"name":"Color","value":"Primal Green"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Primal Green","Size":"Large"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_tshirts_genesisshortsleeve_primalgreen_0001.jpg"},{"variant_id":"43444121796694","key":"Primal Green / XL","title":"Primal Green / XL","sku":null,"optionValues":["Primal Green","XL"],"option_values":[{"position":1,"name":"Color","value":"Primal Green"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Primal Green","Size":"XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_tshirts_genesisshortsleeve_primalgreen_0001.jpg"},{"variant_id":"43444121829462","key":"Primal Green / 2XL","title":"Primal Green / 2XL","sku":null,"optionValues":["Primal Green","2XL"],"option_values":[{"position":1,"name":"Color","value":"Primal Green"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Primal Green","Size":"2XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_tshirts_genesisshortsleeve_primalgreen_0001.jpg"},{"variant_id":"40272061857878","key":"Black / XS","title":"Black / XS","sku":null,"optionValues":["Black","XS"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_Black_0004.jpg"},{"variant_id":"40272061890646","key":"Black / Small","title":"Black / Small","sku":null,"optionValues":["Black","Small"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black","Size":"Small"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_Black_0004.jpg"},{"variant_id":"40272061923414","key":"Black / Medium","title":"Black / Medium","sku":null,"optionValues":["Black","Medium"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black","Size":"Medium"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_Black_0004.jpg"},{"variant_id":"40272061956182","key":"Black / Large","title":"Black / Large","sku":null,"optionValues":["Black","Large"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black","Size":"Large"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_Black_0004.jpg"},{"variant_id":"40272061988950","key":"Black / XL","title":"Black / XL","sku":null,"optionValues":["Black","XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_Black_0004.jpg"},{"variant_id":"40272062021718","key":"Black / 2XL","title":"Black / 2XL","sku":null,"optionValues":["Black","2XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_Black_0004.jpg"},{"variant_id":"40272061661270","key":"White OUT OF STOCK- / XS","title":"White OUT OF STOCK- / XS","sku":null,"optionValues":["White OUT OF STOCK-","XS"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"XS"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_White_0004.jpg"},{"variant_id":"40272061694038","key":"White OUT OF STOCK- / Small","title":"White OUT OF STOCK- / Small","sku":null,"optionValues":["White OUT OF STOCK-","Small"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Small"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_White_0004.jpg"},{"variant_id":"40272061726806","key":"White OUT OF STOCK- / Medium","title":"White OUT OF STOCK- / Medium","sku":null,"optionValues":["White OUT OF STOCK-","Medium"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Medium"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_White_0004.jpg"},{"variant_id":"40272061759574","key":"White OUT OF STOCK- / Large","title":"White OUT OF STOCK- / Large","sku":null,"optionValues":["White OUT OF STOCK-","Large"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Large"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_White_0004.jpg"},{"variant_id":"40272061792342","key":"White OUT OF STOCK- / XL","title":"White OUT OF STOCK- / XL","sku":null,"optionValues":["White OUT OF STOCK-","XL"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_White_0004.jpg"},{"variant_id":"40272061825110","key":"White OUT OF STOCK- / 2XL","title":"White OUT OF STOCK- / 2XL","sku":null,"optionValues":["White OUT OF STOCK-","2XL"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"2XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Basics_Women_GenesisShortSleeve_White_0004.jpg"},{"variant_id":"43375568846934","key":"Navy OUT OF STOCK- / XS","title":"Navy OUT OF STOCK- / XS","sku":null,"optionValues":["Navy OUT OF STOCK-","XS"],"option_values":[{"position":1,"name":"Color","value":"Navy OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Navy OUT OF STOCK-","Size":"XS"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43375568879702","key":"Navy OUT OF STOCK- / Small","title":"Navy OUT OF STOCK- / Small","sku":null,"optionValues":["Navy OUT OF STOCK-","Small"],"option_values":[{"position":1,"name":"Color","value":"Navy OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Navy OUT OF STOCK-","Size":"Small"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43375568912470","key":"Navy OUT OF STOCK- / Medium","title":"Navy OUT OF STOCK- / Medium","sku":null,"optionValues":["Navy OUT OF STOCK-","Medium"],"option_values":[{"position":1,"name":"Color","value":"Navy OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Navy OUT OF STOCK-","Size":"Medium"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43375568945238","key":"Navy OUT OF STOCK- / Large","title":"Navy OUT OF STOCK- / Large","sku":null,"optionValues":["Navy OUT OF STOCK-","Large"],"option_values":[{"position":1,"name":"Color","value":"Navy OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Navy OUT OF STOCK-","Size":"Large"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43375568978006","key":"Navy OUT OF STOCK- / XL","title":"Navy OUT OF STOCK- / XL","sku":null,"optionValues":["Navy OUT OF STOCK-","XL"],"option_values":[{"position":1,"name":"Color","value":"Navy OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Navy OUT OF STOCK-","Size":"XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43375569010774","key":"Navy OUT OF STOCK- / 2XL","title":"Navy OUT OF STOCK- / 2XL","sku":null,"optionValues":["Navy OUT OF STOCK-","2XL"],"option_values":[{"position":1,"name":"Color","value":"Navy OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Navy OUT OF STOCK-","Size":"2XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"44425821454422","key":"Hydro OUT OF STOCK- / XS","title":"Hydro OUT OF STOCK- / XS","sku":null,"optionValues":["Hydro OUT OF STOCK-","XS"],"option_values":[{"position":1,"name":"Color","value":"Hydro OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Hydro OUT OF STOCK-","Size":"XS"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tshirts_womensgenesisventedraglan_hydro_0001.jpg"},{"variant_id":"44425821487190","key":"Hydro OUT OF STOCK- / Small","title":"Hydro OUT OF STOCK- / Small","sku":null,"optionValues":["Hydro OUT OF STOCK-","Small"],"option_values":[{"position":1,"name":"Color","value":"Hydro OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Hydro OUT OF STOCK-","Size":"Small"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tshirts_womensgenesisventedraglan_hydro_0001.jpg"},{"variant_id":"44425821519958","key":"Hydro OUT OF STOCK- / Medium","title":"Hydro OUT OF STOCK- / Medium","sku":null,"optionValues":["Hydro OUT OF STOCK-","Medium"],"option_values":[{"position":1,"name":"Color","value":"Hydro OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Hydro OUT OF STOCK-","Size":"Medium"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tshirts_womensgenesisventedraglan_hydro_0001.jpg"},{"variant_id":"44425821552726","key":"Hydro OUT OF STOCK- / Large","title":"Hydro OUT OF STOCK- / Large","sku":null,"optionValues":["Hydro OUT OF STOCK-","Large"],"option_values":[{"position":1,"name":"Color","value":"Hydro OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Hydro OUT OF STOCK-","Size":"Large"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tshirts_womensgenesisventedraglan_hydro_0001.jpg"},{"variant_id":"44425821585494","key":"Hydro OUT OF STOCK- / XL","title":"Hydro OUT OF STOCK- / XL","sku":null,"optionValues":["Hydro OUT OF STOCK-","XL"],"option_values":[{"position":1,"name":"Color","value":"Hydro OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Hydro OUT OF STOCK-","Size":"XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tshirts_womensgenesisventedraglan_hydro_0001.jpg"},{"variant_id":"44425821618262","key":"Hydro OUT OF STOCK- / 2XL","title":"Hydro OUT OF STOCK- / 2XL","sku":null,"optionValues":["Hydro OUT OF STOCK-","2XL"],"option_values":[{"position":1,"name":"Color","value":"Hydro OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Hydro OUT OF STOCK-","Size":"2XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tshirts_womensgenesisventedraglan_hydro_0001.jpg"},{"variant_id":"44764194373718","key":"Dark Brown OUT OF STOCK- / XS","title":"Dark Brown OUT OF STOCK- / XS","sku":null,"optionValues":["Dark Brown OUT OF STOCK-","XS"],"option_values":[{"position":1,"name":"Color","value":"Dark Brown OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Dark Brown OUT OF STOCK-","Size":"XS"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"44764194406486","key":"Dark Brown OUT OF STOCK- / Small","title":"Dark Brown OUT OF STOCK- / Small","sku":null,"optionValues":["Dark Brown OUT OF STOCK-","Small"],"option_values":[{"position":1,"name":"Color","value":"Dark Brown OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Dark Brown OUT OF STOCK-","Size":"Small"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"44764194439254","key":"Dark Brown OUT OF STOCK- / Medium","title":"Dark Brown OUT OF STOCK- / Medium","sku":null,"optionValues":["Dark Brown OUT OF STOCK-","Medium"],"option_values":[{"position":1,"name":"Color","value":"Dark Brown OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Dark Brown OUT OF STOCK-","Size":"Medium"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"44764194472022","key":"Dark Brown OUT OF STOCK- / Large","title":"Dark Brown OUT OF STOCK- / Large","sku":null,"optionValues":["Dark Brown OUT OF STOCK-","Large"],"option_values":[{"position":1,"name":"Color","value":"Dark Brown OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Dark Brown OUT OF STOCK-","Size":"Large"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"44764194504790","key":"Dark Brown OUT OF STOCK- / XL","title":"Dark Brown OUT OF STOCK- / XL","sku":null,"optionValues":["Dark Brown OUT OF STOCK-","XL"],"option_values":[{"position":1,"name":"Color","value":"Dark Brown OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Dark Brown OUT OF STOCK-","Size":"XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"44764194537558","key":"Dark Brown OUT OF STOCK- / 2XL","title":"Dark Brown OUT OF STOCK- / 2XL","sku":null,"optionValues":["Dark Brown OUT OF STOCK-","2XL"],"option_values":[{"position":1,"name":"Color","value":"Dark Brown OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Dark Brown OUT OF STOCK-","Size":"2XL"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -709,6 +724,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -726,16 +745,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — 1st Phorm | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -758,23 +800,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -787,10 +833,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -798,21 +844,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -823,12 +863,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

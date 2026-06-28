@@ -168,7 +168,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Inno Supps</p>
-          <h1 class="pdp-title">Holiday Shred Stack</h1>
+          <h1 class="pdp-title" data-pdp-title>Holiday Shred Stack</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="20999" data-base-compare-cents="21999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$209.99</strong>
             <span class="pdp-compare" data-pdp-compare >$219.99</span>
@@ -219,6 +219,9 @@
               data-cart-price="209.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"
+              data-cart-variant-id="41466527285384"
+              data-cart-selected-options="{&quot;Java Shred Flavor&quot;:&quot;Original Blend&quot;,&quot;Night Shred Type&quot;:&quot;Night Shred&quot;,&quot;Inno Shred Type&quot;:&quot;Inno Shred With Organic Caffeine&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -650,17 +653,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Original Blend / Night Shred / Inno Shred With Organic Caffeine","optionValues":["Original Blend","Night Shred","Inno Shred With Organic Caffeine"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred / Inno Shred Stimulant Free","optionValues":["Original Blend","Night Shred","Inno Shred Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred / Inno Shred Focus","optionValues":["Original Blend","Night Shred","Inno Shred Focus"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred / Inno Shred Focus Stimulant Free","optionValues":["Original Blend","Night Shred","Inno Shred Focus Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred Black / Inno Shred With Organic Caffeine","optionValues":["Original Blend","Night Shred Black","Inno Shred With Organic Caffeine"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred Black / Inno Shred Stimulant Free","optionValues":["Original Blend","Night Shred Black","Inno Shred Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred Black / Inno Shred Focus","optionValues":["Original Blend","Night Shred Black","Inno Shred Focus"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred Black / Inno Shred Focus Stimulant Free","optionValues":["Original Blend","Night Shred Black","Inno Shred Focus Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred Black Melatonin Free / Inno Shred With Organic Caffeine","optionValues":["Original Blend","Night Shred Black Melatonin Free","Inno Shred With Organic Caffeine"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Stimulant Free","optionValues":["Original Blend","Night Shred Black Melatonin Free","Inno Shred Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Focus","optionValues":["Original Blend","Night Shred Black Melatonin Free","Inno Shred Focus"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Focus Stimulant Free","optionValues":["Original Blend","Night Shred Black Melatonin Free","Inno Shred Focus Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred / Inno Shred With Organic Caffeine","optionValues":["Chocolate Caramel","Night Shred","Inno Shred With Organic Caffeine"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred / Inno Shred Stimulant Free","optionValues":["Chocolate Caramel","Night Shred","Inno Shred Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred / Inno Shred Focus","optionValues":["Chocolate Caramel","Night Shred","Inno Shred Focus"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred / Inno Shred Focus Stimulant Free","optionValues":["Chocolate Caramel","Night Shred","Inno Shred Focus Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred Black / Inno Shred With Organic Caffeine","optionValues":["Chocolate Caramel","Night Shred Black","Inno Shred With Organic Caffeine"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred Black / Inno Shred Stimulant Free","optionValues":["Chocolate Caramel","Night Shred Black","Inno Shred Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred Black / Inno Shred Focus","optionValues":["Chocolate Caramel","Night Shred Black","Inno Shred Focus"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred Black / Inno Shred Focus Stimulant Free","optionValues":["Chocolate Caramel","Night Shred Black","Inno Shred Focus Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred With Organic Caffeine","optionValues":["Chocolate Caramel","Night Shred Black Melatonin Free","Inno Shred With Organic Caffeine"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Stimulant Free","optionValues":["Chocolate Caramel","Night Shred Black Melatonin Free","Inno Shred Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Focus","optionValues":["Chocolate Caramel","Night Shred Black Melatonin Free","Inno Shred Focus"],"price_cents":20999,"compare_at_cents":21999,"available":true},{"key":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Focus Stimulant Free","optionValues":["Chocolate Caramel","Night Shred Black Melatonin Free","Inno Shred Focus Stimulant Free"],"price_cents":20999,"compare_at_cents":21999,"available":true}];
+        var variantPricing = [{"variant_id":"41466527285384","key":"Original Blend / Night Shred / Inno Shred With Organic Caffeine","title":"Original Blend / Night Shred / Inno Shred With Organic Caffeine","sku":null,"optionValues":["Original Blend","Night Shred","Inno Shred With Organic Caffeine"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred With Organic Caffeine"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred","Inno Shred Type":"Inno Shred With Organic Caffeine"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShred_cfd916cc-f0cc-4929-ae7d-92a276dbd2b5.webp"},{"variant_id":"41466527318152","key":"Original Blend / Night Shred / Inno Shred Stimulant Free","title":"Original Blend / Night Shred / Inno Shred Stimulant Free","sku":null,"optionValues":["Original Blend","Night Shred","Inno Shred Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred","Inno Shred Type":"Inno Shred Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShred_cfd916cc-f0cc-4929-ae7d-92a276dbd2b5.webp"},{"variant_id":"41466527350920","key":"Original Blend / Night Shred / Inno Shred Focus","title":"Original Blend / Night Shred / Inno Shred Focus","sku":null,"optionValues":["Original Blend","Night Shred","Inno Shred Focus"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred","Inno Shred Type":"Inno Shred Focus"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShred_cfd916cc-f0cc-4929-ae7d-92a276dbd2b5.webp"},{"variant_id":"41466527383688","key":"Original Blend / Night Shred / Inno Shred Focus Stimulant Free","title":"Original Blend / Night Shred / Inno Shred Focus Stimulant Free","sku":null,"optionValues":["Original Blend","Night Shred","Inno Shred Focus Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred","Inno Shred Type":"Inno Shred Focus Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShred_cfd916cc-f0cc-4929-ae7d-92a276dbd2b5.webp"},{"variant_id":"41466527416456","key":"Original Blend / Night Shred Black / Inno Shred With Organic Caffeine","title":"Original Blend / Night Shred Black / Inno Shred With Organic Caffeine","sku":null,"optionValues":["Original Blend","Night Shred Black","Inno Shred With Organic Caffeine"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred With Organic Caffeine"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred Black","Inno Shred Type":"Inno Shred With Organic Caffeine"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527449224","key":"Original Blend / Night Shred Black / Inno Shred Stimulant Free","title":"Original Blend / Night Shred Black / Inno Shred Stimulant Free","sku":null,"optionValues":["Original Blend","Night Shred Black","Inno Shred Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred Black","Inno Shred Type":"Inno Shred Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527481992","key":"Original Blend / Night Shred Black / Inno Shred Focus","title":"Original Blend / Night Shred Black / Inno Shred Focus","sku":null,"optionValues":["Original Blend","Night Shred Black","Inno Shred Focus"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred Black","Inno Shred Type":"Inno Shred Focus"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527514760","key":"Original Blend / Night Shred Black / Inno Shred Focus Stimulant Free","title":"Original Blend / Night Shred Black / Inno Shred Focus Stimulant Free","sku":null,"optionValues":["Original Blend","Night Shred Black","Inno Shred Focus Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred Black","Inno Shred Type":"Inno Shred Focus Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527547528","key":"Original Blend / Night Shred Black Melatonin Free / Inno Shred With Organic Caffeine","title":"Original Blend / Night Shred Black Melatonin Free / Inno Shred With Organic Caffeine","sku":null,"optionValues":["Original Blend","Night Shred Black Melatonin Free","Inno Shred With Organic Caffeine"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black Melatonin Free"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred With Organic Caffeine"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred Black Melatonin Free","Inno Shred Type":"Inno Shred With Organic Caffeine"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527580296","key":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Stimulant Free","title":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Stimulant Free","sku":null,"optionValues":["Original Blend","Night Shred Black Melatonin Free","Inno Shred Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black Melatonin Free"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred Black Melatonin Free","Inno Shred Type":"Inno Shred Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527613064","key":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Focus","title":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Focus","sku":null,"optionValues":["Original Blend","Night Shred Black Melatonin Free","Inno Shred Focus"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black Melatonin Free"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred Black Melatonin Free","Inno Shred Type":"Inno Shred Focus"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527645832","key":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Focus Stimulant Free","title":"Original Blend / Night Shred Black Melatonin Free / Inno Shred Focus Stimulant Free","sku":null,"optionValues":["Original Blend","Night Shred Black Melatonin Free","Inno Shred Focus Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Original Blend"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black Melatonin Free"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Original Blend","Night Shred Type":"Night Shred Black Melatonin Free","Inno Shred Type":"Inno Shred Focus Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527678600","key":"Chocolate Caramel / Night Shred / Inno Shred With Organic Caffeine","title":"Chocolate Caramel / Night Shred / Inno Shred With Organic Caffeine","sku":null,"optionValues":["Chocolate Caramel","Night Shred","Inno Shred With Organic Caffeine"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred With Organic Caffeine"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred","Inno Shred Type":"Inno Shred With Organic Caffeine"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShred_cfd916cc-f0cc-4929-ae7d-92a276dbd2b5.webp"},{"variant_id":"41466527711368","key":"Chocolate Caramel / Night Shred / Inno Shred Stimulant Free","title":"Chocolate Caramel / Night Shred / Inno Shred Stimulant Free","sku":null,"optionValues":["Chocolate Caramel","Night Shred","Inno Shred Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred","Inno Shred Type":"Inno Shred Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShred_cfd916cc-f0cc-4929-ae7d-92a276dbd2b5.webp"},{"variant_id":"41466527744136","key":"Chocolate Caramel / Night Shred / Inno Shred Focus","title":"Chocolate Caramel / Night Shred / Inno Shred Focus","sku":null,"optionValues":["Chocolate Caramel","Night Shred","Inno Shred Focus"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred","Inno Shred Type":"Inno Shred Focus"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShred_cfd916cc-f0cc-4929-ae7d-92a276dbd2b5.webp"},{"variant_id":"41466527776904","key":"Chocolate Caramel / Night Shred / Inno Shred Focus Stimulant Free","title":"Chocolate Caramel / Night Shred / Inno Shred Focus Stimulant Free","sku":null,"optionValues":["Chocolate Caramel","Night Shred","Inno Shred Focus Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred","Inno Shred Type":"Inno Shred Focus Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/NightShred_cfd916cc-f0cc-4929-ae7d-92a276dbd2b5.webp"},{"variant_id":"41466527809672","key":"Chocolate Caramel / Night Shred Black / Inno Shred With Organic Caffeine","title":"Chocolate Caramel / Night Shred Black / Inno Shred With Organic Caffeine","sku":null,"optionValues":["Chocolate Caramel","Night Shred Black","Inno Shred With Organic Caffeine"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred With Organic Caffeine"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred Black","Inno Shred Type":"Inno Shred With Organic Caffeine"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527842440","key":"Chocolate Caramel / Night Shred Black / Inno Shred Stimulant Free","title":"Chocolate Caramel / Night Shred Black / Inno Shred Stimulant Free","sku":null,"optionValues":["Chocolate Caramel","Night Shred Black","Inno Shred Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred Black","Inno Shred Type":"Inno Shred Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527875208","key":"Chocolate Caramel / Night Shred Black / Inno Shred Focus","title":"Chocolate Caramel / Night Shred Black / Inno Shred Focus","sku":null,"optionValues":["Chocolate Caramel","Night Shred Black","Inno Shred Focus"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred Black","Inno Shred Type":"Inno Shred Focus"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527907976","key":"Chocolate Caramel / Night Shred Black / Inno Shred Focus Stimulant Free","title":"Chocolate Caramel / Night Shred Black / Inno Shred Focus Stimulant Free","sku":null,"optionValues":["Chocolate Caramel","Night Shred Black","Inno Shred Focus Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred Black","Inno Shred Type":"Inno Shred Focus Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527940744","key":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred With Organic Caffeine","title":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred With Organic Caffeine","sku":null,"optionValues":["Chocolate Caramel","Night Shred Black Melatonin Free","Inno Shred With Organic Caffeine"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black Melatonin Free"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred With Organic Caffeine"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred Black Melatonin Free","Inno Shred Type":"Inno Shred With Organic Caffeine"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466527973512","key":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Stimulant Free","title":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Stimulant Free","sku":null,"optionValues":["Chocolate Caramel","Night Shred Black Melatonin Free","Inno Shred Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black Melatonin Free"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred Black Melatonin Free","Inno Shred Type":"Inno Shred Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466528006280","key":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Focus","title":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Focus","sku":null,"optionValues":["Chocolate Caramel","Night Shred Black Melatonin Free","Inno Shred Focus"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black Melatonin Free"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred Black Melatonin Free","Inno Shred Type":"Inno Shred Focus"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"},{"variant_id":"41466528039048","key":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Focus Stimulant Free","title":"Chocolate Caramel / Night Shred Black Melatonin Free / Inno Shred Focus Stimulant Free","sku":null,"optionValues":["Chocolate Caramel","Night Shred Black Melatonin Free","Inno Shred Focus Stimulant Free"],"option_values":[{"position":1,"name":"Java Shred Flavor","value":"Chocolate Caramel"},{"position":2,"name":"Night Shred Type","value":"Night Shred Black Melatonin Free"},{"position":3,"name":"Inno Shred Type","value":"Inno Shred Focus Stimulant Free"}],"selected_options":{"Java Shred Flavor":"Chocolate Caramel","Night Shred Type":"Night Shred Black Melatonin Free","Inno Shred Type":"Inno Shred Focus Stimulant Free"},"price_cents":20999,"regular_price_cents":21999,"compare_at_cents":21999,"compare_at_price_cents":21999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/HolidayShred_Save_e2f7244e-3d27-4c15-82e0-8152358c6183.webp"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -690,6 +705,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -707,16 +726,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Inno Supps | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -739,23 +781,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -768,10 +814,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -779,21 +825,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -804,12 +844,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";
