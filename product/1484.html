@@ -165,7 +165,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Optimum Nutrition</p>
-          <h1 class="pdp-title">Gold Standard 100% Whey Naturally Flavored Protein Powder</h1>
+          <h1 class="pdp-title" data-pdp-title>Gold Standard 100% Whey Naturally Flavored Protein Powder</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="3299" data-base-compare-cents="4999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$32.99</strong>
             <span class="pdp-compare" data-pdp-compare >$49.99</span>
@@ -580,56 +580,27 @@
           });
         });
 
-        // Variant-aware main image: switch to the image matching the selected
-        // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
-        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163669_Image_01.png","t":"on1163669image01png"},{"src":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-naturally-flavored-100-whey_Image_01_c84f82f4-f737-4e2e-a61f-7a56495a7cea.png","t":"onnaturallyflavored100wheyimage01c84f82f4f7374e2ea61f7a56495a7ceapng"},{"src":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163801_Image_01.png","t":"on1163801image01png"},{"src":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163820_Image_01.png","t":"on1163820image01png"}];
-        function variantValueGroup(value) {
-          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
-          return {
-            compact: words.join(""),
-            words: words.filter(function (w) { return w.length >= 3; }),
-          };
-        }
-        function pickVariantImage(values) {
-          if (!galleryImages.length) return null;
-          var groups = values
-            .map(variantValueGroup)
-            .filter(function (g) { return g.compact; });
-          if (!groups.length) return null;
-          var best = null;
-          var bestScore = 0;
-          galleryImages.forEach(function (img) {
-            var blob = img.t || "";
-            if (!blob) return;
-            var score = 0;
-            groups.forEach(function (group) {
-              if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
-                return;
-              }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
-            });
-            if (score > bestScore) {
-              bestScore = score;
-              best = img.src;
-            }
-          });
-          return bestScore > 0 ? best : null;
-        }
-        function applyVariantImage(values) {
-          var src = pickVariantImage(values || []);
-          if (!src || !mainImg) return;
+        var baseImgSrc = mainImg ? mainImg.getAttribute("src") : "";
+        var baseImgAlt = mainImg ? mainImg.getAttribute("alt") : "";
+        var titleEl = document.querySelector("[data-pdp-title]");
+        var baseTitle = titleEl ? titleEl.textContent.trim() : "";
+
+        // Exact option -> image mapping keeps flavor and size photos aligned.
+        function setMainImage(src, alt) {
+          if (!mainImg || !src) return;
           mainImg.src = src;
+          mainImg.alt = alt || baseImgAlt;
           thumbs.forEach(function (b) {
             b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+          });
+        }
+
+        function resetMainImage() {
+          if (!mainImg || !baseImgSrc) return;
+          mainImg.src = baseImgSrc;
+          mainImg.alt = baseImgAlt;
+          thumbs.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-src") === baseImgSrc);
           });
         }
 
@@ -643,15 +614,21 @@
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Chocolate / 1 lb","optionValues":["Chocolate","1 lb"],"price_cents":3299,"compare_at_cents":0,"available":true},{"key":"Chocolate / 2 lb","optionValues":["Chocolate","2 lb"],"price_cents":4599,"compare_at_cents":4999,"available":true},{"key":"Vanilla / 1 lb","optionValues":["Vanilla","1 lb"],"price_cents":3299,"compare_at_cents":0,"available":true},{"key":"Vanilla / 2 lb","optionValues":["Vanilla","2 lb"],"price_cents":4599,"compare_at_cents":4999,"available":true}];
+        var variantPricing = [{"key":"Chocolate / 1 lb","optionValues":["Chocolate","1 lb"],"price_cents":3299,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163669_Image_01.png"},{"key":"Chocolate / 2 lb","optionValues":["Chocolate","2 lb"],"price_cents":4599,"compare_at_cents":4999,"available":false,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-naturally-flavored-100-whey_Image_01_c84f82f4-f737-4e2e-a61f-7a56495a7cea.png"},{"key":"Vanilla / 1 lb","optionValues":["Vanilla","1 lb"],"price_cents":3299,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163801_Image_01.png"},{"key":"Vanilla / 2 lb","optionValues":["Vanilla","2 lb"],"price_cents":4599,"compare_at_cents":4999,"available":true,"image":"https://cdn.shopify.com/s/files/1/0794/9991/9627/files/on-1163820_Image_01.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : baseTitle;
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : baseImgSrc;
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -681,6 +658,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -698,16 +679,54 @@
           }
         }
 
+        function variantFlavorLabel(variant) {
+          return variant && variant.optionValues && variant.optionValues.length ? variant.optionValues[0] : "";
+        }
+
+        function variantImageAlt(variant) {
+          return variant && variant.optionValues && variant.optionValues.length
+            ? baseTitle + ", " + variant.optionValues.join(", ")
+            : baseImgAlt;
+        }
+
+        function applyVariantPresentation(variant) {
+          if (!variant) {
+            resetMainImage();
+            if (titleEl) titleEl.textContent = baseTitle;
+            if (addBtn) {
+              addBtn.dataset.cartName = baseCartName;
+              addBtn.dataset.cartImage = baseCartImage;
+            }
+            return;
+          }
+          if (variant.image) {
+            setMainImage(variant.image, variantImageAlt(variant));
+          }
+          var flavor = variantFlavorLabel(variant);
+          if (titleEl) {
+            titleEl.textContent = flavor ? baseTitle + " — " + flavor : baseTitle;
+          }
+          if (addBtn) {
+            addBtn.dataset.cartName = flavor ? baseTitle + " — " + flavor : baseCartName;
+            addBtn.dataset.cartImage = variant.image || baseCartImage;
+          }
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -730,23 +749,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -761,12 +784,14 @@
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
             addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
+              applyVariantPresentation(null);
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
             }
+            applyVariantPresentation(currentVariant);
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
@@ -774,17 +799,9 @@
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -795,12 +812,9 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            applyVariantPresentation(null);
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";
@@ -808,7 +822,6 @@
         }
         selects.forEach(function (s) {
           s.addEventListener("change", function () {
-            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
             refresh();
           });
         });
