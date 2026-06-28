@@ -88,6 +88,36 @@ function parseVariantSelects(html) {
   return selects;
 }
 
+function parsePdpBrand(html) {
+  const match = html.match(/<p class="pdp-brand">([^<]+)<\/p>/i);
+  return match ? decodeEntities(match[1]).trim() : "";
+}
+
+function parsePdpCategory(html) {
+  const match = html.match(/<div><dt>Category<\/dt><dd>([^<]+)<\/dd><\/div>/i);
+  return match ? decodeEntities(match[1]).trim() : "";
+}
+
+function listBrandSupplementProductIds(brands) {
+  const excluded = new Set([
+    "Training apparel",
+    "Training footwear",
+    "Gym accessory",
+    "Training gear",
+    "Recovery device",
+  ]);
+
+  return catalogData.products
+    .map((product) => String(product.id))
+    .filter((productId) => hasProductHtml(productId))
+    .filter((productId) => {
+      const html = readProductHtml(productId);
+      const brand = parsePdpBrand(html);
+      const category = parsePdpCategory(html);
+      return brands.includes(brand) && !excluded.has(category);
+    });
+}
+
 function variantValueGroup(value) {
   const words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
   return {
@@ -398,6 +428,63 @@ test("MuscleTech creatine PDPs keep unavailable flavors blocked in variantPricin
 
     assert.ok(variant, `expected ${variantKey} on PDP ${productId}`);
     assert.equal(variant.available, false, `${variantKey} should stay blocked on PDP ${productId}`);
+  }
+});
+
+test("Animal, Redcon1, Transparent Labs, and Bare Performance PDPs keep variant metadata storefront-safe", () => {
+  const productIds = listBrandSupplementProductIds([
+    "Animal",
+    "Redcon1",
+    "Transparent Labs",
+    "Bare Performance",
+  ]);
+
+  assert.ok(productIds.length > 0, "expected supplement PDPs for audited brands");
+
+  for (const productId of productIds) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const selectors = parseVariantSelects(html);
+    const mainImageMatch = html.match(/<img id="pdp-main-image" src="([^"]+)"/i);
+    const mainImage = mainImageMatch ? decodeEntities(mainImageMatch[1]) : "";
+
+    assert.ok(pageVariants.length > 0, `expected variantPricing on PDP ${productId}`);
+
+    for (const variant of pageVariants) {
+      assert.notEqual(
+        String(variant.title || "").trim(),
+        "",
+        `variant title should be present on PDP ${productId}`
+      );
+      assert.ok(
+        !/^\d+$/.test(String(variant.title || "")),
+        `variant title should not be a raw numeric id on PDP ${productId}`
+      );
+      assert.ok(
+        String(variant.image_url || "").trim(),
+        `variant image_url should be present on PDP ${productId}`
+      );
+    }
+
+    if (
+      pageVariants.length === 1 &&
+      selectors.length === 0 &&
+      Object.keys(pageVariants[0].selected_options || {}).length === 0
+    ) {
+      assert.equal(
+        pageVariants[0].title,
+        normalizeText((html.match(/<h1 class="pdp-title"[^>]*>([^<]+)<\/h1>/i) || [])[1] || ""),
+        `single-variant PDP ${productId} should use the product title as the variant title`
+      );
+    }
+
+    if (pageVariants[0] && mainImage) {
+      assert.equal(
+        pageVariants[0].image_url,
+        mainImage,
+        `default PDP hero image should match the first variant on PDP ${productId}`
+      );
+    }
   }
 });
 
