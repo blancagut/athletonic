@@ -273,6 +273,81 @@ test("PDP 183 resolves the Boogieman Punch gallery image from partial flavor tok
   );
 });
 
+test("PDP 174 keeps the vanilla 4 lb variant mapped to the vanilla image", () => {
+  const html = readProductHtml("174");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const vanillaVariant = pageVariants.find(
+    (variant) => variant.key === "4 lb. / French Vanilla Bean"
+  );
+
+  assert.ok(vanillaVariant, "expected French Vanilla Bean 4 lb. variant on PDP 174");
+  assert.equal(
+    vanillaVariant.image_url,
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/NitroTech-Ripped-4lb-van.jpg"
+  );
+});
+
+test("PDP 196 keeps the Citrus Punch variant mapped to the citrus image", () => {
+  const html = readProductHtml("196");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const citrusVariant = pageVariants.find(
+    (variant) => variant.key === "Citrus Punch / 3 lb."
+  );
+
+  assert.ok(citrusVariant, "expected Citrus Punch / 3 lb. variant on PDP 196");
+  assert.equal(
+    citrusVariant.image_url,
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/celltech-citrus-3lb_aa616c64-0d61-4104-a07a-e8b6cc84ad27.jpg"
+  );
+});
+
+test("PDP 199 keeps its single flavor selector aligned with flavor-only variants", () => {
+  const html = readProductHtml("199");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const variantSelects = parseVariantSelects(html);
+
+  assert.equal(variantSelects.length, 1, "expected a single selector on PDP 199");
+  assert.equal(variantSelects[0].name, "Flavor");
+
+  for (const variant of pageVariants) {
+    assert.equal(variant.optionValues.length, 1, "expected flavor-only optionValues");
+    assert.deepEqual(Object.keys(variant.selected_options || {}), ["Flavor"]);
+  }
+});
+
+test("PDP 200 resolves Nitro Tech Whey Gold flavor-size image mappings", () => {
+  const html = readProductHtml("200");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const galleryImages = parseJsonAssignment(html, "galleryImages");
+  const gallerySources = new Set(galleryImages.map((image) => image.src));
+
+  const cases = [
+    [
+      "French Vanilla Cream / 2 lb.",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-100-whey-gold-french-vanilla-2lb_5eb1c01a-5fe3-44fd-8754-a06f77818fae.png",
+    ],
+    [
+      "Double Rich Chocolate / 2 lb.",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-100-whey-gold-chocolate-2lb.png",
+    ],
+    [
+      "Chocolate Peanut Butter / 2 lb.",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-nitrotech-whey-gold-pb-2lb_296a931b-f6dc-42b3-99ac-ed8aefb0400d.png",
+    ],
+    [
+      "Chocolate Peanut Butter / 5 lb.",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-nitrotech-whey-gold-pb-5lb_7fd4821c-139e-45a4-9619-0310705724a4.png",
+    ],
+  ];
+
+  for (const [key, expectedImage] of cases) {
+    const variant = pageVariants.find((entry) => entry.key === key);
+    assert.ok(variant, `expected ${key} variant on PDP 200`);
+    assert.equal(variant.image_url, expectedImage);
+    assert.ok(gallerySources.has(expectedImage), `${key} should ship its image in the gallery`);
+  }
+});
+
 for (const productId of VARIANT_REGRESSION_PRODUCT_IDS) {
   test(`PDP ${productId} keeps variant titles, options, and images aligned with the catalog`, () => {
     const product = catalogData.products.find((entry) => String(entry.id) === productId);

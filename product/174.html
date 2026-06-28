@@ -177,7 +177,7 @@
             <span class="pdp-compare" data-pdp-compare hidden></span>
             <span class="pdp-discount" data-pdp-discount hidden>Limited offer</span>
           </div>
-          <p class="pdp-availability">In stock · Sold by Athletonic</p>
+          <p class="pdp-availability" data-pdp-availability>In stock · Sold by Athletonic</p>
 
 
           <div class="pdp-variants" data-pdp-variants>
@@ -583,8 +583,8 @@
           });
           return bestScore > 0 ? best : null;
         }
-        function applyVariantImage(values) {
-          var src = pickVariantImage(values || []);
+        function applyVariantImage(values, variant) {
+          var src = variant && variant.image_url ? variant.image_url : pickVariantImage(values || []);
           if (!src || !mainImg) return;
           mainImg.src = src;
           thumbs.forEach(function (b) {
@@ -601,9 +601,10 @@
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
         var titleEl = document.querySelector("[data-pdp-title]");
+        var availabilityEl = document.querySelector("[data-pdp-availability]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"39527030030432","key":"4 lb. / French Vanilla Bean","title":"4 lb. / French Vanilla Bean","sku":null,"optionValues":["4 lb.","French Vanilla Bean"],"option_values":[{"position":1,"name":"Size","value":"4 lb."},{"position":2,"name":"Flavors","value":"French Vanilla Bean"}],"selected_options":{"Size":"4 lb.","Flavors":"French Vanilla Bean"},"price_cents":7999,"regular_price_cents":7999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/NitroTech-Ripped-4lb-choc.jpg"},{"variant_id":"39527029932128","key":"4 lb. / Chocolate Fudge Brownie","title":"4 lb. / Chocolate Fudge Brownie","sku":null,"optionValues":["4 lb.","Chocolate Fudge Brownie"],"option_values":[{"position":1,"name":"Size","value":"4 lb."},{"position":2,"name":"Flavors","value":"Chocolate Fudge Brownie"}],"selected_options":{"Size":"4 lb.","Flavors":"Chocolate Fudge Brownie"},"price_cents":7999,"regular_price_cents":7999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/NitroTech-Ripped-4lb-choc.jpg"},{"variant_id":"39510084190304","key":"2 lb. / French Vanilla Bean","title":"2 lb. / French Vanilla Bean","sku":null,"optionValues":["2 lb.","French Vanilla Bean"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavors","value":"French Vanilla Bean"}],"selected_options":{"Size":"2 lb.","Flavors":"French Vanilla Bean"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-ripped-vanilla-2lb.png"},{"variant_id":"39510084157536","key":"2 lb. / Chocolate Fudge Brownie","title":"2 lb. / Chocolate Fudge Brownie","sku":null,"optionValues":["2 lb.","Chocolate Fudge Brownie"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavors","value":"Chocolate Fudge Brownie"}],"selected_options":{"Size":"2 lb.","Flavors":"Chocolate Fudge Brownie"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-ripped-chocolate-2lb.png"}];
+        var variantPricing = [{"variant_id":"39527030030432","key":"4 lb. / French Vanilla Bean","title":"4 lb. / French Vanilla Bean","sku":null,"optionValues":["4 lb.","French Vanilla Bean"],"option_values":[{"position":1,"name":"Size","value":"4 lb."},{"position":2,"name":"Flavors","value":"French Vanilla Bean"}],"selected_options":{"Size":"4 lb.","Flavors":"French Vanilla Bean"},"price_cents":7999,"regular_price_cents":7999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/NitroTech-Ripped-4lb-van.jpg"},{"variant_id":"39527029932128","key":"4 lb. / Chocolate Fudge Brownie","title":"4 lb. / Chocolate Fudge Brownie","sku":null,"optionValues":["4 lb.","Chocolate Fudge Brownie"],"option_values":[{"position":1,"name":"Size","value":"4 lb."},{"position":2,"name":"Flavors","value":"Chocolate Fudge Brownie"}],"selected_options":{"Size":"4 lb.","Flavors":"Chocolate Fudge Brownie"},"price_cents":7999,"regular_price_cents":7999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/NitroTech-Ripped-4lb-choc.jpg"},{"variant_id":"39510084190304","key":"2 lb. / French Vanilla Bean","title":"2 lb. / French Vanilla Bean","sku":null,"optionValues":["2 lb.","French Vanilla Bean"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavors","value":"French Vanilla Bean"}],"selected_options":{"Size":"2 lb.","Flavors":"French Vanilla Bean"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-ripped-vanilla-2lb.png"},{"variant_id":"39510084157536","key":"2 lb. / Chocolate Fudge Brownie","title":"2 lb. / Chocolate Fudge Brownie","sku":null,"optionValues":["2 lb.","Chocolate Fudge Brownie"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavors","value":"Chocolate Fudge Brownie"}],"selected_options":{"Size":"2 lb.","Flavors":"Chocolate Fudge Brownie"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-ripped-chocolate-2lb.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
@@ -617,6 +618,7 @@
         var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
         var baseTitle = titleEl ? titleEl.textContent : "";
         var baseDocumentTitle = document.title;
+        var baseAvailability = availabilityEl ? availabilityEl.textContent : "";
 
         function normalize(value) {
           return String(value || "")
@@ -671,6 +673,10 @@
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
           }
+        }
+
+        function setAvailability(text) {
+          if (availabilityEl) availabilityEl.textContent = text;
         }
 
         function setCartVariantState(variant, fallbackLabel) {
@@ -766,6 +772,7 @@
               addBtn.textContent = "Unavailable";
               setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
+              setAvailability("Unavailable · Sold by Athletonic");
               if (note) note.textContent = "This combination is not available right now.";
               return;
             }
@@ -774,6 +781,8 @@
               addBtn.textContent = "Unavailable";
               setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
+              applyVariantImage(parts, currentVariant);
+              setAvailability("Out of stock · Sold by Athletonic");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
@@ -785,6 +794,8 @@
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             }
+            applyVariantImage(parts, currentVariant);
+            setAvailability("In stock · Sold by Athletonic");
             addBtn.disabled = false;
             addBtn.textContent = "Add to cart";
             if (note) note.textContent = selectedDeal ? "Offer applied." : "";
@@ -799,6 +810,7 @@
             if (titleEl) titleEl.textContent = baseTitle;
             document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
+            setAvailability(baseAvailability);
             resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
