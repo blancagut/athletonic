@@ -1900,6 +1900,9 @@ function purchaseMetaByProductId(productIds) {
         hasAvailablePurchase: availableVariants.length > 0,
         requiresVariantSelection,
         cartVariant,
+        defaultVariantId: availableVariants[0]?.variant_id || "",
+        hasVariants: group.some((row) => String(row?.variant_id || "").trim() !== ""),
+        variantCount: availableVariants.length,
       });
     }
   }
@@ -1916,6 +1919,9 @@ function applyPurchaseMeta(products = [], purchaseMeta = new Map()) {
           hasAvailablePurchase: true,
           requiresVariantSelection: false,
           cartVariant: "",
+          defaultVariantId: "",
+          hasVariants: false,
+          variantCount: 0,
         },
     }))
     .filter((product) => product.purchaseMeta.hasAvailablePurchase);
@@ -2581,6 +2587,15 @@ for (const record of searchIndexRecords) {
   ) {
     record.requires_variant_selection = true;
   }
+  if (purchaseMeta?.defaultVariantId) {
+    record.default_variant_id = purchaseMeta.defaultVariantId;
+  }
+  if (purchaseMeta?.hasVariants) {
+    record.has_variants = true;
+  }
+  if (purchaseMeta?.variantCount) {
+    record.variant_count = purchaseMeta.variantCount;
+  }
 }
 writeFileSync(
   new URL("search-index.json", commerceCatalogDir),
@@ -2630,8 +2645,13 @@ function indexRecordToProduct(record) {
           hasAvailablePurchase: true,
           requiresVariantSelection: true,
           cartVariant: "",
+          defaultVariantId: record.default_variant_id || "",
+          hasVariants: Boolean(record.has_variants),
+          variantCount: Number(record.variant_count || 0),
         }
       : null,
+    default_variant_id: record.default_variant_id || null,
+    has_variants: Boolean(record.has_variants),
   };
 }
 

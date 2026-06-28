@@ -10,6 +10,13 @@ const catalogData = require("../data/athletonic-catalog.json");
 const PRODUCT_DIR = path.join(__dirname, "..", "product");
 const BANNED_COPY_RE = /\bAmazon US\b|\bverified Amazon\b/i;
 const SAMPLE_SIZE = 3;
+const VARIANT_REGRESSION_PRODUCT_IDS = ["443", "480", "109", "595"];
+const VARIANT_IMAGE_CASES = {
+  "443": ["52926938513726", "52926938546494", "52926938579262"],
+  "480": ["52799977619774", "52799977652542", "52799977685310"],
+  "109": ["44497917902893", "42993190993965", "43119324299309"],
+  "595": ["52061146710334", "52061146743102", "52061146775870"],
+};
 
 function decodeEntities(text) {
   return String(text)
@@ -37,6 +44,83 @@ function readProductHtml(productId) {
 
 function hasProductHtml(productId) {
   return existsSync(path.join(PRODUCT_DIR, `${productId}.html`));
+}
+
+function parseJsonAssignment(html, variableName) {
+  const escapedName = variableName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = html.match(new RegExp(`var ${escapedName} = (\\[[\\s\\S]*?\\]);`));
+  assert.ok(match, `expected ${variableName} payload in PDP html`);
+  return JSON.parse(match[1].replace(/\\u003c/g, "<"));
+}
+
+function parseAddButtonDataset(html) {
+  const match = html.match(/<button\b[^>]*data-pdp-add-button\b([\s\S]*?)>/i);
+  assert.ok(match, "expected PDP add-to-cart button");
+  const attrs = {};
+  const attrRe = /\b(data-[a-z0-9-]+)="([^"]*)"/gi;
+  let attrMatch;
+  while ((attrMatch = attrRe.exec(match[1]))) {
+    attrs[attrMatch[1]] = decodeEntities(attrMatch[2]);
+  }
+  return attrs;
+}
+
+function parseVariantSelects(html) {
+  const selects = [];
+  const selectRe =
+    /<select\b[^>]*data-pdp-variant\b[^>]*data-variant-name="([^"]+)"[^>]*>([\s\S]*?)<\/select>/gi;
+  let selectMatch;
+  while ((selectMatch = selectRe.exec(html))) {
+    const values = [];
+    const optionRe = /<option\b[^>]*value="([^"]*)"[^>]*>([\s\S]*?)<\/option>/gi;
+    let optionMatch;
+    while ((optionMatch = optionRe.exec(selectMatch[2]))) {
+      const value = decodeEntities(optionMatch[1]).trim();
+      if (!value) continue;
+      values.push(value);
+    }
+    selects.push({
+      name: decodeEntities(selectMatch[1]).trim(),
+      values,
+    });
+  }
+  return selects;
+}
+
+function variantValueGroup(value) {
+  const words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+  return {
+    compact: words.join(""),
+    words: words.filter((word) => word.length >= 3),
+  };
+}
+
+function pickVariantImage(galleryImages, values) {
+  if (!galleryImages.length) return null;
+  const groups = values.map(variantValueGroup).filter((group) => group.compact);
+  if (!groups.length) return null;
+
+  let best = null;
+  let bestScore = 0;
+  for (const image of galleryImages) {
+    const blob = image.t || "";
+    if (!blob) continue;
+    let score = 0;
+    for (const group of groups) {
+      if (group.compact && blob.includes(group.compact)) {
+        score += 2;
+        continue;
+      }
+      if (group.words.some((word) => blob.includes(word))) {
+        score += 1;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = image.src;
+    }
+  }
+  return bestScore > 0 ? best : null;
 }
 
 function pickRepresentativeProducts(products) {
@@ -125,6 +209,131 @@ for (const product of sampledProducts) {
       html,
       BANNED_COPY_RE,
       `product ${product.id} should not contain Amazon-facing copy`
+    );
+  });
+}
+
+for (const productId of VARIANT_REGRESSION_PRODUCT_IDS) {
+  test(`PDP ${productId} keeps variant titles, options, and images aligned with the catalog`, () => {
+    const product = catalogData.products.find((entry) => String(entry.id) === productId);
+    assert.ok(product, `expected catalog product ${productId}`);
+    assert.equal(
+      product.requires_variant_selection,
+      true,
+      `product ${productId} should require variant selection for this regression audit`
+    );
+
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const galleryImages = parseJsonAssignment(html, "galleryImages");
+    const variantSelects = parseVariantSelects(html);
+    const addButtonDataset = parseAddButtonDataset(html);
+    const catalogVariants = Array.isArray(product.variants) ? product.variants : [];
+    const sampledVariantIds = new Set((VARIANT_IMAGE_CASES[productId] || []).map(String));
+
+    assert.ok(catalogVariants.length > 0, `product ${productId} should have catalog variants`);
+    assert.equal(
+      pageVariants.length,
+      catalogVariants.length,
+      `product ${productId} should embed every catalog variant`
+    );
+
+    const catalogVariantsById = new Map(
+      catalogVariants.map((variant) => [String(variant.variant_id), variant])
+    );
+    const gallerySources = new Set(galleryImages.map((image) => image.src));
+
+    for (const pageVariant of pageVariants) {
+      const variantId = String(pageVariant.variant_id);
+      const catalogVariant = catalogVariantsById.get(variantId);
+      assert.ok(catalogVariant, `product ${productId} should include catalog variant ${variantId}`);
+
+      assert.equal(
+        pageVariant.title,
+        catalogVariant.title,
+        `product ${productId} variant ${variantId} title should match catalog`
+      );
+      assert.deepEqual(
+        pageVariant.selected_options,
+        catalogVariant.selected_options,
+        `product ${productId} variant ${variantId} selected options should match catalog`
+      );
+      assert.equal(
+        Number(pageVariant.price_cents),
+        Number(catalogVariant.price_cents),
+        `product ${productId} variant ${variantId} price should match catalog`
+      );
+      if (sampledVariantIds.has(variantId)) {
+        assert.equal(
+          pageVariant.image_url ?? null,
+          catalogVariant.image_url ?? null,
+          `product ${productId} variant ${variantId} image should match catalog`
+        );
+        assert.ok(
+          gallerySources.has(catalogVariant.image_url),
+          `product ${productId} variant ${variantId} image should be present in the PDP gallery`
+        );
+      }
+    }
+
+    for (const select of variantSelects) {
+      const expectedValues = new Set(
+        catalogVariants
+          .map((variant) => variant.selected_options?.[select.name])
+          .filter(Boolean)
+      );
+      assert.deepEqual(
+        new Set(select.values),
+        expectedValues,
+        `product ${productId} select ${select.name} should expose the catalog option values`
+      );
+    }
+
+    const defaultVariantId = String(product.default_variant_id || "");
+    const defaultVariant = catalogVariantsById.get(defaultVariantId);
+    assert.ok(defaultVariant, `product ${productId} should have a catalog default variant`);
+    assert.equal(
+      addButtonDataset["data-cart-variant-id"],
+      defaultVariantId,
+      `product ${productId} add-to-cart button should point at the catalog default variant`
+    );
+    assert.deepEqual(
+      JSON.parse(addButtonDataset["data-cart-selected-options"] || "{}"),
+      defaultVariant.selected_options,
+      `product ${productId} add-to-cart default selected options should match catalog`
+    );
+    for (const variantId of sampledVariantIds) {
+      const catalogVariant = catalogVariantsById.get(String(variantId));
+      assert.ok(catalogVariant, `product ${productId} should include sampled variant ${variantId}`);
+      assert.ok(
+        catalogVariant.image_url,
+        `product ${productId} sampled variant ${variantId} should have an image`
+      );
+      const selectedValues = variantSelects
+        .map((select) => catalogVariant.selected_options?.[select.name])
+        .filter(Boolean);
+      assert.ok(
+        selectedValues.length > 0,
+        `product ${productId} sampled variant ${variantId} should map to visible selects`
+      );
+      assert.equal(
+        pickVariantImage(galleryImages, selectedValues),
+        catalogVariant.image_url,
+        `product ${productId} image picker should resolve variant ${variantId} correctly`
+      );
+      assert.equal(
+        `${product.name} - ${catalogVariant.title}`,
+        `${product.name} - ${pageVariants.find((variant) => String(variant.variant_id) === String(variantId)).title}`,
+        `product ${productId} sampled variant ${variantId} should preserve its composed title`
+      );
+    }
+
+    const h1Match = html.match(/<h1\b[^>]*data-pdp-title\b[^>]*>([\s\S]*?)<\/h1>/i);
+    assert.ok(h1Match, `product ${productId} should render a PDP title element`);
+    assert.equal(
+      normalizeText(h1Match[1]),
+      product.name,
+      `product ${productId} should keep the base title anchored to the catalog product name`
     );
   });
 }

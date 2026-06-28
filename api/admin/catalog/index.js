@@ -6,27 +6,41 @@ const catalog = require("../../../data/athletonic-catalog.json");
 
 const PRODUCTS = Array.isArray(catalog.products) ? catalog.products : [];
 
+function getVariantCount(product) {
+  if (Number.isInteger(product?.variant_count) && product.variant_count >= 0) {
+    return product.variant_count;
+  }
+  return Array.isArray(product?.variants) ? product.variants.length : 0;
+}
+
 function applyOverride(product, override) {
+  const variantCount = getVariantCount(product);
   if (!override) {
     return {
       ...product,
+      variant_count: variantCount,
       _override: false,
       _hidden: false,
+      _source_name: product.name,
       _source_price_cents: product.price_cents,
       _source_available: product.available,
       _source_image: product.image,
       _source_url: product.url,
+      _source_hidden: false,
     };
   }
   return {
     ...product,
+    variant_count: variantCount,
     ...(override.patch || {}),
     _override: true,
     _hidden: Boolean(override.hidden),
+    _source_name: product.name,
     _source_price_cents: product.price_cents,
     _source_available: product.available,
     _source_image: product.image,
     _source_url: product.url,
+    _source_hidden: false,
     _updated_at: override.updated_at,
   };
 }

@@ -62,8 +62,8 @@ function buildPatch(body) {
 }
 
 module.exports = async function handler(req, res) {
-  if (req.method !== "PATCH") {
-    methodNotAllowed(res, ["PATCH"]);
+  if (!["PATCH", "DELETE"].includes(req.method)) {
+    methodNotAllowed(res, ["PATCH", "DELETE"]);
     return;
   }
 
@@ -80,6 +80,20 @@ module.exports = async function handler(req, res) {
       throw error;
     }
 
+    const supabase = getSupabaseAdmin();
+
+    if (req.method === "DELETE") {
+      const { error } = await supabase
+        .from("product_overrides")
+        .delete()
+        .eq("product_id", String(productId));
+      if (error) throw error;
+
+      await logAudit(ctx, "catalog.override_reset", "product", productId, {});
+      json(res, 200, { ok: true, product_id: String(productId), override: null });
+      return;
+    }
+
     const body = await readJson(req);
     const patch = buildPatch(body);
     const hidden = body.hidden !== undefined ? Boolean(body.hidden) : undefined;
@@ -87,8 +101,6 @@ module.exports = async function handler(req, res) {
     if (Object.keys(patch).length === 0 && hidden === undefined) {
       throw validationError("No supported fields to update.", "nothing_to_update");
     }
-
-    const supabase = getSupabaseAdmin();
 
     const row = {
       product_id: String(productId),

@@ -157,11 +157,87 @@
       .join(" / ");
   }
 
+  function normalizeProductId(value) {
+    const raw = String(value || "").trim();
+    return raw ? String(raw.split("::")[0] || "").trim() : "";
+  }
+
+  function variantRecords(product) {
+    return Array.isArray(product && product.variants) ? product.variants : [];
+  }
+
+  function normalizeVariantSelectedOptions(variant) {
+    return normalizeSelectedOptions(
+      variant && (variant.selected_options || variant.selectedOptions)
+    );
+  }
+
+  function findVariantRecord(product, variantId) {
+    const cleanVariantId = String(variantId || "").trim();
+    if (!cleanVariantId) return null;
+    return (
+      variantRecords(product).find((variant) => {
+        return String(variant && variant.variant_id || "").trim() === cleanVariantId;
+      }) || null
+    );
+  }
+
+  function defaultVariantRecord(product) {
+    return (
+      findVariantRecord(product, product && product.default_variant_id) ||
+      variantRecords(product)[0] ||
+      null
+    );
+  }
+
+  function variantImageUrl(variant) {
+    return String(
+      (variant && (variant.image_url || variant.image || variant.featured_image)) || ""
+    ).trim();
+  }
+
+  function variantPriceValue(variant) {
+    const cents = Number(variant && (variant.price_cents || variant.priceCents) || 0);
+    if (Number.isFinite(cents) && cents > 0) return cents / 100;
+    const price = Number(variant && variant.price || 0);
+    return Number.isFinite(price) && price > 0 ? price : 0;
+  }
+
+  function variantCompareAtValue(variant, price) {
+    const cents = Number(
+      variant && (variant.compare_at_price_cents || variant.compareAtPriceCents) || 0
+    );
+    if (Number.isFinite(cents) && cents > 0) {
+      const compare = cents / 100;
+      return compare > price ? compare : null;
+    }
+    const compare = Number(
+      variant && (variant.compare_at_price || variant.compareAtPrice) || 0
+    );
+    return Number.isFinite(compare) && compare > price ? compare : null;
+  }
+
+  function directCartVariantData(product) {
+    const variant = defaultVariantRecord(product);
+    if (!variant) return null;
+
+    const selectedOptions = normalizeVariantSelectedOptions(variant);
+    return {
+      variantId: String(variant.variant_id || "").trim(),
+      selectedOptions,
+      variant: selectedOptionsLabel(selectedOptions),
+      image: variantImageUrl(variant),
+      price: variantPriceValue(variant),
+      compareAtPrice: variantCompareAtValue(variant, variantPriceValue(variant)),
+      currency: String(variant.currency || product && product.currency || "").trim(),
+    };
+  }
+
   function normalizeCartItem(item) {
     if (!item || typeof item !== "object") return null;
 
     const rawId = String(item.id || item.productId || "").trim();
-    const productId = String(item.productId || rawId.split("::")[0] || "").trim();
+    const productId = normalizeProductId(item.productId || rawId);
     if (!productId) return null;
 
     const storedVariant =
@@ -561,15 +637,17 @@
    */
   function addItem(payload) {
     if (!payload || !payload.id) return;
+    const productId = normalizeProductId(payload.productId || payload.id);
+    if (!productId) return;
     const quantity = normalizeAddQuantity(payload.quantity);
     const selectedOptions = normalizeSelectedOptions(payload.selectedOptions);
     const variant = selectedOptionsLabel(selectedOptions) || String(payload.variant || "").trim();
     const variantId = String(payload.variantId || payload.variant_id || "").trim();
     const cartId = variantId
-      ? payload.id + "::" + variantId
+      ? productId + "::" + variantId
       : variant
-        ? payload.id + "::" + variant
-        : String(payload.id);
+        ? productId + "::" + variant
+        : productId;
     const existing = cart.find((cartItem) => cartItem.id === cartId);
     if (existing) {
       existing.quantity += quantity;
@@ -578,7 +656,7 @@
       const price = Number(payload.price || 0);
       cart.push({
         id: cartId,
-        productId: String(payload.id),
+        productId,
         variantId,
         sku: String(payload.sku || ""),
         brand: payload.brand || "",
@@ -1022,9 +1100,24 @@
   function loadSearchIndex() {
     if (_searchIndex) return Promise.resolve(_searchIndex);
     if (_searchIndexReq) return _searchIndexReq;
-    _searchIndexReq = fetch(searchIndexUrl())
-      .then(function (r) { return r.json(); })
-      .then(function (d) { _searchIndex = d.products || []; return _searchIndex; })
+    _searchIndexReq = Promise.all([
+      fetch(searchIndexUrl()).then(function (r) { return r.json(); }),
+      loadCatalog(),
+    ])
+      .then(function (results) {
+        var indexData = results[0] || {};
+        var catalogProducts = Array.isArray(results[1]) ? results[1] : [];
+        var catalogById = new Map(
+          catalogProducts.map(function (product) {
+            return [normalizeCatalogProductId(product && product.id), product];
+          }).filter(function (entry) { return entry[0]; })
+        );
+        _searchIndex = (indexData.products || []).map(function (product) {
+          var richProduct = catalogById.get(normalizeCatalogProductId(product && product.id));
+          return richProduct ? Object.assign({}, richProduct, product) : product;
+        });
+        return _searchIndex;
+      })
       .catch(function () { _searchIndex = []; return _searchIndex; });
     return _searchIndexReq;
   }
@@ -1045,6 +1138,89 @@
     accessories: "Gym accessory",
     "training-gear": "Training gear",
   };
+  function normalizeCatalogProductId(value) {
+    var raw = String(value || "").trim();
+    return raw ? String(raw.split("::")[0] || "").trim() : "";
+  }
+  function normalizeCatalogSelectedOptions(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    var out = {};
+    Object.keys(value).sort().forEach(function (key) {
+      var cleanKey = String(key || "").trim();
+      var cleanValue = String(value[key] || "").trim();
+      if (cleanKey && cleanValue) out[cleanKey] = cleanValue;
+    });
+    return out;
+  }
+  function selectedCatalogOptionsLabel(options) {
+    return Object.keys(options || {})
+      .map(function (key) { return key + ": " + options[key]; })
+      .join(" / ");
+  }
+  function catalogVariantRecords(product) {
+    return Array.isArray(product && product.variants) ? product.variants : [];
+  }
+  function catalogVariantSelectedOptions(variant) {
+    return normalizeCatalogSelectedOptions(
+      variant && (variant.selected_options || variant.selectedOptions)
+    );
+  }
+  function findCatalogVariant(product, variantId) {
+    var cleanVariantId = String(variantId || "").trim();
+    if (!cleanVariantId) return null;
+    return (
+      catalogVariantRecords(product).find(function (variant) {
+        return String((variant && variant.variant_id) || "").trim() === cleanVariantId;
+      }) || null
+    );
+  }
+  function defaultCatalogVariant(product) {
+    return (
+      findCatalogVariant(product, product && product.default_variant_id) ||
+      catalogVariantRecords(product)[0] ||
+      null
+    );
+  }
+  function catalogVariantImageUrl(variant) {
+    return String(
+      (variant && (variant.image_url || variant.image || variant.featured_image)) || ""
+    ).trim();
+  }
+  function catalogVariantPriceValue(variant) {
+    var cents = Number((variant && (variant.price_cents || variant.priceCents)) || 0);
+    if (Number.isFinite(cents) && cents > 0) return cents / 100;
+    var price = Number((variant && variant.price) || 0);
+    return Number.isFinite(price) && price > 0 ? price : 0;
+  }
+  function catalogVariantCompareAtValue(variant, price) {
+    var cents = Number(
+      (variant && (variant.compare_at_price_cents || variant.compareAtPriceCents)) || 0
+    );
+    if (Number.isFinite(cents) && cents > 0) {
+      var compare = cents / 100;
+      return compare > price ? compare : null;
+    }
+    var compare = Number(
+      (variant && (variant.compare_at_price || variant.compareAtPrice)) || 0
+    );
+    return Number.isFinite(compare) && compare > price ? compare : null;
+  }
+  function directCatalogVariantData(product) {
+    var variant = defaultCatalogVariant(product);
+    var price = catalogVariantPriceValue(variant);
+    if (!variant) return null;
+
+    var selectedOptions = catalogVariantSelectedOptions(variant);
+    return {
+      variantId: String(variant.variant_id || "").trim(),
+      selectedOptions: selectedOptions,
+      variant: selectedCatalogOptionsLabel(selectedOptions),
+      image: catalogVariantImageUrl(variant),
+      price: price,
+      compareAtPrice: catalogVariantCompareAtValue(variant, price),
+      currency: String(variant.currency || product && product.currency || "").trim(),
+    };
+  }
   function sectionLabel(p) {
     return p.section_title || SECTION_LABELS[p.section_id] || "";
   }
@@ -1200,24 +1376,28 @@
   function catalogCardHtml(p) {
     var pdpHref = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
     var href = p.has_pdp ? pdpHref : (p.url || pdpHref);
-    var price = (Number(p.price_cents) || 0) / 100;
+    var directVariant = directCatalogVariantData(p);
+    var price = directVariant && directVariant.price > 0
+      ? directVariant.price
+      : (Number(p.price_cents) || 0) / 100;
     var priceStr = price.toFixed(2);
     var imageWidth = Number(p.image_width || p.imageWidth || 640) || 640;
     var imageHeight =
       Number(p.image_height || p.imageHeight || imageWidth) || imageWidth;
-    var compare = p.compare_at_price_cents
-      ? (Number(p.compare_at_price_cents) || 0) / 100
-      : null;
-    var currency = p.currency || "USD";
+    var compare = directVariant && directVariant.compareAtPrice
+      ? directVariant.compareAtPrice
+      : (p.compare_at_price_cents
+        ? (Number(p.compare_at_price_cents) || 0) / 100
+        : null);
+    var currency = (directVariant && directVariant.currency) || p.currency || "USD";
     var label = sectionLabel(p);
     var variantOffer = p.variant_offer || null;
-    if (variantOffer) {
-      price = (Number(variantOffer.sale_price_cents) || 0) / 100;
-      priceStr = price.toFixed(2);
-      compare = variantOffer.original_price_cents
-        ? (Number(variantOffer.original_price_cents) || 0) / 100
-        : compare;
-    }
+    var cardImage = (directVariant && directVariant.image) || p.image || "";
+    var directVariantId = directVariant && directVariant.variantId
+      ? directVariant.variantId
+      : String(p.default_variant_id || "");
+    var directSelectedOptions = directVariant ? directVariant.selectedOptions : {};
+    var directVariantLabel = directVariant ? directVariant.variant : "";
     var dealNote = "";
     if (variantOffer) {
       dealNote = '<p class="product-deal-note">' +
@@ -1238,20 +1418,22 @@
         : '<button class="add-cart-button" type="button" data-add-to-cart' +
             ' data-cart-id="' + esc(p.id) + '"' +
             ' data-cart-product-id="' + esc(p.id) + '"' +
-            ' data-cart-variant-id="' + esc(p.default_variant_id || "") + '"' +
+            ' data-cart-variant-id="' + esc(directVariantId) + '"' +
             ' data-cart-brand="' + esc(p.brand || "") + '"' +
             ' data-cart-name="' + esc(p.name || "") + '"' +
             ' data-cart-price="' + esc(priceStr) + '"' +
             ' data-cart-price-cents="' + esc(String(Math.round(price * 100))) + '"' +
             ' data-cart-currency="' + esc(currency) + '"' +
-            ' data-cart-image="' + esc(p.image || "") + '"' +
+            ' data-cart-image="' + esc(cardImage) + '"' +
+            ' data-cart-selected-options="' + esc(JSON.stringify(directSelectedOptions)) + '"' +
+            ' data-cart-variant="' + esc(directVariantLabel) + '"' +
             ' aria-label="Add ' + esc(p.name || "product") + ' to cart"' +
           '>Add to cart</button>';
     return (
       '<article class="product-card" data-product-id="' + esc(p.id) +
         '" data-category="' + esc(p.section_id || "") + '">' +
         '<a class="product-image" href="' + esc(href) + '">' +
-          '<img src="' + esc(p.image || "") + '" alt="' + esc(p.name || "") +
+          '<img src="' + esc(cardImage) + '" alt="' + esc(p.name || "") +
             '" width="' + esc(imageWidth) + '" height="' + esc(imageHeight) +
             '" loading="lazy" decoding="async" />' +
         '</a>' +
