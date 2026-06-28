@@ -1,4 +1,4 @@
-const { getShippingCents, validateCart } = require("./catalog");
+const { getShippingCents, validateCartWithOverrides } = require("./catalog");
 const {
   applyPrivatePricing,
   resolvePrivatePricingGrant,
@@ -13,8 +13,9 @@ async function buildCheckoutPricing(options) {
     authUserId: options.authUserId || null,
   });
 
-  const { items, subtotalCents, currency } = validateCart(options.cart, {
+  const { items, subtotalCents, currency } = await validateCartWithOverrides(options.cart, {
     priceBasis: privateGrant ? "regular" : "current",
+    supabase,
   });
   const privatePricing = applyPrivatePricing(items, privateGrant);
   const shippingCents = getShippingCents(subtotalCents);

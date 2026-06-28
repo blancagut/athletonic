@@ -192,7 +192,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Ten Thousand</p>
-          <h1 class="pdp-title">Foundation Shirt</h1>
+          <h1 class="pdp-title" data-pdp-title>Foundation Shirt</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="6800" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$68.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -240,6 +240,9 @@
               data-cart-price="68"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Black_Front_0159_v01-_1.jpg"
+              data-cart-variant-id="42030249246807"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Medium Grey&quot;,&quot;Size&quot;:&quot;XS&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -624,17 +627,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Medium Grey / XS","optionValues":["Medium Grey","XS"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Medium Grey / S","optionValues":["Medium Grey","S"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Medium Grey / M","optionValues":["Medium Grey","M"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Medium Grey / L","optionValues":["Medium Grey","L"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Medium Grey / XL","optionValues":["Medium Grey","XL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Medium Grey / XXL","optionValues":["Medium Grey","XXL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Black / XS","optionValues":["Black","XS"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Black / S","optionValues":["Black","S"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Black / M","optionValues":["Black","M"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Black / L","optionValues":["Black","L"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Black / XL","optionValues":["Black","XL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Black / XXL","optionValues":["Black","XXL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Light Grey / XS","optionValues":["Light Grey","XS"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Light Grey / S","optionValues":["Light Grey","S"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Light Grey / M","optionValues":["Light Grey","M"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Light Grey / L","optionValues":["Light Grey","L"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Light Grey / XL","optionValues":["Light Grey","XL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Light Grey / XXL","optionValues":["Light Grey","XXL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Clay / XS","optionValues":["Clay","XS"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Clay / S","optionValues":["Clay","S"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Clay / M","optionValues":["Clay","M"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Clay / L","optionValues":["Clay","L"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Clay / XL","optionValues":["Clay","XL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Clay / XXL","optionValues":["Clay","XXL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Apex Blue / XS","optionValues":["Apex Blue","XS"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Apex Blue / S","optionValues":["Apex Blue","S"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Apex Blue / M","optionValues":["Apex Blue","M"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Apex Blue / L","optionValues":["Apex Blue","L"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Apex Blue / XL","optionValues":["Apex Blue","XL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Apex Blue / XXL","optionValues":["Apex Blue","XXL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Bluefin / XS","optionValues":["Bluefin","XS"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Bluefin / S","optionValues":["Bluefin","S"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Bluefin / M","optionValues":["Bluefin","M"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Bluefin / L","optionValues":["Bluefin","L"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Bluefin / XL","optionValues":["Bluefin","XL"],"price_cents":6800,"compare_at_cents":0,"available":true},{"key":"Bluefin / XXL","optionValues":["Bluefin","XXL"],"price_cents":6800,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"42030249246807","key":"Medium Grey / XS","title":"Medium Grey / XS","sku":null,"optionValues":["Medium Grey","XS"],"option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Medium Grey","Size":"XS"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249279575","key":"Medium Grey / S","title":"Medium Grey / S","sku":null,"optionValues":["Medium Grey","S"],"option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Medium Grey","Size":"S"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249312343","key":"Medium Grey / M","title":"Medium Grey / M","sku":null,"optionValues":["Medium Grey","M"],"option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Medium Grey","Size":"M"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249345111","key":"Medium Grey / L","title":"Medium Grey / L","sku":null,"optionValues":["Medium Grey","L"],"option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Medium Grey","Size":"L"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249377879","key":"Medium Grey / XL","title":"Medium Grey / XL","sku":null,"optionValues":["Medium Grey","XL"],"option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Medium Grey","Size":"XL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_XLogo_0322_v01-_1.jpg"},{"variant_id":"42030249410647","key":"Medium Grey / XXL","title":"Medium Grey / XXL","sku":null,"optionValues":["Medium Grey","XXL"],"option_values":[{"position":1,"name":"Color","value":"Medium Grey"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Medium Grey","Size":"XXL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249050199","key":"Black / XS","title":"Black / XS","sku":null,"optionValues":["Black","XS"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Black_Front_0159_v01-_1.jpg"},{"variant_id":"42030249082967","key":"Black / S","title":"Black / S","sku":null,"optionValues":["Black","S"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Black","Size":"S"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Black_Front_0159_v01-_1.jpg"},{"variant_id":"42030249115735","key":"Black / M","title":"Black / M","sku":null,"optionValues":["Black","M"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Black","Size":"M"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Black_Front_0159_v01-_1.jpg"},{"variant_id":"42030249148503","key":"Black / L","title":"Black / L","sku":null,"optionValues":["Black","L"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Black","Size":"L"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Black_Front_0159_v01-_1.jpg"},{"variant_id":"42030249181271","key":"Black / XL","title":"Black / XL","sku":null,"optionValues":["Black","XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Black_XLogo_0322_v01-_1.jpg"},{"variant_id":"42030249214039","key":"Black / XXL","title":"Black / XXL","sku":null,"optionValues":["Black","XXL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Black","Size":"XXL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Black_Front_0159_v01-_1.jpg"},{"variant_id":"42030249443415","key":"Light Grey / XS","title":"Light Grey / XS","sku":null,"optionValues":["Light Grey","XS"],"option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Light Grey","Size":"XS"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_LightGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249476183","key":"Light Grey / S","title":"Light Grey / S","sku":null,"optionValues":["Light Grey","S"],"option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Light Grey","Size":"S"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_LightGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249508951","key":"Light Grey / M","title":"Light Grey / M","sku":null,"optionValues":["Light Grey","M"],"option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Light Grey","Size":"M"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249541719","key":"Light Grey / L","title":"Light Grey / L","sku":null,"optionValues":["Light Grey","L"],"option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Light Grey","Size":"L"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_LightGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249574487","key":"Light Grey / XL","title":"Light Grey / XL","sku":null,"optionValues":["Light Grey","XL"],"option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Light Grey","Size":"XL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_LightGrey_XLogo_0322_v01-_1.jpg"},{"variant_id":"42030249607255","key":"Light Grey / XXL","title":"Light Grey / XXL","sku":null,"optionValues":["Light Grey","XXL"],"option_values":[{"position":1,"name":"Color","value":"Light Grey"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Light Grey","Size":"XXL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_LightGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249640023","key":"Clay / XS","title":"Clay / XS","sku":null,"optionValues":["Clay","XS"],"option_values":[{"position":1,"name":"Color","value":"Clay"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Clay","Size":"XS"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Clay_Front_0159_v01-_1.jpg"},{"variant_id":"42030249672791","key":"Clay / S","title":"Clay / S","sku":null,"optionValues":["Clay","S"],"option_values":[{"position":1,"name":"Color","value":"Clay"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Clay","Size":"S"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Clay_Front_0159_v01-_1.jpg"},{"variant_id":"42030249705559","key":"Clay / M","title":"Clay / M","sku":null,"optionValues":["Clay","M"],"option_values":[{"position":1,"name":"Color","value":"Clay"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Clay","Size":"M"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249738327","key":"Clay / L","title":"Clay / L","sku":null,"optionValues":["Clay","L"],"option_values":[{"position":1,"name":"Color","value":"Clay"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Clay","Size":"L"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Clay_Front_0159_v01-_1.jpg"},{"variant_id":"42030249771095","key":"Clay / XL","title":"Clay / XL","sku":null,"optionValues":["Clay","XL"],"option_values":[{"position":1,"name":"Color","value":"Clay"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Clay","Size":"XL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Clay_XLogo_0322_v01-_1.jpg"},{"variant_id":"42030249803863","key":"Clay / XXL","title":"Clay / XXL","sku":null,"optionValues":["Clay","XXL"],"option_values":[{"position":1,"name":"Color","value":"Clay"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Clay","Size":"XXL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Clay_Front_0159_v01-_1.jpg"},{"variant_id":"42030249836631","key":"Apex Blue / XS","title":"Apex Blue / XS","sku":null,"optionValues":["Apex Blue","XS"],"option_values":[{"position":1,"name":"Color","value":"Apex Blue"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Apex Blue","Size":"XS"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Apex-Blue_Front_0159_v01-_1_66c31894-ecba-410e-911d-683bf23f9695.jpg"},{"variant_id":"42030249869399","key":"Apex Blue / S","title":"Apex Blue / S","sku":null,"optionValues":["Apex Blue","S"],"option_values":[{"position":1,"name":"Color","value":"Apex Blue"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Apex Blue","Size":"S"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Apex-Blue_Front_0159_v01-_1_66c31894-ecba-410e-911d-683bf23f9695.jpg"},{"variant_id":"42030249902167","key":"Apex Blue / M","title":"Apex Blue / M","sku":null,"optionValues":["Apex Blue","M"],"option_values":[{"position":1,"name":"Color","value":"Apex Blue"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Apex Blue","Size":"M"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030249934935","key":"Apex Blue / L","title":"Apex Blue / L","sku":null,"optionValues":["Apex Blue","L"],"option_values":[{"position":1,"name":"Color","value":"Apex Blue"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Apex Blue","Size":"L"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Apex-Blue_Front_0159_v01-_1_66c31894-ecba-410e-911d-683bf23f9695.jpg"},{"variant_id":"42030249967703","key":"Apex Blue / XL","title":"Apex Blue / XL","sku":null,"optionValues":["Apex Blue","XL"],"option_values":[{"position":1,"name":"Color","value":"Apex Blue"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Apex Blue","Size":"XL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Apex-Blue_XLogo_0322_v01-_1_7d7925d9-1c11-4553-8f7c-e0b0eaa74859.jpg"},{"variant_id":"42030250000471","key":"Apex Blue / XXL","title":"Apex Blue / XXL","sku":null,"optionValues":["Apex Blue","XXL"],"option_values":[{"position":1,"name":"Color","value":"Apex Blue"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Apex Blue","Size":"XXL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_Apex-Blue_Front_0159_v01-_1_66c31894-ecba-410e-911d-683bf23f9695.jpg"},{"variant_id":"42030250033239","key":"Bluefin / XS","title":"Bluefin / XS","sku":null,"optionValues":["Bluefin","XS"],"option_values":[{"position":1,"name":"Color","value":"Bluefin"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Bluefin","Size":"XS"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_BlueFin_Front_0159_v01-_1.jpg"},{"variant_id":"42030250066007","key":"Bluefin / S","title":"Bluefin / S","sku":null,"optionValues":["Bluefin","S"],"option_values":[{"position":1,"name":"Color","value":"Bluefin"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Bluefin","Size":"S"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_BlueFin_Front_0159_v01-_1.jpg"},{"variant_id":"42030250098775","key":"Bluefin / M","title":"Bluefin / M","sku":null,"optionValues":["Bluefin","M"],"option_values":[{"position":1,"name":"Color","value":"Bluefin"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Bluefin","Size":"M"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_MediumGrey_Front_0159_v01-_1.jpg"},{"variant_id":"42030250131543","key":"Bluefin / L","title":"Bluefin / L","sku":null,"optionValues":["Bluefin","L"],"option_values":[{"position":1,"name":"Color","value":"Bluefin"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Bluefin","Size":"L"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_BlueFin_Front_0159_v01-_1.jpg"},{"variant_id":"42030250164311","key":"Bluefin / XL","title":"Bluefin / XL","sku":null,"optionValues":["Bluefin","XL"],"option_values":[{"position":1,"name":"Color","value":"Bluefin"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Bluefin","Size":"XL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_BlueFin_XLogo_0322_v01-_1.jpg"},{"variant_id":"42030250197079","key":"Bluefin / XXL","title":"Bluefin / XXL","sku":null,"optionValues":["Bluefin","XXL"],"option_values":[{"position":1,"name":"Color","value":"Bluefin"},{"position":2,"name":"Size","value":"XXL"}],"selected_options":{"Color":"Bluefin","Size":"XXL"},"price_cents":6800,"regular_price_cents":6800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TrainLightShirt_BlueFin_Front_0159_v01-_1.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -664,6 +679,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -681,16 +700,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Ten Thousand | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -713,23 +755,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -742,10 +788,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -753,21 +799,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -778,12 +818,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

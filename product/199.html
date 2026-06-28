@@ -197,6 +197,9 @@
               data-cart-price="29.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-grass-fed-choc-2lb_3beedc95-d328-4ccd-9c6e-6a9d963478e2.png"
+              data-cart-variant-id="39527372324960"
+              data-cart-selected-options="{&quot;Size&quot;:&quot;2 lb.&quot;,&quot;Flavor&quot;:&quot;Triple Chocolate&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -291,7 +294,7 @@
                 <strong>$20.99</strong>
 
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -519,20 +522,57 @@
           });
         });
 
-        // Variant-aware main image: use the official image mapped to the
-        // selected variant instead of guessing from gallery filenames.
-        var baseImgSrc = mainImg ? mainImg.getAttribute("src") || "" : "";
-        var baseImgAlt = mainImg ? mainImg.getAttribute("alt") || "" : "";
-        function setMainImage(src, alt) {
-          if (!mainImg || !src) return;
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-grass-fed-choc-2lb_3beedc95-d328-4ccd-9c6e-6a9d963478e2.png","t":"muscletechgrassfedchoc2lb3beedc95d3284ccd9c6e6a9d963478e2png"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-grass-fed-van-2lb_56735785-0384-4283-a3ff-ee1045753a3b.png","t":"muscletechgrassfedvan2lb5673578503844283a3ffee1045753a3bpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-grass-fed-100-whey-protein-triple-chocolate-2lb.png","t":"mtgrassfed100wheyproteintriplechocolate2lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-grass-fed-100-whey-protein-deluxe-vanilla-2lb.png","t":"mtgrassfed100wheyproteindeluxevanilla2lbpng"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
           mainImg.src = src;
-          if (alt) mainImg.alt = alt;
           thumbs.forEach(function (b) {
             b.classList.toggle("is-active", b.getAttribute("data-src") === src);
           });
-        }
-        function resetMainImage() {
-          setMainImage(baseImgSrc, baseImgAlt);
         }
 
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
@@ -543,60 +583,23 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Triple Chocolate","optionValues":["Triple Chocolate"],"price_cents":2999,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-grass-fed-100-whey-protein-triple-chocolate-2lb.png?v=1742823404"},{"key":"Deluxe Vanilla","optionValues":["Deluxe Vanilla"],"price_cents":2999,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-grass-fed-100-whey-protein-deluxe-vanilla-2lb.png?v=1742823406"}];
+        var variantPricing = [{"variant_id":"39527372324960","key":"2 lb. / Triple Chocolate","title":"2 lb. / Triple Chocolate","sku":null,"optionValues":["2 lb.","Triple Chocolate"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavor","value":"Triple Chocolate"}],"selected_options":{"Size":"2 lb.","Flavor":"Triple Chocolate"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-grass-fed-100-whey-protein-triple-chocolate-2lb.png"},{"variant_id":"39527372357728","key":"2 lb. / Deluxe Vanilla","title":"2 lb. / Deluxe Vanilla","sku":null,"optionValues":["2 lb.","Deluxe Vanilla"],"option_values":[{"position":1,"name":"Size","value":"2 lb."},{"position":2,"name":"Flavor","value":"Deluxe Vanilla"}],"selected_options":{"Size":"2 lb.","Flavor":"Deluxe Vanilla"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-grass-fed-100-whey-protein-deluxe-vanilla-2lb.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
-        var baseCartName = addBtn ? addBtn.dataset.cartName || "" : "";
-        var baseCartImage = addBtn ? addBtn.dataset.cartImage || "" : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
         var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
-        var titleEl = document.querySelector("[data-pdp-title]");
-        var baseTitle = titleEl ? titleEl.textContent.trim() : "";
-
-        function isSizeLike(value) {
-          return /(^|[^a-z])(lb|lbs|kg|g|oz|serv|serving|servings|pack|packs|count|ct)([^a-z]|$)/i.test(String(value || ""));
-        }
-
-        function orderedVariantValues(values) {
-          var list = (values || []).filter(Boolean);
-          return list
-            .filter(function (value) { return !isSizeLike(value); })
-            .concat(list.filter(function (value) { return isSizeLike(value); }));
-        }
-
-        function variantPresentationLabel(variant) {
-          return orderedVariantValues(variant && variant.optionValues).join(" / ");
-        }
-
-        function variantImageAlt(variant) {
-          var label = variantPresentationLabel(variant);
-          return label ? baseTitle + " — " + label : baseImgAlt || baseTitle;
-        }
-
-        function applyVariantPresentation(variant) {
-          if (!variant) {
-            resetMainImage();
-            if (titleEl) titleEl.textContent = baseTitle;
-            if (addBtn) {
-              addBtn.dataset.cartName = baseCartName;
-              addBtn.dataset.cartImage = baseCartImage;
-            }
-            return;
-          }
-          var label = variantPresentationLabel(variant);
-          if (titleEl) {
-            titleEl.textContent = label ? baseTitle + " — " + label : baseTitle;
-          }
-          setMainImage(variant.image || baseImgSrc, variantImageAlt(variant));
-          if (addBtn) {
-            addBtn.dataset.cartName = titleEl ? titleEl.textContent : baseCartName;
-            addBtn.dataset.cartImage = variant.image || baseCartImage;
-          }
-        }
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
           return String(value || "")
@@ -651,6 +654,24 @@
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
           }
+        }
+
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — MuscleTech | Athletonic")
+            : baseDocumentTitle;
         }
 
         function selectedVariant() {
@@ -717,30 +738,29 @@
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
             addBtn.disabled = false;
-            applyVariantPresentation(null);
             return;
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
-              applyVariantPresentation(null);
               if (note) note.textContent = "This combination is not available right now.";
               return;
             }
-            applyVariantPresentation(currentVariant);
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
               setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
@@ -754,18 +774,25 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
-            addBtn.dataset.cartName = baseCartName;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
             addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             resetToBasePrice();
-            applyVariantPresentation(null);
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) {
-          s.addEventListener("change", refresh);
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
         });
         refresh();
       })();

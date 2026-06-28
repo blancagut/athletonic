@@ -200,7 +200,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">1st Phorm</p>
-          <h1 class="pdp-title">Adapt Bra</h1>
+          <h1 class="pdp-title" data-pdp-title>Adapt Bra</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="3575" data-base-compare-cents="5500" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$35.75</strong>
             <span class="pdp-compare" data-pdp-compare >$55.00</span>
@@ -248,6 +248,9 @@
               data-cart-price="35.75"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_lavender_0001.jpg"
+              data-cart-variant-id="43908232085590"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Lavender OUT OF STOCK-&quot;,&quot;Size&quot;:&quot;XS&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -649,17 +652,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Lavender OUT OF STOCK- / XS","optionValues":["Lavender OUT OF STOCK-","XS"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Lavender OUT OF STOCK- / Small","optionValues":["Lavender OUT OF STOCK-","Small"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Lavender OUT OF STOCK- / Medium","optionValues":["Lavender OUT OF STOCK-","Medium"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Lavender OUT OF STOCK- / Large","optionValues":["Lavender OUT OF STOCK-","Large"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Lavender OUT OF STOCK- / XL","optionValues":["Lavender OUT OF STOCK-","XL"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Lavender OUT OF STOCK- / 2XL","optionValues":["Lavender OUT OF STOCK-","2XL"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Voltage OUT OF STOCK- / XS","optionValues":["Voltage OUT OF STOCK-","XS"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Voltage OUT OF STOCK- / Small","optionValues":["Voltage OUT OF STOCK-","Small"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Voltage OUT OF STOCK- / Medium","optionValues":["Voltage OUT OF STOCK-","Medium"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Voltage OUT OF STOCK- / Large","optionValues":["Voltage OUT OF STOCK-","Large"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Voltage OUT OF STOCK- / XL","optionValues":["Voltage OUT OF STOCK-","XL"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Voltage OUT OF STOCK- / 2XL","optionValues":["Voltage OUT OF STOCK-","2XL"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Brown / XS","optionValues":["Brown","XS"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Brown / Small","optionValues":["Brown","Small"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Brown / Medium","optionValues":["Brown","Medium"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Brown / Large","optionValues":["Brown","Large"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Brown / XL","optionValues":["Brown","XL"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Brown / 2XL","optionValues":["Brown","2XL"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Hot Cherry / XS","optionValues":["Hot Cherry","XS"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Hot Cherry / Small","optionValues":["Hot Cherry","Small"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Hot Cherry / Medium","optionValues":["Hot Cherry","Medium"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Hot Cherry / Large","optionValues":["Hot Cherry","Large"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Hot Cherry / XL","optionValues":["Hot Cherry","XL"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Hot Cherry / 2XL","optionValues":["Hot Cherry","2XL"],"price_cents":3575,"compare_at_cents":5500,"available":true},{"key":"Black / XS","optionValues":["Black","XS"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Black / Small","optionValues":["Black","Small"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Black / Medium","optionValues":["Black","Medium"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Black / Large","optionValues":["Black","Large"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Black / XL","optionValues":["Black","XL"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Black / 2XL","optionValues":["Black","2XL"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Navy / XS","optionValues":["Navy","XS"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Navy / Small","optionValues":["Navy","Small"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Navy / Medium","optionValues":["Navy","Medium"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Navy / Large","optionValues":["Navy","Large"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Navy / XL","optionValues":["Navy","XL"],"price_cents":5500,"compare_at_cents":5500,"available":true},{"key":"Navy / 2XL","optionValues":["Navy","2XL"],"price_cents":5500,"compare_at_cents":5500,"available":true}];
+        var variantPricing = [{"variant_id":"43908232085590","key":"Lavender OUT OF STOCK- / XS","title":"Lavender OUT OF STOCK- / XS","sku":null,"optionValues":["Lavender OUT OF STOCK-","XS"],"option_values":[{"position":1,"name":"Color","value":"Lavender OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Lavender OUT OF STOCK-","Size":"XS"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_lavender_0001.jpg"},{"variant_id":"43908232118358","key":"Lavender OUT OF STOCK- / Small","title":"Lavender OUT OF STOCK- / Small","sku":null,"optionValues":["Lavender OUT OF STOCK-","Small"],"option_values":[{"position":1,"name":"Color","value":"Lavender OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Lavender OUT OF STOCK-","Size":"Small"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_lavender_0001.jpg"},{"variant_id":"43908232151126","key":"Lavender OUT OF STOCK- / Medium","title":"Lavender OUT OF STOCK- / Medium","sku":null,"optionValues":["Lavender OUT OF STOCK-","Medium"],"option_values":[{"position":1,"name":"Color","value":"Lavender OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Lavender OUT OF STOCK-","Size":"Medium"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_lavender_0001.jpg"},{"variant_id":"43908232183894","key":"Lavender OUT OF STOCK- / Large","title":"Lavender OUT OF STOCK- / Large","sku":null,"optionValues":["Lavender OUT OF STOCK-","Large"],"option_values":[{"position":1,"name":"Color","value":"Lavender OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Lavender OUT OF STOCK-","Size":"Large"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_lavender_0001.jpg"},{"variant_id":"43908232216662","key":"Lavender OUT OF STOCK- / XL","title":"Lavender OUT OF STOCK- / XL","sku":null,"optionValues":["Lavender OUT OF STOCK-","XL"],"option_values":[{"position":1,"name":"Color","value":"Lavender OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Lavender OUT OF STOCK-","Size":"XL"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_lavender_0001.jpg"},{"variant_id":"43908232249430","key":"Lavender OUT OF STOCK- / 2XL","title":"Lavender OUT OF STOCK- / 2XL","sku":null,"optionValues":["Lavender OUT OF STOCK-","2XL"],"option_values":[{"position":1,"name":"Color","value":"Lavender OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Lavender OUT OF STOCK-","Size":"2XL"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_lavender_0001.jpg"},{"variant_id":"43908232282198","key":"Voltage OUT OF STOCK- / XS","title":"Voltage OUT OF STOCK- / XS","sku":null,"optionValues":["Voltage OUT OF STOCK-","XS"],"option_values":[{"position":1,"name":"Color","value":"Voltage OUT OF STOCK-"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Voltage OUT OF STOCK-","Size":"XS"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportsbras_adaptbra_voltage_0001.jpg"},{"variant_id":"43908232314966","key":"Voltage OUT OF STOCK- / Small","title":"Voltage OUT OF STOCK- / Small","sku":null,"optionValues":["Voltage OUT OF STOCK-","Small"],"option_values":[{"position":1,"name":"Color","value":"Voltage OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Voltage OUT OF STOCK-","Size":"Small"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportsbras_adaptbra_voltage_0001.jpg"},{"variant_id":"43908232347734","key":"Voltage OUT OF STOCK- / Medium","title":"Voltage OUT OF STOCK- / Medium","sku":null,"optionValues":["Voltage OUT OF STOCK-","Medium"],"option_values":[{"position":1,"name":"Color","value":"Voltage OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Voltage OUT OF STOCK-","Size":"Medium"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportsbras_adaptbra_voltage_0001.jpg"},{"variant_id":"43908232380502","key":"Voltage OUT OF STOCK- / Large","title":"Voltage OUT OF STOCK- / Large","sku":null,"optionValues":["Voltage OUT OF STOCK-","Large"],"option_values":[{"position":1,"name":"Color","value":"Voltage OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Voltage OUT OF STOCK-","Size":"Large"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportsbras_adaptbra_voltage_0001.jpg"},{"variant_id":"43908232413270","key":"Voltage OUT OF STOCK- / XL","title":"Voltage OUT OF STOCK- / XL","sku":null,"optionValues":["Voltage OUT OF STOCK-","XL"],"option_values":[{"position":1,"name":"Color","value":"Voltage OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Voltage OUT OF STOCK-","Size":"XL"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportsbras_adaptbra_voltage_0001.jpg"},{"variant_id":"43908232446038","key":"Voltage OUT OF STOCK- / 2XL","title":"Voltage OUT OF STOCK- / 2XL","sku":null,"optionValues":["Voltage OUT OF STOCK-","2XL"],"option_values":[{"position":1,"name":"Color","value":"Voltage OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Voltage OUT OF STOCK-","Size":"2XL"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportsbras_adaptbra_voltage_0001.jpg"},{"variant_id":"42541140869206","key":"Brown / XS","title":"Brown / XS","sku":null,"optionValues":["Brown","XS"],"option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Brown","Size":"XS"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_brown_0001.jpg"},{"variant_id":"42541140901974","key":"Brown / Small","title":"Brown / Small","sku":null,"optionValues":["Brown","Small"],"option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Brown","Size":"Small"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_brown_0001.jpg"},{"variant_id":"42541140934742","key":"Brown / Medium","title":"Brown / Medium","sku":null,"optionValues":["Brown","Medium"],"option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Brown","Size":"Medium"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_brown_0001.jpg"},{"variant_id":"42541140967510","key":"Brown / Large","title":"Brown / Large","sku":null,"optionValues":["Brown","Large"],"option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Brown","Size":"Large"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_brown_0001.jpg"},{"variant_id":"42541141000278","key":"Brown / XL","title":"Brown / XL","sku":null,"optionValues":["Brown","XL"],"option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Brown","Size":"XL"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_brown_0001.jpg"},{"variant_id":"42541141033046","key":"Brown / 2XL","title":"Brown / 2XL","sku":null,"optionValues":["Brown","2XL"],"option_values":[{"position":1,"name":"Color","value":"Brown"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Brown","Size":"2XL"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_brown_0001.jpg"},{"variant_id":"42541141065814","key":"Hot Cherry / XS","title":"Hot Cherry / XS","sku":null,"optionValues":["Hot Cherry","XS"],"option_values":[{"position":1,"name":"Color","value":"Hot Cherry"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Hot Cherry","Size":"XS"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_cherry_0001.jpg"},{"variant_id":"42541141098582","key":"Hot Cherry / Small","title":"Hot Cherry / Small","sku":null,"optionValues":["Hot Cherry","Small"],"option_values":[{"position":1,"name":"Color","value":"Hot Cherry"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Hot Cherry","Size":"Small"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_cherry_0001.jpg"},{"variant_id":"42541141131350","key":"Hot Cherry / Medium","title":"Hot Cherry / Medium","sku":null,"optionValues":["Hot Cherry","Medium"],"option_values":[{"position":1,"name":"Color","value":"Hot Cherry"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Hot Cherry","Size":"Medium"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_cherry_0001.jpg"},{"variant_id":"42541141164118","key":"Hot Cherry / Large","title":"Hot Cherry / Large","sku":null,"optionValues":["Hot Cherry","Large"],"option_values":[{"position":1,"name":"Color","value":"Hot Cherry"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Hot Cherry","Size":"Large"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_cherry_0001.jpg"},{"variant_id":"42541141196886","key":"Hot Cherry / XL","title":"Hot Cherry / XL","sku":null,"optionValues":["Hot Cherry","XL"],"option_values":[{"position":1,"name":"Color","value":"Hot Cherry"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Hot Cherry","Size":"XL"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_cherry_0001.jpg"},{"variant_id":"42541141229654","key":"Hot Cherry / 2XL","title":"Hot Cherry / 2XL","sku":null,"optionValues":["Hot Cherry","2XL"],"option_values":[{"position":1,"name":"Color","value":"Hot Cherry"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Hot Cherry","Size":"2XL"},"price_cents":3575,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":5500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_cherry_0001.jpg"},{"variant_id":"42541140672598","key":"Black / XS","title":"Black / XS","sku":null,"optionValues":["Black","XS"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Black","Size":"XS"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_black_0001.jpg"},{"variant_id":"42541140705366","key":"Black / Small","title":"Black / Small","sku":null,"optionValues":["Black","Small"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black","Size":"Small"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_black_0001.jpg"},{"variant_id":"42541140738134","key":"Black / Medium","title":"Black / Medium","sku":null,"optionValues":["Black","Medium"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black","Size":"Medium"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_black_0001.jpg"},{"variant_id":"42541140770902","key":"Black / Large","title":"Black / Large","sku":null,"optionValues":["Black","Large"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black","Size":"Large"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_black_0001.jpg"},{"variant_id":"42541140803670","key":"Black / XL","title":"Black / XL","sku":null,"optionValues":["Black","XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_black_0001.jpg"},{"variant_id":"42541140836438","key":"Black / 2XL","title":"Black / 2XL","sku":null,"optionValues":["Black","2XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_black_0001.jpg"},{"variant_id":"44270570504278","key":"Navy / XS","title":"Navy / XS","sku":null,"optionValues":["Navy","XS"],"option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Navy","Size":"XS"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_navy_0001.jpg"},{"variant_id":"44270570537046","key":"Navy / Small","title":"Navy / Small","sku":null,"optionValues":["Navy","Small"],"option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Navy","Size":"Small"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_navy_0001.jpg"},{"variant_id":"44270570569814","key":"Navy / Medium","title":"Navy / Medium","sku":null,"optionValues":["Navy","Medium"],"option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Navy","Size":"Medium"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_navy_0001.jpg"},{"variant_id":"44270570602582","key":"Navy / Large","title":"Navy / Large","sku":null,"optionValues":["Navy","Large"],"option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Navy","Size":"Large"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_navy_0001.jpg"},{"variant_id":"44270570635350","key":"Navy / XL","title":"Navy / XL","sku":null,"optionValues":["Navy","XL"],"option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Navy","Size":"XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_navy_0001.jpg"},{"variant_id":"44270570668118","key":"Navy / 2XL","title":"Navy / 2XL","sku":null,"optionValues":["Navy","2XL"],"option_values":[{"position":1,"name":"Color","value":"Navy"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Navy","Size":"2XL"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":5500,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_sportbras_adaptbra_navy_0001.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -689,6 +704,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -706,16 +725,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — 1st Phorm | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -738,23 +780,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -767,10 +813,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -778,21 +824,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -803,12 +843,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

@@ -160,7 +160,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">black_magic_supps</p>
-          <h1 class="pdp-title">Wake Up Stack</h1>
+          <h1 class="pdp-title" data-pdp-title>Wake Up Stack</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="6543" data-base-compare-cents="7698" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$65.43</strong>
             <span class="pdp-compare" data-pdp-compare >$76.98</span>
@@ -210,6 +210,9 @@
               data-cart-price="65.43"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0074/2264/0197/files/protein_skulldust.jpg"
+              data-cart-variant-id="40349856006243"
+              data-cart-selected-options="{&quot;Protein&quot;:&quot;Horchata&quot;,&quot;Skull Dust&quot;:&quot;Vanilla Mocha&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -641,17 +644,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Horchata / Vanilla Mocha","optionValues":["Horchata","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Horchata / Italian Sweet Cream","optionValues":["Horchata","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Horchata / Hazelnut","optionValues":["Horchata","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Mint Chocolate / Vanilla Mocha","optionValues":["Mint Chocolate","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Mint Chocolate / Italian Sweet Cream","optionValues":["Mint Chocolate","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Mint Chocolate / Hazelnut","optionValues":["Mint Chocolate","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Honey Grams / Vanilla Mocha","optionValues":["Honey Grams","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Honey Grams / Italian Sweet Cream","optionValues":["Honey Grams","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Honey Grams / Hazelnut","optionValues":["Honey Grams","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Chocolate Peanut Butter Puffs / Vanilla Mocha","optionValues":["Chocolate Peanut Butter Puffs","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Chocolate Peanut Butter Puffs / Italian Sweet Cream","optionValues":["Chocolate Peanut Butter Puffs","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Chocolate Peanut Butter Puffs / Hazelnut","optionValues":["Chocolate Peanut Butter Puffs","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Birthday Cake / Vanilla Mocha","optionValues":["Birthday Cake","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Birthday Cake / Italian Sweet Cream","optionValues":["Birthday Cake","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Birthday Cake / Hazelnut","optionValues":["Birthday Cake","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Cinnamon Toast Cereal / Vanilla Mocha","optionValues":["Cinnamon Toast Cereal","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Cinnamon Toast Cereal / Italian Sweet Cream","optionValues":["Cinnamon Toast Cereal","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Cinnamon Toast Cereal / Hazelnut","optionValues":["Cinnamon Toast Cereal","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Cookies & Cream / Vanilla Mocha","optionValues":["Cookies & Cream","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Cookies & Cream / Italian Sweet Cream","optionValues":["Cookies & Cream","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Cookies & Cream / Hazelnut","optionValues":["Cookies & Cream","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Fruit Whirls / Vanilla Mocha","optionValues":["Fruit Whirls","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Fruit Whirls / Italian Sweet Cream","optionValues":["Fruit Whirls","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Fruit Whirls / Hazelnut","optionValues":["Fruit Whirls","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Blueberry Muffins / Vanilla Mocha","optionValues":["Blueberry Muffins","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Blueberry Muffins / Italian Sweet Cream","optionValues":["Blueberry Muffins","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Blueberry Muffins / Hazelnut","optionValues":["Blueberry Muffins","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Classic Milk Chocolate / Vanilla Mocha","optionValues":["Classic Milk Chocolate","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Classic Milk Chocolate / Italian Sweet Cream","optionValues":["Classic Milk Chocolate","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"Classic Milk Chocolate / Hazelnut","optionValues":["Classic Milk Chocolate","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"French Vanilla / Vanilla Mocha","optionValues":["French Vanilla","Vanilla Mocha"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"French Vanilla / Italian Sweet Cream","optionValues":["French Vanilla","Italian Sweet Cream"],"price_cents":6543,"compare_at_cents":7698,"available":true},{"key":"French Vanilla / Hazelnut","optionValues":["French Vanilla","Hazelnut"],"price_cents":6543,"compare_at_cents":7698,"available":true}];
+        var variantPricing = [{"variant_id":"40349856006243","key":"Horchata / Vanilla Mocha","title":"Horchata / Vanilla Mocha","sku":null,"optionValues":["Horchata","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Horchata"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Horchata","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856039011","key":"Horchata / Italian Sweet Cream","title":"Horchata / Italian Sweet Cream","sku":null,"optionValues":["Horchata","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Horchata"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Horchata","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856071779","key":"Horchata / Hazelnut","title":"Horchata / Hazelnut","sku":null,"optionValues":["Horchata","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Horchata"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Horchata","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":true,"available":true,"image_url":null},{"variant_id":"40349856104547","key":"Mint Chocolate / Vanilla Mocha","title":"Mint Chocolate / Vanilla Mocha","sku":null,"optionValues":["Mint Chocolate","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Mint Chocolate"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Mint Chocolate","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856137315","key":"Mint Chocolate / Italian Sweet Cream","title":"Mint Chocolate / Italian Sweet Cream","sku":null,"optionValues":["Mint Chocolate","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Mint Chocolate"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Mint Chocolate","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856170083","key":"Mint Chocolate / Hazelnut","title":"Mint Chocolate / Hazelnut","sku":null,"optionValues":["Mint Chocolate","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Mint Chocolate"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Mint Chocolate","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856202851","key":"Honey Grams / Vanilla Mocha","title":"Honey Grams / Vanilla Mocha","sku":null,"optionValues":["Honey Grams","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Honey Grams"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Honey Grams","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856235619","key":"Honey Grams / Italian Sweet Cream","title":"Honey Grams / Italian Sweet Cream","sku":null,"optionValues":["Honey Grams","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Honey Grams"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Honey Grams","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856268387","key":"Honey Grams / Hazelnut","title":"Honey Grams / Hazelnut","sku":null,"optionValues":["Honey Grams","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Honey Grams"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Honey Grams","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856301155","key":"Chocolate Peanut Butter Puffs / Vanilla Mocha","title":"Chocolate Peanut Butter Puffs / Vanilla Mocha","sku":null,"optionValues":["Chocolate Peanut Butter Puffs","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Chocolate Peanut Butter Puffs"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Chocolate Peanut Butter Puffs","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856333923","key":"Chocolate Peanut Butter Puffs / Italian Sweet Cream","title":"Chocolate Peanut Butter Puffs / Italian Sweet Cream","sku":null,"optionValues":["Chocolate Peanut Butter Puffs","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Chocolate Peanut Butter Puffs"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Chocolate Peanut Butter Puffs","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856366691","key":"Chocolate Peanut Butter Puffs / Hazelnut","title":"Chocolate Peanut Butter Puffs / Hazelnut","sku":null,"optionValues":["Chocolate Peanut Butter Puffs","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Chocolate Peanut Butter Puffs"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Chocolate Peanut Butter Puffs","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":true,"available":true,"image_url":null},{"variant_id":"40349856399459","key":"Birthday Cake / Vanilla Mocha","title":"Birthday Cake / Vanilla Mocha","sku":null,"optionValues":["Birthday Cake","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Birthday Cake"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Birthday Cake","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856432227","key":"Birthday Cake / Italian Sweet Cream","title":"Birthday Cake / Italian Sweet Cream","sku":null,"optionValues":["Birthday Cake","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Birthday Cake"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Birthday Cake","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856464995","key":"Birthday Cake / Hazelnut","title":"Birthday Cake / Hazelnut","sku":null,"optionValues":["Birthday Cake","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Birthday Cake"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Birthday Cake","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856497763","key":"Cinnamon Toast Cereal / Vanilla Mocha","title":"Cinnamon Toast Cereal / Vanilla Mocha","sku":null,"optionValues":["Cinnamon Toast Cereal","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Cinnamon Toast Cereal"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Cinnamon Toast Cereal","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856530531","key":"Cinnamon Toast Cereal / Italian Sweet Cream","title":"Cinnamon Toast Cereal / Italian Sweet Cream","sku":null,"optionValues":["Cinnamon Toast Cereal","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Cinnamon Toast Cereal"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Cinnamon Toast Cereal","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856563299","key":"Cinnamon Toast Cereal / Hazelnut","title":"Cinnamon Toast Cereal / Hazelnut","sku":null,"optionValues":["Cinnamon Toast Cereal","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Cinnamon Toast Cereal"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Cinnamon Toast Cereal","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856596067","key":"Cookies & Cream / Vanilla Mocha","title":"Cookies & Cream / Vanilla Mocha","sku":null,"optionValues":["Cookies & Cream","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Cookies & Cream"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Cookies & Cream","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856628835","key":"Cookies & Cream / Italian Sweet Cream","title":"Cookies & Cream / Italian Sweet Cream","sku":null,"optionValues":["Cookies & Cream","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Cookies & Cream"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Cookies & Cream","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856661603","key":"Cookies & Cream / Hazelnut","title":"Cookies & Cream / Hazelnut","sku":null,"optionValues":["Cookies & Cream","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Cookies & Cream"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Cookies & Cream","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856694371","key":"Fruit Whirls / Vanilla Mocha","title":"Fruit Whirls / Vanilla Mocha","sku":null,"optionValues":["Fruit Whirls","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Fruit Whirls"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Fruit Whirls","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856727139","key":"Fruit Whirls / Italian Sweet Cream","title":"Fruit Whirls / Italian Sweet Cream","sku":null,"optionValues":["Fruit Whirls","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Fruit Whirls"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Fruit Whirls","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856759907","key":"Fruit Whirls / Hazelnut","title":"Fruit Whirls / Hazelnut","sku":null,"optionValues":["Fruit Whirls","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Fruit Whirls"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Fruit Whirls","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856792675","key":"Blueberry Muffins / Vanilla Mocha","title":"Blueberry Muffins / Vanilla Mocha","sku":null,"optionValues":["Blueberry Muffins","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Blueberry Muffins"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Blueberry Muffins","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856825443","key":"Blueberry Muffins / Italian Sweet Cream","title":"Blueberry Muffins / Italian Sweet Cream","sku":null,"optionValues":["Blueberry Muffins","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Blueberry Muffins"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Blueberry Muffins","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856858211","key":"Blueberry Muffins / Hazelnut","title":"Blueberry Muffins / Hazelnut","sku":null,"optionValues":["Blueberry Muffins","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Blueberry Muffins"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Blueberry Muffins","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856890979","key":"Classic Milk Chocolate / Vanilla Mocha","title":"Classic Milk Chocolate / Vanilla Mocha","sku":null,"optionValues":["Classic Milk Chocolate","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"Classic Milk Chocolate"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"Classic Milk Chocolate","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856923747","key":"Classic Milk Chocolate / Italian Sweet Cream","title":"Classic Milk Chocolate / Italian Sweet Cream","sku":null,"optionValues":["Classic Milk Chocolate","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"Classic Milk Chocolate"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"Classic Milk Chocolate","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856956515","key":"Classic Milk Chocolate / Hazelnut","title":"Classic Milk Chocolate / Hazelnut","sku":null,"optionValues":["Classic Milk Chocolate","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"Classic Milk Chocolate"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"Classic Milk Chocolate","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349856989283","key":"French Vanilla / Vanilla Mocha","title":"French Vanilla / Vanilla Mocha","sku":null,"optionValues":["French Vanilla","Vanilla Mocha"],"option_values":[{"position":1,"name":"Protein","value":"French Vanilla"},{"position":2,"name":"Skull Dust","value":"Vanilla Mocha"}],"selected_options":{"Protein":"French Vanilla","Skull Dust":"Vanilla Mocha"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349857022051","key":"French Vanilla / Italian Sweet Cream","title":"French Vanilla / Italian Sweet Cream","sku":null,"optionValues":["French Vanilla","Italian Sweet Cream"],"option_values":[{"position":1,"name":"Protein","value":"French Vanilla"},{"position":2,"name":"Skull Dust","value":"Italian Sweet Cream"}],"selected_options":{"Protein":"French Vanilla","Skull Dust":"Italian Sweet Cream"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null},{"variant_id":"40349857054819","key":"French Vanilla / Hazelnut","title":"French Vanilla / Hazelnut","sku":null,"optionValues":["French Vanilla","Hazelnut"],"option_values":[{"position":1,"name":"Protein","value":"French Vanilla"},{"position":2,"name":"Skull Dust","value":"Hazelnut"}],"selected_options":{"Protein":"French Vanilla","Skull Dust":"Hazelnut"},"price_cents":6543,"regular_price_cents":7698,"compare_at_cents":7698,"compare_at_price_cents":7698,"source_available":false,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -681,6 +696,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -698,16 +717,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — black_magic_supps | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -730,23 +772,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -759,10 +805,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -770,21 +816,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -795,12 +835,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

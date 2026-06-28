@@ -1643,6 +1643,198 @@ function variantLabelFromRow(row) {
   return "";
 }
 
+function parseAvailabilityFlag(value) {
+  if (value == null) return null;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  const normalized = String(value).trim().toLowerCase();
+  if (!normalized) return null;
+  if (["1", "true", "yes", "y", "available", "in stock"].includes(normalized)) return true;
+  if (["0", "false", "no", "n", "unavailable", "out of stock", "sold out"].includes(normalized)) {
+    return false;
+  }
+  return null;
+}
+
+function priceToCents(value) {
+  return Math.round(Number(value || 0) * 100);
+}
+
+function storefrontAvailability(value, priceCents) {
+  const explicit = parseAvailabilityFlag(value);
+  if (explicit === true) return priceCents > 0;
+  return priceCents > 0;
+}
+
+function optionValuesFromVariantRow(row) {
+  return [row?.option1, row?.option2, row?.option3]
+    .map((value) => String(value || "").trim())
+    .filter((value) => value && !defaultishValue(value));
+}
+
+function optionValueEntriesFromVariantRow(row, optionNames = []) {
+  return optionValuesFromVariantRow(row).map((value, index) => ({
+    position: index + 1,
+    name: String(optionNames[index] || `Option ${index + 1}`).trim(),
+    value,
+  }));
+}
+
+function selectedOptionsFromEntries(entries = []) {
+  return entries.reduce((acc, entry) => {
+    if (entry?.name && entry?.value) acc[entry.name] = entry.value;
+    return acc;
+  }, {});
+}
+
+function variantValueTokenGroup(value) {
+  const words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+  return {
+    compact: words.join(""),
+    words: words.filter((word) => word.length >= 3),
+  };
+}
+
+function pickGalleryImageForOptionValues(galleryImages = [], values = []) {
+  if (!Array.isArray(galleryImages) || galleryImages.length === 0) return null;
+  const groups = values.map(variantValueTokenGroup).filter((group) => group.compact);
+  if (!groups.length) return null;
+  let best = null;
+  let bestScore = 0;
+  for (const image of galleryImages) {
+    const blob = String(image?.t || "");
+    if (!blob) continue;
+    let score = 0;
+    for (const group of groups) {
+      if (group.compact && blob.includes(group.compact)) {
+        score += 2;
+        continue;
+      }
+      if (group.words.some((word) => blob.includes(word))) score += 1;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = image?.src || null;
+    }
+  }
+  return bestScore > 0 ? best : null;
+}
+
+function normalizedVariantRecord(row, optionNames = [], galleryImageMeta = []) {
+  const priceCents = priceToCents(row?.price);
+  const compareAtCents = priceToCents(row?.compare_at_price);
+  const optionValues = optionValuesFromVariantRow(row);
+  const optionEntries = optionValueEntriesFromVariantRow(row, optionNames);
+  const sourceAvailable = parseAvailabilityFlag(row?.available);
+  const imageUrl = pickGalleryImageForOptionValues(galleryImageMeta, optionValues);
+  const title = variantLabelFromRow(row) || String(row?.variant_id || "").trim();
+  if (!title || priceCents <= 0) return null;
+  return {
+    variant_id: String(row?.variant_id || "").trim(),
+    key: title,
+    title,
+    sku: row?.sku ? String(row.sku).trim() : null,
+    optionValues,
+    option_values: optionEntries,
+    selected_options: selectedOptionsFromEntries(optionEntries),
+    price_cents: priceCents,
+    regular_price_cents: compareAtCents > priceCents ? compareAtCents : priceCents,
+    compare_at_cents: compareAtCents,
+    compare_at_price_cents: compareAtCents > priceCents ? compareAtCents : null,
+    source_available: sourceAvailable,
+    available: storefrontAvailability(row?.available, priceCents),
+    image_url: imageUrl,
+  };
+}
+
+function normalizedCatalogProductRecord(product, fullRow, imageList = [], variantRows = []) {
+  const options = safeParseJson(fullRow?.options, []);
+  const normalizedPdpOptions = normalizedOptionsForProduct(
+    {
+      ...fullRow,
+      ...product,
+    },
+    options
+  );
+  const optionNames = normalizedPdpOptions.map((option) => String(option?.name || "").trim()).filter(Boolean);
+  const images = pdpGalleryImages(product, imageList);
+  const galleryImageMeta = pdpGalleryImageMeta(images, imageList);
+  const variants = variantRows
+    .map((variant) => normalizedVariantRecord(variant, optionNames, galleryImageMeta))
+    .filter(Boolean);
+  const availableVariants = variants.filter((variant) => variant.available);
+  const pricedVariants = variants.filter((variant) => variant.price_cents > 0);
+  const defaultVariant = availableVariants[0] || pricedVariants[0] || variants[0] || null;
+  const basePriceCents = priceToCents(product.price ?? fullRow?.price ?? 0);
+  const baseCompareAtCents = priceToCents(
+    product.deal?.original_price ?? fullRow?.compare_at_price ?? 0
+  );
+  const productSourceAvailable = parseAvailabilityFlag(fullRow?.available);
+  const available = availableVariants.length > 0 || storefrontAvailability(fullRow?.available, basePriceCents);
+  const variantSelectionRequired =
+    Boolean(product.purchaseMeta?.requiresVariantSelection) ||
+    Boolean(standardGloveSizeProfile(product)) ||
+    Boolean(standardApparelSizeProfile(product)) ||
+    Boolean(standardFootwearSizeProfile(product)) ||
+    pricedVariants.length > 1;
+  const variantPriceCents = pricedVariants.map((variant) => variant.price_cents);
+  const storefrontPriceCents = basePriceCents || (variantPriceCents.length ? Math.min(...variantPriceCents) : 0);
+  const resolvedPriceCents = variantPriceCents.length
+    ? Math.min(...variantPriceCents)
+    : basePriceCents;
+  const resolvedMaxPriceCents = variantPriceCents.length
+    ? Math.max(...variantPriceCents)
+    : storefrontPriceCents;
+
+  return {
+    id: String(product.id),
+    brand_slug: product.brand,
+    brand: brandNames[product.brand] ?? product.brand,
+    name: product.displayName ?? product.name,
+    sku: product.sku ?? defaultVariant?.sku ?? null,
+    url: product.url ?? null,
+    image: images[0] || product.image || defaultVariant?.image_url || null,
+    image_width: product.imageWidth || 640,
+    image_height: product.imageHeight || product.imageWidth || 640,
+    price_cents: storefrontPriceCents,
+    price_min_cents: resolvedPriceCents,
+    price_max_cents: resolvedMaxPriceCents,
+    compare_at_price_cents:
+      baseCompareAtCents > storefrontPriceCents ? baseCompareAtCents : null,
+    currency: product.currency || ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+    available,
+    source_available: productSourceAvailable,
+    purchasable: available,
+    ready_for_sale: available,
+    has_variants: variants.length > 0,
+    default_variant_id: defaultVariant?.variant_id || null,
+    section_id: product.sectionId,
+    section_title: product.sectionTitle,
+    requires_variant_selection: variantSelectionRequired,
+    variants: variants.map((variant) => ({
+      variant_id: variant.variant_id,
+      title: variant.title,
+      sku: variant.sku,
+      option_values: variant.option_values,
+      selected_options: variant.selected_options,
+      price_cents: variant.price_cents,
+      regular_price_cents: variant.regular_price_cents,
+      compare_at_price_cents: variant.compare_at_price_cents,
+      currency: product.currency || ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+      available: variant.available,
+      source_available: variant.source_available,
+      image_url: variant.image_url || images[0] || product.image || null,
+    })),
+    deal: product.deal
+      ? {
+          discount_percent: product.deal.discount_percent,
+          expires_at: product.deal.expires_at,
+          reason: product.deal.reason,
+        }
+      : null,
+  };
+}
+
 function purchaseMetaByProductId(productIds) {
   const ids = uniqueProducts(
     productIds
@@ -1662,10 +1854,12 @@ function purchaseMetaByProductId(productIds) {
         p.options,
         v.variant_id,
         v.title,
+        v.sku,
         v.option1,
         v.option2,
         v.option3,
-        case when coalesce(v.price, 0) > 0 then 1 else 0 end as variant_available
+        v.price,
+        v.available
       from products p
       left join variants v on v.product_row_id = p.id
       where p.id in (${chunk.join(",")})
@@ -1681,7 +1875,12 @@ function purchaseMetaByProductId(productIds) {
     for (const [productId, group] of grouped.entries()) {
       const options = safeParseJson(group[0]?.options, []);
       const normalizedOptions = normalizedOptionsForProduct(group[0], options);
-      const availableVariants = group.filter((row) => Number(row.variant_available) === 1);
+      const optionNames = normalizedOptions
+        .map((option) => String(option?.name || "").trim())
+        .filter(Boolean);
+      const availableVariants = group
+        .map((row) => normalizedVariantRecord(row, optionNames, []))
+        .filter((variant) => variant?.available);
       const meaningfulOptions = normalizedOptions.filter(
         (option) => Array.isArray(option.values) && option.values.length > 1
       );
@@ -1695,12 +1894,15 @@ function purchaseMetaByProductId(productIds) {
       const cartVariant =
         requiresVariantSelection || availableVariants.length !== 1
           ? ""
-          : variantLabelFromRow(availableVariants[0]);
+          : availableVariants[0].title;
 
       meta.set(String(productId), {
         hasAvailablePurchase: availableVariants.length > 0,
         requiresVariantSelection,
         cartVariant,
+        defaultVariantId: availableVariants[0]?.variant_id || "",
+        hasVariants: group.some((row) => String(row?.variant_id || "").trim() !== ""),
+        variantCount: availableVariants.length,
       });
     }
   }
@@ -1717,6 +1919,9 @@ function applyPurchaseMeta(products = [], purchaseMeta = new Map()) {
           hasAvailablePurchase: true,
           requiresVariantSelection: false,
           cartVariant: "",
+          defaultVariantId: "",
+          hasVariants: false,
+          variantCount: 0,
         },
     }))
     .filter((product) => product.purchaseMeta.hasAvailablePurchase);
@@ -2110,43 +2315,26 @@ ${legal}
 
 const commerceCatalogDir = new URL("../data/", import.meta.url);
 mkdirSync(commerceCatalogDir, { recursive: true });
+const catalogSeedIds = allCuratedProductsWithPurchaseMeta.map((product) => product.id);
+const {
+  rowsById: catalogRowsById,
+  imagesById: catalogImagesById,
+  variantsById: catalogVariantsById,
+} = fetchPdpData(catalogSeedIds);
 writeFileSync(
   new URL("athletonic-catalog.json", commerceCatalogDir),
   JSON.stringify(
     {
       generated_at: new Date().toISOString(),
       currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
-      products: allCuratedProductsWithPurchaseMeta.map((product) => ({
-        id: String(product.id),
-        brand_slug: product.brand,
-        brand: brandNames[product.brand] ?? product.brand,
-        name: product.displayName ?? product.name,
-        sku: product.sku ?? null,
-        url: product.url ?? null,
-        image: product.image ?? null,
-        image_width: product.imageWidth || 640,
-        image_height: product.imageHeight || product.imageWidth || 640,
-        price_cents: Math.round(Number(product.price || 0) * 100),
-        compare_at_price_cents: product.deal?.original_price
-          ? Math.round(Number(product.deal.original_price) * 100)
-          : null,
-        currency: product.currency || ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
-        available: true,
-        section_id: product.sectionId,
-        section_title: product.sectionTitle,
-        requires_variant_selection:
-          Boolean(product.purchaseMeta?.requiresVariantSelection) ||
-          Boolean(standardGloveSizeProfile(product)) ||
-          Boolean(standardApparelSizeProfile(product)) ||
-          Boolean(standardFootwearSizeProfile(product)),
-        deal: product.deal
-          ? {
-              discount_percent: product.deal.discount_percent,
-              expires_at: product.deal.expires_at,
-              reason: product.deal.reason,
-            }
-          : null,
-      })),
+      products: allCuratedProductsWithPurchaseMeta.map((product) =>
+        normalizedCatalogProductRecord(
+          product,
+          catalogRowsById.get(product.id),
+          catalogImagesById.get(product.id) || [],
+          catalogVariantsById.get(product.id) || []
+        )
+      ),
     },
     null,
     2
@@ -2399,6 +2587,15 @@ for (const record of searchIndexRecords) {
   ) {
     record.requires_variant_selection = true;
   }
+  if (purchaseMeta?.defaultVariantId) {
+    record.default_variant_id = purchaseMeta.defaultVariantId;
+  }
+  if (purchaseMeta?.hasVariants) {
+    record.has_variants = true;
+  }
+  if (purchaseMeta?.variantCount) {
+    record.variant_count = purchaseMeta.variantCount;
+  }
 }
 writeFileSync(
   new URL("search-index.json", commerceCatalogDir),
@@ -2448,8 +2645,13 @@ function indexRecordToProduct(record) {
           hasAvailablePurchase: true,
           requiresVariantSelection: true,
           cartVariant: "",
+          defaultVariantId: record.default_variant_id || "",
+          hasVariants: Boolean(record.has_variants),
+          variantCount: Number(record.variant_count || 0),
         }
       : null,
+    default_variant_id: record.default_variant_id || null,
+    has_variants: Boolean(record.has_variants),
   };
 }
 
@@ -2675,22 +2877,6 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
   const variantDeals = activeVariantDealsForProduct(curated.id);
   const pdpVariantOffer = variantDealSummary(variantDeals);
   const variantDealsJson = JSON.stringify(variantDeals).replace(/</g, "\\u003c");
-  const variantPricing = variantRows
-    .map((variant) => {
-      const title = String(variant?.title || "").trim();
-      const optionValues = [variant?.option1, variant?.option2, variant?.option3]
-        .map((value) => String(value || "").trim())
-        .filter(Boolean);
-      return {
-        key: title || optionValues.join(" / "),
-        optionValues,
-        price_cents: Math.round(Number(variant?.price || 0) * 100),
-        compare_at_cents: Math.round(Number(variant?.compare_at_price || 0) * 100),
-        available: Math.round(Number(variant?.price || 0) * 100) > 0,
-      };
-    })
-    .filter((variant) => variant.key && variant.price_cents > 0);
-  const variantPricingJson = JSON.stringify(variantPricing).replace(/</g, "\\u003c");
   const variantOfferNote = pdpVariantOffer
     ? `<p class="pdp-variant-deal-note" data-pdp-variant-deal-note>${html(
       pdpVariantOffer.note || "Limited offer"
@@ -2709,6 +2895,13 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
     },
     options
   );
+  const optionNames = normalizedPdpOptions
+    .map((option) => String(option?.name || "").trim())
+    .filter(Boolean);
+  const variantPricing = variantRows
+    .map((variant) => normalizedVariantRecord(variant, optionNames, galleryImageMeta))
+    .filter((variant) => variant?.key && variant?.price_cents > 0);
+  const variantPricingJson = JSON.stringify(variantPricing).replace(/</g, "\\u003c");
   const variantOptions = normalizedPdpOptions.filter(
     (opt) =>
       opt &&
@@ -2723,6 +2916,8 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
       Array.isArray(opt.values) &&
       opt.values.length === 1
   );
+  const defaultVariant = variantPricing.find((variant) => variant.available) || variantPricing[0] || null;
+  const defaultSelectedOptionsJson = JSON.stringify(defaultVariant?.selected_options || {}).replace(/</g, "\\u003c");
 
   const description = sanitizeDescriptionHtml(fullRow?.description_html);
 
@@ -2827,7 +3022,7 @@ ${galleryHtml}
 
         <div class="pdp-info">
           <p class="pdp-brand">${html(brand)}</p>
-          <h1 class="pdp-title">${html(name)}</h1>
+          <h1 class="pdp-title" data-pdp-title>${html(name)}</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="${html(
             Math.round(price * 100)
           )}" data-base-compare-cents="${html(
@@ -2858,6 +3053,9 @@ ${variantSelectorsHtml}
               data-cart-price="${html(price)}"
               data-cart-currency="${html(currency)}"
               data-cart-image="${html(images[0] || curated.image || "")}"
+              data-cart-variant-id="${html(defaultVariant?.variant_id || "")}"
+              data-cart-selected-options="${html(defaultSelectedOptionsJson)}"
+              data-cart-sku="${html(defaultVariant?.sku || "")}"
               data-cart-variant=""
               ${variantOptions.length ? "disabled" : ""}
             >${variantOptions.length ? "Select options" : "Add to cart"}</button>
@@ -2981,15 +3179,23 @@ ${mobileBottomNav(pathPrefix)}
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = ${variantDealsJson};
         var variantPricing = ${variantPricingJson};
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
         var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
           return String(value || "")
@@ -3044,6 +3250,24 @@ ${mobileBottomNav(pathPrefix)}
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
           }
+        }
+
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — ${html(brand)} | Athletonic")
+            : baseDocumentTitle;
         }
 
         function selectedVariant() {
@@ -3116,10 +3340,10 @@ ${mobileBottomNav(pathPrefix)}
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -3127,10 +3351,12 @@ ${mobileBottomNav(pathPrefix)}
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
               setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
@@ -3144,6 +3370,13 @@ ${mobileBottomNav(pathPrefix)}
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             resetToBasePrice();
             addBtn.disabled = true;

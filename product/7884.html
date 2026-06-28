@@ -181,7 +181,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Promix</p>
-          <h1 class="pdp-title">Barry's Protein</h1>
+          <h1 class="pdp-title" data-pdp-title>Barry's Protein</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="5800" data-base-compare-cents="5300" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$58.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -221,6 +221,9 @@
               data-cart-price="58"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0507/9565/files/promix-barrys-french-vanilla-whey-protein-bag.png"
+              data-cart-variant-id="41714460688473"
+              data-cart-selected-options="{&quot;Protein Type&quot;:&quot;Whey Protein&quot;,&quot;Flavor&quot;:&quot;Vanilla&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -320,7 +323,7 @@
                 <strong>$20.99</strong>
 
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -609,15 +612,23 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Whey Protein / Vanilla","optionValues":["Whey Protein","Vanilla"],"price_cents":6400,"compare_at_cents":0,"available":true},{"key":"Whey Protein / Chocolate","optionValues":["Whey Protein","Chocolate"],"price_cents":6400,"compare_at_cents":0,"available":true},{"key":"Vegan Protein / Vanilla","optionValues":["Vegan Protein","Vanilla"],"price_cents":5800,"compare_at_cents":0,"available":true},{"key":"Vegan Protein / Chocolate","optionValues":["Vegan Protein","Chocolate"],"price_cents":5800,"compare_at_cents":5300,"available":true}];
+        var variantPricing = [{"variant_id":"41714460688473","key":"Whey Protein / Vanilla","title":"Whey Protein / Vanilla","sku":null,"optionValues":["Whey Protein","Vanilla"],"option_values":[{"position":1,"name":"Protein Type","value":"Whey Protein"},{"position":2,"name":"Flavor","value":"Vanilla"}],"selected_options":{"Protein Type":"Whey Protein","Flavor":"Vanilla"},"price_cents":6400,"regular_price_cents":6400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/promix-barrys-french-vanilla-whey-protein-bag.png"},{"variant_id":"41714460721241","key":"Whey Protein / Chocolate","title":"Whey Protein / Chocolate","sku":null,"optionValues":["Whey Protein","Chocolate"],"option_values":[{"position":1,"name":"Protein Type","value":"Whey Protein"},{"position":2,"name":"Flavor","value":"Chocolate"}],"selected_options":{"Protein Type":"Whey Protein","Flavor":"Chocolate"},"price_cents":6400,"regular_price_cents":6400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/promix-barrys-chocolatewhey-protein-bag.png"},{"variant_id":"41714460754009","key":"Vegan Protein / Vanilla","title":"Vegan Protein / Vanilla","sku":null,"optionValues":["Vegan Protein","Vanilla"],"option_values":[{"position":1,"name":"Protein Type","value":"Vegan Protein"},{"position":2,"name":"Flavor","value":"Vanilla"}],"selected_options":{"Protein Type":"Vegan Protein","Flavor":"Vanilla"},"price_cents":5800,"regular_price_cents":5800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/promix-barrys-vanilla-vegan-protein-bag.png"},{"variant_id":"41714460786777","key":"Vegan Protein / Chocolate","title":"Vegan Protein / Chocolate","sku":null,"optionValues":["Vegan Protein","Chocolate"],"option_values":[{"position":1,"name":"Protein Type","value":"Vegan Protein"},{"position":2,"name":"Flavor","value":"Chocolate"}],"selected_options":{"Protein Type":"Vegan Protein","Flavor":"Chocolate"},"price_cents":5800,"regular_price_cents":5800,"compare_at_cents":5300,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0507/9565/files/promix-barrys-chocolate-vegan-protein-bag.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
         var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
           return String(value || "")
@@ -672,6 +683,24 @@
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
           }
+        }
+
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Promix | Athletonic")
+            : baseDocumentTitle;
         }
 
         function selectedVariant() {
@@ -744,10 +773,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -755,10 +784,12 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
               setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
@@ -772,6 +803,13 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             resetToBasePrice();
             addBtn.disabled = true;

@@ -168,7 +168,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">football_town</p>
-          <h1 class="pdp-title">Sneaker The Red Rose (White)</h1>
+          <h1 class="pdp-title" data-pdp-title>Sneaker The Red Rose (White)</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="9000" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$90.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -206,6 +206,9 @@
               data-cart-price="90"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1244/1010/products/SNEAKERS-REDROSE-7.jpg"
+              data-cart-variant-id="39354578370623"
+              data-cart-selected-options="{&quot;Size&quot;:&quot;39&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -604,17 +607,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"39","optionValues":["39"],"price_cents":9000,"compare_at_cents":11200,"available":true},{"key":"40","optionValues":["40"],"price_cents":9000,"compare_at_cents":11200,"available":true},{"key":"41","optionValues":["41"],"price_cents":9000,"compare_at_cents":11200,"available":true},{"key":"42","optionValues":["42"],"price_cents":9000,"compare_at_cents":11200,"available":true},{"key":"43","optionValues":["43"],"price_cents":9000,"compare_at_cents":11200,"available":true},{"key":"44","optionValues":["44"],"price_cents":9000,"compare_at_cents":11200,"available":true},{"key":"45","optionValues":["45"],"price_cents":9000,"compare_at_cents":11200,"available":true},{"key":"46","optionValues":["46"],"price_cents":9000,"compare_at_cents":11200,"available":true}];
+        var variantPricing = [{"variant_id":"39354578370623","key":"39","title":"39","sku":null,"optionValues":["39"],"option_values":[{"position":1,"name":"Size","value":"39"}],"selected_options":{"Size":"39"},"price_cents":9000,"regular_price_cents":11200,"compare_at_cents":11200,"compare_at_price_cents":11200,"source_available":false,"available":true,"image_url":null},{"variant_id":"39354578403391","key":"40","title":"40","sku":null,"optionValues":["40"],"option_values":[{"position":1,"name":"Size","value":"40"}],"selected_options":{"Size":"40"},"price_cents":9000,"regular_price_cents":11200,"compare_at_cents":11200,"compare_at_price_cents":11200,"source_available":true,"available":true,"image_url":null},{"variant_id":"39354578436159","key":"41","title":"41","sku":null,"optionValues":["41"],"option_values":[{"position":1,"name":"Size","value":"41"}],"selected_options":{"Size":"41"},"price_cents":9000,"regular_price_cents":11200,"compare_at_cents":11200,"compare_at_price_cents":11200,"source_available":true,"available":true,"image_url":null},{"variant_id":"39354578468927","key":"42","title":"42","sku":null,"optionValues":["42"],"option_values":[{"position":1,"name":"Size","value":"42"}],"selected_options":{"Size":"42"},"price_cents":9000,"regular_price_cents":11200,"compare_at_cents":11200,"compare_at_price_cents":11200,"source_available":true,"available":true,"image_url":null},{"variant_id":"39354578501695","key":"43","title":"43","sku":null,"optionValues":["43"],"option_values":[{"position":1,"name":"Size","value":"43"}],"selected_options":{"Size":"43"},"price_cents":9000,"regular_price_cents":11200,"compare_at_cents":11200,"compare_at_price_cents":11200,"source_available":true,"available":true,"image_url":null},{"variant_id":"39354578534463","key":"44","title":"44","sku":null,"optionValues":["44"],"option_values":[{"position":1,"name":"Size","value":"44"}],"selected_options":{"Size":"44"},"price_cents":9000,"regular_price_cents":11200,"compare_at_cents":11200,"compare_at_price_cents":11200,"source_available":false,"available":true,"image_url":null},{"variant_id":"39354578567231","key":"45","title":"45","sku":null,"optionValues":["45"],"option_values":[{"position":1,"name":"Size","value":"45"}],"selected_options":{"Size":"45"},"price_cents":9000,"regular_price_cents":11200,"compare_at_cents":11200,"compare_at_price_cents":11200,"source_available":false,"available":true,"image_url":null},{"variant_id":"39354578599999","key":"46","title":"46","sku":null,"optionValues":["46"],"option_values":[{"position":1,"name":"Size","value":"46"}],"selected_options":{"Size":"46"},"price_cents":9000,"regular_price_cents":11200,"compare_at_cents":11200,"compare_at_price_cents":11200,"source_available":false,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -644,6 +659,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -661,16 +680,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — football_town | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -693,23 +735,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -722,10 +768,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -733,21 +779,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -758,12 +798,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

@@ -6,28 +6,81 @@ const catalog = require("../../../data/athletonic-catalog.json");
 
 const PRODUCTS = Array.isArray(catalog.products) ? catalog.products : [];
 
+function normalizeVariantImage(variant) {
+  return variant?.image_url || variant?.image || null;
+}
+
+function getVariantCount(product) {
+  if (Number.isInteger(product?.variant_count) && product.variant_count >= 0) {
+    return product.variant_count;
+  }
+  return Array.isArray(product?.variants) ? product.variants.length : 0;
+}
+
+function applyVariantOverrides(product, variantOverrides) {
+  const sourceVariants = Array.isArray(product?.variants) ? product.variants : [];
+  const stagedMap =
+    variantOverrides && typeof variantOverrides === "object" && !Array.isArray(variantOverrides)
+      ? variantOverrides
+      : {};
+
+  const variants = sourceVariants.map((variant) => {
+    const variantId = String(variant?.variant_id || "").trim();
+    const staged =
+      variantId && stagedMap[variantId] && typeof stagedMap[variantId] === "object"
+        ? stagedMap[variantId]
+        : null;
+    const overrideFields = staged ? Object.keys(staged) : [];
+    return {
+      ...variant,
+      ...(staged || {}),
+      _source_price_cents: variant.price_cents,
+      _source_available: variant.available,
+      _source_image_url: normalizeVariantImage(variant),
+      _override: overrideFields.length > 0,
+      _override_fields: overrideFields,
+    };
+  });
+
+  const count = variants.reduce((total, variant) => total + (variant._override ? 1 : 0), 0);
+  return { variants, count };
+}
+
 function applyOverride(product, override) {
+  const variantCount = getVariantCount(product);
+  const patch = override?.patch || {};
+  const variantState = applyVariantOverrides(product, patch.variant_overrides);
   if (!override) {
     return {
       ...product,
+      variant_count: variantCount,
+      variants: variantState.variants,
       _override: false,
       _hidden: false,
+      _source_name: product.name,
       _source_price_cents: product.price_cents,
       _source_available: product.available,
       _source_image: product.image,
       _source_url: product.url,
+      _source_hidden: false,
+      _variant_override_count: 0,
     };
   }
   return {
     ...product,
-    ...(override.patch || {}),
+    variant_count: variantCount,
+    ...patch,
+    variants: variantState.variants,
     _override: true,
     _hidden: Boolean(override.hidden),
+    _source_name: product.name,
     _source_price_cents: product.price_cents,
     _source_available: product.available,
     _source_image: product.image,
     _source_url: product.url,
+    _source_hidden: false,
     _updated_at: override.updated_at,
+    _variant_override_count: variantState.count,
   };
 }
 

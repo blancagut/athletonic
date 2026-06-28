@@ -57,7 +57,7 @@ catalogData.products.push({
   requires_variant_selection: true,
 });
 
-const { validateCart } = require("../api/_lib/catalog.js");
+const { evaluateCart, validateCart } = require("../api/_lib/catalog.js");
 
 const realProduct = catalogData.products.find(
   (p) =>
@@ -65,10 +65,33 @@ const realProduct = catalogData.products.find(
     p.id !== SYN_UNAVAILABLE &&
     Number(p.price_cents) > 0 &&
     p.available === true &&
-    p.requires_variant_selection !== true
+    (p.has_variants !== true || p.default_variant_id)
 );
 
 assert.ok(realProduct, "expected at least one sellable product in the catalog");
+const realProductVariant =
+  Array.isArray(realProduct.variants) && realProduct.default_variant_id
+    ? realProduct.variants.find(
+        (variant) => String(variant.variant_id) === String(realProduct.default_variant_id)
+      ) || null
+    : null;
+const realProductUnitPriceCents = Number(
+  realProductVariant?.price_cents || realProduct.price_cents || 0
+);
+
+function realProductCartLine(overrides = {}) {
+  return {
+    productId: String(realProduct.id),
+    quantity: 1,
+    ...(realProductVariant
+      ? {
+          variant_id: String(realProductVariant.variant_id),
+          variantId: String(realProductVariant.variant_id),
+        }
+      : {}),
+    ...overrides,
+  };
+}
 
 function expectReject(cart, expectedCode) {
   assert.throws(
@@ -85,34 +108,27 @@ function expectReject(cart, expectedCode) {
 }
 
 test("a real catalog product validates and returns the server unit price", () => {
-  const result = validateCart([
-    { productId: String(realProduct.id), quantity: 2 },
-  ]);
+  const result = validateCart([realProductCartLine({ quantity: 2 })]);
   assert.equal(result.items.length, 1);
-  assert.equal(result.items[0].unit_amount_cents, realProduct.price_cents);
-  assert.equal(result.subtotalCents, realProduct.price_cents * 2);
+  assert.equal(result.items[0].unit_amount_cents, realProductUnitPriceCents);
+  assert.equal(result.subtotalCents, realProductUnitPriceCents * 2);
 });
 
 test("a client-supplied price is ignored in favor of the server price", () => {
   const result = validateCart([
-    {
-      productId: String(realProduct.id),
-      quantity: 1,
+    realProductCartLine({
       price: 1,
       price_cents: 1,
       unit_amount_cents: 1,
-    },
+    }),
   ]);
-  assert.equal(result.items[0].unit_amount_cents, realProduct.price_cents);
+  assert.equal(result.items[0].unit_amount_cents, realProductUnitPriceCents);
   assert.notEqual(result.items[0].unit_amount_cents, 1);
 });
 
 test("invalid quantities are rejected (zero, negative, NaN, too large)", () => {
   for (const quantity of [0, -3, "abc", NaN, 99999]) {
-    expectReject(
-      [{ productId: String(realProduct.id), quantity }],
-      "invalid_quantity"
-    );
+    expectReject([realProductCartLine({ quantity })], "invalid_quantity");
   }
 });
 
@@ -167,4 +183,25 @@ test("distinct chosen options of the same product stay separate lines", () => {
   assert.equal(result.items.length, 2);
   const labels = result.items.map((i) => i.variant).sort();
   assert.deepEqual(labels, ["Chocolate", "Vanilla"]);
+});
+
+test("evaluateCart returns structured line validation and partial subtotal", () => {
+  const result = evaluateCart([
+    realProductCartLine({ quantity: 2 }),
+    { productId: SYN_UNAVAILABLE, quantity: 1 },
+  ]);
+
+  assert.equal(result.valid, false);
+  assert.equal(result.code, "product_unavailable");
+  assert.equal(result.message, "One of the products in your cart is not ready for checkout.");
+  assert.equal(result.items.length, 1);
+  assert.equal(result.invalidItems.length, 1);
+  assert.equal(result.lineItems.length, 2);
+  assert.equal(result.lineItems[0].valid, true);
+  assert.equal(result.lineItems[1].valid, false);
+  assert.equal(
+    result.lineItems[1].message,
+    "One of the products in your cart is not ready for checkout."
+  );
+  assert.equal(result.subtotalCents, realProductUnitPriceCents * 2);
 });

@@ -12,6 +12,11 @@
   const CART_STORAGE_KEY = "athletonic-cart-v1";
   const GUEST_EMAIL_KEY = "athletonic-guest-email";
   const LAST_ORDER_REFERENCE_KEY = "athletonic-last-order-reference";
+  const LEGACY_PRODUCT_ID_ALIASES = {
+    "1509-extreme": "1509",
+    "1509-other": "1509",
+    "1509-vanilla": "1509",
+  };
 
   const $ = (selector, root) => (root || document).querySelector(selector);
   const $$ = (selector, root) =>
@@ -109,6 +114,25 @@
   const accountOpenButtons = $$("[data-account-open]");
 
   let cart = loadCart();
+  let cartValidation = {
+    status: cart.length ? "loading" : "empty",
+    valid: false,
+    signature: "",
+    code: cart.length ? "validation_pending" : "empty_cart",
+    message: cart.length
+      ? "Checking cart availability..."
+      : "Add at least one product before checkout.",
+    subtotalCents: cartTotal(),
+    currency: cart[0] ? cart[0].currency || "USD" : "USD",
+    items: [],
+    lineItems: [],
+    invalidItems: [],
+    error: "",
+  };
+  let cartValidationRequestId = 0;
+  let cartValidationAbortController = null;
+  let cartValidationTimer = null;
+  let checkoutBusy = false;
   let lastDrawerTrigger = null;
 
   function storageGet(key, fallback) {
@@ -157,11 +181,147 @@
       .join(" / ");
   }
 
+  function normalizeProductId(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    const productId = String(raw.split("::")[0] || "").trim();
+    return LEGACY_PRODUCT_ID_ALIASES[productId] || productId;
+  }
+
+  function variantRecords(product) {
+    return Array.isArray(product && product.variants) ? product.variants : [];
+  }
+
+  function normalizeVariantSelectedOptions(variant) {
+    return normalizeSelectedOptions(
+      variant && (variant.selected_options || variant.selectedOptions)
+    );
+  }
+
+  function findVariantRecord(product, variantId) {
+    const cleanVariantId = String(variantId || "").trim();
+    if (!cleanVariantId) return null;
+    return (
+      variantRecords(product).find((variant) => {
+        return String(variant && variant.variant_id || "").trim() === cleanVariantId;
+      }) || null
+    );
+  }
+
+  function defaultVariantRecord(product) {
+    return (
+      findVariantRecord(product, product && product.default_variant_id) ||
+      variantRecords(product)[0] ||
+      null
+    );
+  }
+
+  function variantImageUrl(variant) {
+    return String(
+      (variant && (variant.image_url || variant.image || variant.featured_image)) || ""
+    ).trim();
+  }
+
+  function variantPriceValue(variant) {
+    const cents = Number(variant && (variant.price_cents || variant.priceCents) || 0);
+    if (Number.isFinite(cents) && cents > 0) return cents / 100;
+    const price = Number(variant && variant.price || 0);
+    return Number.isFinite(price) && price > 0 ? price : 0;
+  }
+
+  function variantCompareAtValue(variant, price) {
+    const cents = Number(
+      variant && (variant.compare_at_price_cents || variant.compareAtPriceCents) || 0
+    );
+    if (Number.isFinite(cents) && cents > 0) {
+      const compare = cents / 100;
+      return compare > price ? compare : null;
+    }
+    const compare = Number(
+      variant && (variant.compare_at_price || variant.compareAtPrice) || 0
+    );
+    return Number.isFinite(compare) && compare > price ? compare : null;
+  }
+
+  function directCartVariantData(product) {
+    const variant = defaultVariantRecord(product);
+    if (!variant) return null;
+
+    const selectedOptions = normalizeVariantSelectedOptions(variant);
+    return {
+      variantId: String(variant.variant_id || "").trim(),
+      selectedOptions,
+      variant: selectedOptionsLabel(selectedOptions),
+      image: variantImageUrl(variant),
+      price: variantPriceValue(variant),
+      compareAtPrice: variantCompareAtValue(variant, variantPriceValue(variant)),
+      currency: String(variant.currency || product && product.currency || "").trim(),
+    };
+  }
+
+  function variantRecordPriceCents(variant, fallbackProduct) {
+    const cents = Number(
+      (variant && (variant.price_cents || variant.priceCents)) ||
+      (fallbackProduct && fallbackProduct.price_cents) ||
+      0
+    );
+    return Number.isFinite(cents) && cents > 0 ? Math.round(cents) : 0;
+  }
+
+  function variantRecordCompareAtCents(variant, fallbackProduct) {
+    const cents = Number(
+      (variant && (variant.compare_at_price_cents || variant.compareAtPriceCents)) ||
+      (fallbackProduct && fallbackProduct.compare_at_price_cents) ||
+      0
+    );
+    return Number.isFinite(cents) && cents > 0 ? Math.round(cents) : 0;
+  }
+
+  function normalizeVariantKey(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+  }
+
+  function findVariantBySelectedValues(product, values) {
+    const parts = Array.isArray(values)
+      ? values.map((value) => String(value || "").trim()).filter(Boolean)
+      : [];
+    if (!parts.length) return null;
+
+    const joined = parts.join(" / ");
+    const normalizedParts = parts.map(normalizeVariantKey).sort();
+    return (
+      variantRecords(product).find((variant) => {
+        const key = normalizeVariantKey(variant && (variant.key || variant.title));
+        if (key && key === normalizeVariantKey(joined)) return true;
+
+        const optionValues = Array.isArray(variant && variant.optionValues)
+          ? variant.optionValues
+          : Array.isArray(variant && variant.option_values)
+            ? variant.option_values.map((entry) => entry && entry.value)
+            : [];
+        if (optionValues.length !== parts.length) return false;
+        if (
+          optionValues.every(
+            (value, index) => normalizeVariantKey(value) === normalizeVariantKey(parts[index])
+          )
+        ) {
+          return true;
+        }
+
+        const normalizedVariantValues = optionValues.map(normalizeVariantKey).sort();
+        return normalizedVariantValues.every((value, index) => value === normalizedParts[index]);
+      }) || null
+    );
+  }
+
   function normalizeCartItem(item) {
     if (!item || typeof item !== "object") return null;
 
     const rawId = String(item.id || item.productId || "").trim();
-    const productId = String(item.productId || rawId.split("::")[0] || "").trim();
+    const productId = normalizeProductId(item.productId || rawId);
     if (!productId) return null;
 
     const storedVariant =
@@ -232,12 +392,374 @@
     }
   }
 
+  function formatMoneyFromCents(cents, currency) {
+    return formatMoney((Number(cents || 0) / 100), currency || "USD");
+  }
+
+  function buildCartValidationSnapshot() {
+    return cart.map((item) => ({
+      productId: normalizeProductId(item.productId || item.id || ""),
+      variant_id: String(item.variantId || "").trim(),
+      variantId: String(item.variantId || "").trim(),
+      selected_options: item.selectedOptions || {},
+      selectedOptions: item.selectedOptions || {},
+      variant: item.variant || "",
+      quantity: item.quantity,
+    }));
+  }
+
+  function snapshotSignature(snapshot) {
+    try {
+      return JSON.stringify(snapshot);
+    } catch {
+      return "";
+    }
+  }
+
+  function setCartValidationState(nextState) {
+    cartValidation = Object.assign({}, cartValidation, nextState);
+  }
+
+  function applyCartValidationPayload(payload, signature) {
+    setCartValidationState({
+      status: payload && payload.valid ? "valid" : "invalid",
+      valid: Boolean(payload && payload.valid),
+      signature,
+      code: (payload && payload.code) || "",
+      message: (payload && payload.message) || "",
+      subtotalCents: Number(payload && payload.subtotal_cents) || 0,
+      currency: String((payload && payload.currency) || "USD").toUpperCase(),
+      items: Array.isArray(payload && payload.items) ? payload.items : [],
+      lineItems: Array.isArray(payload && payload.line_items) ? payload.line_items : [],
+      invalidItems: Array.isArray(payload && payload.invalid_items) ? payload.invalid_items : [],
+      error: "",
+    });
+  }
+
+  function queueCartValidation(options) {
+    const force = Boolean(options && options.force);
+    const snapshot = buildCartValidationSnapshot();
+    const signature = snapshotSignature(snapshot);
+
+    if (!force && signature === cartValidation.signature && cartValidation.status !== "error") {
+      return Promise.resolve(cartValidation);
+    }
+
+    if (cartValidationTimer) {
+      window.clearTimeout(cartValidationTimer);
+      cartValidationTimer = null;
+    }
+
+    if (cartValidationAbortController) {
+      cartValidationAbortController.abort();
+      cartValidationAbortController = null;
+    }
+
+    if (snapshot.length === 0) {
+      setCartValidationState({
+        status: "empty",
+        valid: false,
+        signature,
+        code: "empty_cart",
+        message: "Add at least one product before checkout.",
+        subtotalCents: 0,
+        currency: "USD",
+        items: [],
+        lineItems: [],
+        invalidItems: [],
+        error: "",
+      });
+      renderCart();
+      return Promise.resolve(cartValidation);
+    }
+
+    setCartValidationState({
+      status: "loading",
+      valid: false,
+      signature,
+      code: "validation_pending",
+      message: "Checking cart availability...",
+      error: "",
+      items: [],
+      lineItems: [],
+      invalidItems: [],
+    });
+    renderCart();
+
+    return new Promise((resolve) => {
+      const requestId = ++cartValidationRequestId;
+      const controller = new AbortController();
+      cartValidationAbortController = controller;
+
+      const execute = () =>
+        fetch("/api/cart/validate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+          body: JSON.stringify({ cart: snapshot }),
+        })
+          .then(async (response) => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              throw new Error(data.message || "Could not verify cart right now.");
+            }
+            return data;
+          })
+          .then((payload) => {
+            if (controller.signal.aborted || requestId !== cartValidationRequestId) {
+              return cartValidation;
+            }
+            if (cartValidationAbortController === controller) {
+              cartValidationAbortController = null;
+            }
+            applyCartValidationPayload(payload, signature);
+            renderCart();
+            resolve(cartValidation);
+            return cartValidation;
+          })
+          .catch((error) => {
+            if (controller.signal.aborted || requestId !== cartValidationRequestId) {
+              resolve(cartValidation);
+              return cartValidation;
+            }
+            if (cartValidationAbortController === controller) {
+              cartValidationAbortController = null;
+            }
+            setCartValidationState({
+              status: "error",
+              valid: false,
+              signature,
+              code: "validation_error",
+              message: error.message || "Could not verify cart right now.",
+              error: error.message || "Could not verify cart right now.",
+            });
+            renderCart();
+            resolve(cartValidation);
+            return cartValidation;
+          });
+
+      if (options && options.delay === false) {
+        execute();
+        return;
+      }
+
+      cartValidationTimer = window.setTimeout(() => {
+        cartValidationTimer = null;
+        execute();
+      }, 0);
+    });
+  }
+
+  let liveCatalogProductsPromise = null;
+
+  function fetchLiveCatalogProducts(productIds) {
+    const ids = Array.isArray(productIds)
+      ? Array.from(new Set(productIds.map(normalizeProductId).filter(Boolean)))
+      : [];
+    if (!ids.length) return Promise.resolve([]);
+
+    const cacheKey = ids.slice().sort().join(",");
+    if (liveCatalogProductsPromise && liveCatalogProductsPromise.cacheKey === cacheKey) {
+      return liveCatalogProductsPromise;
+    }
+
+    liveCatalogProductsPromise = fetch(
+      "/api/catalog/products?ids=" + encodeURIComponent(cacheKey)
+    )
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to load live catalog products");
+        return response.json();
+      })
+      .then((payload) => (Array.isArray(payload && payload.products) ? payload.products : []))
+      .catch(() => []);
+    liveCatalogProductsPromise.cacheKey = cacheKey;
+    return liveCatalogProductsPromise;
+  }
+
+  function liveProductMap(products) {
+    return new Map(
+      (Array.isArray(products) ? products : [])
+        .map((product) => [String((product && product.id) || "").trim(), product])
+        .filter((entry) => entry[0])
+    );
+  }
+
   function cartQuantity() {
     return cart.reduce((sum, item) => sum + item.quantity, 0);
   }
 
   function cartTotal() {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  function applyLiveCardProduct(card, product) {
+    if (!card || !product) return;
+
+    const directVariant = directCartVariantData(product);
+    const titleLink = $(".product-card-link", card);
+    const imageLink = $(".product-image", card);
+    const imageEl = imageLink ? $("img", imageLink) : null;
+    const priceLine = $(".product-price-line", card);
+    const addBtn = $("[data-add-to-cart]", card);
+    const href = product.has_pdp
+      ? baseHref() + "product/" + encodeURIComponent(product.id) + ".html"
+      : (product.url || (baseHref() + "product/" + encodeURIComponent(product.id) + ".html"));
+    const title = String(product.name || "").trim();
+    const currency = (directVariant && directVariant.currency) || product.currency || "USD";
+    const priceCents = directVariant
+      ? Math.round(Number((directVariant.price || 0) * 100))
+      : Math.round(Number(product.price_cents || 0));
+    const compareCents = directVariant
+      ? Math.round(Number((directVariant.compareAtPrice || 0) * 100))
+      : Math.round(Number(product.compare_at_price_cents || 0));
+    const cardImage = (directVariant && directVariant.image) || product.image || "";
+
+    if (titleLink) {
+      titleLink.textContent = title;
+      titleLink.setAttribute("href", href);
+    }
+    if (imageLink) imageLink.setAttribute("href", href);
+    if (imageEl && cardImage) {
+      imageEl.src = cardImage;
+      imageEl.alt = title;
+    }
+    if (priceLine) {
+      priceLine.innerHTML =
+        "<strong>" + esc(formatMoneyFromCents(priceCents, currency)) + "</strong>" +
+        (compareCents > priceCents
+          ? "<span>" + esc(formatMoneyFromCents(compareCents, currency)) + "</span>"
+          : "");
+    }
+    if (addBtn) {
+      addBtn.dataset.cartId = String(product.id || "");
+      addBtn.dataset.cartProductId = String(product.id || "");
+      addBtn.dataset.cartVariantId =
+        (directVariant && directVariant.variantId) || String(product.default_variant_id || "");
+      addBtn.dataset.cartBrand = String(product.brand || "");
+      addBtn.dataset.cartName = title;
+      addBtn.dataset.cartPrice = ((priceCents || 0) / 100).toFixed(2);
+      addBtn.dataset.cartPriceCents = String(priceCents || 0);
+      addBtn.dataset.cartCurrency = currency;
+      addBtn.dataset.cartImage = cardImage;
+      addBtn.dataset.cartSelectedOptions = JSON.stringify(
+        (directVariant && directVariant.selectedOptions) || {}
+      );
+      addBtn.dataset.cartVariant = (directVariant && directVariant.variant) || "";
+      addBtn.setAttribute("aria-label", "Add " + title + " to cart");
+    }
+  }
+
+  function refreshVisibleCatalogCards() {
+    const cards = $$(".product-card[data-product-id]");
+    const ids = cards
+      .map((card) => normalizeProductId(card.getAttribute("data-product-id")))
+      .filter(Boolean);
+    if (!ids.length) return;
+
+    fetchLiveCatalogProducts(ids).then((products) => {
+      const byId = liveProductMap(products);
+      cards.forEach((card) => {
+        const product = byId.get(normalizeProductId(card.getAttribute("data-product-id")));
+        if (product) applyLiveCardProduct(card, product);
+      });
+    });
+  }
+
+  function applyLivePdpProduct(product) {
+    if (!product) return;
+
+    const addBtn = document.querySelector("[data-pdp-add-button]");
+    const titleEl = document.querySelector("[data-pdp-title]");
+    const priceEl = document.querySelector("[data-pdp-price]");
+    const compareEl = document.querySelector("[data-pdp-compare]");
+    const discountEl = document.querySelector("[data-pdp-discount]");
+    const availabilityEl = document.querySelector(".pdp-availability");
+    const mainImg = document.getElementById("pdp-main-image");
+    const selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
+    if (!addBtn || !titleEl || !priceEl) return;
+
+    const baseName = String(product.name || addBtn.dataset.cartName || "").trim();
+    const baseBrand = String(product.brand || addBtn.dataset.cartBrand || "").trim();
+    const baseVariant = defaultVariantRecord(product);
+
+    function currentVariant() {
+      if (!selects.length) return defaultVariantRecord(product);
+      const values = selects.map((select) => String(select.value || "").trim());
+      if (values.some((value) => !value)) return null;
+      return findVariantBySelectedValues(product, values);
+    }
+
+    function render() {
+      const variant = currentVariant() || baseVariant;
+      const variantTitle = variant && variant.title ? variant.title : "";
+      const mergedName = variantTitle ? baseName + " - " + variantTitle : baseName;
+      const priceCents = variant
+        ? variantRecordPriceCents(variant, product)
+        : Math.round(Number(product.price_cents || 0));
+      const compareCents = variant
+        ? variantRecordCompareAtCents(variant, product)
+        : Math.round(Number(product.compare_at_price_cents || 0));
+      const imageUrl = variantImageUrl(variant) || String(product.image || "").trim();
+      const available = variant ? variant.available !== false : product.available !== false;
+
+      titleEl.textContent = mergedName;
+      document.title = baseBrand
+        ? mergedName + " — " + baseBrand + " | Athletonic"
+        : mergedName + " | Athletonic";
+      priceEl.textContent = formatMoneyFromCents(priceCents, product.currency || "USD");
+      if (compareEl) {
+        compareEl.hidden = !(compareCents > priceCents);
+        compareEl.textContent = compareCents > priceCents
+          ? formatMoneyFromCents(compareCents, product.currency || "USD")
+          : "";
+      }
+      if (discountEl) {
+        discountEl.hidden = !(compareCents > priceCents);
+        discountEl.textContent = compareCents > priceCents ? "Limited offer" : "";
+      }
+      if (availabilityEl) {
+        availabilityEl.textContent = available
+          ? "In stock · Sold by Athletonic"
+          : "Out of stock · Sold by Athletonic";
+      }
+      if (mainImg && imageUrl) {
+        mainImg.src = imageUrl;
+        mainImg.alt = mergedName;
+      }
+
+      addBtn.dataset.cartProductId = String(product.id || "");
+      addBtn.dataset.cartId = String(product.id || "");
+      addBtn.dataset.cartBrand = baseBrand;
+      addBtn.dataset.cartName = mergedName;
+      addBtn.dataset.cartPrice = ((priceCents || 0) / 100).toFixed(2);
+      addBtn.dataset.cartCurrency = String(product.currency || "USD");
+      addBtn.dataset.cartImage = imageUrl;
+      addBtn.dataset.cartVariantId = variant && variant.variant_id ? String(variant.variant_id) : "";
+      addBtn.dataset.cartSelectedOptions = JSON.stringify(normalizeVariantSelectedOptions(variant));
+      addBtn.dataset.cartSku = variant && variant.sku ? String(variant.sku) : "";
+      addBtn.dataset.cartVariant = variantTitle;
+    }
+
+    render();
+    selects.forEach((select) => {
+      select.addEventListener("change", () => {
+        window.requestAnimationFrame(render);
+      });
+    });
+  }
+
+  function refreshPdpFromLiveCatalog() {
+    const addBtn = document.querySelector("[data-pdp-add-button]");
+    if (!addBtn) return;
+
+    const productId = normalizeProductId(addBtn.dataset.cartProductId || addBtn.dataset.cartId);
+    if (!productId) return;
+
+    fetchLiveCatalogProducts([productId]).then((products) => {
+      if (products[0]) applyLivePdpProduct(products[0]);
+    });
   }
 
   function setExpanded(buttons, expanded) {
@@ -468,12 +990,18 @@
 
   function renderCart() {
     const totalItems = cartQuantity();
-    const total = cartTotal();
+    const subtotalCents =
+      cartValidation.status === "valid" || cartValidation.status === "invalid"
+        ? cartValidation.subtotalCents
+        : cartTotal();
+    const subtotalCurrency = cartValidation.currency || (cart[0] && cart[0].currency) || "USD";
     for (const cartCount of cartCounts) {
       cartCount.textContent = String(totalItems);
       cartCount.hidden = totalItems === 0;
     }
-    if (cartSubtotal) cartSubtotal.textContent = formatMoney(total, "USD");
+    if (cartSubtotal) {
+      cartSubtotal.textContent = formatMoney(subtotalCents, subtotalCurrency);
+    }
     if (!cartItems) return;
     cartItems.textContent = "";
 
@@ -490,19 +1018,64 @@
       cartItems.append(empty);
       if (checkoutForm) checkoutForm.hidden = true;
       if (checkoutSubmit) checkoutSubmit.disabled = true;
+      if (!checkoutBusy) setFormStatus(checkoutStatus, "", "");
       return;
     }
 
     if (checkoutForm) checkoutForm.hidden = false;
-    if (checkoutSubmit) checkoutSubmit.disabled = false;
+    const canCheckout = !checkoutBusy && cartValidation.status === "valid";
+    if (checkoutSubmit) checkoutSubmit.disabled = !canCheckout;
 
-    for (const item of cart) {
+    if (!checkoutBusy) {
+      if (cartValidation.status === "loading") {
+        setFormStatus(checkoutStatus, "Checking cart availability...", "pending");
+      } else if (cartValidation.status === "invalid") {
+        setFormStatus(
+          checkoutStatus,
+          cartValidation.message ||
+            "One or more items in your cart are not ready for checkout.",
+          "error"
+        );
+      } else if (cartValidation.status === "error") {
+        setFormStatus(
+          checkoutStatus,
+          cartValidation.message || "Could not verify cart right now.",
+          "error"
+        );
+      } else if (cartValidation.status === "valid") {
+        setFormStatus(checkoutStatus, "", "");
+      }
+    }
+
+    const validationLines = new Map(
+      (Array.isArray(cartValidation.lineItems) ? cartValidation.lineItems : []).map((line) => [
+        Number(line && line.input_index),
+        line,
+      ])
+    );
+
+    cart.forEach((item, index) => {
+      const validationLine = validationLines.get(index) || null;
+      const isInvalid = Boolean(validationLine && validationLine.valid === false);
+      const isValidated = Boolean(validationLine && validationLine.valid === true);
       const article = document.createElement("article");
       article.className = "cart-item";
+      article.dataset.validation = isInvalid ? "invalid" : isValidated ? "valid" : "pending";
+      article.setAttribute("aria-invalid", isInvalid ? "true" : "false");
 
       const image = document.createElement("img");
-      image.src = item.image;
-      image.alt = item.name;
+      image.src =
+        (isValidated && validationLine && validationLine.image_url) ||
+        item.image ||
+        "";
+      image.alt =
+        isValidated && validationLine && validationLine.name
+          ? validationLine.variant
+            ? validationLine.name + " — " + validationLine.variant
+            : validationLine.name
+          : item.variant
+            ? item.name + " — " + item.variant
+            : item.name;
       image.width = 78;
       image.height = 78;
       image.loading = "lazy";
@@ -512,16 +1085,27 @@
       body.className = "cart-item-body";
 
       const brand = document.createElement("span");
-      brand.textContent = item.brand;
+      brand.textContent = isValidated && validationLine && validationLine.brand
+        ? validationLine.brand
+        : item.brand;
 
-      const itemTitle = item.variant
-        ? item.name + " — " + item.variant
+      const itemName = isValidated && validationLine && validationLine.name
+        ? validationLine.name
         : item.name;
+      const itemVariant = isValidated && validationLine && validationLine.variant
+        ? validationLine.variant
+        : item.variant;
+      const itemTitle = itemVariant ? itemName + " — " + itemVariant : itemName;
       const title = document.createElement("h3");
       title.textContent = itemTitle;
 
       const price = document.createElement("strong");
-      price.textContent = formatMoney(item.price * item.quantity, item.currency);
+      const lineCurrency =
+        (isValidated && validationLine && validationLine.currency) || item.currency;
+      const lineTotalCents = isValidated && validationLine
+        ? Number(validationLine.line_total_cents || 0)
+        : Math.max(0, Math.round(Number(item.price || 0) * 100) * item.quantity);
+      price.textContent = formatMoneyFromCents(lineTotalCents, lineCurrency);
 
       const controls = document.createElement("div");
       controls.className = "cart-controls";
@@ -550,9 +1134,18 @@
 
       controls.append(minus, quantity, plus, remove);
       body.append(brand, title, price, controls);
+
+      if (isInvalid) {
+        const status = document.createElement("p");
+        status.className = "cart-item-status";
+        status.textContent =
+          validationLine.message || "This item is not ready for checkout.";
+        body.append(status);
+      }
+
       article.append(image, body);
       cartItems.append(article);
-    }
+    });
   }
 
   /**
@@ -561,15 +1154,17 @@
    */
   function addItem(payload) {
     if (!payload || !payload.id) return;
+    const productId = normalizeProductId(payload.productId || payload.id);
+    if (!productId) return;
     const quantity = normalizeAddQuantity(payload.quantity);
     const selectedOptions = normalizeSelectedOptions(payload.selectedOptions);
     const variant = selectedOptionsLabel(selectedOptions) || String(payload.variant || "").trim();
     const variantId = String(payload.variantId || payload.variant_id || "").trim();
     const cartId = variantId
-      ? payload.id + "::" + variantId
+      ? productId + "::" + variantId
       : variant
-        ? payload.id + "::" + variant
-        : String(payload.id);
+        ? productId + "::" + variant
+        : productId;
     const existing = cart.find((cartItem) => cartItem.id === cartId);
     if (existing) {
       existing.quantity += quantity;
@@ -578,7 +1173,7 @@
       const price = Number(payload.price || 0);
       cart.push({
         id: cartId,
-        productId: String(payload.id),
+        productId,
         variantId,
         sku: String(payload.sku || ""),
         brand: payload.brand || "",
@@ -593,13 +1188,14 @@
     }
     saveCart();
     setFormStatus(checkoutStatus, "", "");
-    renderCart();
+    queueCartValidation();
     openCart();
   }
 
   function addToCartFromButton(button) {
     addItem({
-      id: button.dataset.cartId,
+      id: button.dataset.cartProductId || button.dataset.cartId,
+      productId: button.dataset.cartProductId || button.dataset.cartId,
       brand: button.dataset.cartBrand,
       name: button.dataset.cartName,
       price: Number(button.dataset.cartPrice || 0),
@@ -620,13 +1216,13 @@
       cart = cart.filter((cartItem) => cartItem.id !== id);
     }
     saveCart();
-    renderCart();
+    queueCartValidation();
   }
 
   function removeCartItem(id) {
     cart = cart.filter((cartItem) => cartItem.id !== id);
     saveCart();
-    renderCart();
+    queueCartValidation();
   }
 
   async function submitCheckout(email) {
@@ -636,17 +1232,18 @@
     // When signed in, the server trusts the token identity over body.email,
     // so send the account email to keep the client display consistent.
     const effectiveEmail = sessionEmail || email;
+    const snapshot = buildCartValidationSnapshot();
+    const validation = await queueCartValidation({ force: true, delay: false });
+    if (!validation.valid) {
+      const error = new Error(
+        validation.message || "One or more items in your cart are not ready for checkout."
+      );
+      error.code = validation.code || "invalid_cart";
+      throw error;
+    }
     const payload = {
       email: effectiveEmail,
-      cart: cart.map((item) => ({
-        productId: item.productId || item.id,
-        variant_id: item.variantId || "",
-        variantId: item.variantId || "",
-        sku: item.sku || "",
-        selected_options: item.selectedOptions || {},
-        variant: item.variant || "",
-        quantity: item.quantity,
-      })),
+      cart: snapshot,
       attribution: captureAttribution(),
     };
 
@@ -832,6 +1429,7 @@
       }
       storageSet(GUEST_EMAIL_KEY, email);
       hydrateEmailFields();
+      checkoutBusy = true;
       if (checkoutSubmit) checkoutSubmit.disabled = true;
       setFormStatus(checkoutStatus, "Creating secure checkout...", "pending");
       try {
@@ -848,7 +1446,8 @@
         window.location.assign(checkout.url);
       } catch (error) {
         console.error(error);
-        if (checkoutSubmit) checkoutSubmit.disabled = false;
+        checkoutBusy = false;
+        renderCart();
         setFormStatus(
           checkoutStatus,
           error.message || "Could not start checkout. Your cart is still saved here.",
@@ -861,12 +1460,13 @@
   hydrateEmailFields();
   applyCheckoutLabels();
   renderCart();
+  queueCartValidation({ force: true });
   showCheckoutNoticeFromUrl();
 
   window.addEventListener("storage", (event) => {
     if (event.key === CART_STORAGE_KEY || event.key === null) {
       cart = loadCart();
-      renderCart();
+      queueCartValidation({ force: true });
     }
     if (
       event.key === GUEST_EMAIL_KEY ||
@@ -949,7 +1549,7 @@
     clear() {
       cart = [];
       saveCart();
-      renderCart();
+      queueCartValidation({ force: true });
     },
     formatMoney,
   };
@@ -1022,9 +1622,24 @@
   function loadSearchIndex() {
     if (_searchIndex) return Promise.resolve(_searchIndex);
     if (_searchIndexReq) return _searchIndexReq;
-    _searchIndexReq = fetch(searchIndexUrl())
-      .then(function (r) { return r.json(); })
-      .then(function (d) { _searchIndex = d.products || []; return _searchIndex; })
+    _searchIndexReq = Promise.all([
+      fetch(searchIndexUrl()).then(function (r) { return r.json(); }),
+      loadCatalog(),
+    ])
+      .then(function (results) {
+        var indexData = results[0] || {};
+        var catalogProducts = Array.isArray(results[1]) ? results[1] : [];
+        var catalogById = new Map(
+          catalogProducts.map(function (product) {
+            return [normalizeCatalogProductId(product && product.id), product];
+          }).filter(function (entry) { return entry[0]; })
+        );
+        _searchIndex = (indexData.products || []).map(function (product) {
+          var richProduct = catalogById.get(normalizeCatalogProductId(product && product.id));
+          return richProduct ? Object.assign({}, richProduct, product) : product;
+        });
+        return _searchIndex;
+      })
       .catch(function () { _searchIndex = []; return _searchIndex; });
     return _searchIndexReq;
   }
@@ -1045,6 +1660,89 @@
     accessories: "Gym accessory",
     "training-gear": "Training gear",
   };
+  function normalizeCatalogProductId(value) {
+    var raw = String(value || "").trim();
+    return raw ? String(raw.split("::")[0] || "").trim() : "";
+  }
+  function normalizeCatalogSelectedOptions(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    var out = {};
+    Object.keys(value).sort().forEach(function (key) {
+      var cleanKey = String(key || "").trim();
+      var cleanValue = String(value[key] || "").trim();
+      if (cleanKey && cleanValue) out[cleanKey] = cleanValue;
+    });
+    return out;
+  }
+  function selectedCatalogOptionsLabel(options) {
+    return Object.keys(options || {})
+      .map(function (key) { return key + ": " + options[key]; })
+      .join(" / ");
+  }
+  function catalogVariantRecords(product) {
+    return Array.isArray(product && product.variants) ? product.variants : [];
+  }
+  function catalogVariantSelectedOptions(variant) {
+    return normalizeCatalogSelectedOptions(
+      variant && (variant.selected_options || variant.selectedOptions)
+    );
+  }
+  function findCatalogVariant(product, variantId) {
+    var cleanVariantId = String(variantId || "").trim();
+    if (!cleanVariantId) return null;
+    return (
+      catalogVariantRecords(product).find(function (variant) {
+        return String((variant && variant.variant_id) || "").trim() === cleanVariantId;
+      }) || null
+    );
+  }
+  function defaultCatalogVariant(product) {
+    return (
+      findCatalogVariant(product, product && product.default_variant_id) ||
+      catalogVariantRecords(product)[0] ||
+      null
+    );
+  }
+  function catalogVariantImageUrl(variant) {
+    return String(
+      (variant && (variant.image_url || variant.image || variant.featured_image)) || ""
+    ).trim();
+  }
+  function catalogVariantPriceValue(variant) {
+    var cents = Number((variant && (variant.price_cents || variant.priceCents)) || 0);
+    if (Number.isFinite(cents) && cents > 0) return cents / 100;
+    var price = Number((variant && variant.price) || 0);
+    return Number.isFinite(price) && price > 0 ? price : 0;
+  }
+  function catalogVariantCompareAtValue(variant, price) {
+    var cents = Number(
+      (variant && (variant.compare_at_price_cents || variant.compareAtPriceCents)) || 0
+    );
+    if (Number.isFinite(cents) && cents > 0) {
+      var compare = cents / 100;
+      return compare > price ? compare : null;
+    }
+    var compare = Number(
+      (variant && (variant.compare_at_price || variant.compareAtPrice)) || 0
+    );
+    return Number.isFinite(compare) && compare > price ? compare : null;
+  }
+  function directCatalogVariantData(product) {
+    var variant = defaultCatalogVariant(product);
+    var price = catalogVariantPriceValue(variant);
+    if (!variant) return null;
+
+    var selectedOptions = catalogVariantSelectedOptions(variant);
+    return {
+      variantId: String(variant.variant_id || "").trim(),
+      selectedOptions: selectedOptions,
+      variant: selectedCatalogOptionsLabel(selectedOptions),
+      image: catalogVariantImageUrl(variant),
+      price: price,
+      compareAtPrice: catalogVariantCompareAtValue(variant, price),
+      currency: String(variant.currency || product && product.currency || "").trim(),
+    };
+  }
   function sectionLabel(p) {
     return p.section_title || SECTION_LABELS[p.section_id] || "";
   }
@@ -1200,17 +1898,28 @@
   function catalogCardHtml(p) {
     var pdpHref = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
     var href = p.has_pdp ? pdpHref : (p.url || pdpHref);
-    var price = (Number(p.price_cents) || 0) / 100;
+    var directVariant = directCatalogVariantData(p);
+    var price = directVariant && directVariant.price > 0
+      ? directVariant.price
+      : (Number(p.price_cents) || 0) / 100;
     var priceStr = price.toFixed(2);
     var imageWidth = Number(p.image_width || p.imageWidth || 640) || 640;
     var imageHeight =
       Number(p.image_height || p.imageHeight || imageWidth) || imageWidth;
-    var compare = p.compare_at_price_cents
-      ? (Number(p.compare_at_price_cents) || 0) / 100
-      : null;
-    var currency = p.currency || "USD";
+    var compare = directVariant && directVariant.compareAtPrice
+      ? directVariant.compareAtPrice
+      : (p.compare_at_price_cents
+        ? (Number(p.compare_at_price_cents) || 0) / 100
+        : null);
+    var currency = (directVariant && directVariant.currency) || p.currency || "USD";
     var label = sectionLabel(p);
     var variantOffer = p.variant_offer || null;
+    var cardImage = (directVariant && directVariant.image) || p.image || "";
+    var directVariantId = directVariant && directVariant.variantId
+      ? directVariant.variantId
+      : String(p.default_variant_id || "");
+    var directSelectedOptions = directVariant ? directVariant.selectedOptions : {};
+    var directVariantLabel = directVariant ? directVariant.variant : "";
     var dealNote = "";
     if (variantOffer) {
       dealNote = '<p class="product-deal-note">' +
@@ -1231,20 +1940,22 @@
         : '<button class="add-cart-button" type="button" data-add-to-cart' +
             ' data-cart-id="' + esc(p.id) + '"' +
             ' data-cart-product-id="' + esc(p.id) + '"' +
-            ' data-cart-variant-id="' + esc(p.default_variant_id || "") + '"' +
+            ' data-cart-variant-id="' + esc(directVariantId) + '"' +
             ' data-cart-brand="' + esc(p.brand || "") + '"' +
             ' data-cart-name="' + esc(p.name || "") + '"' +
             ' data-cart-price="' + esc(priceStr) + '"' +
             ' data-cart-price-cents="' + esc(String(Math.round(price * 100))) + '"' +
             ' data-cart-currency="' + esc(currency) + '"' +
-            ' data-cart-image="' + esc(p.image || "") + '"' +
+            ' data-cart-image="' + esc(cardImage) + '"' +
+            ' data-cart-selected-options="' + esc(JSON.stringify(directSelectedOptions)) + '"' +
+            ' data-cart-variant="' + esc(directVariantLabel) + '"' +
             ' aria-label="Add ' + esc(p.name || "product") + ' to cart"' +
           '>Add to cart</button>';
     return (
       '<article class="product-card" data-product-id="' + esc(p.id) +
         '" data-category="' + esc(p.section_id || "") + '">' +
         '<a class="product-image" href="' + esc(href) + '">' +
-          '<img src="' + esc(p.image || "") + '" alt="' + esc(p.name || "") +
+          '<img src="' + esc(cardImage) + '" alt="' + esc(p.name || "") +
             '" width="' + esc(imageWidth) + '" height="' + esc(imageHeight) +
             '" loading="lazy" decoding="async" />' +
         '</a>' +
@@ -1303,6 +2014,7 @@
     );
     resultsEl.insertAdjacentHTML("beforeend", next.map(catalogCardHtml).join(""));
     _catalogShown += next.length;
+    window.requestAnimationFrame(refreshVisibleCatalogCards);
     var btn = ensureLoadMoreButton(resultsEl);
     var remaining = _catalogMatches.length - _catalogShown;
     if (remaining > 0) {
@@ -1729,6 +2441,8 @@
   function init() {
     document.querySelectorAll("[data-catalog-search]").forEach(initForm);
     applyUrlParams();
+    refreshVisibleCatalogCards();
+    refreshPdpFromLiveCatalog();
   }
 
   if (document.readyState === "loading") {

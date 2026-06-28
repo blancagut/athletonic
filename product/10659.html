@@ -169,7 +169,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Schiek</p>
-          <h1 class="pdp-title">Men's Poly HD T-shirt</h1>
+          <h1 class="pdp-title" data-pdp-title>Men's Poly HD T-shirt</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="3000" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$30.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -218,6 +218,9 @@
               data-cart-price="30"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0766/0175/3896/files/Schiek-Men_s-Poly-HD-T-shirt-Schiek-Sports-54906931.jpg"
+              data-cart-variant-id="45470309941544"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Small&quot;,&quot;Size&quot;:&quot;Royal Blue&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -628,17 +631,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Small / Royal Blue","optionValues":["Small","Royal Blue"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Small / Red","optionValues":["Small","Red"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Small / Neon Yellow","optionValues":["Small","Neon Yellow"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Small / White","optionValues":["Small","White"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Small / Silver","optionValues":["Small","Silver"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Small / Neon Green","optionValues":["Small","Neon Green"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Small / Heather Grey","optionValues":["Small","Heather Grey"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Medium / Royal Blue","optionValues":["Medium","Royal Blue"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Medium / Red","optionValues":["Medium","Red"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Medium / Neon Yellow","optionValues":["Medium","Neon Yellow"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Medium / White","optionValues":["Medium","White"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Medium / Silver","optionValues":["Medium","Silver"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Medium / Neon Green","optionValues":["Medium","Neon Green"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Medium / Heather Grey","optionValues":["Medium","Heather Grey"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Large / Royal Blue","optionValues":["Large","Royal Blue"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Large / Red","optionValues":["Large","Red"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Large / Neon Yellow","optionValues":["Large","Neon Yellow"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Large / White","optionValues":["Large","White"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Large / Silver","optionValues":["Large","Silver"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Large / Neon Green","optionValues":["Large","Neon Green"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"Large / Heather Grey","optionValues":["Large","Heather Grey"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"X-Large / Royal Blue","optionValues":["X-Large","Royal Blue"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"X-Large / Red","optionValues":["X-Large","Red"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"X-Large / Neon Yellow","optionValues":["X-Large","Neon Yellow"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"X-Large / White","optionValues":["X-Large","White"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"X-Large / Silver","optionValues":["X-Large","Silver"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"X-Large / Neon Green","optionValues":["X-Large","Neon Green"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"X-Large / Heather Grey","optionValues":["X-Large","Heather Grey"],"price_cents":3000,"compare_at_cents":0,"available":true},{"key":"XX-Large (+$3) / Royal Blue","optionValues":["XX-Large (+$3)","Royal Blue"],"price_cents":3300,"compare_at_cents":0,"available":true},{"key":"XX-Large (+$3) / Red","optionValues":["XX-Large (+$3)","Red"],"price_cents":3300,"compare_at_cents":0,"available":true},{"key":"XX-Large (+$3) / Neon Yellow","optionValues":["XX-Large (+$3)","Neon Yellow"],"price_cents":3300,"compare_at_cents":0,"available":true},{"key":"XX-Large (+$3) / White","optionValues":["XX-Large (+$3)","White"],"price_cents":3300,"compare_at_cents":0,"available":true},{"key":"XX-Large (+$3) / Silver","optionValues":["XX-Large (+$3)","Silver"],"price_cents":3300,"compare_at_cents":0,"available":true},{"key":"XX-Large (+$3) / Neon Green","optionValues":["XX-Large (+$3)","Neon Green"],"price_cents":3300,"compare_at_cents":0,"available":true},{"key":"XX-Large (+$3) / Heather Grey","optionValues":["XX-Large (+$3)","Heather Grey"],"price_cents":3300,"compare_at_cents":0,"available":true},{"key":"3X-Large [White & Silver Only] (+$3) / White","optionValues":["3X-Large [White & Silver Only] (+$3)","White"],"price_cents":3300,"compare_at_cents":0,"available":true},{"key":"3X-Large [White & Silver Only] (+$3) / Silver","optionValues":["3X-Large [White & Silver Only] (+$3)","Silver"],"price_cents":3300,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"45470309941544","key":"Small / Royal Blue","title":"Small / Royal Blue","sku":null,"optionValues":["Small","Royal Blue"],"option_values":[{"position":1,"name":"Color","value":"Small"},{"position":2,"name":"Size","value":"Royal Blue"}],"selected_options":{"Color":"Small","Size":"Royal Blue"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470309974312","key":"Small / Red","title":"Small / Red","sku":null,"optionValues":["Small","Red"],"option_values":[{"position":1,"name":"Color","value":"Small"},{"position":2,"name":"Size","value":"Red"}],"selected_options":{"Color":"Small","Size":"Red"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310007080","key":"Small / Neon Yellow","title":"Small / Neon Yellow","sku":null,"optionValues":["Small","Neon Yellow"],"option_values":[{"position":1,"name":"Color","value":"Small"},{"position":2,"name":"Size","value":"Neon Yellow"}],"selected_options":{"Color":"Small","Size":"Neon Yellow"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310039848","key":"Small / White","title":"Small / White","sku":null,"optionValues":["Small","White"],"option_values":[{"position":1,"name":"Color","value":"Small"},{"position":2,"name":"Size","value":"White"}],"selected_options":{"Color":"Small","Size":"White"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310072616","key":"Small / Silver","title":"Small / Silver","sku":null,"optionValues":["Small","Silver"],"option_values":[{"position":1,"name":"Color","value":"Small"},{"position":2,"name":"Size","value":"Silver"}],"selected_options":{"Color":"Small","Size":"Silver"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310105384","key":"Small / Neon Green","title":"Small / Neon Green","sku":null,"optionValues":["Small","Neon Green"],"option_values":[{"position":1,"name":"Color","value":"Small"},{"position":2,"name":"Size","value":"Neon Green"}],"selected_options":{"Color":"Small","Size":"Neon Green"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310138152","key":"Small / Heather Grey","title":"Small / Heather Grey","sku":null,"optionValues":["Small","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"Small"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"Small","Size":"Heather Grey"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310170920","key":"Medium / Royal Blue","title":"Medium / Royal Blue","sku":null,"optionValues":["Medium","Royal Blue"],"option_values":[{"position":1,"name":"Color","value":"Medium"},{"position":2,"name":"Size","value":"Royal Blue"}],"selected_options":{"Color":"Medium","Size":"Royal Blue"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310203688","key":"Medium / Red","title":"Medium / Red","sku":null,"optionValues":["Medium","Red"],"option_values":[{"position":1,"name":"Color","value":"Medium"},{"position":2,"name":"Size","value":"Red"}],"selected_options":{"Color":"Medium","Size":"Red"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310236456","key":"Medium / Neon Yellow","title":"Medium / Neon Yellow","sku":null,"optionValues":["Medium","Neon Yellow"],"option_values":[{"position":1,"name":"Color","value":"Medium"},{"position":2,"name":"Size","value":"Neon Yellow"}],"selected_options":{"Color":"Medium","Size":"Neon Yellow"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310269224","key":"Medium / White","title":"Medium / White","sku":null,"optionValues":["Medium","White"],"option_values":[{"position":1,"name":"Color","value":"Medium"},{"position":2,"name":"Size","value":"White"}],"selected_options":{"Color":"Medium","Size":"White"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310301992","key":"Medium / Silver","title":"Medium / Silver","sku":null,"optionValues":["Medium","Silver"],"option_values":[{"position":1,"name":"Color","value":"Medium"},{"position":2,"name":"Size","value":"Silver"}],"selected_options":{"Color":"Medium","Size":"Silver"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310334760","key":"Medium / Neon Green","title":"Medium / Neon Green","sku":null,"optionValues":["Medium","Neon Green"],"option_values":[{"position":1,"name":"Color","value":"Medium"},{"position":2,"name":"Size","value":"Neon Green"}],"selected_options":{"Color":"Medium","Size":"Neon Green"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310367528","key":"Medium / Heather Grey","title":"Medium / Heather Grey","sku":null,"optionValues":["Medium","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"Medium"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"Medium","Size":"Heather Grey"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310400296","key":"Large / Royal Blue","title":"Large / Royal Blue","sku":null,"optionValues":["Large","Royal Blue"],"option_values":[{"position":1,"name":"Color","value":"Large"},{"position":2,"name":"Size","value":"Royal Blue"}],"selected_options":{"Color":"Large","Size":"Royal Blue"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310433064","key":"Large / Red","title":"Large / Red","sku":null,"optionValues":["Large","Red"],"option_values":[{"position":1,"name":"Color","value":"Large"},{"position":2,"name":"Size","value":"Red"}],"selected_options":{"Color":"Large","Size":"Red"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310465832","key":"Large / Neon Yellow","title":"Large / Neon Yellow","sku":null,"optionValues":["Large","Neon Yellow"],"option_values":[{"position":1,"name":"Color","value":"Large"},{"position":2,"name":"Size","value":"Neon Yellow"}],"selected_options":{"Color":"Large","Size":"Neon Yellow"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310498600","key":"Large / White","title":"Large / White","sku":null,"optionValues":["Large","White"],"option_values":[{"position":1,"name":"Color","value":"Large"},{"position":2,"name":"Size","value":"White"}],"selected_options":{"Color":"Large","Size":"White"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310531368","key":"Large / Silver","title":"Large / Silver","sku":null,"optionValues":["Large","Silver"],"option_values":[{"position":1,"name":"Color","value":"Large"},{"position":2,"name":"Size","value":"Silver"}],"selected_options":{"Color":"Large","Size":"Silver"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310564136","key":"Large / Neon Green","title":"Large / Neon Green","sku":null,"optionValues":["Large","Neon Green"],"option_values":[{"position":1,"name":"Color","value":"Large"},{"position":2,"name":"Size","value":"Neon Green"}],"selected_options":{"Color":"Large","Size":"Neon Green"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310596904","key":"Large / Heather Grey","title":"Large / Heather Grey","sku":null,"optionValues":["Large","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"Large"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"Large","Size":"Heather Grey"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310629672","key":"X-Large / Royal Blue","title":"X-Large / Royal Blue","sku":null,"optionValues":["X-Large","Royal Blue"],"option_values":[{"position":1,"name":"Color","value":"X-Large"},{"position":2,"name":"Size","value":"Royal Blue"}],"selected_options":{"Color":"X-Large","Size":"Royal Blue"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310662440","key":"X-Large / Red","title":"X-Large / Red","sku":null,"optionValues":["X-Large","Red"],"option_values":[{"position":1,"name":"Color","value":"X-Large"},{"position":2,"name":"Size","value":"Red"}],"selected_options":{"Color":"X-Large","Size":"Red"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310727976","key":"X-Large / Neon Yellow","title":"X-Large / Neon Yellow","sku":null,"optionValues":["X-Large","Neon Yellow"],"option_values":[{"position":1,"name":"Color","value":"X-Large"},{"position":2,"name":"Size","value":"Neon Yellow"}],"selected_options":{"Color":"X-Large","Size":"Neon Yellow"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310760744","key":"X-Large / White","title":"X-Large / White","sku":null,"optionValues":["X-Large","White"],"option_values":[{"position":1,"name":"Color","value":"X-Large"},{"position":2,"name":"Size","value":"White"}],"selected_options":{"Color":"X-Large","Size":"White"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310793512","key":"X-Large / Silver","title":"X-Large / Silver","sku":null,"optionValues":["X-Large","Silver"],"option_values":[{"position":1,"name":"Color","value":"X-Large"},{"position":2,"name":"Size","value":"Silver"}],"selected_options":{"Color":"X-Large","Size":"Silver"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310826280","key":"X-Large / Neon Green","title":"X-Large / Neon Green","sku":null,"optionValues":["X-Large","Neon Green"],"option_values":[{"position":1,"name":"Color","value":"X-Large"},{"position":2,"name":"Size","value":"Neon Green"}],"selected_options":{"Color":"X-Large","Size":"Neon Green"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310859048","key":"X-Large / Heather Grey","title":"X-Large / Heather Grey","sku":null,"optionValues":["X-Large","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"X-Large"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"X-Large","Size":"Heather Grey"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310891816","key":"XX-Large (+$3) / Royal Blue","title":"XX-Large (+$3) / Royal Blue","sku":null,"optionValues":["XX-Large (+$3)","Royal Blue"],"option_values":[{"position":1,"name":"Color","value":"XX-Large (+$3)"},{"position":2,"name":"Size","value":"Royal Blue"}],"selected_options":{"Color":"XX-Large (+$3)","Size":"Royal Blue"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310924584","key":"XX-Large (+$3) / Red","title":"XX-Large (+$3) / Red","sku":null,"optionValues":["XX-Large (+$3)","Red"],"option_values":[{"position":1,"name":"Color","value":"XX-Large (+$3)"},{"position":2,"name":"Size","value":"Red"}],"selected_options":{"Color":"XX-Large (+$3)","Size":"Red"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310957352","key":"XX-Large (+$3) / Neon Yellow","title":"XX-Large (+$3) / Neon Yellow","sku":null,"optionValues":["XX-Large (+$3)","Neon Yellow"],"option_values":[{"position":1,"name":"Color","value":"XX-Large (+$3)"},{"position":2,"name":"Size","value":"Neon Yellow"}],"selected_options":{"Color":"XX-Large (+$3)","Size":"Neon Yellow"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470310990120","key":"XX-Large (+$3) / White","title":"XX-Large (+$3) / White","sku":null,"optionValues":["XX-Large (+$3)","White"],"option_values":[{"position":1,"name":"Color","value":"XX-Large (+$3)"},{"position":2,"name":"Size","value":"White"}],"selected_options":{"Color":"XX-Large (+$3)","Size":"White"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470311022888","key":"XX-Large (+$3) / Silver","title":"XX-Large (+$3) / Silver","sku":null,"optionValues":["XX-Large (+$3)","Silver"],"option_values":[{"position":1,"name":"Color","value":"XX-Large (+$3)"},{"position":2,"name":"Size","value":"Silver"}],"selected_options":{"Color":"XX-Large (+$3)","Size":"Silver"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470311055656","key":"XX-Large (+$3) / Neon Green","title":"XX-Large (+$3) / Neon Green","sku":null,"optionValues":["XX-Large (+$3)","Neon Green"],"option_values":[{"position":1,"name":"Color","value":"XX-Large (+$3)"},{"position":2,"name":"Size","value":"Neon Green"}],"selected_options":{"Color":"XX-Large (+$3)","Size":"Neon Green"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470311088424","key":"XX-Large (+$3) / Heather Grey","title":"XX-Large (+$3) / Heather Grey","sku":null,"optionValues":["XX-Large (+$3)","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"XX-Large (+$3)"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"XX-Large (+$3)","Size":"Heather Grey"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470311121192","key":"3X-Large [White & Silver Only] (+$3) / White","title":"3X-Large [White & Silver Only] (+$3) / White","sku":null,"optionValues":["3X-Large [White & Silver Only] (+$3)","White"],"option_values":[{"position":1,"name":"Color","value":"3X-Large [White & Silver Only] (+$3)"},{"position":2,"name":"Size","value":"White"}],"selected_options":{"Color":"3X-Large [White & Silver Only] (+$3)","Size":"White"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45470311153960","key":"3X-Large [White & Silver Only] (+$3) / Silver","title":"3X-Large [White & Silver Only] (+$3) / Silver","sku":null,"optionValues":["3X-Large [White & Silver Only] (+$3)","Silver"],"option_values":[{"position":1,"name":"Color","value":"3X-Large [White & Silver Only] (+$3)"},{"position":2,"name":"Size","value":"Silver"}],"selected_options":{"Color":"3X-Large [White & Silver Only] (+$3)","Size":"Silver"},"price_cents":3300,"regular_price_cents":3300,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -668,6 +683,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -685,16 +704,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Schiek | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -717,23 +759,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -746,10 +792,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -757,21 +803,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -782,12 +822,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

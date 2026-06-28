@@ -241,7 +241,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Bear KompleX</p>
-          <h1 class="pdp-title">Adventure Boxer Brief</h1>
+          <h1 class="pdp-title" data-pdp-title>Adventure Boxer Brief</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="1699" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$16.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -290,6 +290,9 @@
               data-cart-price="16.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/AFASDHJ_66d6d35f-3b1d-49af-9341-500927683c39.jpg"
+              data-cart-variant-id="61813897462130"
+              data-cart-selected-options="{&quot;COLOR&quot;:&quot;S&quot;,&quot;Size&quot;:&quot;US FLAG&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -700,17 +703,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"S / US FLAG","optionValues":["S","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / AZTEC DIAMOND","optionValues":["S","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / COWBOY AZTEC","optionValues":["S","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / JUNGLE CAMO","optionValues":["S","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / BANANA SPLIT","optionValues":["S","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / WETLAND DUCK CAMO","optionValues":["S","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / SHOOTER PARADISE","optionValues":["S","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"S / TEAL PINEAPPLE EXPRESS","optionValues":["S","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / US FLAG","optionValues":["M","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / AZTEC DIAMOND","optionValues":["M","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / COWBOY AZTEC","optionValues":["M","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / JUNGLE CAMO","optionValues":["M","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / BANANA SPLIT","optionValues":["M","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / WETLAND DUCK CAMO","optionValues":["M","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / SHOOTER PARADISE","optionValues":["M","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"M / TEAL PINEAPPLE EXPRESS","optionValues":["M","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / US FLAG","optionValues":["L","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / AZTEC DIAMOND","optionValues":["L","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / COWBOY AZTEC","optionValues":["L","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / JUNGLE CAMO","optionValues":["L","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / BANANA SPLIT","optionValues":["L","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / WETLAND DUCK CAMO","optionValues":["L","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / SHOOTER PARADISE","optionValues":["L","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"L / TEAL PINEAPPLE EXPRESS","optionValues":["L","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / US FLAG","optionValues":["XL","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / AZTEC DIAMOND","optionValues":["XL","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / COWBOY AZTEC","optionValues":["XL","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / JUNGLE CAMO","optionValues":["XL","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / BANANA SPLIT","optionValues":["XL","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / WETLAND DUCK CAMO","optionValues":["XL","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / SHOOTER PARADISE","optionValues":["XL","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"XL / TEAL PINEAPPLE EXPRESS","optionValues":["XL","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / US FLAG","optionValues":["2XL","US FLAG"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / AZTEC DIAMOND","optionValues":["2XL","AZTEC DIAMOND"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / COWBOY AZTEC","optionValues":["2XL","COWBOY AZTEC"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / JUNGLE CAMO","optionValues":["2XL","JUNGLE CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / BANANA SPLIT","optionValues":["2XL","BANANA SPLIT"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / WETLAND DUCK CAMO","optionValues":["2XL","WETLAND DUCK CAMO"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / SHOOTER PARADISE","optionValues":["2XL","SHOOTER PARADISE"],"price_cents":1699,"compare_at_cents":0,"available":true},{"key":"2XL / TEAL PINEAPPLE EXPRESS","optionValues":["2XL","TEAL PINEAPPLE EXPRESS"],"price_cents":1699,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"61813897462130","key":"S / US FLAG","title":"S / US FLAG","sku":null,"optionValues":["S","US FLAG"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"US FLAG"}],"selected_options":{"COLOR":"S","Size":"US FLAG"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/AMERICANFLAGUNDERWEARGHOSTIMAGES_7_1.jpg"},{"variant_id":"61813897494898","key":"S / AZTEC DIAMOND","title":"S / AZTEC DIAMOND","sku":null,"optionValues":["S","AZTEC DIAMOND"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"AZTEC DIAMOND"}],"selected_options":{"COLOR":"S","Size":"AZTEC DIAMOND"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COWBOYAZTECGHOSTPHOTOS_1_1.jpg"},{"variant_id":"61813897527666","key":"S / COWBOY AZTEC","title":"S / COWBOY AZTEC","sku":null,"optionValues":["S","COWBOY AZTEC"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"COWBOY AZTEC"}],"selected_options":{"COLOR":"S","Size":"COWBOY AZTEC"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COWBOYAZTECGHOSTPHOTOS_1_1.jpg"},{"variant_id":"61813897560434","key":"S / JUNGLE CAMO","title":"S / JUNGLE CAMO","sku":null,"optionValues":["S","JUNGLE CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"JUNGLE CAMO"}],"selected_options":{"COLOR":"S","Size":"JUNGLE CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/junglewashedjjj.jpg"},{"variant_id":"61813897593202","key":"S / BANANA SPLIT","title":"S / BANANA SPLIT","sku":null,"optionValues":["S","BANANA SPLIT"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"BANANA SPLIT"}],"selected_options":{"COLOR":"S","Size":"BANANA SPLIT"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/BANANAFRONTSTJ.jpg"},{"variant_id":"61813897625970","key":"S / WETLAND DUCK CAMO","title":"S / WETLAND DUCK CAMO","sku":null,"optionValues":["S","WETLAND DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"WETLAND DUCK CAMO"}],"selected_options":{"COLOR":"S","Size":"WETLAND DUCK CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/AFASDHJ_66d6d35f-3b1d-49af-9341-500927683c39.jpg"},{"variant_id":"61813897658738","key":"S / SHOOTER PARADISE","title":"S / SHOOTER PARADISE","sku":null,"optionValues":["S","SHOOTER PARADISE"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"SHOOTER PARADISE"}],"selected_options":{"COLOR":"S","Size":"SHOOTER PARADISE"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHOOTERSPARADISEUNDERWEAR_6_1.jpg"},{"variant_id":"61813897691506","key":"S / TEAL PINEAPPLE EXPRESS","title":"S / TEAL PINEAPPLE EXPRESS","sku":null,"optionValues":["S","TEAL PINEAPPLE EXPRESS"],"option_values":[{"position":1,"name":"COLOR","value":"S"},{"position":2,"name":"Size","value":"TEAL PINEAPPLE EXPRESS"}],"selected_options":{"COLOR":"S","Size":"TEAL PINEAPPLE EXPRESS"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TEALPINEAPPLEEXPRESSUNDERWEAR_1_1.jpg"},{"variant_id":"61813897724274","key":"M / US FLAG","title":"M / US FLAG","sku":null,"optionValues":["M","US FLAG"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"US FLAG"}],"selected_options":{"COLOR":"M","Size":"US FLAG"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/AMERICANFLAGUNDERWEAR_1_1.jpg"},{"variant_id":"61813897757042","key":"M / AZTEC DIAMOND","title":"M / AZTEC DIAMOND","sku":null,"optionValues":["M","AZTEC DIAMOND"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"AZTEC DIAMOND"}],"selected_options":{"COLOR":"M","Size":"AZTEC DIAMOND"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckcamounderwear.jpg"},{"variant_id":"61813897789810","key":"M / COWBOY AZTEC","title":"M / COWBOY AZTEC","sku":null,"optionValues":["M","COWBOY AZTEC"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"COWBOY AZTEC"}],"selected_options":{"COLOR":"M","Size":"COWBOY AZTEC"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckcamounderwear.jpg"},{"variant_id":"61813897822578","key":"M / JUNGLE CAMO","title":"M / JUNGLE CAMO","sku":null,"optionValues":["M","JUNGLE CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"JUNGLE CAMO"}],"selected_options":{"COLOR":"M","Size":"JUNGLE CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckcamounderwear.jpg"},{"variant_id":"61813897855346","key":"M / BANANA SPLIT","title":"M / BANANA SPLIT","sku":null,"optionValues":["M","BANANA SPLIT"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"BANANA SPLIT"}],"selected_options":{"COLOR":"M","Size":"BANANA SPLIT"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckcamounderwear.jpg"},{"variant_id":"61813897888114","key":"M / WETLAND DUCK CAMO","title":"M / WETLAND DUCK CAMO","sku":null,"optionValues":["M","WETLAND DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"WETLAND DUCK CAMO"}],"selected_options":{"COLOR":"M","Size":"WETLAND DUCK CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckcamounderwear.jpg"},{"variant_id":"61813897920882","key":"M / SHOOTER PARADISE","title":"M / SHOOTER PARADISE","sku":null,"optionValues":["M","SHOOTER PARADISE"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"SHOOTER PARADISE"}],"selected_options":{"COLOR":"M","Size":"SHOOTER PARADISE"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckcamounderwear.jpg"},{"variant_id":"61813897953650","key":"M / TEAL PINEAPPLE EXPRESS","title":"M / TEAL PINEAPPLE EXPRESS","sku":null,"optionValues":["M","TEAL PINEAPPLE EXPRESS"],"option_values":[{"position":1,"name":"COLOR","value":"M"},{"position":2,"name":"Size","value":"TEAL PINEAPPLE EXPRESS"}],"selected_options":{"COLOR":"M","Size":"TEAL PINEAPPLE EXPRESS"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TEALPINEAPPLEEXPRESS-GHOSTIMAGES_1_1.jpg"},{"variant_id":"61813897986418","key":"L / US FLAG","title":"L / US FLAG","sku":null,"optionValues":["L","US FLAG"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"US FLAG"}],"selected_options":{"COLOR":"L","Size":"US FLAG"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/AMERICANFLAGUNDERWEAR_1_1.jpg"},{"variant_id":"61813898019186","key":"L / AZTEC DIAMOND","title":"L / AZTEC DIAMOND","sku":null,"optionValues":["L","AZTEC DIAMOND"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"AZTEC DIAMOND"}],"selected_options":{"COLOR":"L","Size":"AZTEC DIAMOND"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/junglewashedjjj.jpg"},{"variant_id":"61813898051954","key":"L / COWBOY AZTEC","title":"L / COWBOY AZTEC","sku":null,"optionValues":["L","COWBOY AZTEC"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"COWBOY AZTEC"}],"selected_options":{"COLOR":"L","Size":"COWBOY AZTEC"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/junglewashedjjj.jpg"},{"variant_id":"61813898084722","key":"L / JUNGLE CAMO","title":"L / JUNGLE CAMO","sku":null,"optionValues":["L","JUNGLE CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"JUNGLE CAMO"}],"selected_options":{"COLOR":"L","Size":"JUNGLE CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/junglewashedjjj.jpg"},{"variant_id":"61813898117490","key":"L / BANANA SPLIT","title":"L / BANANA SPLIT","sku":null,"optionValues":["L","BANANA SPLIT"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"BANANA SPLIT"}],"selected_options":{"COLOR":"L","Size":"BANANA SPLIT"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/flatbananaundeewear_69667729-65f0-4fbb-9b5f-f21ce7aa2f63.jpg"},{"variant_id":"61813898150258","key":"L / WETLAND DUCK CAMO","title":"L / WETLAND DUCK CAMO","sku":null,"optionValues":["L","WETLAND DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"WETLAND DUCK CAMO"}],"selected_options":{"COLOR":"L","Size":"WETLAND DUCK CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/junglewashedjjj.jpg"},{"variant_id":"61813898183026","key":"L / SHOOTER PARADISE","title":"L / SHOOTER PARADISE","sku":null,"optionValues":["L","SHOOTER PARADISE"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"SHOOTER PARADISE"}],"selected_options":{"COLOR":"L","Size":"SHOOTER PARADISE"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/junglewashedjjj.jpg"},{"variant_id":"61813898215794","key":"L / TEAL PINEAPPLE EXPRESS","title":"L / TEAL PINEAPPLE EXPRESS","sku":null,"optionValues":["L","TEAL PINEAPPLE EXPRESS"],"option_values":[{"position":1,"name":"COLOR","value":"L"},{"position":2,"name":"Size","value":"TEAL PINEAPPLE EXPRESS"}],"selected_options":{"COLOR":"L","Size":"TEAL PINEAPPLE EXPRESS"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TEALPINEAPPLEEXPRESSUNDERWEAR_1_1.jpg"},{"variant_id":"61813898248562","key":"XL / US FLAG","title":"XL / US FLAG","sku":null,"optionValues":["XL","US FLAG"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"US FLAG"}],"selected_options":{"COLOR":"XL","Size":"US FLAG"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/AMERICANFLAGUNDERWEAR_1_1.jpg"},{"variant_id":"61813898281330","key":"XL / AZTEC DIAMOND","title":"XL / AZTEC DIAMOND","sku":null,"optionValues":["XL","AZTEC DIAMOND"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"AZTEC DIAMOND"}],"selected_options":{"COLOR":"XL","Size":"AZTEC DIAMOND"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COWBOYAZTECGHOSTPHOTOS_1_1.jpg"},{"variant_id":"61813898314098","key":"XL / COWBOY AZTEC","title":"XL / COWBOY AZTEC","sku":null,"optionValues":["XL","COWBOY AZTEC"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"COWBOY AZTEC"}],"selected_options":{"COLOR":"XL","Size":"COWBOY AZTEC"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COWBOYAZTECGHOSTPHOTOS_1_1.jpg"},{"variant_id":"61813898346866","key":"XL / JUNGLE CAMO","title":"XL / JUNGLE CAMO","sku":null,"optionValues":["XL","JUNGLE CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"JUNGLE CAMO"}],"selected_options":{"COLOR":"XL","Size":"JUNGLE CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/junglewashedjjj.jpg"},{"variant_id":"61813898379634","key":"XL / BANANA SPLIT","title":"XL / BANANA SPLIT","sku":null,"optionValues":["XL","BANANA SPLIT"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"BANANA SPLIT"}],"selected_options":{"COLOR":"XL","Size":"BANANA SPLIT"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/flatbananaundeewear_69667729-65f0-4fbb-9b5f-f21ce7aa2f63.jpg"},{"variant_id":"61813898412402","key":"XL / WETLAND DUCK CAMO","title":"XL / WETLAND DUCK CAMO","sku":null,"optionValues":["XL","WETLAND DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"WETLAND DUCK CAMO"}],"selected_options":{"COLOR":"XL","Size":"WETLAND DUCK CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckcamounderwear.jpg"},{"variant_id":"61813898445170","key":"XL / SHOOTER PARADISE","title":"XL / SHOOTER PARADISE","sku":null,"optionValues":["XL","SHOOTER PARADISE"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"SHOOTER PARADISE"}],"selected_options":{"COLOR":"XL","Size":"SHOOTER PARADISE"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHOOTERSPARADISEUNDERWEAR_6_1.jpg"},{"variant_id":"61813898477938","key":"XL / TEAL PINEAPPLE EXPRESS","title":"XL / TEAL PINEAPPLE EXPRESS","sku":null,"optionValues":["XL","TEAL PINEAPPLE EXPRESS"],"option_values":[{"position":1,"name":"COLOR","value":"XL"},{"position":2,"name":"Size","value":"TEAL PINEAPPLE EXPRESS"}],"selected_options":{"COLOR":"XL","Size":"TEAL PINEAPPLE EXPRESS"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TEALPINEAPPLEEXPRESSUNDERWEAR_1_1.jpg"},{"variant_id":"61813898510706","key":"2XL / US FLAG","title":"2XL / US FLAG","sku":null,"optionValues":["2XL","US FLAG"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"US FLAG"}],"selected_options":{"COLOR":"2XL","Size":"US FLAG"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/AMERICANFLAGUNDERWEAR_1_1.jpg"},{"variant_id":"61813898543474","key":"2XL / AZTEC DIAMOND","title":"2XL / AZTEC DIAMOND","sku":null,"optionValues":["2XL","AZTEC DIAMOND"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"AZTEC DIAMOND"}],"selected_options":{"COLOR":"2XL","Size":"AZTEC DIAMOND"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COWBOYAZTECGHOSTPHOTOS_1_1.jpg"},{"variant_id":"61813898576242","key":"2XL / COWBOY AZTEC","title":"2XL / COWBOY AZTEC","sku":null,"optionValues":["2XL","COWBOY AZTEC"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"COWBOY AZTEC"}],"selected_options":{"COLOR":"2XL","Size":"COWBOY AZTEC"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/COWBOYAZTECGHOSTPHOTOS_1_1.jpg"},{"variant_id":"61813898609010","key":"2XL / JUNGLE CAMO","title":"2XL / JUNGLE CAMO","sku":null,"optionValues":["2XL","JUNGLE CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"JUNGLE CAMO"}],"selected_options":{"COLOR":"2XL","Size":"JUNGLE CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/junglewashedjjj.jpg"},{"variant_id":"61813898641778","key":"2XL / BANANA SPLIT","title":"2XL / BANANA SPLIT","sku":null,"optionValues":["2XL","BANANA SPLIT"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"BANANA SPLIT"}],"selected_options":{"COLOR":"2XL","Size":"BANANA SPLIT"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/flatbananaundeewear_69667729-65f0-4fbb-9b5f-f21ce7aa2f63.jpg"},{"variant_id":"61813898674546","key":"2XL / WETLAND DUCK CAMO","title":"2XL / WETLAND DUCK CAMO","sku":null,"optionValues":["2XL","WETLAND DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"WETLAND DUCK CAMO"}],"selected_options":{"COLOR":"2XL","Size":"WETLAND DUCK CAMO"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckcamounderwear.jpg"},{"variant_id":"61813898707314","key":"2XL / SHOOTER PARADISE","title":"2XL / SHOOTER PARADISE","sku":null,"optionValues":["2XL","SHOOTER PARADISE"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"SHOOTER PARADISE"}],"selected_options":{"COLOR":"2XL","Size":"SHOOTER PARADISE"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHOOTERSPARADISEUNDERWEAR_6_1.jpg"},{"variant_id":"61813898740082","key":"2XL / TEAL PINEAPPLE EXPRESS","title":"2XL / TEAL PINEAPPLE EXPRESS","sku":null,"optionValues":["2XL","TEAL PINEAPPLE EXPRESS"],"option_values":[{"position":1,"name":"COLOR","value":"2XL"},{"position":2,"name":"Size","value":"TEAL PINEAPPLE EXPRESS"}],"selected_options":{"COLOR":"2XL","Size":"TEAL PINEAPPLE EXPRESS"},"price_cents":1699,"regular_price_cents":1699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TEALPINEAPPLEEXPRESSUNDERWEAR_1_1.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -740,6 +755,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -757,16 +776,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Bear KompleX | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -789,23 +831,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -818,10 +864,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -829,21 +875,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -854,12 +894,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

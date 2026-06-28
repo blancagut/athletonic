@@ -166,7 +166,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">1st Phorm</p>
-          <h1 class="pdp-title">Fueled</h1>
+          <h1 class="pdp-title" data-pdp-title>Fueled</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="2000" data-base-compare-cents="3500" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$20.00</strong>
             <span class="pdp-compare" data-pdp-compare >$35.00</span>
@@ -210,6 +210,9 @@
               data-cart-price="20"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_fueledbyfreedom_tee_black_0005_59dce364-8300-4379-a05c-34570129cb32.jpg"
+              data-cart-variant-id="42576237166678"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Black&quot;,&quot;Size&quot;:&quot;Small&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -596,17 +599,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Black / Small","optionValues":["Black","Small"],"price_cents":2000,"compare_at_cents":3500,"available":true},{"key":"Black / Medium","optionValues":["Black","Medium"],"price_cents":2000,"compare_at_cents":3500,"available":true},{"key":"Black / Large","optionValues":["Black","Large"],"price_cents":2000,"compare_at_cents":3500,"available":true},{"key":"Black / XL","optionValues":["Black","XL"],"price_cents":2000,"compare_at_cents":3500,"available":true},{"key":"Black / 2XL","optionValues":["Black","2XL"],"price_cents":2000,"compare_at_cents":3500,"available":true},{"key":"Black / 3XL","optionValues":["Black","3XL"],"price_cents":2000,"compare_at_cents":3500,"available":true},{"key":"White OUT OF STOCK- / Small","optionValues":["White OUT OF STOCK-","Small"],"price_cents":3500,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / Medium","optionValues":["White OUT OF STOCK-","Medium"],"price_cents":3500,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / Large","optionValues":["White OUT OF STOCK-","Large"],"price_cents":3500,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / XL","optionValues":["White OUT OF STOCK-","XL"],"price_cents":3500,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / 2XL","optionValues":["White OUT OF STOCK-","2XL"],"price_cents":3500,"compare_at_cents":0,"available":true},{"key":"White OUT OF STOCK- / 3XL","optionValues":["White OUT OF STOCK-","3XL"],"price_cents":3500,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"42576237166678","key":"Black / Small","title":"Black / Small","sku":null,"optionValues":["Black","Small"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"Black","Size":"Small"},"price_cents":2000,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_fueledbyfreedom_tee_black_0005_59dce364-8300-4379-a05c-34570129cb32.jpg"},{"variant_id":"42576237199446","key":"Black / Medium","title":"Black / Medium","sku":null,"optionValues":["Black","Medium"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"Black","Size":"Medium"},"price_cents":2000,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_fueledbyfreedom_tee_black_0005_59dce364-8300-4379-a05c-34570129cb32.jpg"},{"variant_id":"42576237232214","key":"Black / Large","title":"Black / Large","sku":null,"optionValues":["Black","Large"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"Black","Size":"Large"},"price_cents":2000,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_fueledbyfreedom_tee_black_0005_59dce364-8300-4379-a05c-34570129cb32.jpg"},{"variant_id":"42576237264982","key":"Black / XL","title":"Black / XL","sku":null,"optionValues":["Black","XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Black","Size":"XL"},"price_cents":2000,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_fueledbyfreedom_tee_black_0005_59dce364-8300-4379-a05c-34570129cb32.jpg"},{"variant_id":"42576237297750","key":"Black / 2XL","title":"Black / 2XL","sku":null,"optionValues":["Black","2XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"Black","Size":"2XL"},"price_cents":2000,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_fueledbyfreedom_tee_black_0005_59dce364-8300-4379-a05c-34570129cb32.jpg"},{"variant_id":"42576237330518","key":"Black / 3XL","title":"Black / 3XL","sku":null,"optionValues":["Black","3XL"],"option_values":[{"position":1,"name":"Color","value":"Black"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"Black","Size":"3XL"},"price_cents":2000,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_fueledbyfreedom_tee_black_0005_59dce364-8300-4379-a05c-34570129cb32.jpg"},{"variant_id":"43593852911702","key":"White OUT OF STOCK- / Small","title":"White OUT OF STOCK- / Small","sku":null,"optionValues":["White OUT OF STOCK-","Small"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Small"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Small"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43593852944470","key":"White OUT OF STOCK- / Medium","title":"White OUT OF STOCK- / Medium","sku":null,"optionValues":["White OUT OF STOCK-","Medium"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Medium"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Medium"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43593852977238","key":"White OUT OF STOCK- / Large","title":"White OUT OF STOCK- / Large","sku":null,"optionValues":["White OUT OF STOCK-","Large"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"Large"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"Large"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43593853010006","key":"White OUT OF STOCK- / XL","title":"White OUT OF STOCK- / XL","sku":null,"optionValues":["White OUT OF STOCK-","XL"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"XL"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43593853042774","key":"White OUT OF STOCK- / 2XL","title":"White OUT OF STOCK- / 2XL","sku":null,"optionValues":["White OUT OF STOCK-","2XL"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"2XL"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"43593853075542","key":"White OUT OF STOCK- / 3XL","title":"White OUT OF STOCK- / 3XL","sku":null,"optionValues":["White OUT OF STOCK-","3XL"],"option_values":[{"position":1,"name":"Color","value":"White OUT OF STOCK-"},{"position":2,"name":"Size","value":"3XL"}],"selected_options":{"Color":"White OUT OF STOCK-","Size":"3XL"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -636,6 +651,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -653,16 +672,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — 1st Phorm | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -685,23 +727,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -714,10 +760,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -725,21 +771,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -750,12 +790,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";
