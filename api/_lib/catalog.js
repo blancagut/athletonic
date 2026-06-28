@@ -144,6 +144,130 @@ function buildCatalogIndexes() {
 
 const { products: productsById, variants: variantsByProductAndId } = buildCatalogIndexes();
 
+function applyVariantOverride(variant, staged) {
+  if (!staged || typeof staged !== "object" || Array.isArray(staged)) return variant;
+
+  const next = { ...variant };
+  if (staged.price_cents !== undefined) {
+    const priceCents = intCents(staged.price_cents);
+    if (priceCents > 0) {
+      next.price_cents = priceCents;
+      if (!next.regular_price_cents || next.regular_price_cents < priceCents) {
+        next.regular_price_cents = priceCents;
+      }
+      if (
+        next.compare_at_price_cents != null &&
+        next.compare_at_price_cents <= priceCents
+      ) {
+        next.compare_at_price_cents = null;
+      }
+    }
+  }
+  if (staged.available !== undefined) {
+    const explicitAvailable = explicitBoolean(staged.available);
+    next.available =
+      explicitAvailable === null
+        ? resolveAvailability(staged.available, next.available, next.price_cents)
+        : explicitAvailable;
+  }
+  if (staged.image_url !== undefined) {
+    next.image_url = normalizeImageUrl(staged.image_url);
+  }
+  return next;
+}
+
+function applyProductOverride(product, override) {
+  if (!override || typeof override !== "object") return product;
+
+  const patch =
+    override.patch && typeof override.patch === "object" && !Array.isArray(override.patch)
+      ? override.patch
+      : {};
+  const variantOverrideMap =
+    patch.variant_overrides &&
+    typeof patch.variant_overrides === "object" &&
+    !Array.isArray(patch.variant_overrides)
+      ? patch.variant_overrides
+      : {};
+
+  const variants = product.variants.map((variant) =>
+    applyVariantOverride(
+      variant,
+      variantOverrideMap[String(variant.variant_id || "").trim()] || null
+    )
+  );
+
+  const next = {
+    ...product,
+    name: typeof patch.name === "string" && patch.name.trim() ? patch.name.trim() : product.name,
+    image:
+      patch.image !== undefined ? normalizeImageUrl(patch.image) : product.image,
+    url: typeof patch.url === "string" && patch.url.trim() ? patch.url.trim() : product.url,
+    variants,
+  };
+
+  if (patch.price_cents !== undefined) {
+    const priceCents = intCents(patch.price_cents);
+    if (priceCents > 0) {
+      next.price_cents = priceCents;
+      next.price_min_cents = priceCents;
+      next.price_max_cents = priceCents;
+      if (
+        next.compare_at_price_cents != null &&
+        next.compare_at_price_cents <= priceCents
+      ) {
+        next.compare_at_price_cents = null;
+      }
+    }
+  }
+
+  const hasPricedVariant = variants.some((variant) => variant.price_cents > 0);
+  const hasAvailableVariant = variants.some((variant) => variant.available !== false);
+  const fallbackAvailable =
+    variants.length > 0 ? hasAvailableVariant || next.price_cents > 0 : next.price_cents > 0 || hasPricedVariant;
+  next.available =
+    patch.available !== undefined
+      ? explicitBoolean(patch.available) === null
+        ? resolveAvailability(patch.available, fallbackAvailable, next.price_cents)
+        : explicitBoolean(patch.available)
+      : resolveAvailability(next.available, fallbackAvailable, next.price_cents);
+
+  return next;
+}
+
+function buildIndexesFromProducts(products) {
+  const nextProducts = new Map();
+  const nextVariants = new Map();
+
+  for (const product of products) {
+    nextProducts.set(product.id, product);
+    for (const variant of product.variants) {
+      nextVariants.set(`${product.id}::${variant.variant_id}`, variant);
+    }
+  }
+
+  return { products: nextProducts, variants: nextVariants };
+}
+
+async function loadOverrideMap(supabase, productIds) {
+  if (!supabase || !Array.isArray(productIds) || productIds.length === 0) {
+    return new Map();
+  }
+
+  let query = supabase.from("product_overrides").select("product_id, patch, hidden");
+  if (typeof query.in === "function") {
+    query = query.in(
+      "product_id",
+      productIds.map((productId) => String(productId))
+    );
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return new Map((data || []).map((row) => [String(row.product_id), row]));
+}
+
 function centsFromMoney(value) {
   return Math.round(Number(value || 0) * 100);
 }
@@ -206,7 +330,12 @@ function validationError(message, code) {
   return error;
 }
 
-function validateCart(cart, options = {}) {
+function validateCartAgainstIndexes(
+  cart,
+  activeProductsById,
+  activeVariantsByProductAndId,
+  options = {}
+) {
   if (!Array.isArray(cart) || cart.length === 0) {
     throw validationError("Add at least one product before checkout.", "empty_cart");
   }
@@ -220,7 +349,7 @@ function validateCart(cart, options = {}) {
 
   for (const rawItem of cart) {
     const productId = String(rawItem.productId || rawItem.id || "").split("::")[0];
-    const product = productsById.get(productId);
+    const product = activeProductsById.get(productId);
 
     if (!product || product.available === false || product.purchasable === false) {
       throw validationError(
@@ -246,7 +375,7 @@ function validateCart(cart, options = {}) {
           "variant_required"
         );
       }
-      variant = variantsByProductAndId.get(`${productId}::${suppliedVariantId}`);
+      variant = activeVariantsByProductAndId.get(`${productId}::${suppliedVariantId}`);
       if (!variant || variant.available === false) {
         throw validationError(
           "One of the selected product variants is no longer available.",
@@ -360,6 +489,33 @@ function validateCart(cart, options = {}) {
   return { items: normalized, subtotalCents, currency };
 }
 
+function validateCart(cart, options = {}) {
+  return validateCartAgainstIndexes(
+    cart,
+    productsById,
+    variantsByProductAndId,
+    options
+  );
+}
+
+async function validateCartWithOverrides(cart, options = {}) {
+  const productIds = Array.isArray(cart)
+    ? [...new Set(cart.map((item) => String(item?.productId || item?.id || "").split("::")[0]).filter(Boolean))]
+    : [];
+  const overrideMap = await loadOverrideMap(options.supabase || null, productIds);
+  if (!overrideMap.size) {
+    return validateCart(cart, options);
+  }
+
+  const overlaidProducts = productIds
+    .map((productId) => productsById.get(String(productId)))
+    .filter(Boolean)
+    .map((product) => applyProductOverride(product, overrideMap.get(String(product.id))));
+  const { products, variants } = buildIndexesFromProducts(overlaidProducts);
+
+  return validateCartAgainstIndexes(cart, products, variants, options);
+}
+
 function getShippingCents(subtotalCents) {
   const shippingCents = Number.parseInt(
     process.env.ATHLETONIC_SHIPPING_AMOUNT_CENTS || "0",
@@ -383,4 +539,5 @@ module.exports = {
   normalizeAttribution,
   normalizeEmail,
   validateCart,
+  validateCartWithOverrides,
 };

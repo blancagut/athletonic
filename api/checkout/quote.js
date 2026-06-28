@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
     const body = await readJson(req);
     const hasAccessCode = accessCodeProvided(body.access_code);
     const hasAuth = Boolean(getBearerToken(req));
-    const needsSupabase = hasAccessCode || hasAuth;
+    const needsSupabase = true;
 
     requireEnv([
       ...(needsSupabase ? ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"] : []),
