@@ -160,7 +160,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">black_magic_supps</p>
-          <h1 class="pdp-title">Pre-Workout Stack</h1>
+          <h1 class="pdp-title" data-pdp-title>Pre-Workout Stack</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="7499" data-base-compare-cents="9498" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$74.99</strong>
             <span class="pdp-compare" data-pdp-compare >$94.98</span>
@@ -208,6 +208,9 @@
               data-cart-price="74.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0074/2264/0197/files/Pre-Workout_Stack_1.png"
+              data-cart-variant-id="40332821889123"
+              data-cart-selected-options="{&quot;BZRK Flavor&quot;:&quot;Crystal Blue&quot;,&quot;Ecto Plasm Flavor&quot;:&quot;Purple Rain&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -641,17 +644,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Crystal Blue / Purple Rain","optionValues":["Crystal Blue","Purple Rain"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Crystal Blue / Sherbet Pop","optionValues":["Crystal Blue","Sherbet Pop"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Crystal Blue / Fruit Punch","optionValues":["Crystal Blue","Fruit Punch"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Crystal Blue / Haterade","optionValues":["Crystal Blue","Haterade"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Crystal Blue / Cosmic Burst","optionValues":["Crystal Blue","Cosmic Burst"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Peach Rings / Purple Rain","optionValues":["Peach Rings","Purple Rain"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Peach Rings / Sherbet Pop","optionValues":["Peach Rings","Sherbet Pop"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Peach Rings / Fruit Punch","optionValues":["Peach Rings","Fruit Punch"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Peach Rings / Haterade","optionValues":["Peach Rings","Haterade"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Peach Rings / Cosmic Burst","optionValues":["Peach Rings","Cosmic Burst"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Mango Sunrise / Purple Rain","optionValues":["Mango Sunrise","Purple Rain"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Mango Sunrise / Sherbet Pop","optionValues":["Mango Sunrise","Sherbet Pop"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Mango Sunrise / Fruit Punch","optionValues":["Mango Sunrise","Fruit Punch"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Mango Sunrise / Haterade","optionValues":["Mango Sunrise","Haterade"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Mango Sunrise / Cosmic Burst","optionValues":["Mango Sunrise","Cosmic Burst"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Lemon Raz Icy / Purple Rain","optionValues":["Lemon Raz Icy","Purple Rain"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Lemon Raz Icy / Sherbet Pop","optionValues":["Lemon Raz Icy","Sherbet Pop"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Lemon Raz Icy / Fruit Punch","optionValues":["Lemon Raz Icy","Fruit Punch"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Lemon Raz Icy / Haterade","optionValues":["Lemon Raz Icy","Haterade"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Lemon Raz Icy / Cosmic Burst","optionValues":["Lemon Raz Icy","Cosmic Burst"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Haterade / Purple Rain","optionValues":["Haterade","Purple Rain"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Haterade / Sherbet Pop","optionValues":["Haterade","Sherbet Pop"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Haterade / Fruit Punch","optionValues":["Haterade","Fruit Punch"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Haterade / Haterade","optionValues":["Haterade","Haterade"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Haterade / Cosmic Burst","optionValues":["Haterade","Cosmic Burst"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Cosmic Burst / Purple Rain","optionValues":["Cosmic Burst","Purple Rain"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Cosmic Burst / Sherbet Pop","optionValues":["Cosmic Burst","Sherbet Pop"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Cosmic Burst / Fruit Punch","optionValues":["Cosmic Burst","Fruit Punch"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Cosmic Burst / Haterade","optionValues":["Cosmic Burst","Haterade"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Cosmic Burst / Cosmic Burst","optionValues":["Cosmic Burst","Cosmic Burst"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Orange Cooler / Purple Rain","optionValues":["Orange Cooler","Purple Rain"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Orange Cooler / Sherbet Pop","optionValues":["Orange Cooler","Sherbet Pop"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Orange Cooler / Fruit Punch","optionValues":["Orange Cooler","Fruit Punch"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Orange Cooler / Haterade","optionValues":["Orange Cooler","Haterade"],"price_cents":7499,"compare_at_cents":9498,"available":true},{"key":"Orange Cooler / Cosmic Burst","optionValues":["Orange Cooler","Cosmic Burst"],"price_cents":7499,"compare_at_cents":9498,"available":true}];
+        var variantPricing = [{"variant_id":"40332821889123","key":"Crystal Blue / Purple Rain","title":"Crystal Blue / Purple Rain","sku":null,"optionValues":["Crystal Blue","Purple Rain"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Crystal Blue"},{"position":2,"name":"Ecto Plasm Flavor","value":"Purple Rain"}],"selected_options":{"BZRK Flavor":"Crystal Blue","Ecto Plasm Flavor":"Purple Rain"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332821921891","key":"Crystal Blue / Sherbet Pop","title":"Crystal Blue / Sherbet Pop","sku":null,"optionValues":["Crystal Blue","Sherbet Pop"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Crystal Blue"},{"position":2,"name":"Ecto Plasm Flavor","value":"Sherbet Pop"}],"selected_options":{"BZRK Flavor":"Crystal Blue","Ecto Plasm Flavor":"Sherbet Pop"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332821954659","key":"Crystal Blue / Fruit Punch","title":"Crystal Blue / Fruit Punch","sku":null,"optionValues":["Crystal Blue","Fruit Punch"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Crystal Blue"},{"position":2,"name":"Ecto Plasm Flavor","value":"Fruit Punch"}],"selected_options":{"BZRK Flavor":"Crystal Blue","Ecto Plasm Flavor":"Fruit Punch"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906312803","key":"Crystal Blue / Haterade","title":"Crystal Blue / Haterade","sku":null,"optionValues":["Crystal Blue","Haterade"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Crystal Blue"},{"position":2,"name":"Ecto Plasm Flavor","value":"Haterade"}],"selected_options":{"BZRK Flavor":"Crystal Blue","Ecto Plasm Flavor":"Haterade"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906345571","key":"Crystal Blue / Cosmic Burst","title":"Crystal Blue / Cosmic Burst","sku":null,"optionValues":["Crystal Blue","Cosmic Burst"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Crystal Blue"},{"position":2,"name":"Ecto Plasm Flavor","value":"Cosmic Burst"}],"selected_options":{"BZRK Flavor":"Crystal Blue","Ecto Plasm Flavor":"Cosmic Burst"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332821987427","key":"Peach Rings / Purple Rain","title":"Peach Rings / Purple Rain","sku":null,"optionValues":["Peach Rings","Purple Rain"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Peach Rings"},{"position":2,"name":"Ecto Plasm Flavor","value":"Purple Rain"}],"selected_options":{"BZRK Flavor":"Peach Rings","Ecto Plasm Flavor":"Purple Rain"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":true,"available":true,"image_url":null},{"variant_id":"40332822020195","key":"Peach Rings / Sherbet Pop","title":"Peach Rings / Sherbet Pop","sku":null,"optionValues":["Peach Rings","Sherbet Pop"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Peach Rings"},{"position":2,"name":"Ecto Plasm Flavor","value":"Sherbet Pop"}],"selected_options":{"BZRK Flavor":"Peach Rings","Ecto Plasm Flavor":"Sherbet Pop"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":true,"available":true,"image_url":null},{"variant_id":"40332822052963","key":"Peach Rings / Fruit Punch","title":"Peach Rings / Fruit Punch","sku":null,"optionValues":["Peach Rings","Fruit Punch"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Peach Rings"},{"position":2,"name":"Ecto Plasm Flavor","value":"Fruit Punch"}],"selected_options":{"BZRK Flavor":"Peach Rings","Ecto Plasm Flavor":"Fruit Punch"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":true,"available":true,"image_url":null},{"variant_id":"42490906378339","key":"Peach Rings / Haterade","title":"Peach Rings / Haterade","sku":null,"optionValues":["Peach Rings","Haterade"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Peach Rings"},{"position":2,"name":"Ecto Plasm Flavor","value":"Haterade"}],"selected_options":{"BZRK Flavor":"Peach Rings","Ecto Plasm Flavor":"Haterade"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":true,"available":true,"image_url":null},{"variant_id":"42490906411107","key":"Peach Rings / Cosmic Burst","title":"Peach Rings / Cosmic Burst","sku":null,"optionValues":["Peach Rings","Cosmic Burst"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Peach Rings"},{"position":2,"name":"Ecto Plasm Flavor","value":"Cosmic Burst"}],"selected_options":{"BZRK Flavor":"Peach Rings","Ecto Plasm Flavor":"Cosmic Burst"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":true,"available":true,"image_url":null},{"variant_id":"40332822085731","key":"Mango Sunrise / Purple Rain","title":"Mango Sunrise / Purple Rain","sku":null,"optionValues":["Mango Sunrise","Purple Rain"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Mango Sunrise"},{"position":2,"name":"Ecto Plasm Flavor","value":"Purple Rain"}],"selected_options":{"BZRK Flavor":"Mango Sunrise","Ecto Plasm Flavor":"Purple Rain"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822118499","key":"Mango Sunrise / Sherbet Pop","title":"Mango Sunrise / Sherbet Pop","sku":null,"optionValues":["Mango Sunrise","Sherbet Pop"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Mango Sunrise"},{"position":2,"name":"Ecto Plasm Flavor","value":"Sherbet Pop"}],"selected_options":{"BZRK Flavor":"Mango Sunrise","Ecto Plasm Flavor":"Sherbet Pop"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822151267","key":"Mango Sunrise / Fruit Punch","title":"Mango Sunrise / Fruit Punch","sku":null,"optionValues":["Mango Sunrise","Fruit Punch"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Mango Sunrise"},{"position":2,"name":"Ecto Plasm Flavor","value":"Fruit Punch"}],"selected_options":{"BZRK Flavor":"Mango Sunrise","Ecto Plasm Flavor":"Fruit Punch"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906443875","key":"Mango Sunrise / Haterade","title":"Mango Sunrise / Haterade","sku":null,"optionValues":["Mango Sunrise","Haterade"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Mango Sunrise"},{"position":2,"name":"Ecto Plasm Flavor","value":"Haterade"}],"selected_options":{"BZRK Flavor":"Mango Sunrise","Ecto Plasm Flavor":"Haterade"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906476643","key":"Mango Sunrise / Cosmic Burst","title":"Mango Sunrise / Cosmic Burst","sku":null,"optionValues":["Mango Sunrise","Cosmic Burst"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Mango Sunrise"},{"position":2,"name":"Ecto Plasm Flavor","value":"Cosmic Burst"}],"selected_options":{"BZRK Flavor":"Mango Sunrise","Ecto Plasm Flavor":"Cosmic Burst"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822184035","key":"Lemon Raz Icy / Purple Rain","title":"Lemon Raz Icy / Purple Rain","sku":null,"optionValues":["Lemon Raz Icy","Purple Rain"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Lemon Raz Icy"},{"position":2,"name":"Ecto Plasm Flavor","value":"Purple Rain"}],"selected_options":{"BZRK Flavor":"Lemon Raz Icy","Ecto Plasm Flavor":"Purple Rain"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822216803","key":"Lemon Raz Icy / Sherbet Pop","title":"Lemon Raz Icy / Sherbet Pop","sku":null,"optionValues":["Lemon Raz Icy","Sherbet Pop"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Lemon Raz Icy"},{"position":2,"name":"Ecto Plasm Flavor","value":"Sherbet Pop"}],"selected_options":{"BZRK Flavor":"Lemon Raz Icy","Ecto Plasm Flavor":"Sherbet Pop"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822249571","key":"Lemon Raz Icy / Fruit Punch","title":"Lemon Raz Icy / Fruit Punch","sku":null,"optionValues":["Lemon Raz Icy","Fruit Punch"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Lemon Raz Icy"},{"position":2,"name":"Ecto Plasm Flavor","value":"Fruit Punch"}],"selected_options":{"BZRK Flavor":"Lemon Raz Icy","Ecto Plasm Flavor":"Fruit Punch"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906509411","key":"Lemon Raz Icy / Haterade","title":"Lemon Raz Icy / Haterade","sku":null,"optionValues":["Lemon Raz Icy","Haterade"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Lemon Raz Icy"},{"position":2,"name":"Ecto Plasm Flavor","value":"Haterade"}],"selected_options":{"BZRK Flavor":"Lemon Raz Icy","Ecto Plasm Flavor":"Haterade"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906542179","key":"Lemon Raz Icy / Cosmic Burst","title":"Lemon Raz Icy / Cosmic Burst","sku":null,"optionValues":["Lemon Raz Icy","Cosmic Burst"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Lemon Raz Icy"},{"position":2,"name":"Ecto Plasm Flavor","value":"Cosmic Burst"}],"selected_options":{"BZRK Flavor":"Lemon Raz Icy","Ecto Plasm Flavor":"Cosmic Burst"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822282339","key":"Haterade / Purple Rain","title":"Haterade / Purple Rain","sku":null,"optionValues":["Haterade","Purple Rain"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Haterade"},{"position":2,"name":"Ecto Plasm Flavor","value":"Purple Rain"}],"selected_options":{"BZRK Flavor":"Haterade","Ecto Plasm Flavor":"Purple Rain"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822315107","key":"Haterade / Sherbet Pop","title":"Haterade / Sherbet Pop","sku":null,"optionValues":["Haterade","Sherbet Pop"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Haterade"},{"position":2,"name":"Ecto Plasm Flavor","value":"Sherbet Pop"}],"selected_options":{"BZRK Flavor":"Haterade","Ecto Plasm Flavor":"Sherbet Pop"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822347875","key":"Haterade / Fruit Punch","title":"Haterade / Fruit Punch","sku":null,"optionValues":["Haterade","Fruit Punch"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Haterade"},{"position":2,"name":"Ecto Plasm Flavor","value":"Fruit Punch"}],"selected_options":{"BZRK Flavor":"Haterade","Ecto Plasm Flavor":"Fruit Punch"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906574947","key":"Haterade / Haterade","title":"Haterade / Haterade","sku":null,"optionValues":["Haterade","Haterade"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Haterade"},{"position":2,"name":"Ecto Plasm Flavor","value":"Haterade"}],"selected_options":{"BZRK Flavor":"Haterade","Ecto Plasm Flavor":"Haterade"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906607715","key":"Haterade / Cosmic Burst","title":"Haterade / Cosmic Burst","sku":null,"optionValues":["Haterade","Cosmic Burst"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Haterade"},{"position":2,"name":"Ecto Plasm Flavor","value":"Cosmic Burst"}],"selected_options":{"BZRK Flavor":"Haterade","Ecto Plasm Flavor":"Cosmic Burst"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822380643","key":"Cosmic Burst / Purple Rain","title":"Cosmic Burst / Purple Rain","sku":null,"optionValues":["Cosmic Burst","Purple Rain"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Cosmic Burst"},{"position":2,"name":"Ecto Plasm Flavor","value":"Purple Rain"}],"selected_options":{"BZRK Flavor":"Cosmic Burst","Ecto Plasm Flavor":"Purple Rain"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822413411","key":"Cosmic Burst / Sherbet Pop","title":"Cosmic Burst / Sherbet Pop","sku":null,"optionValues":["Cosmic Burst","Sherbet Pop"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Cosmic Burst"},{"position":2,"name":"Ecto Plasm Flavor","value":"Sherbet Pop"}],"selected_options":{"BZRK Flavor":"Cosmic Burst","Ecto Plasm Flavor":"Sherbet Pop"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822446179","key":"Cosmic Burst / Fruit Punch","title":"Cosmic Burst / Fruit Punch","sku":null,"optionValues":["Cosmic Burst","Fruit Punch"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Cosmic Burst"},{"position":2,"name":"Ecto Plasm Flavor","value":"Fruit Punch"}],"selected_options":{"BZRK Flavor":"Cosmic Burst","Ecto Plasm Flavor":"Fruit Punch"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906640483","key":"Cosmic Burst / Haterade","title":"Cosmic Burst / Haterade","sku":null,"optionValues":["Cosmic Burst","Haterade"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Cosmic Burst"},{"position":2,"name":"Ecto Plasm Flavor","value":"Haterade"}],"selected_options":{"BZRK Flavor":"Cosmic Burst","Ecto Plasm Flavor":"Haterade"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906673251","key":"Cosmic Burst / Cosmic Burst","title":"Cosmic Burst / Cosmic Burst","sku":null,"optionValues":["Cosmic Burst","Cosmic Burst"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Cosmic Burst"},{"position":2,"name":"Ecto Plasm Flavor","value":"Cosmic Burst"}],"selected_options":{"BZRK Flavor":"Cosmic Burst","Ecto Plasm Flavor":"Cosmic Burst"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822478947","key":"Orange Cooler / Purple Rain","title":"Orange Cooler / Purple Rain","sku":null,"optionValues":["Orange Cooler","Purple Rain"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Orange Cooler"},{"position":2,"name":"Ecto Plasm Flavor","value":"Purple Rain"}],"selected_options":{"BZRK Flavor":"Orange Cooler","Ecto Plasm Flavor":"Purple Rain"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822511715","key":"Orange Cooler / Sherbet Pop","title":"Orange Cooler / Sherbet Pop","sku":null,"optionValues":["Orange Cooler","Sherbet Pop"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Orange Cooler"},{"position":2,"name":"Ecto Plasm Flavor","value":"Sherbet Pop"}],"selected_options":{"BZRK Flavor":"Orange Cooler","Ecto Plasm Flavor":"Sherbet Pop"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"40332822544483","key":"Orange Cooler / Fruit Punch","title":"Orange Cooler / Fruit Punch","sku":null,"optionValues":["Orange Cooler","Fruit Punch"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Orange Cooler"},{"position":2,"name":"Ecto Plasm Flavor","value":"Fruit Punch"}],"selected_options":{"BZRK Flavor":"Orange Cooler","Ecto Plasm Flavor":"Fruit Punch"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906706019","key":"Orange Cooler / Haterade","title":"Orange Cooler / Haterade","sku":null,"optionValues":["Orange Cooler","Haterade"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Orange Cooler"},{"position":2,"name":"Ecto Plasm Flavor","value":"Haterade"}],"selected_options":{"BZRK Flavor":"Orange Cooler","Ecto Plasm Flavor":"Haterade"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null},{"variant_id":"42490906738787","key":"Orange Cooler / Cosmic Burst","title":"Orange Cooler / Cosmic Burst","sku":null,"optionValues":["Orange Cooler","Cosmic Burst"],"option_values":[{"position":1,"name":"BZRK Flavor","value":"Orange Cooler"},{"position":2,"name":"Ecto Plasm Flavor","value":"Cosmic Burst"}],"selected_options":{"BZRK Flavor":"Orange Cooler","Ecto Plasm Flavor":"Cosmic Burst"},"price_cents":7499,"regular_price_cents":9498,"compare_at_cents":9498,"compare_at_price_cents":9498,"source_available":false,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -681,6 +696,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -698,16 +717,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — black_magic_supps | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -730,23 +772,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -759,10 +805,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -770,21 +816,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -795,12 +835,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

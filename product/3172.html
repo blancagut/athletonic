@@ -167,7 +167,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">PEScience</p>
-          <h1 class="pdp-title">Select Cafe Series Protein</h1>
+          <h1 class="pdp-title" data-pdp-title>Select Cafe Series Protein</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="2999" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$29.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -199,6 +199,9 @@
               data-cart-price="29.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1943/7603/files/select-cafe-series-protein-protein-pescience-350067.jpg"
+              data-cart-variant-id="185055739930"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Iced Mocha&quot;,&quot;Servings&quot;:&quot;20&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -295,7 +298,7 @@
                 <strong>$20.99</strong>
 
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -584,15 +587,23 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Iced Mocha / 20","optionValues":["Iced Mocha","20"],"price_cents":3499,"compare_at_cents":0,"available":true},{"key":"Caramel Macchiato / 20","optionValues":["Caramel Macchiato","20"],"price_cents":3499,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"185055739930","key":"Iced Mocha / 20","title":"Iced Mocha / 20","sku":null,"optionValues":["Iced Mocha","20"],"option_values":[{"position":1,"name":"Flavor","value":"Iced Mocha"},{"position":2,"name":"Servings","value":"20"}],"selected_options":{"Flavor":"Iced Mocha","Servings":"20"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"185055707162","key":"Caramel Macchiato / 20","title":"Caramel Macchiato / 20","sku":null,"optionValues":["Caramel Macchiato","20"],"option_values":[{"position":1,"name":"Flavor","value":"Caramel Macchiato"},{"position":2,"name":"Servings","value":"20"}],"selected_options":{"Flavor":"Caramel Macchiato","Servings":"20"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
         var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
           return String(value || "")
@@ -647,6 +658,24 @@
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
           }
+        }
+
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — PEScience | Athletonic")
+            : baseDocumentTitle;
         }
 
         function selectedVariant() {
@@ -719,10 +748,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -730,10 +759,12 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
               setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
@@ -747,6 +778,13 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             resetToBasePrice();
             addBtn.disabled = true;

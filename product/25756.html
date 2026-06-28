@@ -190,7 +190,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">soccer_post</p>
-          <h1 class="pdp-title">Soccer Croc Charm</h1>
+          <h1 class="pdp-title" data-pdp-title>Soccer Croc Charm</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="499" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$4.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -247,6 +247,9 @@
               data-cart-price="4.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Crocs_Image.png"
+              data-cart-variant-id="44542481825970"
+              data-cart-selected-options="{&quot;Club&quot;:&quot;Real Madrid&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -670,17 +673,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Real Madrid","optionValues":["Real Madrid"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Barcelona","optionValues":["Barcelona"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Arsenal","optionValues":["Arsenal"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Chelsea","optionValues":["Chelsea"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Juventus","optionValues":["Juventus"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Manchester City","optionValues":["Manchester City"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"PSG","optionValues":["PSG"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Manchester United","optionValues":["Manchester United"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Chivas","optionValues":["Chivas"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Club America","optionValues":["Club America"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"CR7 Goat","optionValues":["CR7 Goat"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"CR7 Jersey","optionValues":["CR7 Jersey"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Messi Jersey","optionValues":["Messi Jersey"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Messi World Cup","optionValues":["Messi World Cup"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"AC Milan","optionValues":["AC Milan"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"CR7 SIU","optionValues":["CR7 SIU"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Soccer Ball","optionValues":["Soccer Ball"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Cruz Azul","optionValues":["Cruz Azul"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Liverpool","optionValues":["Liverpool"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"LA Galaxy","optionValues":["LA Galaxy"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Bayern Munich","optionValues":["Bayern Munich"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Pachuca","optionValues":["Pachuca"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Argentina","optionValues":["Argentina"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Brazil","optionValues":["Brazil"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Mexico","optionValues":["Mexico"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"Portugal","optionValues":["Portugal"],"price_cents":499,"compare_at_cents":0,"available":true},{"key":"USA","optionValues":["USA"],"price_cents":499,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"44542481825970","key":"Real Madrid","title":"Real Madrid","sku":null,"optionValues":["Real Madrid"],"option_values":[{"position":1,"name":"Club","value":"Real Madrid"}],"selected_options":{"Club":"Real Madrid"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Real_Madrid_51669a12-4702-459d-a93e-797ca40e68bf.png"},{"variant_id":"44542481858738","key":"Barcelona","title":"Barcelona","sku":null,"optionValues":["Barcelona"],"option_values":[{"position":1,"name":"Club","value":"Barcelona"}],"selected_options":{"Club":"Barcelona"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Barcelona_3c7635a6-4752-46ff-b717-e8fa01543b97.png"},{"variant_id":"44542481891506","key":"Arsenal","title":"Arsenal","sku":null,"optionValues":["Arsenal"],"option_values":[{"position":1,"name":"Club","value":"Arsenal"}],"selected_options":{"Club":"Arsenal"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Arsenal_3a4db8f0-3580-4376-a179-119f307eb14e.png"},{"variant_id":"44542481924274","key":"Chelsea","title":"Chelsea","sku":null,"optionValues":["Chelsea"],"option_values":[{"position":1,"name":"Club","value":"Chelsea"}],"selected_options":{"Club":"Chelsea"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Chelsea_80033164-fbc9-474c-bea1-53da81a8694d.png"},{"variant_id":"44542481957042","key":"Juventus","title":"Juventus","sku":null,"optionValues":["Juventus"],"option_values":[{"position":1,"name":"Club","value":"Juventus"}],"selected_options":{"Club":"Juventus"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Juventus_1f95be73-fbc0-4879-9be2-313683c5aa2c.png"},{"variant_id":"44542481989810","key":"Manchester City","title":"Manchester City","sku":null,"optionValues":["Manchester City"],"option_values":[{"position":1,"name":"Club","value":"Manchester City"}],"selected_options":{"Club":"Manchester City"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Man_City_f5d43433-2b0e-4d4c-b35c-090a6bb8ae00.png"},{"variant_id":"44542482022578","key":"PSG","title":"PSG","sku":null,"optionValues":["PSG"],"option_values":[{"position":1,"name":"Club","value":"PSG"}],"selected_options":{"Club":"PSG"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/PSG.png"},{"variant_id":"44542482055346","key":"Manchester United","title":"Manchester United","sku":null,"optionValues":["Manchester United"],"option_values":[{"position":1,"name":"Club","value":"Manchester United"}],"selected_options":{"Club":"Manchester United"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Man_United.png"},{"variant_id":"44542482088114","key":"Chivas","title":"Chivas","sku":null,"optionValues":["Chivas"],"option_values":[{"position":1,"name":"Club","value":"Chivas"}],"selected_options":{"Club":"Chivas"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44542482120882","key":"Club America","title":"Club America","sku":null,"optionValues":["Club America"],"option_values":[{"position":1,"name":"Club","value":"Club America"}],"selected_options":{"Club":"Club America"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Club_America_65eda242-6f77-4507-a9e0-0ce962ca384f.png"},{"variant_id":"44542482153650","key":"CR7 Goat","title":"CR7 Goat","sku":null,"optionValues":["CR7 Goat"],"option_values":[{"position":1,"name":"Club","value":"CR7 Goat"}],"selected_options":{"Club":"CR7 Goat"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/CR7_Goat.png"},{"variant_id":"44542482186418","key":"CR7 Jersey","title":"CR7 Jersey","sku":null,"optionValues":["CR7 Jersey"],"option_values":[{"position":1,"name":"Club","value":"CR7 Jersey"}],"selected_options":{"Club":"CR7 Jersey"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Messi_Jersey.png"},{"variant_id":"44542482219186","key":"Messi Jersey","title":"Messi Jersey","sku":null,"optionValues":["Messi Jersey"],"option_values":[{"position":1,"name":"Club","value":"Messi Jersey"}],"selected_options":{"Club":"Messi Jersey"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Messi_Jersey.png"},{"variant_id":"44542482251954","key":"Messi World Cup","title":"Messi World Cup","sku":null,"optionValues":["Messi World Cup"],"option_values":[{"position":1,"name":"Club","value":"Messi World Cup"}],"selected_options":{"Club":"Messi World Cup"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Messi_Trophy.png"},{"variant_id":"44617088925874","key":"AC Milan","title":"AC Milan","sku":null,"optionValues":["AC Milan"],"option_values":[{"position":1,"name":"Club","value":"AC Milan"}],"selected_options":{"Club":"AC Milan"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45342871912626","key":"CR7 SIU","title":"CR7 SIU","sku":null,"optionValues":["CR7 SIU"],"option_values":[{"position":1,"name":"Club","value":"CR7 SIU"}],"selected_options":{"Club":"CR7 SIU"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/CR7_Goat.png"},{"variant_id":"45342883578034","key":"Soccer Ball","title":"Soccer Ball","sku":null,"optionValues":["Soccer Ball"],"option_values":[{"position":1,"name":"Club","value":"Soccer Ball"}],"selected_options":{"Club":"Soccer Ball"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/Jibbitz_Charm_SoccerBall_Front_17April2025.png"},{"variant_id":"45482778624178","key":"Cruz Azul","title":"Cruz Azul","sku":null,"optionValues":["Cruz Azul"],"option_values":[{"position":1,"name":"Club","value":"Cruz Azul"}],"selected_options":{"Club":"Cruz Azul"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"45482778886322","key":"Liverpool","title":"Liverpool","sku":null,"optionValues":["Liverpool"],"option_values":[{"position":1,"name":"Club","value":"Liverpool"}],"selected_options":{"Club":"Liverpool"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/CrocCharm_Liverpool_29May2025.png"},{"variant_id":"45482779115698","key":"LA Galaxy","title":"LA Galaxy","sku":null,"optionValues":["LA Galaxy"],"option_values":[{"position":1,"name":"Club","value":"LA Galaxy"}],"selected_options":{"Club":"LA Galaxy"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/CrocCharm_LAGalaxy_29May2025.png"},{"variant_id":"45482779181234","key":"Bayern Munich","title":"Bayern Munich","sku":null,"optionValues":["Bayern Munich"],"option_values":[{"position":1,"name":"Club","value":"Bayern Munich"}],"selected_options":{"Club":"Bayern Munich"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/CrocCharm_FCBayern_29May2025.png"},{"variant_id":"45482780590258","key":"Pachuca","title":"Pachuca","sku":null,"optionValues":["Pachuca"],"option_values":[{"position":1,"name":"Club","value":"Pachuca"}],"selected_options":{"Club":"Pachuca"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/CrocCharm_Pachuca_29May2025.png"},{"variant_id":"46558410375346","key":"Argentina","title":"Argentina","sku":null,"optionValues":["Argentina"],"option_values":[{"position":1,"name":"Club","value":"Argentina"}],"selected_options":{"Club":"Argentina"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46558411292850","key":"Brazil","title":"Brazil","sku":null,"optionValues":["Brazil"],"option_values":[{"position":1,"name":"Club","value":"Brazil"}],"selected_options":{"Club":"Brazil"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/BrazilianFootballConfederation_CrocCharm_26Sep2025.png"},{"variant_id":"46558411620530","key":"Mexico","title":"Mexico","sku":null,"optionValues":["Mexico"],"option_values":[{"position":1,"name":"Club","value":"Mexico"}],"selected_options":{"Club":"Mexico"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/CrocCharm_Mexico_29May2025.png"},{"variant_id":"46558411882674","key":"Portugal","title":"Portugal","sku":null,"optionValues":["Portugal"],"option_values":[{"position":1,"name":"Club","value":"Portugal"}],"selected_options":{"Club":"Portugal"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"46558412210354","key":"USA","title":"USA","sku":null,"optionValues":["USA"],"option_values":[{"position":1,"name":"Club","value":"USA"}],"selected_options":{"Club":"USA"},"price_cents":499,"regular_price_cents":499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0570/1609/0802/files/USA_CrocCharm_26Sep2025.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -710,6 +725,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -727,16 +746,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — soccer_post | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -759,23 +801,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -788,10 +834,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -799,21 +845,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -824,12 +864,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

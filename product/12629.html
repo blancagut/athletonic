@@ -188,7 +188,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Bear KompleX</p>
-          <h1 class="pdp-title">Envy Sports Bra</h1>
+          <h1 class="pdp-title" data-pdp-title>Envy Sports Bra</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="4800" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$48.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -236,6 +236,9 @@
               data-cart-price="48"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/Red1-3.jpg"
+              data-cart-variant-id="61633301578098"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Electric Poppy&quot;,&quot;Size&quot;:&quot;XS&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -616,17 +619,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Electric Poppy / XS","optionValues":["Electric Poppy","XS"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Electric Poppy / S","optionValues":["Electric Poppy","S"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Electric Poppy / M","optionValues":["Electric Poppy","M"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Electric Poppy / L","optionValues":["Electric Poppy","L"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Electric Poppy / XL","optionValues":["Electric Poppy","XL"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Spiced Merlot / XS","optionValues":["Spiced Merlot","XS"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Spiced Merlot / S","optionValues":["Spiced Merlot","S"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Spiced Merlot / M","optionValues":["Spiced Merlot","M"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Spiced Merlot / L","optionValues":["Spiced Merlot","L"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Spiced Merlot / XL","optionValues":["Spiced Merlot","XL"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pale Yellow / XS","optionValues":["Pale Yellow","XS"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pale Yellow / S","optionValues":["Pale Yellow","S"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pale Yellow / M","optionValues":["Pale Yellow","M"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pale Yellow / L","optionValues":["Pale Yellow","L"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pale Yellow / XL","optionValues":["Pale Yellow","XL"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Espresso / XS","optionValues":["Espresso","XS"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Espresso / S","optionValues":["Espresso","S"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Espresso / M","optionValues":["Espresso","M"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Espresso / L","optionValues":["Espresso","L"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Espresso / XL","optionValues":["Espresso","XL"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Olive / XS","optionValues":["Olive","XS"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Olive / S","optionValues":["Olive","S"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Olive / M","optionValues":["Olive","M"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Olive / L","optionValues":["Olive","L"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Olive / XL","optionValues":["Olive","XL"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Emerald / XS","optionValues":["Emerald","XS"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Emerald / S","optionValues":["Emerald","S"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Emerald / M","optionValues":["Emerald","M"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Emerald / L","optionValues":["Emerald","L"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Emerald / XL","optionValues":["Emerald","XL"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pink / XS","optionValues":["Pink","XS"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pink / S","optionValues":["Pink","S"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pink / M","optionValues":["Pink","M"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pink / L","optionValues":["Pink","L"],"price_cents":4800,"compare_at_cents":0,"available":true},{"key":"Pink / XL","optionValues":["Pink","XL"],"price_cents":4800,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"61633301578098","key":"Electric Poppy / XS","title":"Electric Poppy / XS","sku":null,"optionValues":["Electric Poppy","XS"],"option_values":[{"position":1,"name":"Color","value":"Electric Poppy"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Electric Poppy","Size":"XS"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633301610866","key":"Electric Poppy / S","title":"Electric Poppy / S","sku":null,"optionValues":["Electric Poppy","S"],"option_values":[{"position":1,"name":"Color","value":"Electric Poppy"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Electric Poppy","Size":"S"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7911.jpg"},{"variant_id":"61633301643634","key":"Electric Poppy / M","title":"Electric Poppy / M","sku":null,"optionValues":["Electric Poppy","M"],"option_values":[{"position":1,"name":"Color","value":"Electric Poppy"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Electric Poppy","Size":"M"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633301676402","key":"Electric Poppy / L","title":"Electric Poppy / L","sku":null,"optionValues":["Electric Poppy","L"],"option_values":[{"position":1,"name":"Color","value":"Electric Poppy"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Electric Poppy","Size":"L"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633301709170","key":"Electric Poppy / XL","title":"Electric Poppy / XL","sku":null,"optionValues":["Electric Poppy","XL"],"option_values":[{"position":1,"name":"Color","value":"Electric Poppy"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Electric Poppy","Size":"XL"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633301741938","key":"Spiced Merlot / XS","title":"Spiced Merlot / XS","sku":null,"optionValues":["Spiced Merlot","XS"],"option_values":[{"position":1,"name":"Color","value":"Spiced Merlot"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Spiced Merlot","Size":"XS"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633301774706","key":"Spiced Merlot / S","title":"Spiced Merlot / S","sku":null,"optionValues":["Spiced Merlot","S"],"option_values":[{"position":1,"name":"Color","value":"Spiced Merlot"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Spiced Merlot","Size":"S"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7911.jpg"},{"variant_id":"61633301807474","key":"Spiced Merlot / M","title":"Spiced Merlot / M","sku":null,"optionValues":["Spiced Merlot","M"],"option_values":[{"position":1,"name":"Color","value":"Spiced Merlot"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Spiced Merlot","Size":"M"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633301840242","key":"Spiced Merlot / L","title":"Spiced Merlot / L","sku":null,"optionValues":["Spiced Merlot","L"],"option_values":[{"position":1,"name":"Color","value":"Spiced Merlot"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Spiced Merlot","Size":"L"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633301873010","key":"Spiced Merlot / XL","title":"Spiced Merlot / XL","sku":null,"optionValues":["Spiced Merlot","XL"],"option_values":[{"position":1,"name":"Color","value":"Spiced Merlot"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Spiced Merlot","Size":"XL"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633301905778","key":"Pale Yellow / XS","title":"Pale Yellow / XS","sku":null,"optionValues":["Pale Yellow","XS"],"option_values":[{"position":1,"name":"Color","value":"Pale Yellow"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Pale Yellow","Size":"XS"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633301938546","key":"Pale Yellow / S","title":"Pale Yellow / S","sku":null,"optionValues":["Pale Yellow","S"],"option_values":[{"position":1,"name":"Color","value":"Pale Yellow"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Pale Yellow","Size":"S"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633301971314","key":"Pale Yellow / M","title":"Pale Yellow / M","sku":null,"optionValues":["Pale Yellow","M"],"option_values":[{"position":1,"name":"Color","value":"Pale Yellow"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Pale Yellow","Size":"M"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302004082","key":"Pale Yellow / L","title":"Pale Yellow / L","sku":null,"optionValues":["Pale Yellow","L"],"option_values":[{"position":1,"name":"Color","value":"Pale Yellow"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Pale Yellow","Size":"L"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302036850","key":"Pale Yellow / XL","title":"Pale Yellow / XL","sku":null,"optionValues":["Pale Yellow","XL"],"option_values":[{"position":1,"name":"Color","value":"Pale Yellow"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Pale Yellow","Size":"XL"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302069618","key":"Espresso / XS","title":"Espresso / XS","sku":null,"optionValues":["Espresso","XS"],"option_values":[{"position":1,"name":"Color","value":"Espresso"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Espresso","Size":"XS"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302102386","key":"Espresso / S","title":"Espresso / S","sku":null,"optionValues":["Espresso","S"],"option_values":[{"position":1,"name":"Color","value":"Espresso"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Espresso","Size":"S"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7911.jpg"},{"variant_id":"61633302135154","key":"Espresso / M","title":"Espresso / M","sku":null,"optionValues":["Espresso","M"],"option_values":[{"position":1,"name":"Color","value":"Espresso"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Espresso","Size":"M"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633302167922","key":"Espresso / L","title":"Espresso / L","sku":null,"optionValues":["Espresso","L"],"option_values":[{"position":1,"name":"Color","value":"Espresso"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Espresso","Size":"L"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302200690","key":"Espresso / XL","title":"Espresso / XL","sku":null,"optionValues":["Espresso","XL"],"option_values":[{"position":1,"name":"Color","value":"Espresso"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Espresso","Size":"XL"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633302233458","key":"Olive / XS","title":"Olive / XS","sku":null,"optionValues":["Olive","XS"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Olive","Size":"XS"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302266226","key":"Olive / S","title":"Olive / S","sku":null,"optionValues":["Olive","S"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Olive","Size":"S"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7911.jpg"},{"variant_id":"61633302298994","key":"Olive / M","title":"Olive / M","sku":null,"optionValues":["Olive","M"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Olive","Size":"M"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633302331762","key":"Olive / L","title":"Olive / L","sku":null,"optionValues":["Olive","L"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Olive","Size":"L"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302364530","key":"Olive / XL","title":"Olive / XL","sku":null,"optionValues":["Olive","XL"],"option_values":[{"position":1,"name":"Color","value":"Olive"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Olive","Size":"XL"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633302397298","key":"Emerald / XS","title":"Emerald / XS","sku":null,"optionValues":["Emerald","XS"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Emerald","Size":"XS"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302430066","key":"Emerald / S","title":"Emerald / S","sku":null,"optionValues":["Emerald","S"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Emerald","Size":"S"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7911.jpg"},{"variant_id":"61633302462834","key":"Emerald / M","title":"Emerald / M","sku":null,"optionValues":["Emerald","M"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Emerald","Size":"M"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633302495602","key":"Emerald / L","title":"Emerald / L","sku":null,"optionValues":["Emerald","L"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Emerald","Size":"L"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302528370","key":"Emerald / XL","title":"Emerald / XL","sku":null,"optionValues":["Emerald","XL"],"option_values":[{"position":1,"name":"Color","value":"Emerald"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Emerald","Size":"XL"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61633302561138","key":"Pink / XS","title":"Pink / XS","sku":null,"optionValues":["Pink","XS"],"option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"XS"}],"selected_options":{"Color":"Pink","Size":"XS"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302593906","key":"Pink / S","title":"Pink / S","sku":null,"optionValues":["Pink","S"],"option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"Pink","Size":"S"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7911.jpg"},{"variant_id":"61633302626674","key":"Pink / M","title":"Pink / M","sku":null,"optionValues":["Pink","M"],"option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"Pink","Size":"M"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61633302659442","key":"Pink / L","title":"Pink / L","sku":null,"optionValues":["Pink","L"],"option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"Pink","Size":"L"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg"},{"variant_id":"61633302692210","key":"Pink / XL","title":"Pink / XL","sku":null,"optionValues":["Pink","XL"],"option_values":[{"position":1,"name":"Color","value":"Pink"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"Pink","Size":"XL"},"price_cents":4800,"regular_price_cents":4800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -656,6 +671,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -673,16 +692,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Bear KompleX | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -705,23 +747,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -734,10 +780,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -745,21 +791,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -770,12 +810,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

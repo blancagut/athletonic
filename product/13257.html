@@ -168,7 +168,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Animal</p>
-          <h1 class="pdp-title">Fury</h1>
+          <h1 class="pdp-title" data-pdp-title>Fury</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="3095" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$30.95</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -213,6 +213,9 @@
               data-cart-price="30.95"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_KiwiLime_1200x1200_4057fcec-4cdb-402e-860e-3da7ebf364d9.jpg"
+              data-cart-variant-id="50609645093184"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Kiwi Lime&quot;,&quot;Serving Size&quot;:&quot;30&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -651,17 +654,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Kiwi Lime / 30","optionValues":["Kiwi Lime","30"],"price_cents":3795,"compare_at_cents":0,"available":true},{"key":"Blue Raspberry / 30","optionValues":["Blue Raspberry","30"],"price_cents":3795,"compare_at_cents":0,"available":true},{"key":"Green Apple / 30","optionValues":["Green Apple","30"],"price_cents":3795,"compare_at_cents":0,"available":true},{"key":"Green Apple / 20","optionValues":["Green Apple","20"],"price_cents":3095,"compare_at_cents":0,"available":true},{"key":"Ice Pop / 30","optionValues":["Ice Pop","30"],"price_cents":3795,"compare_at_cents":0,"available":true},{"key":"Watermelon / 30","optionValues":["Watermelon","30"],"price_cents":3795,"compare_at_cents":0,"available":true},{"key":"Watermelon / 20","optionValues":["Watermelon","20"],"price_cents":3095,"compare_at_cents":0,"available":true},{"key":"Fruit Punch / 30","optionValues":["Fruit Punch","30"],"price_cents":3495,"compare_at_cents":0,"available":true},{"key":"Orange / 30","optionValues":["Orange","30"],"price_cents":3595,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"50609645093184","key":"Kiwi Lime / 30","title":"Kiwi Lime / 30","sku":null,"optionValues":["Kiwi Lime","30"],"option_values":[{"position":1,"name":"Flavor","value":"Kiwi Lime"},{"position":2,"name":"Serving Size","value":"30"}],"selected_options":{"Flavor":"Kiwi Lime","Serving Size":"30"},"price_cents":3795,"regular_price_cents":3795,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_KiwiLime_1200x1200_4057fcec-4cdb-402e-860e-3da7ebf364d9.jpg"},{"variant_id":"43990800040256","key":"Blue Raspberry / 30","title":"Blue Raspberry / 30","sku":null,"optionValues":["Blue Raspberry","30"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Raspberry"},{"position":2,"name":"Serving Size","value":"30"}],"selected_options":{"Flavor":"Blue Raspberry","Serving Size":"30"},"price_cents":3795,"regular_price_cents":3795,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_BlueRaspberry_1200x1200_9425299e-5b85-4bfa-a517-f5b6d1fa2500.jpg"},{"variant_id":"43990800138560","key":"Green Apple / 30","title":"Green Apple / 30","sku":null,"optionValues":["Green Apple","30"],"option_values":[{"position":1,"name":"Flavor","value":"Green Apple"},{"position":2,"name":"Serving Size","value":"30"}],"selected_options":{"Flavor":"Green Apple","Serving Size":"30"},"price_cents":3795,"regular_price_cents":3795,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_GreenApple_1200x1200_62ca7856-a1fc-47ac-b5cc-5f5bf5788076.jpg"},{"variant_id":"43990800105792","key":"Green Apple / 20","title":"Green Apple / 20","sku":null,"optionValues":["Green Apple","20"],"option_values":[{"position":1,"name":"Flavor","value":"Green Apple"},{"position":2,"name":"Serving Size","value":"20"}],"selected_options":{"Flavor":"Green Apple","Serving Size":"20"},"price_cents":3095,"regular_price_cents":3095,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_GreenApple_1200x1200_62ca7856-a1fc-47ac-b5cc-5f5bf5788076.jpg"},{"variant_id":"43990800171328","key":"Ice Pop / 30","title":"Ice Pop / 30","sku":null,"optionValues":["Ice Pop","30"],"option_values":[{"position":1,"name":"Flavor","value":"Ice Pop"},{"position":2,"name":"Serving Size","value":"30"}],"selected_options":{"Flavor":"Ice Pop","Serving Size":"30"},"price_cents":3795,"regular_price_cents":3795,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_BlueIcePop_1200x1200_c6829625-2d46-42b9-b437-69ba5ca24d08.jpg"},{"variant_id":"43990800335168","key":"Watermelon / 30","title":"Watermelon / 30","sku":null,"optionValues":["Watermelon","30"],"option_values":[{"position":1,"name":"Flavor","value":"Watermelon"},{"position":2,"name":"Serving Size","value":"30"}],"selected_options":{"Flavor":"Watermelon","Serving Size":"30"},"price_cents":3795,"regular_price_cents":3795,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_KiwiLime_1200x1200_4057fcec-4cdb-402e-860e-3da7ebf364d9.jpg"},{"variant_id":"43990800302400","key":"Watermelon / 20","title":"Watermelon / 20","sku":null,"optionValues":["Watermelon","20"],"option_values":[{"position":1,"name":"Flavor","value":"Watermelon"},{"position":2,"name":"Serving Size","value":"20"}],"selected_options":{"Flavor":"Watermelon","Serving Size":"20"},"price_cents":3095,"regular_price_cents":3095,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_20Serv_Watermelon_1200x1200_5bf3290c-af9f-4527-94c2-24e40ecdba1d.jpg"},{"variant_id":"43990800073024","key":"Fruit Punch / 30","title":"Fruit Punch / 30","sku":null,"optionValues":["Fruit Punch","30"],"option_values":[{"position":1,"name":"Flavor","value":"Fruit Punch"},{"position":2,"name":"Serving Size","value":"30"}],"selected_options":{"Flavor":"Fruit Punch","Serving Size":"30"},"price_cents":3495,"regular_price_cents":3495,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_KiwiLime_1200x1200_4057fcec-4cdb-402e-860e-3da7ebf364d9.jpg"},{"variant_id":"43990800236864","key":"Orange / 30","title":"Orange / 30","sku":null,"optionValues":["Orange","30"],"option_values":[{"position":1,"name":"Flavor","value":"Orange"},{"position":2,"name":"Serving Size","value":"30"}],"selected_options":{"Flavor":"Orange","Serving Size":"30"},"price_cents":3595,"regular_price_cents":3595,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Fury_30Serving_KiwiLime_1200x1200_4057fcec-4cdb-402e-860e-3da7ebf364d9.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -691,6 +706,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -708,16 +727,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Animal | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -740,23 +782,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -769,10 +815,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -780,21 +826,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -805,12 +845,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

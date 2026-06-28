@@ -185,7 +185,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Bear KompleX</p>
-          <h1 class="pdp-title">Motivational Fleece Hoodie - 'Bear Komplex' &amp; 'Get Better'</h1>
+          <h1 class="pdp-title" data-pdp-title>Motivational Fleece Hoodie - 'Bear Komplex' &amp; 'Get Better'</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="5500" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$55.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -233,6 +233,9 @@
               data-cart-price="55"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0939/5400/files/1257676948236313261_2048.jpg"
+              data-cart-variant-id="51754829840754"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;S&quot;,&quot;Size&quot;:&quot;Black&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -668,17 +671,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"S / Black","optionValues":["S","Black"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"S / Charcoal Heather","optionValues":["S","Charcoal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"S / Heather Grey","optionValues":["S","Heather Grey"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"S / Navy","optionValues":["S","Navy"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"S / Oatmeal Heather","optionValues":["S","Oatmeal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"S / Pale Pink","optionValues":["S","Pale Pink"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"M / Black","optionValues":["M","Black"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"M / Charcoal Heather","optionValues":["M","Charcoal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"M / Heather Grey","optionValues":["M","Heather Grey"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"M / Navy","optionValues":["M","Navy"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"M / Oatmeal Heather","optionValues":["M","Oatmeal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"M / Pale Pink","optionValues":["M","Pale Pink"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"L / Black","optionValues":["L","Black"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"L / Charcoal Heather","optionValues":["L","Charcoal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"L / Heather Grey","optionValues":["L","Heather Grey"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"L / Navy","optionValues":["L","Navy"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"L / Oatmeal Heather","optionValues":["L","Oatmeal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"L / Pale Pink","optionValues":["L","Pale Pink"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"XL / Black","optionValues":["XL","Black"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"XL / Charcoal Heather","optionValues":["XL","Charcoal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"XL / Heather Grey","optionValues":["XL","Heather Grey"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"XL / Navy","optionValues":["XL","Navy"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"XL / Oatmeal Heather","optionValues":["XL","Oatmeal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"XL / Pale Pink","optionValues":["XL","Pale Pink"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"2XL / Black","optionValues":["2XL","Black"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"2XL / Charcoal Heather","optionValues":["2XL","Charcoal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"2XL / Heather Grey","optionValues":["2XL","Heather Grey"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"2XL / Navy","optionValues":["2XL","Navy"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"2XL / Oatmeal Heather","optionValues":["2XL","Oatmeal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"2XL / Pale Pink","optionValues":["2XL","Pale Pink"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"3XL / Black","optionValues":["3XL","Black"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"3XL / Charcoal Heather","optionValues":["3XL","Charcoal Heather"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"3XL / Heather Grey","optionValues":["3XL","Heather Grey"],"price_cents":5500,"compare_at_cents":0,"available":true},{"key":"3XL / Navy","optionValues":["3XL","Navy"],"price_cents":5500,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"51754829840754","key":"S / Black","title":"S / Black","sku":null,"optionValues":["S","Black"],"option_values":[{"position":1,"name":"Color","value":"S"},{"position":2,"name":"Size","value":"Black"}],"selected_options":{"Color":"S","Size":"Black"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754829873522","key":"S / Charcoal Heather","title":"S / Charcoal Heather","sku":null,"optionValues":["S","Charcoal Heather"],"option_values":[{"position":1,"name":"Color","value":"S"},{"position":2,"name":"Size","value":"Charcoal Heather"}],"selected_options":{"Color":"S","Size":"Charcoal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754829906290","key":"S / Heather Grey","title":"S / Heather Grey","sku":null,"optionValues":["S","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"S"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"S","Size":"Heather Grey"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754829939058","key":"S / Navy","title":"S / Navy","sku":null,"optionValues":["S","Navy"],"option_values":[{"position":1,"name":"Color","value":"S"},{"position":2,"name":"Size","value":"Navy"}],"selected_options":{"Color":"S","Size":"Navy"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754829971826","key":"S / Oatmeal Heather","title":"S / Oatmeal Heather","sku":null,"optionValues":["S","Oatmeal Heather"],"option_values":[{"position":1,"name":"Color","value":"S"},{"position":2,"name":"Size","value":"Oatmeal Heather"}],"selected_options":{"Color":"S","Size":"Oatmeal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830004594","key":"S / Pale Pink","title":"S / Pale Pink","sku":null,"optionValues":["S","Pale Pink"],"option_values":[{"position":1,"name":"Color","value":"S"},{"position":2,"name":"Size","value":"Pale Pink"}],"selected_options":{"Color":"S","Size":"Pale Pink"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830037362","key":"M / Black","title":"M / Black","sku":null,"optionValues":["M","Black"],"option_values":[{"position":1,"name":"Color","value":"M"},{"position":2,"name":"Size","value":"Black"}],"selected_options":{"Color":"M","Size":"Black"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830070130","key":"M / Charcoal Heather","title":"M / Charcoal Heather","sku":null,"optionValues":["M","Charcoal Heather"],"option_values":[{"position":1,"name":"Color","value":"M"},{"position":2,"name":"Size","value":"Charcoal Heather"}],"selected_options":{"Color":"M","Size":"Charcoal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830102898","key":"M / Heather Grey","title":"M / Heather Grey","sku":null,"optionValues":["M","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"M"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"M","Size":"Heather Grey"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830135666","key":"M / Navy","title":"M / Navy","sku":null,"optionValues":["M","Navy"],"option_values":[{"position":1,"name":"Color","value":"M"},{"position":2,"name":"Size","value":"Navy"}],"selected_options":{"Color":"M","Size":"Navy"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830168434","key":"M / Oatmeal Heather","title":"M / Oatmeal Heather","sku":null,"optionValues":["M","Oatmeal Heather"],"option_values":[{"position":1,"name":"Color","value":"M"},{"position":2,"name":"Size","value":"Oatmeal Heather"}],"selected_options":{"Color":"M","Size":"Oatmeal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830201202","key":"M / Pale Pink","title":"M / Pale Pink","sku":null,"optionValues":["M","Pale Pink"],"option_values":[{"position":1,"name":"Color","value":"M"},{"position":2,"name":"Size","value":"Pale Pink"}],"selected_options":{"Color":"M","Size":"Pale Pink"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830233970","key":"L / Black","title":"L / Black","sku":null,"optionValues":["L","Black"],"option_values":[{"position":1,"name":"Color","value":"L"},{"position":2,"name":"Size","value":"Black"}],"selected_options":{"Color":"L","Size":"Black"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830266738","key":"L / Charcoal Heather","title":"L / Charcoal Heather","sku":null,"optionValues":["L","Charcoal Heather"],"option_values":[{"position":1,"name":"Color","value":"L"},{"position":2,"name":"Size","value":"Charcoal Heather"}],"selected_options":{"Color":"L","Size":"Charcoal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830299506","key":"L / Heather Grey","title":"L / Heather Grey","sku":null,"optionValues":["L","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"L"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"L","Size":"Heather Grey"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830332274","key":"L / Navy","title":"L / Navy","sku":null,"optionValues":["L","Navy"],"option_values":[{"position":1,"name":"Color","value":"L"},{"position":2,"name":"Size","value":"Navy"}],"selected_options":{"Color":"L","Size":"Navy"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830365042","key":"L / Oatmeal Heather","title":"L / Oatmeal Heather","sku":null,"optionValues":["L","Oatmeal Heather"],"option_values":[{"position":1,"name":"Color","value":"L"},{"position":2,"name":"Size","value":"Oatmeal Heather"}],"selected_options":{"Color":"L","Size":"Oatmeal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830397810","key":"L / Pale Pink","title":"L / Pale Pink","sku":null,"optionValues":["L","Pale Pink"],"option_values":[{"position":1,"name":"Color","value":"L"},{"position":2,"name":"Size","value":"Pale Pink"}],"selected_options":{"Color":"L","Size":"Pale Pink"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830430578","key":"XL / Black","title":"XL / Black","sku":null,"optionValues":["XL","Black"],"option_values":[{"position":1,"name":"Color","value":"XL"},{"position":2,"name":"Size","value":"Black"}],"selected_options":{"Color":"XL","Size":"Black"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830463346","key":"XL / Charcoal Heather","title":"XL / Charcoal Heather","sku":null,"optionValues":["XL","Charcoal Heather"],"option_values":[{"position":1,"name":"Color","value":"XL"},{"position":2,"name":"Size","value":"Charcoal Heather"}],"selected_options":{"Color":"XL","Size":"Charcoal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830496114","key":"XL / Heather Grey","title":"XL / Heather Grey","sku":null,"optionValues":["XL","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"XL"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"XL","Size":"Heather Grey"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830528882","key":"XL / Navy","title":"XL / Navy","sku":null,"optionValues":["XL","Navy"],"option_values":[{"position":1,"name":"Color","value":"XL"},{"position":2,"name":"Size","value":"Navy"}],"selected_options":{"Color":"XL","Size":"Navy"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830561650","key":"XL / Oatmeal Heather","title":"XL / Oatmeal Heather","sku":null,"optionValues":["XL","Oatmeal Heather"],"option_values":[{"position":1,"name":"Color","value":"XL"},{"position":2,"name":"Size","value":"Oatmeal Heather"}],"selected_options":{"Color":"XL","Size":"Oatmeal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830594418","key":"XL / Pale Pink","title":"XL / Pale Pink","sku":null,"optionValues":["XL","Pale Pink"],"option_values":[{"position":1,"name":"Color","value":"XL"},{"position":2,"name":"Size","value":"Pale Pink"}],"selected_options":{"Color":"XL","Size":"Pale Pink"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830627186","key":"2XL / Black","title":"2XL / Black","sku":null,"optionValues":["2XL","Black"],"option_values":[{"position":1,"name":"Color","value":"2XL"},{"position":2,"name":"Size","value":"Black"}],"selected_options":{"Color":"2XL","Size":"Black"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830659954","key":"2XL / Charcoal Heather","title":"2XL / Charcoal Heather","sku":null,"optionValues":["2XL","Charcoal Heather"],"option_values":[{"position":1,"name":"Color","value":"2XL"},{"position":2,"name":"Size","value":"Charcoal Heather"}],"selected_options":{"Color":"2XL","Size":"Charcoal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830692722","key":"2XL / Heather Grey","title":"2XL / Heather Grey","sku":null,"optionValues":["2XL","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"2XL"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"2XL","Size":"Heather Grey"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830725490","key":"2XL / Navy","title":"2XL / Navy","sku":null,"optionValues":["2XL","Navy"],"option_values":[{"position":1,"name":"Color","value":"2XL"},{"position":2,"name":"Size","value":"Navy"}],"selected_options":{"Color":"2XL","Size":"Navy"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830758258","key":"2XL / Oatmeal Heather","title":"2XL / Oatmeal Heather","sku":null,"optionValues":["2XL","Oatmeal Heather"],"option_values":[{"position":1,"name":"Color","value":"2XL"},{"position":2,"name":"Size","value":"Oatmeal Heather"}],"selected_options":{"Color":"2XL","Size":"Oatmeal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830791026","key":"2XL / Pale Pink","title":"2XL / Pale Pink","sku":null,"optionValues":["2XL","Pale Pink"],"option_values":[{"position":1,"name":"Color","value":"2XL"},{"position":2,"name":"Size","value":"Pale Pink"}],"selected_options":{"Color":"2XL","Size":"Pale Pink"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830823794","key":"3XL / Black","title":"3XL / Black","sku":null,"optionValues":["3XL","Black"],"option_values":[{"position":1,"name":"Color","value":"3XL"},{"position":2,"name":"Size","value":"Black"}],"selected_options":{"Color":"3XL","Size":"Black"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830856562","key":"3XL / Charcoal Heather","title":"3XL / Charcoal Heather","sku":null,"optionValues":["3XL","Charcoal Heather"],"option_values":[{"position":1,"name":"Color","value":"3XL"},{"position":2,"name":"Size","value":"Charcoal Heather"}],"selected_options":{"Color":"3XL","Size":"Charcoal Heather"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830889330","key":"3XL / Heather Grey","title":"3XL / Heather Grey","sku":null,"optionValues":["3XL","Heather Grey"],"option_values":[{"position":1,"name":"Color","value":"3XL"},{"position":2,"name":"Size","value":"Heather Grey"}],"selected_options":{"Color":"3XL","Size":"Heather Grey"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"51754830922098","key":"3XL / Navy","title":"3XL / Navy","sku":null,"optionValues":["3XL","Navy"],"option_values":[{"position":1,"name":"Color","value":"3XL"},{"position":2,"name":"Size","value":"Navy"}],"selected_options":{"Color":"3XL","Size":"Navy"},"price_cents":5500,"regular_price_cents":5500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -708,6 +723,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -725,16 +744,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Bear KompleX | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -757,23 +799,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -786,10 +832,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -797,21 +843,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -822,12 +862,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

@@ -168,7 +168,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">PEScience</p>
-          <h1 class="pdp-title">Prolific + High Volume Stack</h1>
+          <h1 class="pdp-title" data-pdp-title>Prolific + High Volume Stack</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="6999" data-base-compare-cents="7999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$69.99</strong>
             <span class="pdp-compare" data-pdp-compare >$79.99</span>
@@ -215,6 +215,9 @@
               data-cart-price="69.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"
+              data-cart-variant-id="39541573124171"
+              data-cart-selected-options="{&quot;Prolific&quot;:&quot;Prolific Sour Peach Candy&quot;,&quot;High Volume&quot;:&quot;High Volume Sour Peach Candy&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -649,17 +652,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Prolific Sour Peach Candy / High Volume Sour Peach Candy","optionValues":["Prolific Sour Peach Candy","High Volume Sour Peach Candy"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Peach Candy / High Volume Melon Berry","optionValues":["Prolific Sour Peach Candy","High Volume Melon Berry"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Peach Candy / High Volume Guava Pineapple","optionValues":["Prolific Sour Peach Candy","High Volume Guava Pineapple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Peach Candy / High Volume Raspberry Lemonade","optionValues":["Prolific Sour Peach Candy","High Volume Raspberry Lemonade"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Peach Candy / High Volume Sour Green Apple","optionValues":["Prolific Sour Peach Candy","High Volume Sour Green Apple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Melon Berry / High Volume Sour Peach Candy","optionValues":["Prolific Melon Berry","High Volume Sour Peach Candy"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Melon Berry / High Volume Melon Berry","optionValues":["Prolific Melon Berry","High Volume Melon Berry"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Melon Berry / High Volume Guava Pineapple","optionValues":["Prolific Melon Berry","High Volume Guava Pineapple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Melon Berry / High Volume Raspberry Lemonade","optionValues":["Prolific Melon Berry","High Volume Raspberry Lemonade"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Melon Berry / High Volume Sour Green Apple","optionValues":["Prolific Melon Berry","High Volume Sour Green Apple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Guava Pineapple / High Volume Sour Peach Candy","optionValues":["Prolific Guava Pineapple","High Volume Sour Peach Candy"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Guava Pineapple / High Volume Melon Berry","optionValues":["Prolific Guava Pineapple","High Volume Melon Berry"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Guava Pineapple / High Volume Guava Pineapple","optionValues":["Prolific Guava Pineapple","High Volume Guava Pineapple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Guava Pineapple / High Volume Raspberry Lemonade","optionValues":["Prolific Guava Pineapple","High Volume Raspberry Lemonade"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Guava Pineapple / High Volume Sour Green Apple","optionValues":["Prolific Guava Pineapple","High Volume Sour Green Apple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Raspberry Lemonade / High Volume Sour Peach Candy","optionValues":["Prolific Raspberry Lemonade","High Volume Sour Peach Candy"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Raspberry Lemonade / High Volume Melon Berry","optionValues":["Prolific Raspberry Lemonade","High Volume Melon Berry"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Raspberry Lemonade / High Volume Guava Pineapple","optionValues":["Prolific Raspberry Lemonade","High Volume Guava Pineapple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Raspberry Lemonade / High Volume Raspberry Lemonade","optionValues":["Prolific Raspberry Lemonade","High Volume Raspberry Lemonade"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Raspberry Lemonade / High Volume Sour Green Apple","optionValues":["Prolific Raspberry Lemonade","High Volume Sour Green Apple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Green Apple / High Volume Sour Peach Candy","optionValues":["Prolific Sour Green Apple","High Volume Sour Peach Candy"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Green Apple / High Volume Melon Berry","optionValues":["Prolific Sour Green Apple","High Volume Melon Berry"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Green Apple / High Volume Guava Pineapple","optionValues":["Prolific Sour Green Apple","High Volume Guava Pineapple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Green Apple / High Volume Raspberry Lemonade","optionValues":["Prolific Sour Green Apple","High Volume Raspberry Lemonade"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Sour Green Apple / High Volume Sour Green Apple","optionValues":["Prolific Sour Green Apple","High Volume Sour Green Apple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Mango Splash / High Volume Sour Peach Candy","optionValues":["Prolific Mango Splash","High Volume Sour Peach Candy"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Mango Splash / High Volume Melon Berry","optionValues":["Prolific Mango Splash","High Volume Melon Berry"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Mango Splash / High Volume Guava Pineapple","optionValues":["Prolific Mango Splash","High Volume Guava Pineapple"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Mango Splash / High Volume Raspberry Lemonade","optionValues":["Prolific Mango Splash","High Volume Raspberry Lemonade"],"price_cents":6999,"compare_at_cents":7999,"available":true},{"key":"Prolific Mango Splash / High Volume Sour Green Apple","optionValues":["Prolific Mango Splash","High Volume Sour Green Apple"],"price_cents":6999,"compare_at_cents":7999,"available":true}];
+        var variantPricing = [{"variant_id":"39541573124171","key":"Prolific Sour Peach Candy / High Volume Sour Peach Candy","title":"Prolific Sour Peach Candy / High Volume Sour Peach Candy","sku":null,"optionValues":["Prolific Sour Peach Candy","High Volume Sour Peach Candy"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Peach Candy"},{"position":2,"name":"High Volume","value":"High Volume Sour Peach Candy"}],"selected_options":{"Prolific":"Prolific Sour Peach Candy","High Volume":"High Volume Sour Peach Candy"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"39541572272203","key":"Prolific Sour Peach Candy / High Volume Melon Berry","title":"Prolific Sour Peach Candy / High Volume Melon Berry","sku":null,"optionValues":["Prolific Sour Peach Candy","High Volume Melon Berry"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Peach Candy"},{"position":2,"name":"High Volume","value":"High Volume Melon Berry"}],"selected_options":{"Prolific":"Prolific Sour Peach Candy","High Volume":"High Volume Melon Berry"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"40052673085515","key":"Prolific Sour Peach Candy / High Volume Guava Pineapple","title":"Prolific Sour Peach Candy / High Volume Guava Pineapple","sku":null,"optionValues":["Prolific Sour Peach Candy","High Volume Guava Pineapple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Peach Candy"},{"position":2,"name":"High Volume","value":"High Volume Guava Pineapple"}],"selected_options":{"Prolific":"Prolific Sour Peach Candy","High Volume":"High Volume Guava Pineapple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"39541572534347","key":"Prolific Sour Peach Candy / High Volume Raspberry Lemonade","title":"Prolific Sour Peach Candy / High Volume Raspberry Lemonade","sku":null,"optionValues":["Prolific Sour Peach Candy","High Volume Raspberry Lemonade"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Peach Candy"},{"position":2,"name":"High Volume","value":"High Volume Raspberry Lemonade"}],"selected_options":{"Prolific":"Prolific Sour Peach Candy","High Volume":"High Volume Raspberry Lemonade"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"39541570535499","key":"Prolific Sour Peach Candy / High Volume Sour Green Apple","title":"Prolific Sour Peach Candy / High Volume Sour Green Apple","sku":null,"optionValues":["Prolific Sour Peach Candy","High Volume Sour Green Apple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Peach Candy"},{"position":2,"name":"High Volume","value":"High Volume Sour Green Apple"}],"selected_options":{"Prolific":"Prolific Sour Peach Candy","High Volume":"High Volume Sour Green Apple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"39541568733259","key":"Prolific Melon Berry / High Volume Sour Peach Candy","title":"Prolific Melon Berry / High Volume Sour Peach Candy","sku":null,"optionValues":["Prolific Melon Berry","High Volume Sour Peach Candy"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Melon Berry"},{"position":2,"name":"High Volume","value":"High Volume Sour Peach Candy"}],"selected_options":{"Prolific":"Prolific Melon Berry","High Volume":"High Volume Sour Peach Candy"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"12232192131147","key":"Prolific Melon Berry / High Volume Melon Berry","title":"Prolific Melon Berry / High Volume Melon Berry","sku":null,"optionValues":["Prolific Melon Berry","High Volume Melon Berry"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Melon Berry"},{"position":2,"name":"High Volume","value":"High Volume Melon Berry"}],"selected_options":{"Prolific":"Prolific Melon Berry","High Volume":"High Volume Melon Berry"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"40052673052747","key":"Prolific Melon Berry / High Volume Guava Pineapple","title":"Prolific Melon Berry / High Volume Guava Pineapple","sku":null,"optionValues":["Prolific Melon Berry","High Volume Guava Pineapple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Melon Berry"},{"position":2,"name":"High Volume","value":"High Volume Guava Pineapple"}],"selected_options":{"Prolific":"Prolific Melon Berry","High Volume":"High Volume Guava Pineapple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"12232192098379","key":"Prolific Melon Berry / High Volume Raspberry Lemonade","title":"Prolific Melon Berry / High Volume Raspberry Lemonade","sku":null,"optionValues":["Prolific Melon Berry","High Volume Raspberry Lemonade"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Melon Berry"},{"position":2,"name":"High Volume","value":"High Volume Raspberry Lemonade"}],"selected_options":{"Prolific":"Prolific Melon Berry","High Volume":"High Volume Raspberry Lemonade"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"31719102808139","key":"Prolific Melon Berry / High Volume Sour Green Apple","title":"Prolific Melon Berry / High Volume Sour Green Apple","sku":null,"optionValues":["Prolific Melon Berry","High Volume Sour Green Apple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Melon Berry"},{"position":2,"name":"High Volume","value":"High Volume Sour Green Apple"}],"selected_options":{"Prolific":"Prolific Melon Berry","High Volume":"High Volume Sour Green Apple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"39541574074443","key":"Prolific Guava Pineapple / High Volume Sour Peach Candy","title":"Prolific Guava Pineapple / High Volume Sour Peach Candy","sku":null,"optionValues":["Prolific Guava Pineapple","High Volume Sour Peach Candy"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Guava Pineapple"},{"position":2,"name":"High Volume","value":"High Volume Sour Peach Candy"}],"selected_options":{"Prolific":"Prolific Guava Pineapple","High Volume":"High Volume Sour Peach Candy"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"12232191803467","key":"Prolific Guava Pineapple / High Volume Melon Berry","title":"Prolific Guava Pineapple / High Volume Melon Berry","sku":null,"optionValues":["Prolific Guava Pineapple","High Volume Melon Berry"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Guava Pineapple"},{"position":2,"name":"High Volume","value":"High Volume Melon Berry"}],"selected_options":{"Prolific":"Prolific Guava Pineapple","High Volume":"High Volume Melon Berry"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"40052673249355","key":"Prolific Guava Pineapple / High Volume Guava Pineapple","title":"Prolific Guava Pineapple / High Volume Guava Pineapple","sku":null,"optionValues":["Prolific Guava Pineapple","High Volume Guava Pineapple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Guava Pineapple"},{"position":2,"name":"High Volume","value":"High Volume Guava Pineapple"}],"selected_options":{"Prolific":"Prolific Guava Pineapple","High Volume":"High Volume Guava Pineapple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"12232191770699","key":"Prolific Guava Pineapple / High Volume Raspberry Lemonade","title":"Prolific Guava Pineapple / High Volume Raspberry Lemonade","sku":null,"optionValues":["Prolific Guava Pineapple","High Volume Raspberry Lemonade"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Guava Pineapple"},{"position":2,"name":"High Volume","value":"High Volume Raspberry Lemonade"}],"selected_options":{"Prolific":"Prolific Guava Pineapple","High Volume":"High Volume Raspberry Lemonade"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"31719100088395","key":"Prolific Guava Pineapple / High Volume Sour Green Apple","title":"Prolific Guava Pineapple / High Volume Sour Green Apple","sku":null,"optionValues":["Prolific Guava Pineapple","High Volume Sour Green Apple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Guava Pineapple"},{"position":2,"name":"High Volume","value":"High Volume Sour Green Apple"}],"selected_options":{"Prolific":"Prolific Guava Pineapple","High Volume":"High Volume Sour Green Apple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"39541569355851","key":"Prolific Raspberry Lemonade / High Volume Sour Peach Candy","title":"Prolific Raspberry Lemonade / High Volume Sour Peach Candy","sku":null,"optionValues":["Prolific Raspberry Lemonade","High Volume Sour Peach Candy"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Raspberry Lemonade"},{"position":2,"name":"High Volume","value":"High Volume Sour Peach Candy"}],"selected_options":{"Prolific":"Prolific Raspberry Lemonade","High Volume":"High Volume Sour Peach Candy"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"12232191967307","key":"Prolific Raspberry Lemonade / High Volume Melon Berry","title":"Prolific Raspberry Lemonade / High Volume Melon Berry","sku":null,"optionValues":["Prolific Raspberry Lemonade","High Volume Melon Berry"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Raspberry Lemonade"},{"position":2,"name":"High Volume","value":"High Volume Melon Berry"}],"selected_options":{"Prolific":"Prolific Raspberry Lemonade","High Volume":"High Volume Melon Berry"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"40052673118283","key":"Prolific Raspberry Lemonade / High Volume Guava Pineapple","title":"Prolific Raspberry Lemonade / High Volume Guava Pineapple","sku":null,"optionValues":["Prolific Raspberry Lemonade","High Volume Guava Pineapple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Raspberry Lemonade"},{"position":2,"name":"High Volume","value":"High Volume Guava Pineapple"}],"selected_options":{"Prolific":"Prolific Raspberry Lemonade","High Volume":"High Volume Guava Pineapple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"12232191934539","key":"Prolific Raspberry Lemonade / High Volume Raspberry Lemonade","title":"Prolific Raspberry Lemonade / High Volume Raspberry Lemonade","sku":null,"optionValues":["Prolific Raspberry Lemonade","High Volume Raspberry Lemonade"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Raspberry Lemonade"},{"position":2,"name":"High Volume","value":"High Volume Raspberry Lemonade"}],"selected_options":{"Prolific":"Prolific Raspberry Lemonade","High Volume":"High Volume Raspberry Lemonade"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"31719100285003","key":"Prolific Raspberry Lemonade / High Volume Sour Green Apple","title":"Prolific Raspberry Lemonade / High Volume Sour Green Apple","sku":null,"optionValues":["Prolific Raspberry Lemonade","High Volume Sour Green Apple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Raspberry Lemonade"},{"position":2,"name":"High Volume","value":"High Volume Sour Green Apple"}],"selected_options":{"Prolific":"Prolific Raspberry Lemonade","High Volume":"High Volume Sour Green Apple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"39541567651915","key":"Prolific Sour Green Apple / High Volume Sour Peach Candy","title":"Prolific Sour Green Apple / High Volume Sour Peach Candy","sku":null,"optionValues":["Prolific Sour Green Apple","High Volume Sour Peach Candy"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Green Apple"},{"position":2,"name":"High Volume","value":"High Volume Sour Peach Candy"}],"selected_options":{"Prolific":"Prolific Sour Green Apple","High Volume":"High Volume Sour Peach Candy"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"31719087538251","key":"Prolific Sour Green Apple / High Volume Melon Berry","title":"Prolific Sour Green Apple / High Volume Melon Berry","sku":null,"optionValues":["Prolific Sour Green Apple","High Volume Melon Berry"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Green Apple"},{"position":2,"name":"High Volume","value":"High Volume Melon Berry"}],"selected_options":{"Prolific":"Prolific Sour Green Apple","High Volume":"High Volume Melon Berry"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"40052673183819","key":"Prolific Sour Green Apple / High Volume Guava Pineapple","title":"Prolific Sour Green Apple / High Volume Guava Pineapple","sku":null,"optionValues":["Prolific Sour Green Apple","High Volume Guava Pineapple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Green Apple"},{"position":2,"name":"High Volume","value":"High Volume Guava Pineapple"}],"selected_options":{"Prolific":"Prolific Sour Green Apple","High Volume":"High Volume Guava Pineapple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"31719087079499","key":"Prolific Sour Green Apple / High Volume Raspberry Lemonade","title":"Prolific Sour Green Apple / High Volume Raspberry Lemonade","sku":null,"optionValues":["Prolific Sour Green Apple","High Volume Raspberry Lemonade"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Green Apple"},{"position":2,"name":"High Volume","value":"High Volume Raspberry Lemonade"}],"selected_options":{"Prolific":"Prolific Sour Green Apple","High Volume":"High Volume Raspberry Lemonade"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"31719096385611","key":"Prolific Sour Green Apple / High Volume Sour Green Apple","title":"Prolific Sour Green Apple / High Volume Sour Green Apple","sku":null,"optionValues":["Prolific Sour Green Apple","High Volume Sour Green Apple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Sour Green Apple"},{"position":2,"name":"High Volume","value":"High Volume Sour Green Apple"}],"selected_options":{"Prolific":"Prolific Sour Green Apple","High Volume":"High Volume Sour Green Apple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"39541568438347","key":"Prolific Mango Splash / High Volume Sour Peach Candy","title":"Prolific Mango Splash / High Volume Sour Peach Candy","sku":null,"optionValues":["Prolific Mango Splash","High Volume Sour Peach Candy"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Mango Splash"},{"position":2,"name":"High Volume","value":"High Volume Sour Peach Candy"}],"selected_options":{"Prolific":"Prolific Mango Splash","High Volume":"High Volume Sour Peach Candy"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"12232192294987","key":"Prolific Mango Splash / High Volume Melon Berry","title":"Prolific Mango Splash / High Volume Melon Berry","sku":null,"optionValues":["Prolific Mango Splash","High Volume Melon Berry"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Mango Splash"},{"position":2,"name":"High Volume","value":"High Volume Melon Berry"}],"selected_options":{"Prolific":"Prolific Mango Splash","High Volume":"High Volume Melon Berry"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"40052673151051","key":"Prolific Mango Splash / High Volume Guava Pineapple","title":"Prolific Mango Splash / High Volume Guava Pineapple","sku":null,"optionValues":["Prolific Mango Splash","High Volume Guava Pineapple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Mango Splash"},{"position":2,"name":"High Volume","value":"High Volume Guava Pineapple"}],"selected_options":{"Prolific":"Prolific Mango Splash","High Volume":"High Volume Guava Pineapple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"12232192262219","key":"Prolific Mango Splash / High Volume Raspberry Lemonade","title":"Prolific Mango Splash / High Volume Raspberry Lemonade","sku":null,"optionValues":["Prolific Mango Splash","High Volume Raspberry Lemonade"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Mango Splash"},{"position":2,"name":"High Volume","value":"High Volume Raspberry Lemonade"}],"selected_options":{"Prolific":"Prolific Mango Splash","High Volume":"High Volume Raspberry Lemonade"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"},{"variant_id":"31719104381003","key":"Prolific Mango Splash / High Volume Sour Green Apple","title":"Prolific Mango Splash / High Volume Sour Green Apple","sku":null,"optionValues":["Prolific Mango Splash","High Volume Sour Green Apple"],"option_values":[{"position":1,"name":"Prolific","value":"Prolific Mango Splash"},{"position":2,"name":"High Volume","value":"High Volume Sour Green Apple"}],"selected_options":{"Prolific":"Prolific Mango Splash","High Volume":"High Volume Sour Green Apple"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/prolific-high-volume-stack-stack-pescience-695906.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -689,6 +704,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -706,16 +725,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — PEScience | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -738,23 +780,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -767,10 +813,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -778,21 +824,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -803,12 +843,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

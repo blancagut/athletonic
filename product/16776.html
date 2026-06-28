@@ -195,7 +195,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">truvani</p>
-          <h1 class="pdp-title">The Only Bar</h1>
+          <h1 class="pdp-title" data-pdp-title>The Only Bar</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="1596" data-base-compare-cents="1596" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$15.96</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -246,6 +246,9 @@
               data-cart-price="15.96"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/2538/3594/files/ob-page-1.jpg"
+              data-cart-variant-id="44225838284845"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Tasting Collection&quot;,&quot;Size&quot;:&quot;12 Count Box&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -678,17 +681,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Tasting Collection / 12 Count Box","optionValues":["Tasting Collection","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Chocolate Brownie / 12 Count Box","optionValues":["Chocolate Brownie","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Chocolate Brownie / 4 Count Box","optionValues":["Chocolate Brownie","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Snickerdoodle / 12 Count Box","optionValues":["Snickerdoodle","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Snickerdoodle / 4 Count Box","optionValues":["Snickerdoodle","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Chocolate Chip Cookie Dough / 12 Count Box","optionValues":["Chocolate Chip Cookie Dough","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Chocolate Chip Cookie Dough / 4 Count Box","optionValues":["Chocolate Chip Cookie Dough","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Oatmeal Chocolate Chip / 12 Count Box","optionValues":["Oatmeal Chocolate Chip","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Oatmeal Chocolate Chip / 4 Count Box","optionValues":["Oatmeal Chocolate Chip","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Sugar Cookie / 12 Count Box","optionValues":["Sugar Cookie","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Sugar Cookie / 4 Count Box","optionValues":["Sugar Cookie","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Lemon Bar / 12 Count Box","optionValues":["Lemon Bar","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Lemon Bar / 4 Count Box","optionValues":["Lemon Bar","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Chocolate Chip Banana Bread / 12 Count Box","optionValues":["Chocolate Chip Banana Bread","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Chocolate Chip Banana Bread / 4 Count Box","optionValues":["Chocolate Chip Banana Bread","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Cherry Chocolate Chip / 12 Count Box","optionValues":["Cherry Chocolate Chip","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Cherry Chocolate Chip / 4 Count Box","optionValues":["Cherry Chocolate Chip","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Peanut Butter Chocolate Chip / 12 Count Box","optionValues":["Peanut Butter Chocolate Chip","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Peanut Butter Chocolate Chip / 4 Count Box","optionValues":["Peanut Butter Chocolate Chip","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Chocolate Peanut Butter / 12 Count Box","optionValues":["Chocolate Peanut Butter","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Chocolate Peanut Butter / 4 Count Box","optionValues":["Chocolate Peanut Butter","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Coconut Cashew / 12 Count Box","optionValues":["Coconut Cashew","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Coconut Cashew / 4 Count Box","optionValues":["Coconut Cashew","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true},{"key":"Mint Chocolate / 12 Count Box","optionValues":["Mint Chocolate","12 Count Box"],"price_cents":3499,"compare_at_cents":3499,"available":true},{"key":"Mint Chocolate / 4 Count Box","optionValues":["Mint Chocolate","4 Count Box"],"price_cents":1596,"compare_at_cents":1596,"available":true}];
+        var variantPricing = [{"variant_id":"44225838284845","key":"Tasting Collection / 12 Count Box","title":"Tasting Collection / 12 Count Box","sku":null,"optionValues":["Tasting Collection","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Tasting Collection"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Tasting Collection","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/12Bar-TastingCollection-Shopify_a9c63004-2a29-44b9-8c28-ecff0aabfb31.png"},{"variant_id":"44225838022701","key":"Chocolate Brownie / 12 Count Box","title":"Chocolate Brownie / 12 Count Box","sku":null,"optionValues":["Chocolate Brownie","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Brownie"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Chocolate Brownie","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocBrownie_39dad745-8dde-4dee-9755-7b4354296dad.png"},{"variant_id":"44225838055469","key":"Chocolate Brownie / 4 Count Box","title":"Chocolate Brownie / 4 Count Box","sku":null,"optionValues":["Chocolate Brownie","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Brownie"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Chocolate Brownie","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocBrownie_39dad745-8dde-4dee-9755-7b4354296dad.png"},{"variant_id":"44225837563949","key":"Snickerdoodle / 12 Count Box","title":"Snickerdoodle / 12 Count Box","sku":null,"optionValues":["Snickerdoodle","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Snickerdoodle"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Snickerdoodle","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-Snickerdoodle.png"},{"variant_id":"44225837596717","key":"Snickerdoodle / 4 Count Box","title":"Snickerdoodle / 4 Count Box","sku":null,"optionValues":["Snickerdoodle","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Snickerdoodle"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Snickerdoodle","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-Snickerdoodle.png"},{"variant_id":"44225837498413","key":"Chocolate Chip Cookie Dough / 12 Count Box","title":"Chocolate Chip Cookie Dough / 12 Count Box","sku":null,"optionValues":["Chocolate Chip Cookie Dough","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Chip Cookie Dough"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Chocolate Chip Cookie Dough","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837531181","key":"Chocolate Chip Cookie Dough / 4 Count Box","title":"Chocolate Chip Cookie Dough / 4 Count Box","sku":null,"optionValues":["Chocolate Chip Cookie Dough","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Chip Cookie Dough"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Chocolate Chip Cookie Dough","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837957165","key":"Oatmeal Chocolate Chip / 12 Count Box","title":"Oatmeal Chocolate Chip / 12 Count Box","sku":null,"optionValues":["Oatmeal Chocolate Chip","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Oatmeal Chocolate Chip"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Oatmeal Chocolate Chip","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837989933","key":"Oatmeal Chocolate Chip / 4 Count Box","title":"Oatmeal Chocolate Chip / 4 Count Box","sku":null,"optionValues":["Oatmeal Chocolate Chip","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Oatmeal Chocolate Chip"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Oatmeal Chocolate Chip","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837629485","key":"Sugar Cookie / 12 Count Box","title":"Sugar Cookie / 12 Count Box","sku":null,"optionValues":["Sugar Cookie","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Sugar Cookie"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Sugar Cookie","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-SugarCookie.png"},{"variant_id":"44225837662253","key":"Sugar Cookie / 4 Count Box","title":"Sugar Cookie / 4 Count Box","sku":null,"optionValues":["Sugar Cookie","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Sugar Cookie"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Sugar Cookie","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-SugarCookie.png"},{"variant_id":"44225837695021","key":"Lemon Bar / 12 Count Box","title":"Lemon Bar / 12 Count Box","sku":null,"optionValues":["Lemon Bar","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Lemon Bar"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Lemon Bar","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-LemonBar.png"},{"variant_id":"44225837727789","key":"Lemon Bar / 4 Count Box","title":"Lemon Bar / 4 Count Box","sku":null,"optionValues":["Lemon Bar","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Lemon Bar"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Lemon Bar","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-LemonBar.png"},{"variant_id":"44225837760557","key":"Chocolate Chip Banana Bread / 12 Count Box","title":"Chocolate Chip Banana Bread / 12 Count Box","sku":null,"optionValues":["Chocolate Chip Banana Bread","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Chip Banana Bread"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Chocolate Chip Banana Bread","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837793325","key":"Chocolate Chip Banana Bread / 4 Count Box","title":"Chocolate Chip Banana Bread / 4 Count Box","sku":null,"optionValues":["Chocolate Chip Banana Bread","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Chip Banana Bread"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Chocolate Chip Banana Bread","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837826093","key":"Cherry Chocolate Chip / 12 Count Box","title":"Cherry Chocolate Chip / 12 Count Box","sku":null,"optionValues":["Cherry Chocolate Chip","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Cherry Chocolate Chip"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Cherry Chocolate Chip","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837858861","key":"Cherry Chocolate Chip / 4 Count Box","title":"Cherry Chocolate Chip / 4 Count Box","sku":null,"optionValues":["Cherry Chocolate Chip","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Cherry Chocolate Chip"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Cherry Chocolate Chip","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837891629","key":"Peanut Butter Chocolate Chip / 12 Count Box","title":"Peanut Butter Chocolate Chip / 12 Count Box","sku":null,"optionValues":["Peanut Butter Chocolate Chip","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Peanut Butter Chocolate Chip"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Peanut Butter Chocolate Chip","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225837924397","key":"Peanut Butter Chocolate Chip / 4 Count Box","title":"Peanut Butter Chocolate Chip / 4 Count Box","sku":null,"optionValues":["Peanut Butter Chocolate Chip","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Peanut Butter Chocolate Chip"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Peanut Butter Chocolate Chip","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-ChocChipBanBread.png"},{"variant_id":"44225838088237","key":"Chocolate Peanut Butter / 12 Count Box","title":"Chocolate Peanut Butter / 12 Count Box","sku":null,"optionValues":["Chocolate Peanut Butter","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Peanut Butter"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Chocolate Peanut Butter","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/products/only-bar-with-box_910de29d-7ad6-40c6-8e91-5602272716fc.png"},{"variant_id":"44225838121005","key":"Chocolate Peanut Butter / 4 Count Box","title":"Chocolate Peanut Butter / 4 Count Box","sku":null,"optionValues":["Chocolate Peanut Butter","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Peanut Butter"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Chocolate Peanut Butter","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/products/only-bar-with-box_910de29d-7ad6-40c6-8e91-5602272716fc.png"},{"variant_id":"44225838153773","key":"Coconut Cashew / 12 Count Box","title":"Coconut Cashew / 12 Count Box","sku":null,"optionValues":["Coconut Cashew","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Coconut Cashew"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Coconut Cashew","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-CoconutCashew.png"},{"variant_id":"44225838186541","key":"Coconut Cashew / 4 Count Box","title":"Coconut Cashew / 4 Count Box","sku":null,"optionValues":["Coconut Cashew","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Coconut Cashew"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Coconut Cashew","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-CoconutCashew.png"},{"variant_id":"44225838219309","key":"Mint Chocolate / 12 Count Box","title":"Mint Chocolate / 12 Count Box","sku":null,"optionValues":["Mint Chocolate","12 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Mint Chocolate"},{"position":2,"name":"Size","value":"12 Count Box"}],"selected_options":{"Flavor":"Mint Chocolate","Size":"12 Count Box"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-MintChoc.png"},{"variant_id":"44225838252077","key":"Mint Chocolate / 4 Count Box","title":"Mint Chocolate / 4 Count Box","sku":null,"optionValues":["Mint Chocolate","4 Count Box"],"option_values":[{"position":1,"name":"Flavor","value":"Mint Chocolate"},{"position":2,"name":"Size","value":"4 Count Box"}],"selected_options":{"Flavor":"Mint Chocolate","Size":"4 Count Box"},"price_cents":1596,"regular_price_cents":1596,"compare_at_cents":1596,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2538/3594/files/TheOnlyBar-4pack-box-MintChoc.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -718,6 +733,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -735,16 +754,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — truvani | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -767,23 +809,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -796,10 +842,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -807,21 +853,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -832,12 +872,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

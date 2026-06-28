@@ -160,7 +160,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">PEScience</p>
-          <h1 class="pdp-title">Amino IV 2-Pack</h1>
+          <h1 class="pdp-title" data-pdp-title>Amino IV 2-Pack</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="4999" data-base-compare-cents="5999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$49.99</strong>
             <span class="pdp-compare" data-pdp-compare >$59.99</span>
@@ -206,6 +206,9 @@
               data-cart-price="49.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1943/7603/products/amino-iv-2-pack-stack-pescience-299377.jpg"
+              data-cart-variant-id="12169515171915"
+              data-cart-selected-options="{&quot;Flavor 1&quot;:&quot;Strawberry Lemonade&quot;,&quot;Flavor 2&quot;:&quot;Strawberry Lemonade&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -640,17 +643,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Strawberry Lemonade / Strawberry Lemonade","optionValues":["Strawberry Lemonade","Strawberry Lemonade"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Strawberry Lemonade / Raspberry Grape","optionValues":["Strawberry Lemonade","Raspberry Grape"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Strawberry Lemonade / Sour Green Apple","optionValues":["Strawberry Lemonade","Sour Green Apple"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Strawberry Lemonade / Orange Dreamsicle","optionValues":["Strawberry Lemonade","Orange Dreamsicle"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Strawberry Lemonade / Black Cherry","optionValues":["Strawberry Lemonade","Black Cherry"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Raspberry Grape / Strawberry Lemonade","optionValues":["Raspberry Grape","Strawberry Lemonade"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Raspberry Grape / Raspberry Grape","optionValues":["Raspberry Grape","Raspberry Grape"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Raspberry Grape / Sour Green Apple","optionValues":["Raspberry Grape","Sour Green Apple"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Raspberry Grape / Orange Dreamsicle","optionValues":["Raspberry Grape","Orange Dreamsicle"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Raspberry Grape / Black Cherry","optionValues":["Raspberry Grape","Black Cherry"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Sour Green Apple / Strawberry Lemonade","optionValues":["Sour Green Apple","Strawberry Lemonade"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Sour Green Apple / Raspberry Grape","optionValues":["Sour Green Apple","Raspberry Grape"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Sour Green Apple / Sour Green Apple","optionValues":["Sour Green Apple","Sour Green Apple"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Sour Green Apple / Orange Dreamsicle","optionValues":["Sour Green Apple","Orange Dreamsicle"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Sour Green Apple / Black Cherry","optionValues":["Sour Green Apple","Black Cherry"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Orange Dreamsicle / Strawberry Lemonade","optionValues":["Orange Dreamsicle","Strawberry Lemonade"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Orange Dreamsicle / Raspberry Grape","optionValues":["Orange Dreamsicle","Raspberry Grape"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Orange Dreamsicle / Sour Green Apple","optionValues":["Orange Dreamsicle","Sour Green Apple"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Orange Dreamsicle / Orange Dreamsicle","optionValues":["Orange Dreamsicle","Orange Dreamsicle"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Orange Dreamsicle / Black Cherry","optionValues":["Orange Dreamsicle","Black Cherry"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Black Cherry / Strawberry Lemonade","optionValues":["Black Cherry","Strawberry Lemonade"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Black Cherry / Raspberry Grape","optionValues":["Black Cherry","Raspberry Grape"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Black Cherry / Sour Green Apple","optionValues":["Black Cherry","Sour Green Apple"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Black Cherry / Orange Dreamsicle","optionValues":["Black Cherry","Orange Dreamsicle"],"price_cents":4999,"compare_at_cents":5999,"available":true},{"key":"Black Cherry / Black Cherry","optionValues":["Black Cherry","Black Cherry"],"price_cents":4999,"compare_at_cents":5999,"available":true}];
+        var variantPricing = [{"variant_id":"12169515171915","key":"Strawberry Lemonade / Strawberry Lemonade","title":"Strawberry Lemonade / Strawberry Lemonade","sku":null,"optionValues":["Strawberry Lemonade","Strawberry Lemonade"],"option_values":[{"position":1,"name":"Flavor 1","value":"Strawberry Lemonade"},{"position":2,"name":"Flavor 2","value":"Strawberry Lemonade"}],"selected_options":{"Flavor 1":"Strawberry Lemonade","Flavor 2":"Strawberry Lemonade"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"12169515532363","key":"Strawberry Lemonade / Raspberry Grape","title":"Strawberry Lemonade / Raspberry Grape","sku":null,"optionValues":["Strawberry Lemonade","Raspberry Grape"],"option_values":[{"position":1,"name":"Flavor 1","value":"Strawberry Lemonade"},{"position":2,"name":"Flavor 2","value":"Raspberry Grape"}],"selected_options":{"Flavor 1":"Strawberry Lemonade","Flavor 2":"Raspberry Grape"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39255980605515","key":"Strawberry Lemonade / Sour Green Apple","title":"Strawberry Lemonade / Sour Green Apple","sku":null,"optionValues":["Strawberry Lemonade","Sour Green Apple"],"option_values":[{"position":1,"name":"Flavor 1","value":"Strawberry Lemonade"},{"position":2,"name":"Flavor 2","value":"Sour Green Apple"}],"selected_options":{"Flavor 1":"Strawberry Lemonade","Flavor 2":"Sour Green Apple"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"12169515597899","key":"Strawberry Lemonade / Orange Dreamsicle","title":"Strawberry Lemonade / Orange Dreamsicle","sku":null,"optionValues":["Strawberry Lemonade","Orange Dreamsicle"],"option_values":[{"position":1,"name":"Flavor 1","value":"Strawberry Lemonade"},{"position":2,"name":"Flavor 2","value":"Orange Dreamsicle"}],"selected_options":{"Flavor 1":"Strawberry Lemonade","Flavor 2":"Orange Dreamsicle"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777512523","key":"Strawberry Lemonade / Black Cherry","title":"Strawberry Lemonade / Black Cherry","sku":null,"optionValues":["Strawberry Lemonade","Black Cherry"],"option_values":[{"position":1,"name":"Flavor 1","value":"Strawberry Lemonade"},{"position":2,"name":"Flavor 2","value":"Black Cherry"}],"selected_options":{"Flavor 1":"Strawberry Lemonade","Flavor 2":"Black Cherry"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"12169516679243","key":"Raspberry Grape / Strawberry Lemonade","title":"Raspberry Grape / Strawberry Lemonade","sku":null,"optionValues":["Raspberry Grape","Strawberry Lemonade"],"option_values":[{"position":1,"name":"Flavor 1","value":"Raspberry Grape"},{"position":2,"name":"Flavor 2","value":"Strawberry Lemonade"}],"selected_options":{"Flavor 1":"Raspberry Grape","Flavor 2":"Strawberry Lemonade"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"12169516843083","key":"Raspberry Grape / Raspberry Grape","title":"Raspberry Grape / Raspberry Grape","sku":null,"optionValues":["Raspberry Grape","Raspberry Grape"],"option_values":[{"position":1,"name":"Flavor 1","value":"Raspberry Grape"},{"position":2,"name":"Flavor 2","value":"Raspberry Grape"}],"selected_options":{"Flavor 1":"Raspberry Grape","Flavor 2":"Raspberry Grape"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"31716402790475","key":"Raspberry Grape / Sour Green Apple","title":"Raspberry Grape / Sour Green Apple","sku":null,"optionValues":["Raspberry Grape","Sour Green Apple"],"option_values":[{"position":1,"name":"Flavor 1","value":"Raspberry Grape"},{"position":2,"name":"Flavor 2","value":"Sour Green Apple"}],"selected_options":{"Flavor 1":"Raspberry Grape","Flavor 2":"Sour Green Apple"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"12169516908619","key":"Raspberry Grape / Orange Dreamsicle","title":"Raspberry Grape / Orange Dreamsicle","sku":null,"optionValues":["Raspberry Grape","Orange Dreamsicle"],"option_values":[{"position":1,"name":"Flavor 1","value":"Raspberry Grape"},{"position":2,"name":"Flavor 2","value":"Orange Dreamsicle"}],"selected_options":{"Flavor 1":"Raspberry Grape","Flavor 2":"Orange Dreamsicle"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777545291","key":"Raspberry Grape / Black Cherry","title":"Raspberry Grape / Black Cherry","sku":null,"optionValues":["Raspberry Grape","Black Cherry"],"option_values":[{"position":1,"name":"Flavor 1","value":"Raspberry Grape"},{"position":2,"name":"Flavor 2","value":"Black Cherry"}],"selected_options":{"Flavor 1":"Raspberry Grape","Flavor 2":"Black Cherry"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"31716373594187","key":"Sour Green Apple / Strawberry Lemonade","title":"Sour Green Apple / Strawberry Lemonade","sku":null,"optionValues":["Sour Green Apple","Strawberry Lemonade"],"option_values":[{"position":1,"name":"Flavor 1","value":"Sour Green Apple"},{"position":2,"name":"Flavor 2","value":"Strawberry Lemonade"}],"selected_options":{"Flavor 1":"Sour Green Apple","Flavor 2":"Strawberry Lemonade"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"31716394696779","key":"Sour Green Apple / Raspberry Grape","title":"Sour Green Apple / Raspberry Grape","sku":null,"optionValues":["Sour Green Apple","Raspberry Grape"],"option_values":[{"position":1,"name":"Flavor 1","value":"Sour Green Apple"},{"position":2,"name":"Flavor 2","value":"Raspberry Grape"}],"selected_options":{"Flavor 1":"Sour Green Apple","Flavor 2":"Raspberry Grape"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"31716384145483","key":"Sour Green Apple / Sour Green Apple","title":"Sour Green Apple / Sour Green Apple","sku":null,"optionValues":["Sour Green Apple","Sour Green Apple"],"option_values":[{"position":1,"name":"Flavor 1","value":"Sour Green Apple"},{"position":2,"name":"Flavor 2","value":"Sour Green Apple"}],"selected_options":{"Flavor 1":"Sour Green Apple","Flavor 2":"Sour Green Apple"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"31716397121611","key":"Sour Green Apple / Orange Dreamsicle","title":"Sour Green Apple / Orange Dreamsicle","sku":null,"optionValues":["Sour Green Apple","Orange Dreamsicle"],"option_values":[{"position":1,"name":"Flavor 1","value":"Sour Green Apple"},{"position":2,"name":"Flavor 2","value":"Orange Dreamsicle"}],"selected_options":{"Flavor 1":"Sour Green Apple","Flavor 2":"Orange Dreamsicle"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777578059","key":"Sour Green Apple / Black Cherry","title":"Sour Green Apple / Black Cherry","sku":null,"optionValues":["Sour Green Apple","Black Cherry"],"option_values":[{"position":1,"name":"Flavor 1","value":"Sour Green Apple"},{"position":2,"name":"Flavor 2","value":"Black Cherry"}],"selected_options":{"Flavor 1":"Sour Green Apple","Flavor 2":"Black Cherry"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"12169517203531","key":"Orange Dreamsicle / Strawberry Lemonade","title":"Orange Dreamsicle / Strawberry Lemonade","sku":null,"optionValues":["Orange Dreamsicle","Strawberry Lemonade"],"option_values":[{"position":1,"name":"Flavor 1","value":"Orange Dreamsicle"},{"position":2,"name":"Flavor 2","value":"Strawberry Lemonade"}],"selected_options":{"Flavor 1":"Orange Dreamsicle","Flavor 2":"Strawberry Lemonade"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"12169517367371","key":"Orange Dreamsicle / Raspberry Grape","title":"Orange Dreamsicle / Raspberry Grape","sku":null,"optionValues":["Orange Dreamsicle","Raspberry Grape"],"option_values":[{"position":1,"name":"Flavor 1","value":"Orange Dreamsicle"},{"position":2,"name":"Flavor 2","value":"Raspberry Grape"}],"selected_options":{"Flavor 1":"Orange Dreamsicle","Flavor 2":"Raspberry Grape"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"31716405870667","key":"Orange Dreamsicle / Sour Green Apple","title":"Orange Dreamsicle / Sour Green Apple","sku":null,"optionValues":["Orange Dreamsicle","Sour Green Apple"],"option_values":[{"position":1,"name":"Flavor 1","value":"Orange Dreamsicle"},{"position":2,"name":"Flavor 2","value":"Sour Green Apple"}],"selected_options":{"Flavor 1":"Orange Dreamsicle","Flavor 2":"Sour Green Apple"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"12169517432907","key":"Orange Dreamsicle / Orange Dreamsicle","title":"Orange Dreamsicle / Orange Dreamsicle","sku":null,"optionValues":["Orange Dreamsicle","Orange Dreamsicle"],"option_values":[{"position":1,"name":"Flavor 1","value":"Orange Dreamsicle"},{"position":2,"name":"Flavor 2","value":"Orange Dreamsicle"}],"selected_options":{"Flavor 1":"Orange Dreamsicle","Flavor 2":"Orange Dreamsicle"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777610827","key":"Orange Dreamsicle / Black Cherry","title":"Orange Dreamsicle / Black Cherry","sku":null,"optionValues":["Orange Dreamsicle","Black Cherry"],"option_values":[{"position":1,"name":"Flavor 1","value":"Orange Dreamsicle"},{"position":2,"name":"Flavor 2","value":"Black Cherry"}],"selected_options":{"Flavor 1":"Orange Dreamsicle","Flavor 2":"Black Cherry"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777643595","key":"Black Cherry / Strawberry Lemonade","title":"Black Cherry / Strawberry Lemonade","sku":null,"optionValues":["Black Cherry","Strawberry Lemonade"],"option_values":[{"position":1,"name":"Flavor 1","value":"Black Cherry"},{"position":2,"name":"Flavor 2","value":"Strawberry Lemonade"}],"selected_options":{"Flavor 1":"Black Cherry","Flavor 2":"Strawberry Lemonade"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777676363","key":"Black Cherry / Raspberry Grape","title":"Black Cherry / Raspberry Grape","sku":null,"optionValues":["Black Cherry","Raspberry Grape"],"option_values":[{"position":1,"name":"Flavor 1","value":"Black Cherry"},{"position":2,"name":"Flavor 2","value":"Raspberry Grape"}],"selected_options":{"Flavor 1":"Black Cherry","Flavor 2":"Raspberry Grape"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777709131","key":"Black Cherry / Sour Green Apple","title":"Black Cherry / Sour Green Apple","sku":null,"optionValues":["Black Cherry","Sour Green Apple"],"option_values":[{"position":1,"name":"Flavor 1","value":"Black Cherry"},{"position":2,"name":"Flavor 2","value":"Sour Green Apple"}],"selected_options":{"Flavor 1":"Black Cherry","Flavor 2":"Sour Green Apple"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777741899","key":"Black Cherry / Orange Dreamsicle","title":"Black Cherry / Orange Dreamsicle","sku":null,"optionValues":["Black Cherry","Orange Dreamsicle"],"option_values":[{"position":1,"name":"Flavor 1","value":"Black Cherry"},{"position":2,"name":"Flavor 2","value":"Orange Dreamsicle"}],"selected_options":{"Flavor 1":"Black Cherry","Flavor 2":"Orange Dreamsicle"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39945777774667","key":"Black Cherry / Black Cherry","title":"Black Cherry / Black Cherry","sku":null,"optionValues":["Black Cherry","Black Cherry"],"option_values":[{"position":1,"name":"Flavor 1","value":"Black Cherry"},{"position":2,"name":"Flavor 2","value":"Black Cherry"}],"selected_options":{"Flavor 1":"Black Cherry","Flavor 2":"Black Cherry"},"price_cents":4999,"regular_price_cents":5999,"compare_at_cents":5999,"compare_at_price_cents":5999,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -680,6 +695,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -697,16 +716,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — PEScience | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -729,23 +771,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -758,10 +804,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -769,21 +815,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -794,12 +834,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

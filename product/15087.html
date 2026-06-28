@@ -168,7 +168,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Inno Supps</p>
-          <h1 class="pdp-title">2 Bottles of Advanced Iso Protein</h1>
+          <h1 class="pdp-title" data-pdp-title>2 Bottles of Advanced Iso Protein</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="11998" data-base-compare-cents="20196" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$119.98</strong>
             <span class="pdp-compare" data-pdp-compare >$201.96</span>
@@ -214,6 +214,9 @@
               data-cart-price="119.98"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260330_Inno_AIP_2x_d579fe05-0524-4caa-82b5-cddfee88553c.webp"
+              data-cart-variant-id="44950056861832"
+              data-cart-selected-options="{&quot;Flavor 1&quot;:&quot;Buttery Pancakes&quot;,&quot;Flavor 2&quot;:&quot;Caramel Coconut Cookie&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -645,17 +648,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Buttery Pancakes / Caramel Coconut Cookie","optionValues":["Buttery Pancakes","Caramel Coconut Cookie"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Buttery Pancakes / Buttery Pancakes","optionValues":["Buttery Pancakes","Buttery Pancakes"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Buttery Pancakes / Hot Cocoa Crunch","optionValues":["Buttery Pancakes","Hot Cocoa Crunch"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Buttery Pancakes / Vanilla Ice Cream","optionValues":["Buttery Pancakes","Vanilla Ice Cream"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Buttery Pancakes / Fruity Cereal Donut","optionValues":["Buttery Pancakes","Fruity Cereal Donut"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Caramel Coconut Cookie / Caramel Coconut Cookie","optionValues":["Caramel Coconut Cookie","Caramel Coconut Cookie"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Caramel Coconut Cookie / Buttery Pancakes","optionValues":["Caramel Coconut Cookie","Buttery Pancakes"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Caramel Coconut Cookie / Hot Cocoa Crunch","optionValues":["Caramel Coconut Cookie","Hot Cocoa Crunch"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Caramel Coconut Cookie / Vanilla Ice Cream","optionValues":["Caramel Coconut Cookie","Vanilla Ice Cream"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Caramel Coconut Cookie / Fruity Cereal Donut","optionValues":["Caramel Coconut Cookie","Fruity Cereal Donut"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Hot Cocoa Crunch / Caramel Coconut Cookie","optionValues":["Hot Cocoa Crunch","Caramel Coconut Cookie"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Hot Cocoa Crunch / Buttery Pancakes","optionValues":["Hot Cocoa Crunch","Buttery Pancakes"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Hot Cocoa Crunch / Hot Cocoa Crunch","optionValues":["Hot Cocoa Crunch","Hot Cocoa Crunch"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Hot Cocoa Crunch / Vanilla Ice Cream","optionValues":["Hot Cocoa Crunch","Vanilla Ice Cream"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Hot Cocoa Crunch / Fruity Cereal Donut","optionValues":["Hot Cocoa Crunch","Fruity Cereal Donut"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Vanilla Ice Cream / Caramel Coconut Cookie","optionValues":["Vanilla Ice Cream","Caramel Coconut Cookie"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Vanilla Ice Cream / Buttery Pancakes","optionValues":["Vanilla Ice Cream","Buttery Pancakes"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Vanilla Ice Cream / Hot Cocoa Crunch","optionValues":["Vanilla Ice Cream","Hot Cocoa Crunch"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Vanilla Ice Cream / Vanilla Ice Cream","optionValues":["Vanilla Ice Cream","Vanilla Ice Cream"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Vanilla Ice Cream / Fruity Cereal Donut","optionValues":["Vanilla Ice Cream","Fruity Cereal Donut"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Fruity Cereal Donut / Caramel Coconut Cookie","optionValues":["Fruity Cereal Donut","Caramel Coconut Cookie"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Fruity Cereal Donut / Buttery Pancakes","optionValues":["Fruity Cereal Donut","Buttery Pancakes"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Fruity Cereal Donut / Hot Cocoa Crunch","optionValues":["Fruity Cereal Donut","Hot Cocoa Crunch"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Fruity Cereal Donut / Vanilla Ice Cream","optionValues":["Fruity Cereal Donut","Vanilla Ice Cream"],"price_cents":11998,"compare_at_cents":20196,"available":true},{"key":"Fruity Cereal Donut / Fruity Cereal Donut","optionValues":["Fruity Cereal Donut","Fruity Cereal Donut"],"price_cents":11998,"compare_at_cents":20196,"available":true}];
+        var variantPricing = [{"variant_id":"44950056861832","key":"Buttery Pancakes / Caramel Coconut Cookie","title":"Buttery Pancakes / Caramel Coconut Cookie","sku":null,"optionValues":["Buttery Pancakes","Caramel Coconut Cookie"],"option_values":[{"position":1,"name":"Flavor 1","value":"Buttery Pancakes"},{"position":2,"name":"Flavor 2","value":"Caramel Coconut Cookie"}],"selected_options":{"Flavor 1":"Buttery Pancakes","Flavor 2":"Caramel Coconut Cookie"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950056894600","key":"Buttery Pancakes / Buttery Pancakes","title":"Buttery Pancakes / Buttery Pancakes","sku":null,"optionValues":["Buttery Pancakes","Buttery Pancakes"],"option_values":[{"position":1,"name":"Flavor 1","value":"Buttery Pancakes"},{"position":2,"name":"Flavor 2","value":"Buttery Pancakes"}],"selected_options":{"Flavor 1":"Buttery Pancakes","Flavor 2":"Buttery Pancakes"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_ButteryPancake.webp"},{"variant_id":"44950056927368","key":"Buttery Pancakes / Hot Cocoa Crunch","title":"Buttery Pancakes / Hot Cocoa Crunch","sku":null,"optionValues":["Buttery Pancakes","Hot Cocoa Crunch"],"option_values":[{"position":1,"name":"Flavor 1","value":"Buttery Pancakes"},{"position":2,"name":"Flavor 2","value":"Hot Cocoa Crunch"}],"selected_options":{"Flavor 1":"Buttery Pancakes","Flavor 2":"Hot Cocoa Crunch"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_HotCocoaCrunch.webp"},{"variant_id":"44950056960136","key":"Buttery Pancakes / Vanilla Ice Cream","title":"Buttery Pancakes / Vanilla Ice Cream","sku":null,"optionValues":["Buttery Pancakes","Vanilla Ice Cream"],"option_values":[{"position":1,"name":"Flavor 1","value":"Buttery Pancakes"},{"position":2,"name":"Flavor 2","value":"Vanilla Ice Cream"}],"selected_options":{"Flavor 1":"Buttery Pancakes","Flavor 2":"Vanilla Ice Cream"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_VanillaIceCream.webp"},{"variant_id":"44950056992904","key":"Buttery Pancakes / Fruity Cereal Donut","title":"Buttery Pancakes / Fruity Cereal Donut","sku":null,"optionValues":["Buttery Pancakes","Fruity Cereal Donut"],"option_values":[{"position":1,"name":"Flavor 1","value":"Buttery Pancakes"},{"position":2,"name":"Flavor 2","value":"Fruity Cereal Donut"}],"selected_options":{"Flavor 1":"Buttery Pancakes","Flavor 2":"Fruity Cereal Donut"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_FruityCerealDonut.webp"},{"variant_id":"44950057025672","key":"Caramel Coconut Cookie / Caramel Coconut Cookie","title":"Caramel Coconut Cookie / Caramel Coconut Cookie","sku":null,"optionValues":["Caramel Coconut Cookie","Caramel Coconut Cookie"],"option_values":[{"position":1,"name":"Flavor 1","value":"Caramel Coconut Cookie"},{"position":2,"name":"Flavor 2","value":"Caramel Coconut Cookie"}],"selected_options":{"Flavor 1":"Caramel Coconut Cookie","Flavor 2":"Caramel Coconut Cookie"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950057058440","key":"Caramel Coconut Cookie / Buttery Pancakes","title":"Caramel Coconut Cookie / Buttery Pancakes","sku":null,"optionValues":["Caramel Coconut Cookie","Buttery Pancakes"],"option_values":[{"position":1,"name":"Flavor 1","value":"Caramel Coconut Cookie"},{"position":2,"name":"Flavor 2","value":"Buttery Pancakes"}],"selected_options":{"Flavor 1":"Caramel Coconut Cookie","Flavor 2":"Buttery Pancakes"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950057091208","key":"Caramel Coconut Cookie / Hot Cocoa Crunch","title":"Caramel Coconut Cookie / Hot Cocoa Crunch","sku":null,"optionValues":["Caramel Coconut Cookie","Hot Cocoa Crunch"],"option_values":[{"position":1,"name":"Flavor 1","value":"Caramel Coconut Cookie"},{"position":2,"name":"Flavor 2","value":"Hot Cocoa Crunch"}],"selected_options":{"Flavor 1":"Caramel Coconut Cookie","Flavor 2":"Hot Cocoa Crunch"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950057123976","key":"Caramel Coconut Cookie / Vanilla Ice Cream","title":"Caramel Coconut Cookie / Vanilla Ice Cream","sku":null,"optionValues":["Caramel Coconut Cookie","Vanilla Ice Cream"],"option_values":[{"position":1,"name":"Flavor 1","value":"Caramel Coconut Cookie"},{"position":2,"name":"Flavor 2","value":"Vanilla Ice Cream"}],"selected_options":{"Flavor 1":"Caramel Coconut Cookie","Flavor 2":"Vanilla Ice Cream"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950057156744","key":"Caramel Coconut Cookie / Fruity Cereal Donut","title":"Caramel Coconut Cookie / Fruity Cereal Donut","sku":null,"optionValues":["Caramel Coconut Cookie","Fruity Cereal Donut"],"option_values":[{"position":1,"name":"Flavor 1","value":"Caramel Coconut Cookie"},{"position":2,"name":"Flavor 2","value":"Fruity Cereal Donut"}],"selected_options":{"Flavor 1":"Caramel Coconut Cookie","Flavor 2":"Fruity Cereal Donut"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950057189512","key":"Hot Cocoa Crunch / Caramel Coconut Cookie","title":"Hot Cocoa Crunch / Caramel Coconut Cookie","sku":null,"optionValues":["Hot Cocoa Crunch","Caramel Coconut Cookie"],"option_values":[{"position":1,"name":"Flavor 1","value":"Hot Cocoa Crunch"},{"position":2,"name":"Flavor 2","value":"Caramel Coconut Cookie"}],"selected_options":{"Flavor 1":"Hot Cocoa Crunch","Flavor 2":"Caramel Coconut Cookie"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950057222280","key":"Hot Cocoa Crunch / Buttery Pancakes","title":"Hot Cocoa Crunch / Buttery Pancakes","sku":null,"optionValues":["Hot Cocoa Crunch","Buttery Pancakes"],"option_values":[{"position":1,"name":"Flavor 1","value":"Hot Cocoa Crunch"},{"position":2,"name":"Flavor 2","value":"Buttery Pancakes"}],"selected_options":{"Flavor 1":"Hot Cocoa Crunch","Flavor 2":"Buttery Pancakes"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_HotCocoaCrunch.webp"},{"variant_id":"44950057255048","key":"Hot Cocoa Crunch / Hot Cocoa Crunch","title":"Hot Cocoa Crunch / Hot Cocoa Crunch","sku":null,"optionValues":["Hot Cocoa Crunch","Hot Cocoa Crunch"],"option_values":[{"position":1,"name":"Flavor 1","value":"Hot Cocoa Crunch"},{"position":2,"name":"Flavor 2","value":"Hot Cocoa Crunch"}],"selected_options":{"Flavor 1":"Hot Cocoa Crunch","Flavor 2":"Hot Cocoa Crunch"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_HotCocoaCrunch.webp"},{"variant_id":"44950057287816","key":"Hot Cocoa Crunch / Vanilla Ice Cream","title":"Hot Cocoa Crunch / Vanilla Ice Cream","sku":null,"optionValues":["Hot Cocoa Crunch","Vanilla Ice Cream"],"option_values":[{"position":1,"name":"Flavor 1","value":"Hot Cocoa Crunch"},{"position":2,"name":"Flavor 2","value":"Vanilla Ice Cream"}],"selected_options":{"Flavor 1":"Hot Cocoa Crunch","Flavor 2":"Vanilla Ice Cream"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_HotCocoaCrunch.webp"},{"variant_id":"44950057320584","key":"Hot Cocoa Crunch / Fruity Cereal Donut","title":"Hot Cocoa Crunch / Fruity Cereal Donut","sku":null,"optionValues":["Hot Cocoa Crunch","Fruity Cereal Donut"],"option_values":[{"position":1,"name":"Flavor 1","value":"Hot Cocoa Crunch"},{"position":2,"name":"Flavor 2","value":"Fruity Cereal Donut"}],"selected_options":{"Flavor 1":"Hot Cocoa Crunch","Flavor 2":"Fruity Cereal Donut"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_HotCocoaCrunch.webp"},{"variant_id":"44950057353352","key":"Vanilla Ice Cream / Caramel Coconut Cookie","title":"Vanilla Ice Cream / Caramel Coconut Cookie","sku":null,"optionValues":["Vanilla Ice Cream","Caramel Coconut Cookie"],"option_values":[{"position":1,"name":"Flavor 1","value":"Vanilla Ice Cream"},{"position":2,"name":"Flavor 2","value":"Caramel Coconut Cookie"}],"selected_options":{"Flavor 1":"Vanilla Ice Cream","Flavor 2":"Caramel Coconut Cookie"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950057386120","key":"Vanilla Ice Cream / Buttery Pancakes","title":"Vanilla Ice Cream / Buttery Pancakes","sku":null,"optionValues":["Vanilla Ice Cream","Buttery Pancakes"],"option_values":[{"position":1,"name":"Flavor 1","value":"Vanilla Ice Cream"},{"position":2,"name":"Flavor 2","value":"Buttery Pancakes"}],"selected_options":{"Flavor 1":"Vanilla Ice Cream","Flavor 2":"Buttery Pancakes"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_VanillaIceCream.webp"},{"variant_id":"44950057418888","key":"Vanilla Ice Cream / Hot Cocoa Crunch","title":"Vanilla Ice Cream / Hot Cocoa Crunch","sku":null,"optionValues":["Vanilla Ice Cream","Hot Cocoa Crunch"],"option_values":[{"position":1,"name":"Flavor 1","value":"Vanilla Ice Cream"},{"position":2,"name":"Flavor 2","value":"Hot Cocoa Crunch"}],"selected_options":{"Flavor 1":"Vanilla Ice Cream","Flavor 2":"Hot Cocoa Crunch"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_HotCocoaCrunch.webp"},{"variant_id":"44950057451656","key":"Vanilla Ice Cream / Vanilla Ice Cream","title":"Vanilla Ice Cream / Vanilla Ice Cream","sku":null,"optionValues":["Vanilla Ice Cream","Vanilla Ice Cream"],"option_values":[{"position":1,"name":"Flavor 1","value":"Vanilla Ice Cream"},{"position":2,"name":"Flavor 2","value":"Vanilla Ice Cream"}],"selected_options":{"Flavor 1":"Vanilla Ice Cream","Flavor 2":"Vanilla Ice Cream"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_VanillaIceCream.webp"},{"variant_id":"44950057484424","key":"Vanilla Ice Cream / Fruity Cereal Donut","title":"Vanilla Ice Cream / Fruity Cereal Donut","sku":null,"optionValues":["Vanilla Ice Cream","Fruity Cereal Donut"],"option_values":[{"position":1,"name":"Flavor 1","value":"Vanilla Ice Cream"},{"position":2,"name":"Flavor 2","value":"Fruity Cereal Donut"}],"selected_options":{"Flavor 1":"Vanilla Ice Cream","Flavor 2":"Fruity Cereal Donut"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_VanillaIceCream.webp"},{"variant_id":"44950057517192","key":"Fruity Cereal Donut / Caramel Coconut Cookie","title":"Fruity Cereal Donut / Caramel Coconut Cookie","sku":null,"optionValues":["Fruity Cereal Donut","Caramel Coconut Cookie"],"option_values":[{"position":1,"name":"Flavor 1","value":"Fruity Cereal Donut"},{"position":2,"name":"Flavor 2","value":"Caramel Coconut Cookie"}],"selected_options":{"Flavor 1":"Fruity Cereal Donut","Flavor 2":"Caramel Coconut Cookie"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_CaramelCoconutCookie.webp"},{"variant_id":"44950057549960","key":"Fruity Cereal Donut / Buttery Pancakes","title":"Fruity Cereal Donut / Buttery Pancakes","sku":null,"optionValues":["Fruity Cereal Donut","Buttery Pancakes"],"option_values":[{"position":1,"name":"Flavor 1","value":"Fruity Cereal Donut"},{"position":2,"name":"Flavor 2","value":"Buttery Pancakes"}],"selected_options":{"Flavor 1":"Fruity Cereal Donut","Flavor 2":"Buttery Pancakes"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_FruityCerealDonut.webp"},{"variant_id":"44950057582728","key":"Fruity Cereal Donut / Hot Cocoa Crunch","title":"Fruity Cereal Donut / Hot Cocoa Crunch","sku":null,"optionValues":["Fruity Cereal Donut","Hot Cocoa Crunch"],"option_values":[{"position":1,"name":"Flavor 1","value":"Fruity Cereal Donut"},{"position":2,"name":"Flavor 2","value":"Hot Cocoa Crunch"}],"selected_options":{"Flavor 1":"Fruity Cereal Donut","Flavor 2":"Hot Cocoa Crunch"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_HotCocoaCrunch.webp"},{"variant_id":"44950057615496","key":"Fruity Cereal Donut / Vanilla Ice Cream","title":"Fruity Cereal Donut / Vanilla Ice Cream","sku":null,"optionValues":["Fruity Cereal Donut","Vanilla Ice Cream"],"option_values":[{"position":1,"name":"Flavor 1","value":"Fruity Cereal Donut"},{"position":2,"name":"Flavor 2","value":"Vanilla Ice Cream"}],"selected_options":{"Flavor 1":"Fruity Cereal Donut","Flavor 2":"Vanilla Ice Cream"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_VanillaIceCream.webp"},{"variant_id":"44950057648264","key":"Fruity Cereal Donut / Fruity Cereal Donut","title":"Fruity Cereal Donut / Fruity Cereal Donut","sku":null,"optionValues":["Fruity Cereal Donut","Fruity Cereal Donut"],"option_values":[{"position":1,"name":"Flavor 1","value":"Fruity Cereal Donut"},{"position":2,"name":"Flavor 2","value":"Fruity Cereal Donut"}],"selected_options":{"Flavor 1":"Fruity Cereal Donut","Flavor 2":"Fruity Cereal Donut"},"price_cents":11998,"regular_price_cents":20196,"compare_at_cents":20196,"compare_at_price_cents":20196,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/260331_AIP_FruityCerealDonut.webp"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -685,6 +700,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -702,16 +721,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Inno Supps | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -734,23 +776,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -763,10 +809,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -774,21 +820,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -799,12 +839,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

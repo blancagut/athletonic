@@ -166,7 +166,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Liquid I.V.</p>
-          <h1 class="pdp-title">Variety Pack Hydration Multiplier</h1>
+          <h1 class="pdp-title" data-pdp-title>Variety Pack Hydration Multiplier</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="2799" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$27.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -200,6 +200,9 @@
               data-cart-price="27.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1338/1013/files/HMO_VP_16ct_PDP_1f450598-85fd-49f6-b1e4-8ab7146a62bc.jpg"
+              data-cart-variant-id="40768276922404"
+              data-cart-selected-options="{&quot;Size&quot;:&quot;16PK&quot;,&quot;Flavor&quot;:&quot;Variety Pack&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -619,17 +622,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"16PK / Variety Pack","optionValues":["16PK","Variety Pack"],"price_cents":2799,"compare_at_cents":0,"available":true},{"key":"32PK / Variety Pack","optionValues":["32PK","Variety Pack"],"price_cents":5598,"compare_at_cents":0,"available":true},{"key":"48PK / Variety Pack","optionValues":["48PK","Variety Pack"],"price_cents":8397,"compare_at_cents":0,"available":true},{"key":"64PK / Variety Pack","optionValues":["64PK","Variety Pack"],"price_cents":11196,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"40768276922404","key":"16PK / Variety Pack","title":"16PK / Variety Pack","sku":null,"optionValues":["16PK","Variety Pack"],"option_values":[{"position":1,"name":"Size","value":"16PK"},{"position":2,"name":"Flavor","value":"Variety Pack"}],"selected_options":{"Size":"16PK","Flavor":"Variety Pack"},"price_cents":2799,"regular_price_cents":2799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO-VP-Alt-Image-3_7479af05-9a04-4e12-940a-d817f0043f17.jpg"},{"variant_id":"40807194460196","key":"32PK / Variety Pack","title":"32PK / Variety Pack","sku":null,"optionValues":["32PK","Variety Pack"],"option_values":[{"position":1,"name":"Size","value":"32PK"},{"position":2,"name":"Flavor","value":"Variety Pack"}],"selected_options":{"Size":"32PK","Flavor":"Variety Pack"},"price_cents":5598,"regular_price_cents":5598,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO-VP-Alt-Image-3_7479af05-9a04-4e12-940a-d817f0043f17.jpg"},{"variant_id":"40807194656804","key":"48PK / Variety Pack","title":"48PK / Variety Pack","sku":null,"optionValues":["48PK","Variety Pack"],"option_values":[{"position":1,"name":"Size","value":"48PK"},{"position":2,"name":"Flavor","value":"Variety Pack"}],"selected_options":{"Size":"48PK","Flavor":"Variety Pack"},"price_cents":8397,"regular_price_cents":8397,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO-VP-Alt-Image-3_7479af05-9a04-4e12-940a-d817f0043f17.jpg"},{"variant_id":"40807194820644","key":"64PK / Variety Pack","title":"64PK / Variety Pack","sku":null,"optionValues":["64PK","Variety Pack"],"option_values":[{"position":1,"name":"Size","value":"64PK"},{"position":2,"name":"Flavor","value":"Variety Pack"}],"selected_options":{"Size":"64PK","Flavor":"Variety Pack"},"price_cents":11196,"regular_price_cents":11196,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO-VP-Alt-Image-3_7479af05-9a04-4e12-940a-d817f0043f17.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -659,6 +674,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -676,16 +695,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Liquid I.V. | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -708,23 +750,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -737,10 +783,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -748,21 +794,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -773,12 +813,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

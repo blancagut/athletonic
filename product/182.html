@@ -222,6 +222,9 @@
               data-cart-price="49.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-2lb.png"
+              data-cart-variant-id="39783491108960"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Chocolate&quot;,&quot;Size&quot;:&quot;2 lb&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -299,7 +302,7 @@
                 <strong>$20.99</strong>
 
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -556,20 +559,57 @@
           });
         });
 
-        // Variant-aware main image: use the official image mapped to the
-        // selected variant instead of guessing from gallery filenames.
-        var baseImgSrc = mainImg ? mainImg.getAttribute("src") || "" : "";
-        var baseImgAlt = mainImg ? mainImg.getAttribute("alt") || "" : "";
-        function setMainImage(src, alt) {
-          if (!mainImg || !src) return;
+        // Variant-aware main image: switch to the image matching the selected
+        // variant. Each image carries a compact token blob (from its alt text +
+        // filename). We score every image by how many selected option values it
+        // matches (whole value or a significant word of it), so the strongest
+        // signal wins: exact variant > same flavor > same size. When no image
+        // carries a usable signal we keep the current/default image, so a wrong
+        // image is never shown.
+        var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-2lb.png","t":"mtisowheychocolate2lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-amazing-taste.jpg","t":"mtisowheychocolateamazingtastejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-purest-protein.jpg","t":"mtisowheypurestproteinjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-vanilla-amazing-taste.jpg","t":"mtisowheyvanillaamazingtastejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-5lb.png","t":"mtisowheychocolate5lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-vanilla-2lb.png","t":"mtisowheyvanilla2lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-vanilla-5lb.png","t":"mtisowheyvanilla5lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-support-recovery.jpg","t":"mtisowheysupportrecoveryjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-choc-2lb_fc6bfa41-88f6-496b-9245-af8379842922.png","t":"muscletechisowheychoc2lbfc6bfa4188f6496b9245af8379842922png"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-vanilla-2lb_53af327c-4d2c-43ba-b8b8-b5a84dd51ed5.png","t":"muscletechisowheyvanilla2lb53af327c4d2c43bab8b8b5a84dd51ed5png"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-choc-5lb_43a9f0fe-30d9-448c-b381-fc25e14399cb.png","t":"muscletechisowheychoc5lb43a9f0fe30d9448cb381fc25e14399cbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-vanilla-5lb_19cedc90-c959-44d3-b410-fa298c8fd394.png","t":"muscletechisowheyvanilla5lb19cedc90c95944d3b410fa298c8fd394png"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-ch-2000x2000-06_e5be5daf-b5de-4c97-84a4-a4c14b9dc7aa.jpg","t":"19465muscletechisowheych2000x200006e5be5dafb5de4c9784a4a4c14b9dc7aajpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19466-muscletech-isowhey-vn-2000x2000-06_c0560d44-863a-4624-9cb9-9f4a4c6122c3.jpg","t":"19466muscletechisowheyvn2000x200006c0560d44863a46249cb99f4a4c6122c3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-ch-2000x2000-05_4b82dcfc-7922-4288-b584-fabaab4d0b50.jpg","t":"19465muscletechisowheych2000x2000054b82dcfc79224288b584fabaab4d0b50jpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-vn-2000x2000-05_10b1169c-6aa3-4afb-ab22-7b326d768b5d.jpg","t":"19465muscletechisowheyvn2000x20000510b1169c6aa34afbab227b326d768b5djpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-ch-2000x2000-04_5f23f0eb-e68b-4a49-82aa-a0a23dbfa1ca.jpg","t":"19465muscletechisowheych2000x2000045f23f0ebe68b4a4982aaa0a23dbfa1cajpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-vn-2000x2000-04_ac23d7c7-51c6-4945-9d77-3d35b1f1a4ee.jpg","t":"19465muscletechisowheyvn2000x200004ac23d7c751c649459d773d35b1f1a4eejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-ch-2000x2000-03_738a26a1-5427-456d-b773-8d9c3f8f8bbe.jpg","t":"19465muscletechisowheych2000x200003738a26a15427456db7738d9c3f8f8bbejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-callouts-lifestyle.jpg","t":"mtisowheycalloutslifestylejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-callouts-gym.jpg","t":"mtisowheycalloutsgymjpg"}];
+        function variantValueGroup(value) {
+          var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
+          return {
+            compact: words.join(""),
+            words: words.filter(function (w) { return w.length >= 3; }),
+          };
+        }
+        function pickVariantImage(values) {
+          if (!galleryImages.length) return null;
+          var groups = values
+            .map(variantValueGroup)
+            .filter(function (g) { return g.compact; });
+          if (!groups.length) return null;
+          var best = null;
+          var bestScore = 0;
+          galleryImages.forEach(function (img) {
+            var blob = img.t || "";
+            if (!blob) return;
+            var score = 0;
+            groups.forEach(function (group) {
+              if (group.compact && blob.indexOf(group.compact) !== -1) {
+                score += 2;
+                return;
+              }
+              var wordHit = group.words.some(function (w) {
+                return w.length >= 3 && blob.indexOf(w) !== -1;
+              });
+              if (wordHit) score += 1;
+            });
+            if (score > bestScore) {
+              bestScore = score;
+              best = img.src;
+            }
+          });
+          return bestScore > 0 ? best : null;
+        }
+        function applyVariantImage(values) {
+          var src = pickVariantImage(values || []);
+          if (!src || !mainImg) return;
           mainImg.src = src;
-          if (alt) mainImg.alt = alt;
           thumbs.forEach(function (b) {
             b.classList.toggle("is-active", b.getAttribute("data-src") === src);
           });
-        }
-        function resetMainImage() {
-          setMainImage(baseImgSrc, baseImgAlt);
         }
 
         // Variants: gate Add to Cart on selection; encode variant into data-cart-variant
@@ -580,60 +620,23 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Chocolate / 2 lb","optionValues":["Chocolate","2 lb"],"price_cents":4999,"compare_at_cents":0,"available":true,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-choc-2lb_fc6bfa41-88f6-496b-9245-af8379842922.png?v=1742824340"},{"key":"Vanilla / 2 lb","optionValues":["Vanilla","2 lb"],"price_cents":4999,"compare_at_cents":0,"available":false,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-vanilla-2lb_53af327c-4d2c-43ba-b8b8-b5a84dd51ed5.png?v=1742824347"},{"key":"Chocolate / 5 lb","optionValues":["Chocolate","5 lb"],"price_cents":9999,"compare_at_cents":0,"available":false,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-choc-5lb_43a9f0fe-30d9-448c-b381-fc25e14399cb.png?v=1742824355"},{"key":"Vanilla / 5 lb","optionValues":["Vanilla","5 lb"],"price_cents":9999,"compare_at_cents":0,"available":false,"image":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-vanilla-5lb_19cedc90-c959-44d3-b410-fa298c8fd394.png?v=1742824364"}];
+        var variantPricing = [{"variant_id":"39783491108960","key":"Chocolate / 2 lb","title":"Chocolate / 2 lb","sku":null,"optionValues":["Chocolate","2 lb"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate"},{"position":2,"name":"Size","value":"2 lb"}],"selected_options":{"Flavor":"Chocolate","Size":"2 lb"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-2lb.png"},{"variant_id":"39783491174496","key":"Vanilla / 2 lb","title":"Vanilla / 2 lb","sku":null,"optionValues":["Vanilla","2 lb"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla"},{"position":2,"name":"Size","value":"2 lb"}],"selected_options":{"Flavor":"Vanilla","Size":"2 lb"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-vanilla-2lb.png"},{"variant_id":"39783491141728","key":"Chocolate / 5 lb","title":"Chocolate / 5 lb","sku":null,"optionValues":["Chocolate","5 lb"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate"},{"position":2,"name":"Size","value":"5 lb"}],"selected_options":{"Flavor":"Chocolate","Size":"5 lb"},"price_cents":9999,"regular_price_cents":9999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-5lb.png"},{"variant_id":"39783491207264","key":"Vanilla / 5 lb","title":"Vanilla / 5 lb","sku":null,"optionValues":["Vanilla","5 lb"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla"},{"position":2,"name":"Size","value":"5 lb"}],"selected_options":{"Flavor":"Vanilla","Size":"5 lb"},"price_cents":9999,"regular_price_cents":9999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-vanilla-5lb.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
-        var baseCartName = addBtn ? addBtn.dataset.cartName || "" : "";
-        var baseCartImage = addBtn ? addBtn.dataset.cartImage || "" : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
         var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
-        var titleEl = document.querySelector("[data-pdp-title]");
-        var baseTitle = titleEl ? titleEl.textContent.trim() : "";
-
-        function isSizeLike(value) {
-          return /(^|[^a-z])(lb|lbs|kg|g|oz|serv|serving|servings|pack|packs|count|ct)([^a-z]|$)/i.test(String(value || ""));
-        }
-
-        function orderedVariantValues(values) {
-          var list = (values || []).filter(Boolean);
-          return list
-            .filter(function (value) { return !isSizeLike(value); })
-            .concat(list.filter(function (value) { return isSizeLike(value); }));
-        }
-
-        function variantPresentationLabel(variant) {
-          return orderedVariantValues(variant && variant.optionValues).join(" / ");
-        }
-
-        function variantImageAlt(variant) {
-          var label = variantPresentationLabel(variant);
-          return label ? baseTitle + " — " + label : baseImgAlt || baseTitle;
-        }
-
-        function applyVariantPresentation(variant) {
-          if (!variant) {
-            resetMainImage();
-            if (titleEl) titleEl.textContent = baseTitle;
-            if (addBtn) {
-              addBtn.dataset.cartName = baseCartName;
-              addBtn.dataset.cartImage = baseCartImage;
-            }
-            return;
-          }
-          var label = variantPresentationLabel(variant);
-          if (titleEl) {
-            titleEl.textContent = label ? baseTitle + " — " + label : baseTitle;
-          }
-          setMainImage(variant.image || baseImgSrc, variantImageAlt(variant));
-          if (addBtn) {
-            addBtn.dataset.cartName = titleEl ? titleEl.textContent : baseCartName;
-            addBtn.dataset.cartImage = variant.image || baseCartImage;
-          }
-        }
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
           return String(value || "")
@@ -688,6 +691,24 @@
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
           }
+        }
+
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — MuscleTech | Athletonic")
+            : baseDocumentTitle;
         }
 
         function selectedVariant() {
@@ -754,30 +775,29 @@
           var allChosen = selects.every(function (s) { return s.value !== ""; });
           if (selects.length === 0) {
             addBtn.disabled = false;
-            applyVariantPresentation(null);
             return;
           }
           if (allChosen) {
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
-              applyVariantPresentation(null);
               if (note) note.textContent = "This combination is not available right now.";
               return;
             }
-            applyVariantPresentation(currentVariant);
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
               setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
@@ -791,18 +811,25 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
-            addBtn.dataset.cartName = baseCartName;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
             addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             resetToBasePrice();
-            applyVariantPresentation(null);
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";
           }
         }
         selects.forEach(function (s) {
-          s.addEventListener("change", refresh);
+          s.addEventListener("change", function () {
+            applyVariantImage(selects.map(function (sel) { return sel.value; }).filter(Boolean));
+            refresh();
+          });
         });
         refresh();
       })();

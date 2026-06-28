@@ -191,7 +191,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Redcon1</p>
-          <h1 class="pdp-title">ENERGY - HIGH PERFORMANCE ENERGY DRINK</h1>
+          <h1 class="pdp-title" data-pdp-title>ENERGY - HIGH PERFORMANCE ENERGY DRINK</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="2999" data-base-compare-cents="2999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$29.99</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -233,6 +233,9 @@
               data-cart-price="29.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1304/0433/files/ENERGY-PDP-2026_1-vice_city.jpg"
+              data-cart-variant-id="40589703610416"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Vice City&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -629,17 +632,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Vice City","optionValues":["Vice City"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Freedom Frost","optionValues":["Freedom Frost"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Sour Gummy Blast","optionValues":["Sour Gummy Blast"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Sour Peach Rings","optionValues":["Sour Peach Rings"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Grape Freeze","optionValues":["Grape Freeze"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Baja Bomb","optionValues":["Baja Bomb"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Cali Splash","optionValues":["Cali Splash"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Icy Blue Lemonade","optionValues":["Icy Blue Lemonade"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Orange Cream","optionValues":["Orange Cream"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Prime Time Punch","optionValues":["Prime Time Punch"],"price_cents":2999,"compare_at_cents":0,"available":true},{"key":"Jolt Cola","optionValues":["Jolt Cola"],"price_cents":2999,"compare_at_cents":2999,"available":true},{"key":"Jolt Root Beer","optionValues":["Jolt Root Beer"],"price_cents":2999,"compare_at_cents":2999,"available":true}];
+        var variantPricing = [{"variant_id":"40589703610416","key":"Vice City","title":"Vice City","sku":null,"optionValues":["Vice City"],"option_values":[{"position":1,"name":"Flavor","value":"Vice City"}],"selected_options":{"Flavor":"Vice City"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/ENERGY-PDP-2026_1-vice_city.jpg"},{"variant_id":"40589737426992","key":"Freedom Frost","title":"Freedom Frost","sku":null,"optionValues":["Freedom Frost"],"option_values":[{"position":1,"name":"Flavor","value":"Freedom Frost"}],"selected_options":{"Flavor":"Freedom Frost"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/FREEDOM-FROST-DRY-FLAVOR-12PK.png"},{"variant_id":"40589737459760","key":"Sour Gummy Blast","title":"Sour Gummy Blast","sku":null,"optionValues":["Sour Gummy Blast"],"option_values":[{"position":1,"name":"Flavor","value":"Sour Gummy Blast"}],"selected_options":{"Flavor":"Sour Gummy Blast"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/SOUR-GUMMY-BLAST-DRY-FLAVOR-12PK.png"},{"variant_id":"40589737525296","key":"Sour Peach Rings","title":"Sour Peach Rings","sku":null,"optionValues":["Sour Peach Rings"],"option_values":[{"position":1,"name":"Flavor","value":"Sour Peach Rings"}],"selected_options":{"Flavor":"Sour Peach Rings"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/SOUR-PEACH-RINGS-DRY-FLAVOR-12PK.png"},{"variant_id":"40874316267568","key":"Grape Freeze","title":"Grape Freeze","sku":null,"optionValues":["Grape Freeze"],"option_values":[{"position":1,"name":"Flavor","value":"Grape Freeze"}],"selected_options":{"Flavor":"Grape Freeze"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/GRAPE-FREEZE-DRY-FLAVOR-12PK.png"},{"variant_id":"40815240642608","key":"Baja Bomb","title":"Baja Bomb","sku":null,"optionValues":["Baja Bomb"],"option_values":[{"position":1,"name":"Flavor","value":"Baja Bomb"}],"selected_options":{"Flavor":"Baja Bomb"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/ENERGY-PDP-2026_1-baja_bomb.jpg"},{"variant_id":"40589737492528","key":"Cali Splash","title":"Cali Splash","sku":null,"optionValues":["Cali Splash"],"option_values":[{"position":1,"name":"Flavor","value":"Cali Splash"}],"selected_options":{"Flavor":"Cali Splash"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/ENERGY-PDP-2026_1-cali_splash.jpg"},{"variant_id":"40899983704112","key":"Icy Blue Lemonade","title":"Icy Blue Lemonade","sku":null,"optionValues":["Icy Blue Lemonade"],"option_values":[{"position":1,"name":"Flavor","value":"Icy Blue Lemonade"}],"selected_options":{"Flavor":"Icy Blue Lemonade"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/ENERGY-PDP-2026_1-icy_blue_lemonade.jpg"},{"variant_id":"40902175948848","key":"Orange Cream","title":"Orange Cream","sku":null,"optionValues":["Orange Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Orange Cream"}],"selected_options":{"Flavor":"Orange Cream"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/ORANGE-CREAM-DRY-FLAVOR-12PK.png"},{"variant_id":"41519946530864","key":"Prime Time Punch","title":"Prime Time Punch","sku":null,"optionValues":["Prime Time Punch"],"option_values":[{"position":1,"name":"Flavor","value":"Prime Time Punch"}],"selected_options":{"Flavor":"Prime Time Punch"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/RC1-ENERGY-PRIMETIME-PUNCH-12PK.png"},{"variant_id":"42595068674096","key":"Jolt Cola","title":"Jolt Cola","sku":null,"optionValues":["Jolt Cola"],"option_values":[{"position":1,"name":"Flavor","value":"Jolt Cola"}],"selected_options":{"Flavor":"Jolt Cola"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":2999,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"42595068706864","key":"Jolt Root Beer","title":"Jolt Root Beer","sku":null,"optionValues":["Jolt Root Beer"],"option_values":[{"position":1,"name":"Flavor","value":"Jolt Root Beer"}],"selected_options":{"Flavor":"Jolt Root Beer"},"price_cents":2999,"regular_price_cents":2999,"compare_at_cents":2999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -669,6 +684,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -686,16 +705,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Redcon1 | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -718,23 +760,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -747,10 +793,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -758,21 +804,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -783,12 +823,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

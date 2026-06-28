@@ -178,7 +178,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Ten Thousand</p>
-          <h1 class="pdp-title">Tactical Short - 7-inch</h1>
+          <h1 class="pdp-title" data-pdp-title>Tactical Short - 7-inch</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="5800" data-base-compare-cents="9800" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$58.00</strong>
             <span class="pdp-compare" data-pdp-compare >$98.00</span>
@@ -231,6 +231,9 @@
               data-cart-price="58"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"
+              data-cart-variant-id="42618161725527"
+              data-cart-selected-options="{&quot;Color&quot;:&quot;Ridgeline&quot;,&quot;Liner&quot;:&quot;XS&quot;,&quot;Size&quot;:&quot;Liner&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -614,17 +617,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Ridgeline / XS / Liner","optionValues":["Ridgeline","XS","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Ridgeline / XS / No Liner","optionValues":["Ridgeline","XS","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Ridgeline / S / Liner","optionValues":["Ridgeline","S","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Ridgeline / S / No Liner","optionValues":["Ridgeline","S","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Ridgeline / M / Liner","optionValues":["Ridgeline","M","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Ridgeline / M / No Liner","optionValues":["Ridgeline","M","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Ridgeline / L / Liner","optionValues":["Ridgeline","L","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Ridgeline / L / No Liner","optionValues":["Ridgeline","L","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Ridgeline / XL / Liner","optionValues":["Ridgeline","XL","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Ridgeline / XL / No Liner","optionValues":["Ridgeline","XL","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Ridgeline / XXL / Liner","optionValues":["Ridgeline","XXL","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Ridgeline / XXL / No Liner","optionValues":["Ridgeline","XXL","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Zodiac / XS / Liner","optionValues":["Zodiac","XS","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / XS / No Liner","optionValues":["Zodiac","XS","No Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / S / Liner","optionValues":["Zodiac","S","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / S / No Liner","optionValues":["Zodiac","S","No Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / M / Liner","optionValues":["Zodiac","M","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / M / No Liner","optionValues":["Zodiac","M","No Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / L / Liner","optionValues":["Zodiac","L","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / L / No Liner","optionValues":["Zodiac","L","No Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / XL / Liner","optionValues":["Zodiac","XL","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / XL / No Liner","optionValues":["Zodiac","XL","No Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / XXL / Liner","optionValues":["Zodiac","XXL","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Zodiac / XXL / No Liner","optionValues":["Zodiac","XXL","No Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Basalt / XS / Liner","optionValues":["Basalt","XS","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Basalt / XS / No Liner","optionValues":["Basalt","XS","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Basalt / S / Liner","optionValues":["Basalt","S","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Basalt / S / No Liner","optionValues":["Basalt","S","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Basalt / M / Liner","optionValues":["Basalt","M","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Basalt / M / No Liner","optionValues":["Basalt","M","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Basalt / L / Liner","optionValues":["Basalt","L","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Basalt / L / No Liner","optionValues":["Basalt","L","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Basalt / XL / Liner","optionValues":["Basalt","XL","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Basalt / XL / No Liner","optionValues":["Basalt","XL","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true},{"key":"Basalt / XXL / Liner","optionValues":["Basalt","XXL","Liner"],"price_cents":6400,"compare_at_cents":10800,"available":true},{"key":"Basalt / XXL / No Liner","optionValues":["Basalt","XXL","No Liner"],"price_cents":5800,"compare_at_cents":9800,"available":true}];
+        var variantPricing = [{"variant_id":"42618161725527","key":"Ridgeline / XS / Liner","title":"Ridgeline / XS / Liner","sku":null,"optionValues":["Ridgeline","XS","Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"XS"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"XS","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618161758295","key":"Ridgeline / XS / No Liner","title":"Ridgeline / XS / No Liner","sku":null,"optionValues":["Ridgeline","XS","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"XS"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"XS","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618161791063","key":"Ridgeline / S / Liner","title":"Ridgeline / S / Liner","sku":null,"optionValues":["Ridgeline","S","Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"S"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"S","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618161823831","key":"Ridgeline / S / No Liner","title":"Ridgeline / S / No Liner","sku":null,"optionValues":["Ridgeline","S","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"S"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"S","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618161856599","key":"Ridgeline / M / Liner","title":"Ridgeline / M / Liner","sku":null,"optionValues":["Ridgeline","M","Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"M"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"M","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618161889367","key":"Ridgeline / M / No Liner","title":"Ridgeline / M / No Liner","sku":null,"optionValues":["Ridgeline","M","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"M"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"M","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618161922135","key":"Ridgeline / L / Liner","title":"Ridgeline / L / Liner","sku":null,"optionValues":["Ridgeline","L","Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"L"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"L","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618161954903","key":"Ridgeline / L / No Liner","title":"Ridgeline / L / No Liner","sku":null,"optionValues":["Ridgeline","L","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"L"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"L","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618161987671","key":"Ridgeline / XL / Liner","title":"Ridgeline / XL / Liner","sku":null,"optionValues":["Ridgeline","XL","Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"XL"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"XL","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618162020439","key":"Ridgeline / XL / No Liner","title":"Ridgeline / XL / No Liner","sku":null,"optionValues":["Ridgeline","XL","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"XL"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"XL","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618162053207","key":"Ridgeline / XXL / Liner","title":"Ridgeline / XXL / Liner","sku":null,"optionValues":["Ridgeline","XXL","Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"XXL"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"XXL","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618162085975","key":"Ridgeline / XXL / No Liner","title":"Ridgeline / XXL / No Liner","sku":null,"optionValues":["Ridgeline","XXL","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Ridgeline"},{"position":2,"name":"Liner","value":"XXL"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Ridgeline","Liner":"XXL","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Ridgeline_Front_89269-1_v03.jpg"},{"variant_id":"42618227392599","key":"Zodiac / XS / Liner","title":"Zodiac / XS / Liner","sku":null,"optionValues":["Zodiac","XS","Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"XS"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Zodiac","Liner":"XS","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227425367","key":"Zodiac / XS / No Liner","title":"Zodiac / XS / No Liner","sku":null,"optionValues":["Zodiac","XS","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"XS"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Zodiac","Liner":"XS","Size":"No Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227458135","key":"Zodiac / S / Liner","title":"Zodiac / S / Liner","sku":null,"optionValues":["Zodiac","S","Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"S"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Zodiac","Liner":"S","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227490903","key":"Zodiac / S / No Liner","title":"Zodiac / S / No Liner","sku":null,"optionValues":["Zodiac","S","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"S"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Zodiac","Liner":"S","Size":"No Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227523671","key":"Zodiac / M / Liner","title":"Zodiac / M / Liner","sku":null,"optionValues":["Zodiac","M","Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"M"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Zodiac","Liner":"M","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227556439","key":"Zodiac / M / No Liner","title":"Zodiac / M / No Liner","sku":null,"optionValues":["Zodiac","M","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"M"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Zodiac","Liner":"M","Size":"No Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227589207","key":"Zodiac / L / Liner","title":"Zodiac / L / Liner","sku":null,"optionValues":["Zodiac","L","Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"L"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Zodiac","Liner":"L","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227621975","key":"Zodiac / L / No Liner","title":"Zodiac / L / No Liner","sku":null,"optionValues":["Zodiac","L","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"L"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Zodiac","Liner":"L","Size":"No Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227654743","key":"Zodiac / XL / Liner","title":"Zodiac / XL / Liner","sku":null,"optionValues":["Zodiac","XL","Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"XL"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Zodiac","Liner":"XL","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227687511","key":"Zodiac / XL / No Liner","title":"Zodiac / XL / No Liner","sku":null,"optionValues":["Zodiac","XL","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"XL"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Zodiac","Liner":"XL","Size":"No Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227720279","key":"Zodiac / XXL / Liner","title":"Zodiac / XXL / Liner","sku":null,"optionValues":["Zodiac","XXL","Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"XXL"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Zodiac","Liner":"XXL","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42618227753047","key":"Zodiac / XXL / No Liner","title":"Zodiac / XXL / No Liner","sku":null,"optionValues":["Zodiac","XXL","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Zodiac"},{"position":2,"name":"Liner","value":"XXL"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Zodiac","Liner":"XXL","Size":"No Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Zodiac_Front_89269-1_v03.jpg"},{"variant_id":"42478475608151","key":"Basalt / XS / Liner","title":"Basalt / XS / Liner","sku":null,"optionValues":["Basalt","XS","Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"XS"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Basalt","Liner":"XS","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475640919","key":"Basalt / XS / No Liner","title":"Basalt / XS / No Liner","sku":null,"optionValues":["Basalt","XS","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"XS"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Basalt","Liner":"XS","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475673687","key":"Basalt / S / Liner","title":"Basalt / S / Liner","sku":null,"optionValues":["Basalt","S","Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"S"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Basalt","Liner":"S","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475706455","key":"Basalt / S / No Liner","title":"Basalt / S / No Liner","sku":null,"optionValues":["Basalt","S","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"S"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Basalt","Liner":"S","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475739223","key":"Basalt / M / Liner","title":"Basalt / M / Liner","sku":null,"optionValues":["Basalt","M","Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"M"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Basalt","Liner":"M","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475771991","key":"Basalt / M / No Liner","title":"Basalt / M / No Liner","sku":null,"optionValues":["Basalt","M","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"M"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Basalt","Liner":"M","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475804759","key":"Basalt / L / Liner","title":"Basalt / L / Liner","sku":null,"optionValues":["Basalt","L","Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"L"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Basalt","Liner":"L","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475837527","key":"Basalt / L / No Liner","title":"Basalt / L / No Liner","sku":null,"optionValues":["Basalt","L","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"L"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Basalt","Liner":"L","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475870295","key":"Basalt / XL / Liner","title":"Basalt / XL / Liner","sku":null,"optionValues":["Basalt","XL","Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"XL"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Basalt","Liner":"XL","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475903063","key":"Basalt / XL / No Liner","title":"Basalt / XL / No Liner","sku":null,"optionValues":["Basalt","XL","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"XL"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Basalt","Liner":"XL","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475935831","key":"Basalt / XXL / Liner","title":"Basalt / XXL / Liner","sku":null,"optionValues":["Basalt","XXL","Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"XXL"},{"position":3,"name":"Size","value":"Liner"}],"selected_options":{"Color":"Basalt","Liner":"XXL","Size":"Liner"},"price_cents":6400,"regular_price_cents":10800,"compare_at_cents":10800,"compare_at_price_cents":10800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"},{"variant_id":"42478475968599","key":"Basalt / XXL / No Liner","title":"Basalt / XXL / No Liner","sku":null,"optionValues":["Basalt","XXL","No Liner"],"option_values":[{"position":1,"name":"Color","value":"Basalt"},{"position":2,"name":"Liner","value":"XXL"},{"position":3,"name":"Size","value":"No Liner"}],"selected_options":{"Color":"Basalt","Liner":"XXL","Size":"No Liner"},"price_cents":5800,"regular_price_cents":9800,"compare_at_cents":9800,"compare_at_price_cents":9800,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0251/7377/files/TacticalShorts_7in_Basalt_Front_89269-1_v03.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -654,6 +669,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -671,16 +690,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Ten Thousand | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -703,23 +745,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -732,10 +778,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -743,21 +789,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -768,12 +808,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

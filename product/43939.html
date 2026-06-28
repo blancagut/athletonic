@@ -215,7 +215,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">moon_juice</p>
-          <h1 class="pdp-title">Magnesi-Om</h1>
+          <h1 class="pdp-title" data-pdp-title>Magnesi-Om</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="3800" data-base-compare-cents="" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$38.00</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -259,6 +259,9 @@
               data-cart-price="38"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/1095/5588/products/Mag_New_800x800_4dbf7a23-5fdf-4b50-81ee-e0618d9f8c2b.png"
+              data-cart-variant-id="40856373854291"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Berry&quot;,&quot;Type&quot;:&quot;Jar&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -745,17 +748,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Berry / Jar","optionValues":["Berry","Jar"],"price_cents":4400,"compare_at_cents":0,"available":true},{"key":"Berry / Refill","optionValues":["Berry","Refill"],"price_cents":4400,"compare_at_cents":0,"available":true},{"key":"Blue Lemon / Jar","optionValues":["Blue Lemon","Jar"],"price_cents":4400,"compare_at_cents":0,"available":true},{"key":"Blue Lemon / XL Jar","optionValues":["Blue Lemon","XL Jar"],"price_cents":7400,"compare_at_cents":0,"available":true},{"key":"Blue Lemon / Refill","optionValues":["Blue Lemon","Refill"],"price_cents":4400,"compare_at_cents":0,"available":true},{"key":"2 Flavors / Sticks","optionValues":["2 Flavors","Sticks"],"price_cents":3800,"compare_at_cents":0,"available":true},{"key":"Naked / Jar","optionValues":["Naked","Jar"],"price_cents":4400,"compare_at_cents":0,"available":true},{"key":"Berry / Sticks","optionValues":["Berry","Sticks"],"price_cents":4200,"compare_at_cents":0,"available":true},{"key":"Blue Lemon / Sticks","optionValues":["Blue Lemon","Sticks"],"price_cents":4200,"compare_at_cents":0,"available":true},{"key":"Berry / XL Jar","optionValues":["Berry","XL Jar"],"price_cents":7400,"compare_at_cents":0,"available":true}];
+        var variantPricing = [{"variant_id":"40856373854291","key":"Berry / Jar","title":"Berry / Jar","sku":null,"optionValues":["Berry","Jar"],"option_values":[{"position":1,"name":"Flavor","value":"Berry"},{"position":2,"name":"Type","value":"Jar"}],"selected_options":{"Flavor":"Berry","Type":"Jar"},"price_cents":4400,"regular_price_cents":4400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/big-mag-jar-berry.jpg"},{"variant_id":"40853416476755","key":"Berry / Refill","title":"Berry / Refill","sku":null,"optionValues":["Berry","Refill"],"option_values":[{"position":1,"name":"Flavor","value":"Berry"},{"position":2,"name":"Type","value":"Refill"}],"selected_options":{"Flavor":"Berry","Type":"Refill"},"price_cents":4400,"regular_price_cents":4400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/Mag_Refill_NEW-02_800x800_37ab9e47-1281-41fd-8f2e-a3b9545bf18b.png"},{"variant_id":"40856375296083","key":"Blue Lemon / Jar","title":"Blue Lemon / Jar","sku":null,"optionValues":["Blue Lemon","Jar"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Lemon"},{"position":2,"name":"Type","value":"Jar"}],"selected_options":{"Flavor":"Blue Lemon","Type":"Jar"},"price_cents":4400,"regular_price_cents":4400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/big-mag-jar-blue-lemon.jpg"},{"variant_id":"42195588382803","key":"Blue Lemon / XL Jar","title":"Blue Lemon / XL Jar","sku":null,"optionValues":["Blue Lemon","XL Jar"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Lemon"},{"position":2,"name":"Type","value":"XL Jar"}],"selected_options":{"Flavor":"Blue Lemon","Type":"XL Jar"},"price_cents":7400,"regular_price_cents":7400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/big-mag-jar-blue-lemon.jpg"},{"variant_id":"41166309392467","key":"Blue Lemon / Refill","title":"Blue Lemon / Refill","sku":null,"optionValues":["Blue Lemon","Refill"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Lemon"},{"position":2,"name":"Type","value":"Refill"}],"selected_options":{"Flavor":"Blue Lemon","Type":"Refill"},"price_cents":4400,"regular_price_cents":4400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/Blue_Mag_Refill_800x800_1.png"},{"variant_id":"41070575517779","key":"2 Flavors / Sticks","title":"2 Flavors / Sticks","sku":null,"optionValues":["2 Flavors","Sticks"],"option_values":[{"position":1,"name":"Flavor","value":"2 Flavors"},{"position":2,"name":"Type","value":"Sticks"}],"selected_options":{"Flavor":"2 Flavors","Type":"Sticks"},"price_cents":3800,"regular_price_cents":3800,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/Mag_Sticks_Open_800x800_933fdb81-f7b9-49f2-9851-0431c0fa8a44.png"},{"variant_id":"41674087268435","key":"Naked / Jar","title":"Naked / Jar","sku":null,"optionValues":["Naked","Jar"],"option_values":[{"position":1,"name":"Flavor","value":"Naked"},{"position":2,"name":"Type","value":"Jar"}],"selected_options":{"Flavor":"Naked","Type":"Jar"},"price_cents":4400,"regular_price_cents":4400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/Ecom-Naked_Mag_ba9c27d2-10d2-434c-afed-cb4b52af296b.png"},{"variant_id":"42375305461843","key":"Berry / Sticks","title":"Berry / Sticks","sku":null,"optionValues":["Berry","Sticks"],"option_values":[{"position":1,"name":"Flavor","value":"Berry"},{"position":2,"name":"Type","value":"Sticks"}],"selected_options":{"Flavor":"Berry","Type":"Sticks"},"price_cents":4200,"regular_price_cents":4200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/Mag_Sticks_Open_800x800_933fdb81-f7b9-49f2-9851-0431c0fa8a44.png"},{"variant_id":"42375311327315","key":"Blue Lemon / Sticks","title":"Blue Lemon / Sticks","sku":null,"optionValues":["Blue Lemon","Sticks"],"option_values":[{"position":1,"name":"Flavor","value":"Blue Lemon"},{"position":2,"name":"Type","value":"Sticks"}],"selected_options":{"Flavor":"Blue Lemon","Type":"Sticks"},"price_cents":4200,"regular_price_cents":4200,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/Blue-Lemon-Mag-Sticks-SFP.jpg"},{"variant_id":"42543259025491","key":"Berry / XL Jar","title":"Berry / XL Jar","sku":null,"optionValues":["Berry","XL Jar"],"option_values":[{"position":1,"name":"Flavor","value":"Berry"},{"position":2,"name":"Type","value":"XL Jar"}],"selected_options":{"Flavor":"Berry","Type":"XL Jar"},"price_cents":7400,"regular_price_cents":7400,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/big-mag-jar-berry.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -785,6 +800,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -802,16 +821,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — moon_juice | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -834,23 +876,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -863,10 +909,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -874,21 +920,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -899,12 +939,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";

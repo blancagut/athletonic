@@ -171,7 +171,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Inno Supps</p>
-          <h1 class="pdp-title">Clean Vegan Protein</h1>
+          <h1 class="pdp-title" data-pdp-title>Clean Vegan Protein</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="4999" data-base-compare-cents="6999" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$49.99</strong>
             <span class="pdp-compare" data-pdp-compare >$69.99</span>
@@ -210,6 +210,9 @@
               data-cart-price="49.99"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0301/5737/3576/files/CVP_Cinnamon_French_Toast_FRONT.webp"
+              data-cart-variant-id="40759074357384"
+              data-cart-selected-options="{&quot;Flavor&quot;:&quot;Cinnamon French Toast&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -322,7 +325,7 @@
                 <strong>$20.99</strong>
 
               </div>
-              <p class="product-deal-note">Limited offer</p>
+
               <a class="add-cart-button product-options-button" href="../product/1509.html" aria-label="View eligible options for GOLD STANDARD 100% WHEY">View options</a>
             </div>
           </article>
@@ -611,15 +614,23 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"Cinnamon French Toast","optionValues":["Cinnamon French Toast"],"price_cents":4999,"compare_at_cents":6999,"available":true},{"key":"Fruity Cereal","optionValues":["Fruity Cereal"],"price_cents":4999,"compare_at_cents":6999,"available":true},{"key":"Lemon Sugar Cookie","optionValues":["Lemon Sugar Cookie"],"price_cents":4999,"compare_at_cents":6999,"available":true},{"key":"Vanilla Birthday Cake","optionValues":["Vanilla Birthday Cake"],"price_cents":4999,"compare_at_cents":6999,"available":true},{"key":"Blueberry Crumble (out of stock)","optionValues":["Blueberry Crumble (out of stock)"],"price_cents":4999,"compare_at_cents":6999,"available":true},{"key":"Shortbread Cookie (out of stock)","optionValues":["Shortbread Cookie (out of stock)"],"price_cents":4999,"compare_at_cents":6999,"available":true},{"key":"Strawberry Shortcake (out of stock)","optionValues":["Strawberry Shortcake (out of stock)"],"price_cents":4999,"compare_at_cents":6999,"available":true},{"key":"Maple Waffle (out of stock)","optionValues":["Maple Waffle (out of stock)"],"price_cents":4999,"compare_at_cents":6999,"available":true},{"key":"Chocolate Brownie (out of stock)","optionValues":["Chocolate Brownie (out of stock)"],"price_cents":4999,"compare_at_cents":6999,"available":true}];
+        var variantPricing = [{"variant_id":"40759074357384","key":"Cinnamon French Toast","title":"Cinnamon French Toast","sku":null,"optionValues":["Cinnamon French Toast"],"option_values":[{"position":1,"name":"Flavor","value":"Cinnamon French Toast"}],"selected_options":{"Flavor":"Cinnamon French Toast"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/CVP_Cinnamon_French_Toast_FRONT.webp"},{"variant_id":"40759074226312","key":"Fruity Cereal","title":"Fruity Cereal","sku":null,"optionValues":["Fruity Cereal"],"option_values":[{"position":1,"name":"Flavor","value":"Fruity Cereal"}],"selected_options":{"Flavor":"Fruity Cereal"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVP-FLAVORS-Friuity-Cereal.jpg"},{"variant_id":"41034636492936","key":"Lemon Sugar Cookie","title":"Lemon Sugar Cookie","sku":null,"optionValues":["Lemon Sugar Cookie"],"option_values":[{"position":1,"name":"Flavor","value":"Lemon Sugar Cookie"}],"selected_options":{"Flavor":"Lemon Sugar Cookie"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/CVPLemonSugarCookie1_c1c0165e-e57b-444f-b27e-9b361c1c2921.webp"},{"variant_id":"40759074291848","key":"Vanilla Birthday Cake","title":"Vanilla Birthday Cake","sku":null,"optionValues":["Vanilla Birthday Cake"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Birthday Cake"}],"selected_options":{"Flavor":"Vanilla Birthday Cake"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/cvp-birthdaycake-bag_6ef66990-647c-43b2-9173-d881bc5f6421.png"},{"variant_id":"40759074259080","key":"Blueberry Crumble (out of stock)","title":"Blueberry Crumble (out of stock)","sku":null,"optionValues":["Blueberry Crumble (out of stock)"],"option_values":[{"position":1,"name":"Flavor","value":"Blueberry Crumble (out of stock)"}],"selected_options":{"Flavor":"Blueberry Crumble (out of stock)"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVP-FLAVORS-Blueberry-Cobler.jpg"},{"variant_id":"40759074193544","key":"Shortbread Cookie (out of stock)","title":"Shortbread Cookie (out of stock)","sku":null,"optionValues":["Shortbread Cookie (out of stock)"],"option_values":[{"position":1,"name":"Flavor","value":"Shortbread Cookie (out of stock)"}],"selected_options":{"Flavor":"Shortbread Cookie (out of stock)"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/CVPLemonSugarCookie1_c1c0165e-e57b-444f-b27e-9b361c1c2921.webp"},{"variant_id":"40759074324616","key":"Strawberry Shortcake (out of stock)","title":"Strawberry Shortcake (out of stock)","sku":null,"optionValues":["Strawberry Shortcake (out of stock)"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Shortcake (out of stock)"}],"selected_options":{"Flavor":"Strawberry Shortcake (out of stock)"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVP-FLAVORS-Strawberry-Shortcake.jpg"},{"variant_id":"40759074390152","key":"Maple Waffle (out of stock)","title":"Maple Waffle (out of stock)","sku":null,"optionValues":["Maple Waffle (out of stock)"],"option_values":[{"position":1,"name":"Flavor","value":"Maple Waffle (out of stock)"}],"selected_options":{"Flavor":"Maple Waffle (out of stock)"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVP-FLAVORS-Maple-Waffle.jpg"},{"variant_id":"40759074422920","key":"Chocolate Brownie (out of stock)","title":"Chocolate Brownie (out of stock)","sku":null,"optionValues":["Chocolate Brownie (out of stock)"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Brownie (out of stock)"}],"selected_options":{"Flavor":"Chocolate Brownie (out of stock)"},"price_cents":4999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVP-FLAVORS-Chocolate-Brownie.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
         var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
           return String(value || "")
@@ -674,6 +685,24 @@
           if (addBtn) {
             addBtn.dataset.cartPrice = (Number(state.price_cents || 0) / 100).toFixed(2);
           }
+        }
+
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Inno Supps | Athletonic")
+            : baseDocumentTitle;
         }
 
         function selectedVariant() {
@@ -746,10 +775,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -757,10 +786,12 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
               setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
               if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
@@ -774,6 +805,13 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
             resetToBasePrice();
             addBtn.disabled = true;

@@ -166,7 +166,7 @@
 
         <div class="pdp-info">
           <p class="pdp-brand">Fuji Sports</p>
-          <h1 class="pdp-title">BJJ Revolution ranked belts</h1>
+          <h1 class="pdp-title" data-pdp-title>BJJ Revolution ranked belts</h1>
           <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="2295" data-base-compare-cents="2295" data-currency="USD">
             <strong class="pdp-price" data-pdp-price>$22.95</strong>
             <span class="pdp-compare" data-pdp-compare hidden></span>
@@ -212,6 +212,9 @@
               data-cart-price="22.95"
               data-cart-currency="USD"
               data-cart-image="https://cdn.shopify.com/s/files/1/0002/4680/8603/files/2_4f8bcc9c-f3d8-4986-a82a-aae635e04240.jpg"
+              data-cart-variant-id="40012670238813"
+              data-cart-selected-options="{&quot;Size&quot;:&quot;A1&quot;,&quot;Color&quot;:&quot;White&quot;}"
+              data-cart-sku=""
               data-cart-variant=""
               disabled
             >Select options</button>
@@ -621,17 +624,29 @@
         var compareEl = document.querySelector("[data-pdp-compare]");
         var discountEl = document.querySelector("[data-pdp-discount]");
         var priceRow = document.querySelector("[data-pdp-price-row]");
+        var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"key":"A1 / White","optionValues":["A1","White"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A1 / Blue","optionValues":["A1","Blue"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A1 / Purple","optionValues":["A1","Purple"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A1 / Brown","optionValues":["A1","Brown"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A1 / Black","optionValues":["A1","Black"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A2 / White","optionValues":["A2","White"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A2 / Blue","optionValues":["A2","Blue"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A2 / Purple","optionValues":["A2","Purple"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A2 / Brown","optionValues":["A2","Brown"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A2 / Black","optionValues":["A2","Black"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A3 / White","optionValues":["A3","White"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A3 / Blue","optionValues":["A3","Blue"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A3 / Purple","optionValues":["A3","Purple"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A3 / Brown","optionValues":["A3","Brown"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A3 / Black","optionValues":["A3","Black"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A4 / White","optionValues":["A4","White"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A4 / Blue","optionValues":["A4","Blue"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A4 / Purple","optionValues":["A4","Purple"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A4 / Brown","optionValues":["A4","Brown"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A4 / Black","optionValues":["A4","Black"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A5 / White","optionValues":["A5","White"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A5 / Blue","optionValues":["A5","Blue"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A5 / Purple","optionValues":["A5","Purple"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A5 / Brown","optionValues":["A5","Brown"],"price_cents":2295,"compare_at_cents":2295,"available":true},{"key":"A5 / Black","optionValues":["A5","Black"],"price_cents":2295,"compare_at_cents":2295,"available":true}];
+        var variantPricing = [{"variant_id":"40012670238813","key":"A1 / White","title":"A1 / White","sku":null,"optionValues":["A1","White"],"option_values":[{"position":1,"name":"Size","value":"A1"},{"position":2,"name":"Color","value":"White"}],"selected_options":{"Size":"A1","Color":"White"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40012670271581","key":"A1 / Blue","title":"A1 / Blue","sku":null,"optionValues":["A1","Blue"],"option_values":[{"position":1,"name":"Size","value":"A1"},{"position":2,"name":"Color","value":"Blue"}],"selected_options":{"Size":"A1","Color":"Blue"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"40012670304349","key":"A1 / Purple","title":"A1 / Purple","sku":null,"optionValues":["A1","Purple"],"option_values":[{"position":1,"name":"Size","value":"A1"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"A1","Color":"Purple"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"40012670337117","key":"A1 / Brown","title":"A1 / Brown","sku":null,"optionValues":["A1","Brown"],"option_values":[{"position":1,"name":"Size","value":"A1"},{"position":2,"name":"Color","value":"Brown"}],"selected_options":{"Size":"A1","Color":"Brown"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40012670369885","key":"A1 / Black","title":"A1 / Black","sku":null,"optionValues":["A1","Black"],"option_values":[{"position":1,"name":"Size","value":"A1"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"A1","Color":"Black"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40012670402653","key":"A2 / White","title":"A2 / White","sku":null,"optionValues":["A2","White"],"option_values":[{"position":1,"name":"Size","value":"A2"},{"position":2,"name":"Color","value":"White"}],"selected_options":{"Size":"A2","Color":"White"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/5_5b2e4f5b-3ea7-4546-b117-1c73c7eda28e.jpg"},{"variant_id":"40012670435421","key":"A2 / Blue","title":"A2 / Blue","sku":null,"optionValues":["A2","Blue"],"option_values":[{"position":1,"name":"Size","value":"A2"},{"position":2,"name":"Color","value":"Blue"}],"selected_options":{"Size":"A2","Color":"Blue"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/5_5b2e4f5b-3ea7-4546-b117-1c73c7eda28e.jpg"},{"variant_id":"40012670468189","key":"A2 / Purple","title":"A2 / Purple","sku":null,"optionValues":["A2","Purple"],"option_values":[{"position":1,"name":"Size","value":"A2"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"A2","Color":"Purple"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/5_5b2e4f5b-3ea7-4546-b117-1c73c7eda28e.jpg"},{"variant_id":"40012670500957","key":"A2 / Brown","title":"A2 / Brown","sku":null,"optionValues":["A2","Brown"],"option_values":[{"position":1,"name":"Size","value":"A2"},{"position":2,"name":"Color","value":"Brown"}],"selected_options":{"Size":"A2","Color":"Brown"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/5_5b2e4f5b-3ea7-4546-b117-1c73c7eda28e.jpg"},{"variant_id":"40012670533725","key":"A2 / Black","title":"A2 / Black","sku":null,"optionValues":["A2","Black"],"option_values":[{"position":1,"name":"Size","value":"A2"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"A2","Color":"Black"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/5_5b2e4f5b-3ea7-4546-b117-1c73c7eda28e.jpg"},{"variant_id":"40012670566493","key":"A3 / White","title":"A3 / White","sku":null,"optionValues":["A3","White"],"option_values":[{"position":1,"name":"Size","value":"A3"},{"position":2,"name":"Color","value":"White"}],"selected_options":{"Size":"A3","Color":"White"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/3_3517b5ed-888b-4fdd-aca3-6f539e937466.jpg"},{"variant_id":"40012670599261","key":"A3 / Blue","title":"A3 / Blue","sku":null,"optionValues":["A3","Blue"],"option_values":[{"position":1,"name":"Size","value":"A3"},{"position":2,"name":"Color","value":"Blue"}],"selected_options":{"Size":"A3","Color":"Blue"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/3_3517b5ed-888b-4fdd-aca3-6f539e937466.jpg"},{"variant_id":"40012670632029","key":"A3 / Purple","title":"A3 / Purple","sku":null,"optionValues":["A3","Purple"],"option_values":[{"position":1,"name":"Size","value":"A3"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"A3","Color":"Purple"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/3_3517b5ed-888b-4fdd-aca3-6f539e937466.jpg"},{"variant_id":"40012670664797","key":"A3 / Brown","title":"A3 / Brown","sku":null,"optionValues":["A3","Brown"],"option_values":[{"position":1,"name":"Size","value":"A3"},{"position":2,"name":"Color","value":"Brown"}],"selected_options":{"Size":"A3","Color":"Brown"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/3_3517b5ed-888b-4fdd-aca3-6f539e937466.jpg"},{"variant_id":"40012670697565","key":"A3 / Black","title":"A3 / Black","sku":null,"optionValues":["A3","Black"],"option_values":[{"position":1,"name":"Size","value":"A3"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"A3","Color":"Black"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/3_3517b5ed-888b-4fdd-aca3-6f539e937466.jpg"},{"variant_id":"40012670730333","key":"A4 / White","title":"A4 / White","sku":null,"optionValues":["A4","White"],"option_values":[{"position":1,"name":"Size","value":"A4"},{"position":2,"name":"Color","value":"White"}],"selected_options":{"Size":"A4","Color":"White"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/6_36422248-a4af-4d08-9ae7-5eec056955d2.jpg"},{"variant_id":"40012670763101","key":"A4 / Blue","title":"A4 / Blue","sku":null,"optionValues":["A4","Blue"],"option_values":[{"position":1,"name":"Size","value":"A4"},{"position":2,"name":"Color","value":"Blue"}],"selected_options":{"Size":"A4","Color":"Blue"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/6_36422248-a4af-4d08-9ae7-5eec056955d2.jpg"},{"variant_id":"40012670795869","key":"A4 / Purple","title":"A4 / Purple","sku":null,"optionValues":["A4","Purple"],"option_values":[{"position":1,"name":"Size","value":"A4"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"A4","Color":"Purple"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/6_36422248-a4af-4d08-9ae7-5eec056955d2.jpg"},{"variant_id":"40012670828637","key":"A4 / Brown","title":"A4 / Brown","sku":null,"optionValues":["A4","Brown"],"option_values":[{"position":1,"name":"Size","value":"A4"},{"position":2,"name":"Color","value":"Brown"}],"selected_options":{"Size":"A4","Color":"Brown"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/6_36422248-a4af-4d08-9ae7-5eec056955d2.jpg"},{"variant_id":"40012670861405","key":"A4 / Black","title":"A4 / Black","sku":null,"optionValues":["A4","Black"],"option_values":[{"position":1,"name":"Size","value":"A4"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"A4","Color":"Black"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0002/4680/8603/files/6_36422248-a4af-4d08-9ae7-5eec056955d2.jpg"},{"variant_id":"40012670894173","key":"A5 / White","title":"A5 / White","sku":null,"optionValues":["A5","White"],"option_values":[{"position":1,"name":"Size","value":"A5"},{"position":2,"name":"Color","value":"White"}],"selected_options":{"Size":"A5","Color":"White"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40012670926941","key":"A5 / Blue","title":"A5 / Blue","sku":null,"optionValues":["A5","Blue"],"option_values":[{"position":1,"name":"Size","value":"A5"},{"position":2,"name":"Color","value":"Blue"}],"selected_options":{"Size":"A5","Color":"Blue"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"40012670959709","key":"A5 / Purple","title":"A5 / Purple","sku":null,"optionValues":["A5","Purple"],"option_values":[{"position":1,"name":"Size","value":"A5"},{"position":2,"name":"Color","value":"Purple"}],"selected_options":{"Size":"A5","Color":"Purple"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40012670992477","key":"A5 / Brown","title":"A5 / Brown","sku":null,"optionValues":["A5","Brown"],"option_values":[{"position":1,"name":"Size","value":"A5"},{"position":2,"name":"Color","value":"Brown"}],"selected_options":{"Size":"A5","Color":"Brown"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40012671025245","key":"A5 / Black","title":"A5 / Black","sku":null,"optionValues":["A5","Black"],"option_values":[{"position":1,"name":"Size","value":"A5"},{"position":2,"name":"Color","value":"Black"}],"selected_options":{"Size":"A5","Color":"Black"},"price_cents":2295,"regular_price_cents":2295,"compare_at_cents":2295,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
+        var baseCartName = addBtn ? addBtn.dataset.cartName : "";
+        var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
+        var baseCartVariantId = addBtn ? addBtn.dataset.cartVariantId : "";
+        var baseCartSelectedOptions = addBtn ? addBtn.dataset.cartSelectedOptions : "{}";
+        var baseCartSku = addBtn ? addBtn.dataset.cartSku : "";
         var currency = priceRow ? priceRow.dataset.currency || "USD" : "USD";
         var defaultVariantNote = variantDealNote ? variantDealNote.textContent : "";
         var basePriceCents = priceRow ? Number(priceRow.dataset.basePriceCents || 0) : 0;
         var baseCompareCents = priceRow ? Number(priceRow.dataset.baseCompareCents || 0) : 0;
+        var baseDiscountLabel = discountEl && !discountEl.hidden ? discountEl.textContent : "";
+        var baseTitle = titleEl ? titleEl.textContent : "";
+        var baseDocumentTitle = document.title;
 
         function normalize(value) {
-          return String(value || "").trim().toLowerCase();
+          return String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "");
         }
 
         function formatMoneyFromCents(cents) {
@@ -661,6 +676,10 @@
           };
         }
 
+        function resetToBasePrice() {
+          setDisplayPrice(defaultPriceState(), baseDiscountLabel);
+        }
+
         function setDisplayPrice(state, label) {
           if (!priceEl || !state) return;
           priceEl.textContent = formatMoneyFromCents(state.price_cents);
@@ -678,16 +697,39 @@
           }
         }
 
+        function setCartVariantState(variant, fallbackLabel) {
+          if (!addBtn) return;
+          var selected = variant && variant.selected_options ? variant.selected_options : {};
+          var variantLabel = variant && variant.title ? variant.title : (fallbackLabel || "");
+          addBtn.dataset.cartVariant = variantLabel;
+          addBtn.dataset.cartVariantId = variant && variant.variant_id ? variant.variant_id : "";
+          addBtn.dataset.cartSelectedOptions = JSON.stringify(selected || {});
+          addBtn.dataset.cartSku = variant && variant.sku ? variant.sku : "";
+          addBtn.dataset.cartImage = variant && variant.image_url ? variant.image_url : baseCartImage;
+          addBtn.dataset.cartName = variantLabel ? baseCartName + " - " + variantLabel : baseCartName;
+          if (titleEl) {
+            titleEl.textContent = variantLabel ? baseTitle + " - " + variantLabel : baseTitle;
+          }
+          document.title = variantLabel
+            ? (baseTitle + " - " + variantLabel + " — Fuji Sports | Athletonic")
+            : baseDocumentTitle;
+        }
+
         function selectedVariant() {
           if (!variantPricing.length) return null;
           var parts = selects.map(function (select) { return select.value; }).filter(Boolean);
           if (!parts.length) return null;
           var joined = parts.join(" / ");
+          var normalizedParts = parts.map(normalize).sort();
           return variantPricing.find(function (variant) {
             if (normalize(variant.key) === normalize(joined)) return true;
             if (variant.optionValues.length !== parts.length) return false;
-            return variant.optionValues.every(function (value, index) {
+            if (variant.optionValues.every(function (value, index) {
               return normalize(value) === normalize(parts[index]);
+            })) return true;
+            var normalizedVariantValues = variant.optionValues.map(normalize).sort();
+            return normalizedVariantValues.every(function (value, index) {
+              return value === normalizedParts[index];
             });
           }) || null;
         }
@@ -710,23 +752,27 @@
           }) || null;
         }
 
-        function setDisplayDeal(deal) {
+        function setDisplayDeal(deal, priceState) {
           if (!deal || !priceEl) return;
+          var fallbackOriginal = Number(
+            priceState && priceState.compare_at_cents
+              ? priceState.compare_at_cents
+              : priceState && priceState.price_cents
+                ? priceState.price_cents
+                : 0
+          );
+          var offerOriginal = Number(deal.original_price_cents || 0);
           setDisplayPrice(
             {
               price_cents: Number(deal.sale_price_cents || 0),
-              compare_at_cents: Number(deal.original_price_cents || 0),
+              compare_at_cents: Math.max(offerOriginal, fallbackOriginal),
               available: true,
             },
             discountLabel(deal)
           );
         }
 
-        if (variantDeals.length) {
-          setDisplayDeal(variantDeals[0]);
-        } else {
-          setDisplayPrice(defaultPriceState(), "");
-        }
+        resetToBasePrice();
 
         function refresh() {
           if (!addBtn) return;
@@ -739,10 +785,10 @@
             var parts = selects.map(function (s) { return s.value; });
             var currentVariant = selectedVariant();
             var selectedDeal = variantDeals.length ? matchingVariantDeal() : null;
-            addBtn.dataset.cartVariant = parts.join(" / ");
             if (!currentVariant && variantPricing.length) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(null, parts.join(" / "));
               setDisplayPrice(defaultPriceState(), "");
               if (note) note.textContent = "This combination is not available right now.";
               return;
@@ -750,21 +796,15 @@
             if (currentVariant && !currentVariant.available) {
               addBtn.disabled = true;
               addBtn.textContent = "Unavailable";
+              setCartVariantState(currentVariant, parts.join(" / "));
               setDisplayPrice(currentVariant, "");
               if (note) note.textContent = "This option is currently out of stock.";
               return;
             }
-            if (variantDeals.length && !selectedDeal) {
-              addBtn.disabled = true;
-              addBtn.textContent = "Offer not available";
-              setDisplayPrice(currentVariant || defaultPriceState(), "");
-              if (note) note.textContent = "This offer is only available for " + eligibleLabel() + ".";
-              if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-              return;
-            }
+            setCartVariantState(currentVariant, parts.join(" / "));
             if (selectedDeal) {
-              setDisplayDeal(selectedDeal);
-              if (variantDealNote) variantDealNote.textContent = "Limited offer";
+              setDisplayDeal(selectedDeal, currentVariant || defaultPriceState());
+              if (variantDealNote) variantDealNote.textContent = selectedDeal.note || defaultVariantNote;
             } else {
               setDisplayPrice(currentVariant || defaultPriceState(), "");
               if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
@@ -775,12 +815,15 @@
           } else {
             addBtn.dataset.cartVariant = "";
             addBtn.dataset.cartPrice = baseCartPrice;
+            addBtn.dataset.cartVariantId = baseCartVariantId;
+            addBtn.dataset.cartSelectedOptions = baseCartSelectedOptions;
+            addBtn.dataset.cartSku = baseCartSku;
+            addBtn.dataset.cartImage = baseCartImage;
+            addBtn.dataset.cartName = baseCartName;
+            if (titleEl) titleEl.textContent = baseTitle;
+            document.title = baseDocumentTitle;
             if (variantDealNote) variantDealNote.textContent = defaultVariantNote;
-            if (variantDeals.length) {
-              setDisplayDeal(variantDeals[0]);
-            } else {
-              setDisplayPrice(defaultPriceState(), "");
-            }
+            resetToBasePrice();
             addBtn.disabled = true;
             addBtn.textContent = "Select options";
             if (note) note.textContent = "";
