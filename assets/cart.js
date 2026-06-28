@@ -233,6 +233,64 @@
     };
   }
 
+  function variantRecordPriceCents(variant, fallbackProduct) {
+    const cents = Number(
+      (variant && (variant.price_cents || variant.priceCents)) ||
+      (fallbackProduct && fallbackProduct.price_cents) ||
+      0
+    );
+    return Number.isFinite(cents) && cents > 0 ? Math.round(cents) : 0;
+  }
+
+  function variantRecordCompareAtCents(variant, fallbackProduct) {
+    const cents = Number(
+      (variant && (variant.compare_at_price_cents || variant.compareAtPriceCents)) ||
+      (fallbackProduct && fallbackProduct.compare_at_price_cents) ||
+      0
+    );
+    return Number.isFinite(cents) && cents > 0 ? Math.round(cents) : 0;
+  }
+
+  function normalizeVariantKey(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+  }
+
+  function findVariantBySelectedValues(product, values) {
+    const parts = Array.isArray(values)
+      ? values.map((value) => String(value || "").trim()).filter(Boolean)
+      : [];
+    if (!parts.length) return null;
+
+    const joined = parts.join(" / ");
+    const normalizedParts = parts.map(normalizeVariantKey).sort();
+    return (
+      variantRecords(product).find((variant) => {
+        const key = normalizeVariantKey(variant && (variant.key || variant.title));
+        if (key && key === normalizeVariantKey(joined)) return true;
+
+        const optionValues = Array.isArray(variant && variant.optionValues)
+          ? variant.optionValues
+          : Array.isArray(variant && variant.option_values)
+            ? variant.option_values.map((entry) => entry && entry.value)
+            : [];
+        if (optionValues.length !== parts.length) return false;
+        if (
+          optionValues.every(
+            (value, index) => normalizeVariantKey(value) === normalizeVariantKey(parts[index])
+          )
+        ) {
+          return true;
+        }
+
+        const normalizedVariantValues = optionValues.map(normalizeVariantKey).sort();
+        return normalizedVariantValues.every((value, index) => value === normalizedParts[index]);
+      }) || null
+    );
+  }
+
   function normalizeCartItem(item) {
     if (!item || typeof item !== "object") return null;
 
@@ -308,12 +366,216 @@
     }
   }
 
+  function formatMoneyFromCents(cents, currency) {
+    return formatMoney((Number(cents || 0) / 100), currency || "USD");
+  }
+
+  let liveCatalogProductsPromise = null;
+
+  function fetchLiveCatalogProducts(productIds) {
+    const ids = Array.isArray(productIds)
+      ? Array.from(new Set(productIds.map(normalizeProductId).filter(Boolean)))
+      : [];
+    if (!ids.length) return Promise.resolve([]);
+
+    const cacheKey = ids.slice().sort().join(",");
+    if (liveCatalogProductsPromise && liveCatalogProductsPromise.cacheKey === cacheKey) {
+      return liveCatalogProductsPromise;
+    }
+
+    liveCatalogProductsPromise = fetch(
+      "/api/catalog/products?ids=" + encodeURIComponent(cacheKey)
+    )
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to load live catalog products");
+        return response.json();
+      })
+      .then((payload) => (Array.isArray(payload && payload.products) ? payload.products : []))
+      .catch(() => []);
+    liveCatalogProductsPromise.cacheKey = cacheKey;
+    return liveCatalogProductsPromise;
+  }
+
+  function liveProductMap(products) {
+    return new Map(
+      (Array.isArray(products) ? products : [])
+        .map((product) => [String((product && product.id) || "").trim(), product])
+        .filter((entry) => entry[0])
+    );
+  }
+
   function cartQuantity() {
     return cart.reduce((sum, item) => sum + item.quantity, 0);
   }
 
   function cartTotal() {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  function applyLiveCardProduct(card, product) {
+    if (!card || !product) return;
+
+    const directVariant = directCartVariantData(product);
+    const titleLink = $(".product-card-link", card);
+    const imageLink = $(".product-image", card);
+    const imageEl = imageLink ? $("img", imageLink) : null;
+    const priceLine = $(".product-price-line", card);
+    const addBtn = $("[data-add-to-cart]", card);
+    const href = product.has_pdp
+      ? baseHref() + "product/" + encodeURIComponent(product.id) + ".html"
+      : (product.url || (baseHref() + "product/" + encodeURIComponent(product.id) + ".html"));
+    const title = String(product.name || "").trim();
+    const currency = (directVariant && directVariant.currency) || product.currency || "USD";
+    const priceCents = directVariant
+      ? Math.round(Number((directVariant.price || 0) * 100))
+      : Math.round(Number(product.price_cents || 0));
+    const compareCents = directVariant
+      ? Math.round(Number((directVariant.compareAtPrice || 0) * 100))
+      : Math.round(Number(product.compare_at_price_cents || 0));
+    const cardImage = (directVariant && directVariant.image) || product.image || "";
+
+    if (titleLink) {
+      titleLink.textContent = title;
+      titleLink.setAttribute("href", href);
+    }
+    if (imageLink) imageLink.setAttribute("href", href);
+    if (imageEl && cardImage) {
+      imageEl.src = cardImage;
+      imageEl.alt = title;
+    }
+    if (priceLine) {
+      priceLine.innerHTML =
+        "<strong>" + esc(formatMoneyFromCents(priceCents, currency)) + "</strong>" +
+        (compareCents > priceCents
+          ? "<span>" + esc(formatMoneyFromCents(compareCents, currency)) + "</span>"
+          : "");
+    }
+    if (addBtn) {
+      addBtn.dataset.cartId = String(product.id || "");
+      addBtn.dataset.cartProductId = String(product.id || "");
+      addBtn.dataset.cartVariantId =
+        (directVariant && directVariant.variantId) || String(product.default_variant_id || "");
+      addBtn.dataset.cartBrand = String(product.brand || "");
+      addBtn.dataset.cartName = title;
+      addBtn.dataset.cartPrice = ((priceCents || 0) / 100).toFixed(2);
+      addBtn.dataset.cartPriceCents = String(priceCents || 0);
+      addBtn.dataset.cartCurrency = currency;
+      addBtn.dataset.cartImage = cardImage;
+      addBtn.dataset.cartSelectedOptions = JSON.stringify(
+        (directVariant && directVariant.selectedOptions) || {}
+      );
+      addBtn.dataset.cartVariant = (directVariant && directVariant.variant) || "";
+      addBtn.setAttribute("aria-label", "Add " + title + " to cart");
+    }
+  }
+
+  function refreshVisibleCatalogCards() {
+    const cards = $$(".product-card[data-product-id]");
+    const ids = cards
+      .map((card) => normalizeProductId(card.getAttribute("data-product-id")))
+      .filter(Boolean);
+    if (!ids.length) return;
+
+    fetchLiveCatalogProducts(ids).then((products) => {
+      const byId = liveProductMap(products);
+      cards.forEach((card) => {
+        const product = byId.get(normalizeProductId(card.getAttribute("data-product-id")));
+        if (product) applyLiveCardProduct(card, product);
+      });
+    });
+  }
+
+  function applyLivePdpProduct(product) {
+    if (!product) return;
+
+    const addBtn = document.querySelector("[data-pdp-add-button]");
+    const titleEl = document.querySelector("[data-pdp-title]");
+    const priceEl = document.querySelector("[data-pdp-price]");
+    const compareEl = document.querySelector("[data-pdp-compare]");
+    const discountEl = document.querySelector("[data-pdp-discount]");
+    const availabilityEl = document.querySelector(".pdp-availability");
+    const mainImg = document.getElementById("pdp-main-image");
+    const selects = Array.from(document.querySelectorAll("[data-pdp-variant]"));
+    if (!addBtn || !titleEl || !priceEl) return;
+
+    const baseName = String(product.name || addBtn.dataset.cartName || "").trim();
+    const baseBrand = String(product.brand || addBtn.dataset.cartBrand || "").trim();
+    const baseVariant = defaultVariantRecord(product);
+
+    function currentVariant() {
+      if (!selects.length) return defaultVariantRecord(product);
+      const values = selects.map((select) => String(select.value || "").trim());
+      if (values.some((value) => !value)) return null;
+      return findVariantBySelectedValues(product, values);
+    }
+
+    function render() {
+      const variant = currentVariant() || baseVariant;
+      const variantTitle = variant && variant.title ? variant.title : "";
+      const mergedName = variantTitle ? baseName + " - " + variantTitle : baseName;
+      const priceCents = variant
+        ? variantRecordPriceCents(variant, product)
+        : Math.round(Number(product.price_cents || 0));
+      const compareCents = variant
+        ? variantRecordCompareAtCents(variant, product)
+        : Math.round(Number(product.compare_at_price_cents || 0));
+      const imageUrl = variantImageUrl(variant) || String(product.image || "").trim();
+      const available = variant ? variant.available !== false : product.available !== false;
+
+      titleEl.textContent = mergedName;
+      document.title = baseBrand
+        ? mergedName + " — " + baseBrand + " | Athletonic"
+        : mergedName + " | Athletonic";
+      priceEl.textContent = formatMoneyFromCents(priceCents, product.currency || "USD");
+      if (compareEl) {
+        compareEl.hidden = !(compareCents > priceCents);
+        compareEl.textContent = compareCents > priceCents
+          ? formatMoneyFromCents(compareCents, product.currency || "USD")
+          : "";
+      }
+      if (discountEl) {
+        discountEl.hidden = !(compareCents > priceCents);
+        discountEl.textContent = compareCents > priceCents ? "Limited offer" : "";
+      }
+      if (availabilityEl) {
+        availabilityEl.textContent = available
+          ? "In stock · Sold by Athletonic"
+          : "Out of stock · Sold by Athletonic";
+      }
+      if (mainImg && imageUrl) {
+        mainImg.src = imageUrl;
+        mainImg.alt = mergedName;
+      }
+
+      addBtn.dataset.cartBrand = baseBrand;
+      addBtn.dataset.cartName = mergedName;
+      addBtn.dataset.cartPrice = ((priceCents || 0) / 100).toFixed(2);
+      addBtn.dataset.cartCurrency = String(product.currency || "USD");
+      addBtn.dataset.cartImage = imageUrl;
+      addBtn.dataset.cartVariantId = variant && variant.variant_id ? String(variant.variant_id) : "";
+      addBtn.dataset.cartSelectedOptions = JSON.stringify(normalizeVariantSelectedOptions(variant));
+      addBtn.dataset.cartSku = variant && variant.sku ? String(variant.sku) : "";
+      addBtn.dataset.cartVariant = variantTitle;
+    }
+
+    render();
+    selects.forEach((select) => {
+      select.addEventListener("change", () => {
+        window.requestAnimationFrame(render);
+      });
+    });
+  }
+
+  function refreshPdpFromLiveCatalog() {
+    const addBtn = document.querySelector("[data-pdp-add-button]");
+    if (!addBtn) return;
+
+    const productId = normalizeProductId(addBtn.dataset.cartProductId || addBtn.dataset.cartId);
+    if (!productId) return;
+
+    fetchLiveCatalogProducts([productId]).then((products) => {
+      if (products[0]) applyLivePdpProduct(products[0]);
+    });
   }
 
   function setExpanded(buttons, expanded) {
@@ -1492,6 +1754,7 @@
     );
     resultsEl.insertAdjacentHTML("beforeend", next.map(catalogCardHtml).join(""));
     _catalogShown += next.length;
+    window.requestAnimationFrame(refreshVisibleCatalogCards);
     var btn = ensureLoadMoreButton(resultsEl);
     var remaining = _catalogMatches.length - _catalogShown;
     if (remaining > 0) {
@@ -1918,6 +2181,8 @@
   function init() {
     document.querySelectorAll("[data-catalog-search]").forEach(initForm);
     applyUrlParams();
+    refreshVisibleCatalogCards();
+    refreshPdpFromLiveCatalog();
   }
 
   if (document.readyState === "loading") {

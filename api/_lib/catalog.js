@@ -268,6 +268,17 @@ async function loadOverrideMap(supabase, productIds) {
   return new Map((data || []).map((row) => [String(row.product_id), row]));
 }
 
+async function loadProductsWithOverrides(productIds, options = {}) {
+  const ids = Array.isArray(productIds)
+    ? [...new Set(productIds.map((productId) => String(productId || "").trim()).filter(Boolean))]
+    : [];
+  const overrideMap = await loadOverrideMap(options.supabase || null, ids);
+  return ids
+    .map((productId) => productsById.get(String(productId)))
+    .filter(Boolean)
+    .map((product) => applyProductOverride(product, overrideMap.get(String(product.id))));
+}
+
 function centsFromMoney(value) {
   return Math.round(Number(value || 0) * 100);
 }
@@ -502,15 +513,10 @@ async function validateCartWithOverrides(cart, options = {}) {
   const productIds = Array.isArray(cart)
     ? [...new Set(cart.map((item) => String(item?.productId || item?.id || "").split("::")[0]).filter(Boolean))]
     : [];
-  const overrideMap = await loadOverrideMap(options.supabase || null, productIds);
-  if (!overrideMap.size) {
+  const overlaidProducts = await loadProductsWithOverrides(productIds, options);
+  if (!overlaidProducts.length) {
     return validateCart(cart, options);
   }
-
-  const overlaidProducts = productIds
-    .map((productId) => productsById.get(String(productId)))
-    .filter(Boolean)
-    .map((product) => applyProductOverride(product, overrideMap.get(String(product.id))));
   const { products, variants } = buildIndexesFromProducts(overlaidProducts);
 
   return validateCartAgainstIndexes(cart, products, variants, options);
@@ -536,6 +542,7 @@ function getShippingCents(subtotalCents) {
 module.exports = {
   centsFromMoney,
   getShippingCents,
+  loadProductsWithOverrides,
   normalizeAttribution,
   normalizeEmail,
   validateCart,
