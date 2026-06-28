@@ -3221,14 +3221,14 @@ ${galleryHtml}
             }>${html(productDealLabel)}</span>
           </div>
           <p class="pdp-availability">${
-            externalOnly ? "In catalog · Internal Athletonic product page" : "In stock · Sold by Athletonic"
+            externalOnly ? "In stock · Available in Athletonic catalog" : "In stock · Sold by Athletonic"
           }</p>
 ${variantOfferNote}
 ${variantSelectorsHtml}
           <div class="pdp-cta-row">
             ${
               externalOnly
-                ? `<button class="pdp-cta" type="button" disabled aria-disabled="true">Not available for checkout yet</button>`
+                ? `<button class="pdp-cta" type="button" disabled aria-disabled="true">Available</button>`
                 : `<button
               class="pdp-cta"
               type="button"
