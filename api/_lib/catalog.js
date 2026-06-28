@@ -1,4 +1,8 @@
 const catalog = require("../../data/athletonic-catalog.json");
+const {
+  applyVariantPricingToProduct,
+  loadVariantPricingOverrideMap,
+} = require("./variant-pricing");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_CART_ITEMS = 40;
@@ -405,6 +409,15 @@ async function loadOverrideMap(supabase, productIds) {
   return new Map((data || []).map((row) => [String(row.product_id), row]));
 }
 
+async function loadOptionalOverrideMap(loader, label) {
+  try {
+    return await loader();
+  } catch (error) {
+    console.warn(`Skipping optional ${label} overrides.`, error);
+    return new Map();
+  }
+}
+
 async function loadProductsWithOverrides(productIds, options = {}) {
   const ids = Array.isArray(productIds)
     ? [
@@ -415,11 +428,19 @@ async function loadProductsWithOverrides(productIds, options = {}) {
         ),
       ]
     : [];
-  const overrideMap = await loadOverrideMap(options.supabase || null, ids);
+  const supabase = options.supabase || null;
+  const [overrideMap, variantPricingOverrideMap] = await Promise.all([
+    loadOptionalOverrideMap(() => loadOverrideMap(supabase, ids), "product"),
+    loadOptionalOverrideMap(
+      () => loadVariantPricingOverrideMap(supabase, ids),
+      "variant pricing"
+    ),
+  ]);
   return ids
     .map((productId) => productsById.get(String(productId)))
     .filter(Boolean)
-    .map((product) => applyProductOverride(product, overrideMap.get(String(product.id))));
+    .map((product) => applyProductOverride(product, overrideMap.get(String(product.id))))
+    .map((product) => applyVariantPricingToProduct(product, variantPricingOverrideMap));
 }
 
 function centsFromMoney(value) {
