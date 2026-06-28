@@ -1692,6 +1692,7 @@ function variantValueTokenGroup(value) {
   return {
     compact: words.join(""),
     words: words.filter((word) => word.length >= 3),
+    stems: words.filter((word) => word.length >= 5).map((word) => word.slice(0, 5)),
   };
 }
 
@@ -1711,6 +1712,7 @@ function pickGalleryImageForOptionValues(galleryImages = [], values = []) {
         continue;
       }
       if (group.words.some((word) => blob.includes(word))) score += 1;
+      else if (group.stems.some((stem) => blob.includes(stem))) score += 1;
     }
     if (score > bestScore) {
       bestScore = score;

@@ -93,6 +93,7 @@ function variantValueGroup(value) {
   return {
     compact: words.join(""),
     words: words.filter((word) => word.length >= 3),
+    stems: words.filter((word) => word.length >= 5).map((word) => word.slice(0, 5)),
   };
 }
 
@@ -113,6 +114,8 @@ function pickVariantImage(galleryImages, values) {
         continue;
       }
       if (group.words.some((word) => blob.includes(word))) {
+        score += 1;
+      } else if (group.stems.some((stem) => blob.includes(stem))) {
         score += 1;
       }
     }
@@ -249,6 +252,26 @@ for (const product of sampledProducts) {
     );
   });
 }
+
+test("PDP 183 resolves the Boogieman Punch gallery image from partial flavor tokens", () => {
+  const html = readProductHtml("183");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const galleryImages = parseJsonAssignment(html, "galleryImages");
+  const boogiemanVariant = pageVariants.find(
+    (variant) => String(variant.variant_id) === "41418769236064"
+  );
+
+  assert.ok(boogiemanVariant, "expected Boogieman Punch variant on PDP 183");
+  assert.equal(
+    boogiemanVariant.image_url,
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-creatine-boogie-citrus-front.jpg"
+  );
+  assert.equal(
+    pickVariantImage(galleryImages, ["Boogieman Punch"]),
+    boogiemanVariant.image_url,
+    "Boogieman Punch should resolve the matching front image even when the filename uses 'boogie'"
+  );
+});
 
 for (const productId of VARIANT_REGRESSION_PRODUCT_IDS) {
   test(`PDP ${productId} keeps variant titles, options, and images aligned with the catalog`, () => {
