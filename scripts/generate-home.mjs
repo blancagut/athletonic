@@ -1868,7 +1868,8 @@ function externalCatalogProductRecord(record) {
     purchasable: true,
     ready_for_sale: true,
     has_variants: false,
-    has_pdp: false,
+    has_pdp: true,
+    external_only: true,
     default_variant_id: null,
     section_id: record.section_id,
     section_title: sectionTitleForCatalogId(record.section_id),
@@ -2366,6 +2367,9 @@ const {
   variantsById: catalogVariantsById,
 } = fetchPdpData(catalogSeedIds);
 const officialCatalogSearchRecords = loadOfficialCatalogSearchRecords();
+const officialCatalogRecordById = new Map(
+  officialCatalogSearchRecords.map((record) => [String(record.id), record])
+);
 writeFileSync(
   new URL("athletonic-catalog.json", commerceCatalogDir),
   JSON.stringify(
@@ -2515,6 +2519,14 @@ function loadOfficialCatalogSearchRecords() {
         name,
         brand: brandLabel,
         brand_slug: source.brandSlug,
+        sku: product?.sku || null,
+        category_text: product?.category || null,
+        short_description: product?.short_description || null,
+        full_description: product?.full_description || null,
+        available_sizes: Array.isArray(product?.available_sizes) ? product.available_sizes : [],
+        available_colors: Array.isArray(product?.available_colors) ? product.available_colors : [],
+        available_variants: Array.isArray(product?.available_variants) ? product.available_variants : [],
+        images: Array.isArray(product?.images) ? product.images.filter(Boolean) : [],
         section_id: category,
         url,
         external_url: url,
@@ -2526,12 +2538,41 @@ function loadOfficialCatalogSearchRecords() {
           .filter(Boolean)
           .join(" ")
           .toLowerCase(),
-        has_pdp: false,
+        has_pdp: true,
+        external_only: true,
         requires_variant_selection: true,
       });
     }
   }
   return records;
+}
+
+function officialCatalogOptionSpecs(record) {
+  const specs = [];
+  const sizes = Array.isArray(record?.available_sizes)
+    ? record.available_sizes.filter((value) => String(value || "").trim())
+    : [];
+  const colors = Array.isArray(record?.available_colors)
+    ? record.available_colors.filter((value) => String(value || "").trim())
+    : [];
+  const variants = Array.isArray(record?.available_variants)
+    ? record.available_variants.filter((value) => String(value || "").trim())
+    : [];
+  if (sizes.length > 1) specs.push({ name: "Size", values: sizes });
+  if (colors.length > 1) specs.push({ name: "Color", values: colors });
+  if (!specs.length && variants.length > 1) specs.push({ name: "Option", values: variants });
+  return specs;
+}
+
+function officialCatalogPdpRow(record) {
+  const optionSpecs = officialCatalogOptionSpecs(record);
+  return {
+    handle: record?.sku || record?.id || "",
+    currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+    description_html: record?.full_description || record?.short_description || "",
+    options: JSON.stringify(optionSpecs),
+    available: 1,
+  };
 }
 
 function categoryForRow(row) {
@@ -2768,6 +2809,9 @@ function indexRecordToProduct(record) {
     url: record.url || null,
     external_url: record.external_url || null,
     hasPdp: record.has_pdp !== false,
+    externalOnly: record.external_only === true,
+    sku: record.sku || null,
+    description_html: record.full_description || record.short_description || "",
     deal: record.deal
       ? {
           discount_percent: record.deal.discount_percent,
@@ -3003,6 +3047,7 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
   const pathPrefix = "../";
   const brand = brandNames[curated.brand] ?? curated.brand;
   const name = curated.displayName ?? curated.name;
+  const externalOnly = curated.externalOnly === true;
   const price = Number(curated.price ?? fullRow?.price ?? 0);
   const compareAt = Number(curated.deal?.original_price ?? fullRow?.compare_at_price ?? 0);
   const currency = fullRow?.currency || curated.currency || "USD";
@@ -3056,7 +3101,7 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
   const defaultVariant = variantPricing.find((variant) => variant.available) || variantPricing[0] || null;
   const defaultSelectedOptionsJson = JSON.stringify(defaultVariant?.selected_options || {}).replace(/</g, "\\u003c");
 
-  const description = sanitizeDescriptionHtml(fullRow?.description_html);
+  const description = sanitizeDescriptionHtml(fullRow?.description_html || curated.description_html || "");
 
   const galleryHtml = `
         <div class="pdp-gallery">
@@ -3175,11 +3220,16 @@ ${galleryHtml}
               onSale ? "" : "hidden"
             }>${html(productDealLabel)}</span>
           </div>
-          <p class="pdp-availability">In stock · Sold by Athletonic</p>
+          <p class="pdp-availability">${
+            externalOnly ? "In catalog · Internal Athletonic product page" : "In stock · Sold by Athletonic"
+          }</p>
 ${variantOfferNote}
 ${variantSelectorsHtml}
           <div class="pdp-cta-row">
-            <button
+            ${
+              externalOnly
+                ? `<button class="pdp-cta" type="button" disabled aria-disabled="true">Not available for checkout yet</button>`
+                : `<button
               class="pdp-cta"
               type="button"
               data-add-to-cart
@@ -3196,6 +3246,8 @@ ${variantSelectorsHtml}
               data-cart-variant=""
               ${variantOptions.length ? "disabled" : ""}
             >${variantOptions.length ? "Select options" : "Add to cart"}</button>
+            `
+            }
           </div>
           <p class="pdp-cta-note" data-pdp-cta-note></p>
 
@@ -3215,8 +3267,8 @@ ${variantSelectorsHtml}
                 curated.sectionTitle || collectionLabel(curated.store_collection || "")
               )}</dd></div>
               ${
-                fullRow?.handle
-                  ? `<div><dt>Reference</dt><dd>${html(fullRow.handle)}</dd></div>`
+                (fullRow?.handle || curated?.sku)
+                  ? `<div><dt>Reference</dt><dd>${html(fullRow?.handle || curated?.sku)}</dd></div>`
                   : ""
               }
               ${fixedOptionSpecs
@@ -7077,10 +7129,21 @@ for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
 
   for (const record of batch) {
     const numericId = Number(record.id);
-    const fullRow = batchRows.get(numericId);
-    const imageList = batchImages.get(numericId) || [];
-    const variantRows = batchVariants.get(numericId) || [];
     const product = indexRecordToProduct(record);
+    const officialRecord = officialCatalogRecordById.get(String(record.id)) || null;
+    const fullRow = officialRecord
+      ? officialCatalogPdpRow(officialRecord)
+      : batchRows.get(numericId);
+    const imageList = officialRecord
+      ? (officialRecord.images || []).map((url, index) => ({
+          url,
+          position: index + 1,
+          width: 640,
+          height: 640,
+          alt: officialRecord.name || product.name,
+        }))
+      : (batchImages.get(numericId) || []);
+    const variantRows = officialRecord ? [] : (batchVariants.get(numericId) || []);
     const peers = (indexRecordsBySection.get(record.section_id) || [])
       .filter((peer) => peer.id !== record.id)
       .slice(0, 4)
