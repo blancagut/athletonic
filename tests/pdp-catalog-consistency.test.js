@@ -315,6 +315,42 @@ test("PDP 199 keeps its single flavor selector aligned with flavor-only variants
   }
 });
 
+test("MuscleTech bundle PDPs keep their single variant labeled and imaged", () => {
+  const cases = [
+    [
+      "184",
+      "Creatine Bundle",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/bundle-creatine-bundle-family.jpg",
+    ],
+    [
+      "185",
+      "The OG",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/bundle-og.jpg",
+    ],
+    [
+      "191",
+      "Boogieman Bundle",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/bundle-boogieman.jpg",
+    ],
+    [
+      "192",
+      "Gains Bundle",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/bundle-gains-bundle.jpg",
+    ],
+  ];
+
+  for (const [productId, expectedTitle, expectedImage] of cases) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+
+    assert.equal(pageVariants.length, 1, `expected one variant on PDP ${productId}`);
+    assert.equal(pageVariants[0].title, expectedTitle);
+    assert.equal(pageVariants[0].key, expectedTitle);
+    assert.equal(pageVariants[0].image_url, expectedImage);
+    assert.ok(!html.includes('data-pdp-variant data-variant-name='), `expected no selectors on PDP ${productId}`);
+  }
+});
+
 test("PDP 200 resolves Nitro Tech Whey Gold flavor-size image mappings", () => {
   const html = readProductHtml("200");
   const pageVariants = parseJsonAssignment(html, "variantPricing");
@@ -345,6 +381,23 @@ test("PDP 200 resolves Nitro Tech Whey Gold flavor-size image mappings", () => {
     assert.ok(variant, `expected ${key} variant on PDP 200`);
     assert.equal(variant.image_url, expectedImage);
     assert.ok(gallerySources.has(expectedImage), `${key} should ship its image in the gallery`);
+  }
+});
+
+test("MuscleTech creatine PDPs keep unavailable flavors blocked in variantPricing", () => {
+  const cases = [
+    ["187", "Fruit Punch Extreme"],
+    ["195", "Grape Freeze"],
+    ["195", "Red Berry"],
+  ];
+
+  for (const [productId, variantKey] of cases) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const variant = pageVariants.find((entry) => entry.key === variantKey);
+
+    assert.ok(variant, `expected ${variantKey} on PDP ${productId}`);
+    assert.equal(variant.available, false, `${variantKey} should stay blocked on PDP ${productId}`);
   }
 });
 
