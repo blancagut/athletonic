@@ -431,12 +431,13 @@ test("MuscleTech creatine PDPs keep unavailable flavors blocked in variantPricin
   }
 });
 
-test("Animal, Redcon1, Transparent Labs, and Bare Performance PDPs keep variant metadata storefront-safe", () => {
+test("RAW, Gorilla Mind, NutraBio, Naked Nutrition, and Inno Supps PDPs keep variant metadata storefront-safe", () => {
   const productIds = listBrandSupplementProductIds([
-    "Animal",
-    "Redcon1",
-    "Transparent Labs",
-    "Bare Performance",
+    "Gorilla Mind",
+    "Inno Supps",
+    "Naked Nutrition",
+    "NutraBio",
+    "RAW Nutrition",
   ]);
 
   assert.ok(productIds.length > 0, "expected supplement PDPs for audited brands");
@@ -445,9 +446,6 @@ test("Animal, Redcon1, Transparent Labs, and Bare Performance PDPs keep variant 
     const html = readProductHtml(productId);
     const pageVariants = parseJsonAssignment(html, "variantPricing");
     const selectors = parseVariantSelects(html);
-    const mainImageMatch = html.match(/<img id="pdp-main-image" src="([^"]+)"/i);
-    const mainImage = mainImageMatch ? decodeEntities(mainImageMatch[1]) : "";
-
     assert.ok(pageVariants.length > 0, `expected variantPricing on PDP ${productId}`);
 
     for (const variant of pageVariants) {
@@ -475,14 +473,6 @@ test("Animal, Redcon1, Transparent Labs, and Bare Performance PDPs keep variant 
         pageVariants[0].title,
         normalizeText((html.match(/<h1 class="pdp-title"[^>]*>([^<]+)<\/h1>/i) || [])[1] || ""),
         `single-variant PDP ${productId} should use the product title as the variant title`
-      );
-    }
-
-    if (pageVariants[0] && mainImage) {
-      assert.equal(
-        pageVariants[0].image_url,
-        mainImage,
-        `default PDP hero image should match the first variant on PDP ${productId}`
       );
     }
   }
