@@ -6,6 +6,7 @@ const { existsSync, readFileSync } = require("node:fs");
 const path = require("node:path");
 
 const catalogData = require("../data/athletonic-catalog.json");
+const searchIndexData = require("../data/search-index.json");
 
 const PRODUCT_DIR = path.join(__dirname, "..", "product");
 const BANNED_COPY_RE = /\bAmazon US\b|\bverified Amazon\b/i;
@@ -164,11 +165,47 @@ function pickRepresentativeProducts(products) {
 }
 
 const sampledProducts = pickRepresentativeProducts(catalogData.products);
+const searchIndexProducts = Array.isArray(searchIndexData.products) ? searchIndexData.products : [];
 
 assert.ok(
   sampledProducts.length > 0,
   "expected at least one available catalog product with a generated PDP html file"
 );
+
+test("search index keeps variant purchase metadata for variant-aware products", () => {
+  const variantAwareProducts = searchIndexProducts.filter((product) => product.has_variants === true);
+  assert.ok(variantAwareProducts.length > 0, "expected variant-aware products in the search index");
+
+  for (const product of variantAwareProducts) {
+    assert.ok(
+      String(product.default_variant_id || "").trim(),
+      `search index product ${product.id} should include default_variant_id when has_variants is true`
+    );
+    assert.ok(
+      Number(product.variant_count) > 0,
+      `search index product ${product.id} should include a positive variant_count when has_variants is true`
+    );
+  }
+
+  const requiresSelectionProducts = searchIndexProducts.filter(
+    (product) => product.requires_variant_selection === true
+  );
+  assert.ok(
+    requiresSelectionProducts.length > 0,
+    "expected products that require variant selection in the search index"
+  );
+
+  for (const product of requiresSelectionProducts) {
+    assert.ok(
+      String(product.default_variant_id || "").trim(),
+      `search index product ${product.id} should include default_variant_id when variant selection is required`
+    );
+    assert.ok(
+      Number(product.variant_count) > 0,
+      `search index product ${product.id} should include variant_count when variant selection is required`
+    );
+  }
+});
 
 for (const product of sampledProducts) {
   test(`PDP ${product.id} stays consistent with catalog storefront data`, () => {
@@ -216,7 +253,9 @@ for (const product of sampledProducts) {
 for (const productId of VARIANT_REGRESSION_PRODUCT_IDS) {
   test(`PDP ${productId} keeps variant titles, options, and images aligned with the catalog`, () => {
     const product = catalogData.products.find((entry) => String(entry.id) === productId);
+    const searchRecord = searchIndexProducts.find((entry) => String(entry.id) === productId);
     assert.ok(product, `expected catalog product ${productId}`);
+    assert.ok(searchRecord, `expected search index product ${productId}`);
     assert.equal(
       product.requires_variant_selection,
       true,
@@ -292,6 +331,26 @@ for (const productId of VARIANT_REGRESSION_PRODUCT_IDS) {
     const defaultVariantId = String(product.default_variant_id || "");
     const defaultVariant = catalogVariantsById.get(defaultVariantId);
     assert.ok(defaultVariant, `product ${productId} should have a catalog default variant`);
+    assert.equal(
+      searchRecord.has_variants,
+      true,
+      `product ${productId} search index record should stay marked as variant-aware`
+    );
+    assert.equal(
+      searchRecord.requires_variant_selection,
+      true,
+      `product ${productId} search index record should require variant selection`
+    );
+    assert.equal(
+      String(searchRecord.default_variant_id || ""),
+      defaultVariantId,
+      `product ${productId} search index default variant should match the catalog`
+    );
+    assert.equal(
+      Number(searchRecord.variant_count),
+      catalogVariants.length,
+      `product ${productId} search index variant_count should match the catalog`
+    );
     assert.equal(
       addButtonDataset["data-cart-variant-id"],
       defaultVariantId,

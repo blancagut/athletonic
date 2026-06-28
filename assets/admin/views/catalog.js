@@ -23,6 +23,9 @@ function changedFields(product) {
   if ((product.image || "") !== (product._source_image || "")) fields.push("image");
   if ((product.url || "") !== (product._source_url || "")) fields.push("URL");
   if (Boolean(product._hidden) !== Boolean(product._source_hidden)) fields.push("visibility");
+  if (product._variant_override_count > 0) {
+    fields.push(`variants (${product._variant_override_count})`);
+  }
   return fields;
 }
 
@@ -53,6 +56,106 @@ function renderVariantPreview(product) {
   `;
 }
 
+function renderVariantStageEditor(product, canEdit) {
+  if (!Array.isArray(product.variants) || product.variants.length === 0) return "";
+  return `
+    <div class="admin-callout">
+      <strong>Variant override staging</strong>
+      <div class="admin-catalog-variant-stage-note">
+        Review source variant pricing, availability, and imagery here. Any staged variant changes stay inside <span class="admin-mono">product_overrides.patch.variant_overrides</span> until downstream consumers adopt them.
+      </div>
+      <div class="admin-catalog-variant-stage-list">
+        ${product.variants.map((variant) => {
+          const overrideFields = Array.isArray(variant._override_fields) ? variant._override_fields : [];
+          const stagePrice = overrideFields.includes("price_cents") ? String(variant.price_cents ?? "") : "";
+          const stageAvailable = overrideFields.includes("available") ? String(variant.available) : "";
+          const stageImage = overrideFields.includes("image_url") ? (variant.image_url || "") : "";
+          const previewImage = variant.image_url || variant._source_image_url || "";
+          return `
+            <div class="admin-catalog-variant-stage-item" data-variant-id="${escapeHtml(String(variant.variant_id || ""))}">
+              <div class="admin-catalog-variant-stage-head">
+                <div>
+                  <div>${escapeHtml(variant.title || variant.variant_id || "Untitled variant")}</div>
+                  <div class="admin-catalog-variant-meta">
+                    <span class="admin-mono">${escapeHtml(String(variant.variant_id || "—"))}</span>
+                    ${variant.available === false ? '<span class="admin-badge s-cancelled">current unavailable</span>' : '<span class="admin-badge s-paid">current available</span>'}
+                    ${overrideFields.length ? `<span class="admin-badge s-processing">staged ${escapeHtml(overrideFields.join(", "))}</span>` : ""}
+                    ${String(variant.variant_id) === String(product.default_variant_id) ? '<span class="admin-badge s-processing">default</span>' : ""}
+                  </div>
+                </div>
+                ${previewImage ? `<img class="admin-catalog-variant-stage-image" src="${escapeHtml(previewImage)}" alt="" loading="lazy" onerror="this.hidden=true" />` : ""}
+              </div>
+              <div class="admin-catalog-variant-stage-grid">
+                <div class="admin-catalog-variant-stage-source">
+                  <div><strong>Source</strong></div>
+                  <div>Price: ${formatMoney(variant._source_price_cents, variant.currency || product.currency)}</div>
+                  <div>Availability: ${variant._source_available === false ? "Unavailable" : "Available"}</div>
+                  <div class="admin-catalog-variant-stage-url">${variant._source_image_url ? escapeHtml(variant._source_image_url) : "No image URL"}</div>
+                </div>
+                <div class="admin-catalog-variant-stage-fields">
+                  <div class="admin-grid-2">
+                    <div class="admin-field">
+                      <label>Stage price (cents)</label>
+                      <input
+                        data-field="price_cents"
+                        type="number"
+                        min="0"
+                        max="1000000"
+                        step="1"
+                        value="${escapeHtml(stagePrice)}"
+                        placeholder="${escapeHtml(String(variant._source_price_cents ?? ""))}"
+                        ${canEdit ? "" : "disabled"}
+                      />
+                    </div>
+                    <div class="admin-field">
+                      <label>Stage availability</label>
+                      <select data-field="available" ${canEdit ? "" : "disabled"}>
+                        <option value="">Use source (${variant._source_available === false ? "Unavailable" : "Available"})</option>
+                        <option value="true"${stageAvailable === "true" ? " selected" : ""}>Available</option>
+                        <option value="false"${stageAvailable === "false" ? " selected" : ""}>Unavailable</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="admin-field">
+                    <label>Stage image URL</label>
+                    <input
+                      data-field="image_url"
+                      value="${escapeHtml(stageImage)}"
+                      placeholder="${escapeHtml(variant._source_image_url || "")}"
+                      ${canEdit ? "" : "disabled"}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function collectVariantOverrides(form) {
+  const overrides = {};
+  form.querySelectorAll("[data-variant-id]").forEach((row) => {
+    const variantId = row.getAttribute("data-variant-id");
+    if (!variantId) return;
+    const staged = {};
+    const priceValue = row.querySelector('[data-field="price_cents"]')?.value.trim() || "";
+    const availableValue = row.querySelector('[data-field="available"]')?.value || "";
+    const imageValue = row.querySelector('[data-field="image_url"]')?.value.trim() || "";
+
+    if (priceValue !== "") staged.price_cents = Number.parseInt(priceValue, 10);
+    if (availableValue !== "") staged.available = availableValue === "true";
+    if (imageValue !== "") staged.image_url = imageValue;
+
+    if (Object.keys(staged).length > 0) {
+      overrides[variantId] = staged;
+    }
+  });
+  return overrides;
+}
+
 async function openProduct(app, product, reload) {
   const canEdit = app.user && app.user.role === "super_admin";
   const changes = changedFields(product);
@@ -75,6 +178,7 @@ async function openProduct(app, product, reload) {
     </div>
     ${changes.length ? `<div class="admin-callout">Override differs from source for: <strong>${escapeHtml(changes.join(", "))}</strong></div>` : ""}
     ${renderVariantPreview(product)}
+    ${renderVariantStageEditor(product, canEdit)}
     <form id="catalog-edit">
       <div class="admin-field">
         <label>Name</label>
@@ -128,6 +232,7 @@ async function openProduct(app, product, reload) {
       image: fd.get("image"),
       url: fd.get("url"),
       hidden: fd.get("hidden") === "on",
+      variant_overrides: collectVariantOverrides(form),
     };
     try {
       await app.authFetch(`/api/admin/catalog/${encodeURIComponent(product.id)}`, {
@@ -214,7 +319,8 @@ export default {
           render: (r) =>
             (r.available === false ? '<span class="admin-badge s-cancelled">unavailable</span>' : '<span class="admin-badge s-paid">available</span>') +
             (r._hidden ? ' <span class="admin-badge s-rejected">hidden</span>' : "") +
-            (r._override ? ' <span class="admin-badge s-processing">edited</span>' : ""),
+            (r._override ? ' <span class="admin-badge s-processing">edited</span>' : "") +
+            (r._variant_override_count ? ` <span class="admin-badge s-processing">${escapeHtml(String(r._variant_override_count))} variant staged</span>` : ""),
         },
       ],
       onRowClick: (row) => openProduct(app, row, () => controls.reload()),
