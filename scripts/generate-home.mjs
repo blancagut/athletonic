@@ -114,6 +114,7 @@ const displayOnlyFragments = [
 ];
 
 const combatGloveBrands = new Set([
+  "boon",
   "century_martial_arts",
   "everlast",
   "fairtex",
@@ -123,6 +124,9 @@ const combatGloveBrands = new Set([
   "rdx_sports",
   "rival_boxing",
   "sanabul",
+  "top king",
+  "topking",
+  "top_king",
   "twins_special",
   "venum",
 ]);
@@ -919,11 +923,15 @@ function productCard(product, pathPrefix = "./") {
   const displayPrice = Number(product.price || 0);
   const displayCompare = Number(deal?.original_price || 0);
   const offerNote = deal || variantOffer ? "Limited offer" : "";
+  const externalHref = String(product.external_url ?? product.url ?? "").trim();
+  const isExternalOnly = Boolean(externalHref) && product.hasPdp === false;
   const searchText = [brand, name, label, product.sectionTitle, product.sectionEyebrow]
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
-  const pdpHref = `${pathPrefix}product/${html(product.id)}.html`;
+  const pdpHref = isExternalOnly
+    ? externalHref
+    : `${pathPrefix}product/${html(product.id)}.html`;
   return `
           <article class="product-card" data-product-id="${html(product.id)}" data-category="${html(product.sectionId)}" data-search="${html(searchText)}">
             <a class="product-image" href="${pdpHref}">
@@ -949,6 +957,8 @@ function productCard(product, pathPrefix = "./") {
               ${
                 requiresVariantSelection
                   ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View eligible options for ${html(name)}">View options</a>`
+                  : isExternalOnly
+                  ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View ${html(name)}">View product</a>`
                   : `<button
                 class="add-cart-button"
                 type="button"
@@ -1692,6 +1702,7 @@ function variantValueTokenGroup(value) {
   return {
     compact: words.join(""),
     words: words.filter((word) => word.length >= 3),
+    stems: words.filter((word) => word.length >= 5).map((word) => word.slice(0, 5)),
   };
 }
 
@@ -1711,6 +1722,7 @@ function pickGalleryImageForOptionValues(galleryImages = [], values = []) {
         continue;
       }
       if (group.words.some((word) => blob.includes(word))) score += 1;
+      else if (group.stems.some((stem) => blob.includes(stem))) score += 1;
     }
     if (score > bestScore) {
       bestScore = score;
@@ -1832,6 +1844,38 @@ function normalizedCatalogProductRecord(product, fullRow, imageList = [], varian
           reason: product.deal.reason,
         }
       : null,
+  };
+}
+
+function externalCatalogProductRecord(record) {
+  return {
+    id: String(record.id),
+    brand_slug: record.brand_slug,
+    brand: record.brand,
+    name: record.name,
+    sku: null,
+    url: record.url ?? null,
+    image: record.image ?? null,
+    image_width: record.image_width || 640,
+    image_height: record.image_height || record.image_width || 640,
+    price_cents: record.price_cents,
+    price_min_cents: record.price_cents,
+    price_max_cents: record.price_cents,
+    compare_at_price_cents: null,
+    currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+    available: true,
+    source_available: true,
+    purchasable: true,
+    ready_for_sale: true,
+    has_variants: false,
+    has_pdp: false,
+    default_variant_id: null,
+    section_id: record.section_id,
+    section_title: sectionTitleForCatalogId(record.section_id),
+    requires_variant_selection: true,
+    search: record.search,
+    variants: [],
+    deal: null,
   };
 }
 
@@ -2321,20 +2365,24 @@ const {
   imagesById: catalogImagesById,
   variantsById: catalogVariantsById,
 } = fetchPdpData(catalogSeedIds);
+const officialCatalogSearchRecords = loadOfficialCatalogSearchRecords();
 writeFileSync(
   new URL("athletonic-catalog.json", commerceCatalogDir),
   JSON.stringify(
     {
       generated_at: new Date().toISOString(),
       currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
-      products: allCuratedProductsWithPurchaseMeta.map((product) =>
-        normalizedCatalogProductRecord(
-          product,
-          catalogRowsById.get(product.id),
-          catalogImagesById.get(product.id) || [],
-          catalogVariantsById.get(product.id) || []
-        )
-      ),
+      products: [
+        ...allCuratedProductsWithPurchaseMeta.map((product) =>
+          normalizedCatalogProductRecord(
+            product,
+            catalogRowsById.get(product.id),
+            catalogImagesById.get(product.id) || [],
+            catalogVariantsById.get(product.id) || []
+          )
+        ),
+        ...officialCatalogSearchRecords.map((record) => externalCatalogProductRecord(record)),
+      ],
     },
     null,
     2
@@ -2406,6 +2454,84 @@ function normalizedIndexUrl(value) {
   } catch {
     return String(value ?? "").trim();
   }
+}
+
+function slugifyIndexToken(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function categoryForOfficialCatalogProduct(product) {
+  const text = [product?.product_name, product?.category, product?.brand]
+    .filter(Boolean)
+    .join(" ");
+  const lower = text.toLowerCase();
+  if (/\b(glove|shin|head ?guard|headgear|helmet|mitt|pad|protector|groin|belly)\b/.test(lower)) {
+    return "training-gear";
+  }
+  if (/\b(shorts|shirt|tee|t-shirt|hoodie|jacket|pants|tracksuit|robe|apparel)\b/.test(lower)) {
+    return "apparel";
+  }
+  if (/\b(hand wrap|wrap|ankle guard|mouth guard|mouthguard|keyring|bag|backpack|accessor)\b/.test(lower)) {
+    return "accessories";
+  }
+  return "training-gear";
+}
+
+function sectionTitleForCatalogId(sectionId) {
+  const section = sections.find((entry) => entry.id === sectionId);
+  return section?.label ?? section?.title ?? "Athletonic catalog";
+}
+
+function loadOfficialCatalogSearchRecords() {
+  const sources = [
+    { brandSlug: "boon", file: new URL("../data/boon-products.json", import.meta.url) },
+    { brandSlug: "topking", file: new URL("../data/topking-products.json", import.meta.url) },
+  ];
+  const records = [];
+  for (const source of sources) {
+    if (!existsSync(source.file)) continue;
+    let products = [];
+    try {
+      products = JSON.parse(readFileSync(source.file, "utf8"));
+    } catch {
+      continue;
+    }
+    for (const product of products) {
+      const name = cleanProductName(product?.product_name, source.brandSlug);
+      const image = Array.isArray(product?.images) ? product.images.find(Boolean) : null;
+      const url = String(product?.product_url ?? "").trim();
+      const price = Number(product?.price);
+      if (!name || !image || !url || !Number.isFinite(price) || price <= 0) continue;
+      const category = categoryForOfficialCatalogProduct(product);
+      const brandLabel = String(product?.brand ?? source.brandSlug).trim() || source.brandSlug;
+      const idSeed = product?.sku || product?.product_name || url;
+      const id = `official-${source.brandSlug}-${slugifyIndexToken(idSeed)}`;
+      records.push({
+        id,
+        name,
+        brand: brandLabel,
+        brand_slug: source.brandSlug,
+        section_id: category,
+        url,
+        external_url: url,
+        image,
+        image_width: 640,
+        image_height: 640,
+        price_cents: Math.round(price * 100),
+        search: [name, brandLabel, sectionTitleForCatalogId(category), category, product?.category]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase(),
+        has_pdp: false,
+        requires_variant_selection: true,
+      });
+    }
+  }
+  return records;
 }
 
 function categoryForRow(row) {
@@ -2570,12 +2696,21 @@ function buildSearchIndex() {
     seenProductUrls.add(normalizedUrl);
     records.push(record);
   }
+  for (const record of officialCatalogSearchRecords) {
+    if (records.length >= MAX_RECORDS) break;
+    const normalizedUrl = normalizedIndexUrl(record.url);
+    if (!normalizedUrl || seenProductUrls.has(normalizedUrl)) continue;
+    seenProductUrls.add(normalizedUrl);
+    records.push(record);
+  }
   return records;
 }
 
 const searchIndexRecords = buildSearchIndex();
 const searchIndexPurchaseMeta = purchaseMetaByProductId(
-  searchIndexRecords.map((record) => record.id)
+  searchIndexRecords
+    .map((record) => Number(record.id))
+    .filter((id) => Number.isInteger(id) && id > 0)
 );
 for (const record of searchIndexRecords) {
   const purchaseMeta = searchIndexPurchaseMeta.get(String(record.id));
@@ -2631,6 +2766,8 @@ function indexRecordToProduct(record) {
     sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
     store_collection: record.section_id,
     url: record.url || null,
+    external_url: record.external_url || null,
+    hasPdp: record.has_pdp !== false,
     deal: record.deal
       ? {
           discount_percent: record.deal.discount_percent,
@@ -6924,7 +7061,7 @@ for (const record of searchIndexRecords) {
 }
 
 const nonCuratedRecords = searchIndexRecords.filter(
-  (record) => !curatedIdSet.has(record.id)
+  (record) => record.has_pdp !== false && !curatedIdSet.has(record.id)
 );
 
 let extraPdpCount = 0;
