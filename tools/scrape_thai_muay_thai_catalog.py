@@ -268,6 +268,9 @@ MATERIAL_PATTERNS = [
     "foam",
 ]
 
+STANDARD_GLOVE_SIZES = ["8oz", "12oz", "14oz", "16oz"]
+STANDARD_PROTECTION_SIZES = ["S", "M", "L", "XL"]
+
 
 def detect_tokens(text: str, patterns: Sequence[str]) -> List[str]:
     upper = text.upper()
@@ -958,18 +961,260 @@ def finalize_products(product_map: Dict[str, ProductAccumulator]) -> List[Dict[s
     return products
 
 
+def product_text(product: Dict[str, Any]) -> str:
+    return " ".join(
+        [
+            str(product.get("product_name") or ""),
+            str(product.get("category") or ""),
+            str(product.get("sku") or ""),
+            str(product.get("full_description") or ""),
+        ]
+    ).lower()
+
+
+def is_wrap_product(product: Dict[str, Any]) -> bool:
+    text = product_text(product)
+    return "wrap" in text or "venda" in text
+
+
+def is_shinguard_product(product: Dict[str, Any]) -> bool:
+    text = product_text(product)
+    return "shin guard" in text or "shinguard" in text or "shin pad" in text
+
+
+def is_headgear_product(product: Dict[str, Any]) -> bool:
+    text = product_text(product)
+    return any(token in text for token in ["head guard", "headguard", "head gear", "headgear", "helmet", "casco"])
+
+
+def is_boxing_glove_product(product: Dict[str, Any]) -> bool:
+    text = product_text(product)
+    if "glove" not in text:
+        return False
+    excluded = [
+        "bag mitt",
+        "focus mitt",
+        "bag glove",
+        "bag gloves",
+        "mma glove",
+        "wrap",
+        "keyring",
+        "key chain",
+        "keychain",
+        "kids boxing gloves",
+        "kid's boxing gloves",
+    ]
+    if any(token in text for token in excluded):
+        return False
+    return True
+
+
+def normalize_match_sku(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    sku = normalize_space(value.upper())
+    if not sku:
+        return None
+    sku = re.sub(r"-(?:\d+\s*OZ|XXXS|XXS|XS|S|M|L|XL|XXL|XXXL)$", "", sku, flags=re.I)
+    return sku
+
+
+def normalize_match_title(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    text = value.lower()
+    replacements = {
+        "&": " and ",
+        "/": " ",
+        "|": " ",
+        "-": " ",
+        "'": "",
+        '"': "",
+        "top king": "topking",
+        "top kingboxing": "topking",
+        "top kingshin": "topking shin",
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    text = re.sub(r"\b(?:boxing|muay thai|training|gloves|glove|shorts|shin guards|shin guard|head guard|headgear|helmet|hand wraps|wraps|ankle guards|ankle guard|mma)\b", " ", text)
+    text = re.sub(r"\b(?:small|medium|large|x large|x-large|\d+\s*oz)\b", " ", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text or None
+
+
+def fetch_topking_usa_price_map() -> Dict[str, Any]:
+    products: List[Dict[str, Any]] = []
+    page = 1
+    while True:
+        data = fetch_json(f"https://topkingboxingusa.com/products.json?limit=250&page={page}")
+        batch = data.get("products", []) or []
+        if not batch:
+            break
+        products.extend(batch)
+        if len(batch) < 250:
+            break
+        page += 1
+
+    mapped_products: List[Dict[str, Any]] = []
+    exact_sku_map: Dict[str, Dict[str, Any]] = {}
+    root_sku_map: Dict[str, Dict[str, Any]] = {}
+    title_map: Dict[str, Dict[str, Any]] = {}
+    fallback_prices: Dict[str, List[float]] = defaultdict(list)
+
+    for raw in products:
+        variant_prices: List[float] = []
+        variant_skus: List[str] = []
+        for variant in raw.get("variants", []) or []:
+            try:
+                variant_prices.append(float(variant.get("price")))
+            except (TypeError, ValueError):
+                pass
+            sku = normalize_space(str(variant.get("sku") or "")).upper()
+            if sku:
+                variant_skus.append(sku)
+        if not variant_prices:
+            continue
+
+        item = {
+            "title": raw.get("title"),
+            "handle": raw.get("handle"),
+            "product_type": normalize_space(str(raw.get("product_type") or "")),
+            "price": min(variant_prices),
+            "skus": variant_skus,
+        }
+        mapped_products.append(item)
+
+        normalized_title = normalize_match_title(item["title"])
+        if normalized_title and normalized_title not in title_map:
+            title_map[normalized_title] = item
+
+        for sku in variant_skus:
+            exact_sku_map[sku] = item
+            root = normalize_match_sku(sku)
+            if root and root not in root_sku_map:
+                root_sku_map[root] = item
+
+        product_type = (item["product_type"] or "").lower()
+        if product_type:
+            fallback_prices[product_type].append(item["price"])
+
+    fallback_min = {key: min(values) for key, values in fallback_prices.items() if values}
+    return {
+        "products": mapped_products,
+        "exact_sku_map": exact_sku_map,
+        "root_sku_map": root_sku_map,
+        "title_map": title_map,
+        "fallback_min": fallback_min,
+    }
+
+
 def apply_boon_price_rules(products: List[Dict[str, Any]]) -> None:
     for product in products:
         if product.get("brand") != "Boon":
             continue
-        text = f"{product.get('product_name') or ''} {product.get('category') or ''}".lower()
-        if "lace" in text and "glove" in text:
+        if is_boxing_glove_product(product):
+            product["available_sizes"] = STANDARD_GLOVE_SIZES[:]
+            product["available_variants"] = merge_unique(product.get("available_variants") or [], STANDARD_GLOVE_SIZES)
+        if is_shinguard_product(product) or is_headgear_product(product):
+            product["available_sizes"] = STANDARD_PROTECTION_SIZES[:]
+            product["available_variants"] = merge_unique(product.get("available_variants") or [], STANDARD_PROTECTION_SIZES)
+        product["stock_status"] = "in stock"
+
+        text = product_text(product)
+        name_text = " ".join([str(product.get("product_name") or ""), str(product.get("sku") or "")]).lower()
+        if "lace" in name_text and "glove" in name_text:
             product["price"] = 139
             product["currency"] = "USD"
-        elif any(token in text for token in ["glove", "shinguard", "shin guard", "helmet", "headgear", "head gear"]):
+        elif "glove" in text or is_shinguard_product(product) or is_headgear_product(product):
             product["price"] = 149
             product["currency"] = "USD"
         elif product.get("price") is not None:
+            product["currency"] = "USD"
+
+
+def apply_topking_rules(products: List[Dict[str, Any]]) -> None:
+    usa_map = fetch_topking_usa_price_map()
+    exact_sku_map = usa_map["exact_sku_map"]
+    root_sku_map = usa_map["root_sku_map"]
+    title_map = usa_map["title_map"]
+    fallback_min = usa_map["fallback_min"]
+
+    for product in products:
+        if product.get("brand") != "Top King":
+            continue
+
+        if is_boxing_glove_product(product):
+            product["available_sizes"] = STANDARD_GLOVE_SIZES[:]
+            product["available_variants"] = merge_unique(product.get("available_variants") or [], STANDARD_GLOVE_SIZES)
+        if is_shinguard_product(product) or is_headgear_product(product):
+            product["available_sizes"] = STANDARD_PROTECTION_SIZES[:]
+            product["available_variants"] = merge_unique(product.get("available_variants") or [], STANDARD_PROTECTION_SIZES)
+        product["stock_status"] = "in stock"
+
+        sku = normalize_space(str(product.get("sku") or "")).upper() or None
+        sku_root = normalize_match_sku(sku)
+        title_key = normalize_match_title(product.get("product_name"))
+        matched = None
+        if sku and sku in exact_sku_map:
+            matched = exact_sku_map[sku]
+        elif sku_root and sku_root in root_sku_map:
+            matched = root_sku_map[sku_root]
+        elif title_key and title_key in title_map:
+            matched = title_map[title_key]
+
+        base_price: Optional[float] = None
+        if matched:
+            base_price = float(matched["price"])
+        else:
+            text = product_text(product)
+            if is_wrap_product(product):
+                base_price = fallback_min.get("hand wraps")
+            elif is_shinguard_product(product):
+                base_price = fallback_min.get("shin guards")
+            elif is_headgear_product(product):
+                base_price = fallback_min.get("shin guards")
+            elif "focus mitt" in text:
+                base_price = 119.95
+            elif "speed paddle" in text:
+                base_price = 109.95
+            elif "kicking pad" in text or "kicking shield" in text:
+                base_price = 179.95
+            elif "belly protector" in text or "body protector" in text or "thigh protection" in text or "thigh pad" in text:
+                base_price = 149.95
+            elif "groin protector" in text or "abdominal protector" in text:
+                base_price = 69.95
+            elif "mouth guard" in text or "elbow pad" in text:
+                base_price = 14.95
+            elif "mongkol" in text or "prajead" in text:
+                base_price = 19.95
+            elif "skipping rope" in text:
+                base_price = 18.95
+            elif "sauna suit" in text:
+                base_price = 45.95
+            elif "mma glove" in text:
+                base_price = fallback_min.get("mma gloves")
+            elif is_boxing_glove_product(product):
+                base_price = fallback_min.get("boxing gloves")
+            elif "short" in text:
+                base_price = fallback_min.get("muay thai shorts")
+            elif "jacket" in text or "hoodie" in text or "track suit" in text or "tracksuit" in text or "fighter robe" in text:
+                base_price = fallback_min.get("tracksuit") or 84.95
+            elif "t-shirt" in text or "t shirt" in text or "shirt" in text:
+                base_price = fallback_min.get("t-shirt") or fallback_min.get("sleeveless t-shirt")
+            elif "ankle guard" in text:
+                base_price = fallback_min.get("ankle guards")
+            elif "keyring" in text or "key chain" in text or "keychain" in text:
+                base_price = fallback_min.get("keyring")
+            elif "backpack" in text or "bag" in text:
+                base_price = fallback_min.get("bag")
+
+        if base_price is not None:
+            final_price = base_price if is_wrap_product(product) else base_price + 10.0
+            product["price"] = round(final_price, 2)
+            product["currency"] = "USD"
+        elif product.get("price") in (0, 0.0):
+            product["price"] = None
             product["currency"] = "USD"
 
 
@@ -1011,6 +1256,7 @@ def main() -> None:
 
     products = finalize_products(combined_map)
     apply_boon_price_rules(products)
+    apply_topking_rules(products)
     seen_keys = set()
     for product in products:
         key = (product["brand"], product["product_url"])
