@@ -268,7 +268,7 @@ MATERIAL_PATTERNS = [
     "foam",
 ]
 
-STANDARD_GLOVE_SIZES = ["8oz", "12oz", "14oz", "16oz"]
+STANDARD_GLOVE_SIZES = ["8oz", "10oz", "12oz", "14oz"]
 STANDARD_PROTECTION_SIZES = ["S", "M", "L", "XL"]
 
 
