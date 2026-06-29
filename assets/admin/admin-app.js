@@ -5,6 +5,7 @@ import orders from "./views/orders.js";
 import returns from "./views/returns.js";
 import intents from "./views/intents.js";
 import catalog from "./views/catalog.js";
+import variantPricing from "./views/variant-pricing.js";
 import users from "./views/users.js";
 import settings from "./views/settings.js";
 import audit from "./views/audit.js";
@@ -19,6 +20,8 @@ const VIEWS = {
   returns,
   intents,
   catalog,
+  "variant-pricing": variantPricing,
+  variantPricing,
   wholesaleApplications,
   privatePricing,
   users,
@@ -124,7 +127,7 @@ async function renderRoute() {
   const view = VIEWS[route];
 
   // Guard super-admin-only routes.
-  if (["users", "settings", "privatePricing", "wholesaleApplications"].includes(route) && app.user.role !== "super_admin") {
+  if (["users", "settings", "privatePricing", "wholesaleApplications", "variantPricing", "variant-pricing"].includes(route) && app.user.role !== "super_admin") {
     app.navigate(DEFAULT_ROUTE);
     return;
   }

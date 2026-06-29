@@ -71,37 +71,61 @@ test("GET /api/catalog/products returns merged live variant overrides", async ()
       [path.join(__dirname, "..", "api", "_lib", "supabase.js")]: {
         getSupabaseAdmin: () => ({
           from(table) {
-            assert.equal(table, "product_overrides");
-            return {
-              select(columns) {
-                assert.equal(columns, "product_id, patch, hidden");
-                return {
-                  in(column, values) {
-                    assert.equal(column, "product_id");
-                    assert.deepEqual(values, [String(VARIANT_PRODUCT.id)]);
-                    return Promise.resolve({
-                      data: [
-                        {
-                          product_id: String(VARIANT_PRODUCT.id),
-                          patch: {
-                            name: VARIANT_PRODUCT.name + " Live",
-                            variant_overrides: {
-                              [variantId]: {
-                                price_cents: 4321,
-                                available: false,
-                                image_url: "https://cdn.example.com/live-override.png",
+            if (table === "product_overrides") {
+              return {
+                select(columns) {
+                  assert.equal(columns, "product_id, patch, hidden");
+                  return {
+                    in(column, values) {
+                      assert.equal(column, "product_id");
+                      assert.deepEqual(values, [String(VARIANT_PRODUCT.id)]);
+                      return Promise.resolve({
+                        data: [
+                          {
+                            product_id: String(VARIANT_PRODUCT.id),
+                            patch: {
+                              name: VARIANT_PRODUCT.name + " Live",
+                              variant_overrides: {
+                                [variantId]: {
+                                  price_cents: 4321,
+                                  available: false,
+                                  image_url: "https://cdn.example.com/live-override.png",
+                                },
                               },
                             },
+                            hidden: false,
                           },
-                          hidden: false,
-                        },
-                      ],
-                      error: null,
-                    });
-                  },
-                };
-              },
-            };
+                        ],
+                        error: null,
+                      });
+                    },
+                  };
+                },
+              };
+            }
+
+            if (table === "product_variant_price_overrides") {
+              return {
+                select(columns) {
+                  assert.equal(
+                    columns,
+                    "product_id, variant_id, regular_price_cents, offer_price_cents, offer_enabled"
+                  );
+                  return {
+                    in(column, values) {
+                      assert.equal(column, "product_id");
+                      assert.deepEqual(values, [String(VARIANT_PRODUCT.id)]);
+                      return Promise.resolve({
+                        data: [],
+                        error: null,
+                      });
+                    },
+                  };
+                },
+              };
+            }
+
+            assert.fail(`unexpected table ${table}`);
           },
         }),
       },

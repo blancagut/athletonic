@@ -21,22 +21,46 @@ assert.ok(SOURCE_VARIANT, "expected a concrete source variant");
 function createSupabase(overrides) {
   return {
     from(table) {
-      assert.equal(table, "product_overrides");
-      return {
-        select(columns) {
-          assert.equal(columns, "product_id, patch, hidden");
-          return {
-            in(column, values) {
-              assert.equal(column, "product_id");
-              const allowed = new Set(values.map(String));
-              return Promise.resolve({
-                data: overrides.filter((row) => allowed.has(String(row.product_id))),
-                error: null,
-              });
-            },
-          };
-        },
-      };
+      if (table === "product_overrides") {
+        return {
+          select(columns) {
+            assert.equal(columns, "product_id, patch, hidden");
+            return {
+              in(column, values) {
+                assert.equal(column, "product_id");
+                const allowed = new Set(values.map(String));
+                return Promise.resolve({
+                  data: overrides.filter((row) => allowed.has(String(row.product_id))),
+                  error: null,
+                });
+              },
+            };
+          },
+        };
+      }
+
+      if (table === "product_variant_price_overrides") {
+        return {
+          select(columns) {
+            assert.equal(
+              columns,
+              "product_id, variant_id, regular_price_cents, offer_price_cents, offer_enabled"
+            );
+            return {
+              in(column, values) {
+                assert.equal(column, "product_id");
+                assert.ok(Array.isArray(values));
+                return Promise.resolve({
+                  data: [],
+                  error: null,
+                });
+              },
+            };
+          },
+        };
+      }
+
+      assert.fail(`unexpected table ${table}`);
     },
   };
 }

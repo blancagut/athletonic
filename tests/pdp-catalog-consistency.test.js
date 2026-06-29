@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { existsSync, readFileSync } = require("node:fs");
+const { existsSync, readFileSync, readdirSync } = require("node:fs");
 const path = require("node:path");
 
 const catalogData = require("../data/athletonic-catalog.json");
@@ -88,11 +88,62 @@ function parseVariantSelects(html) {
   return selects;
 }
 
+function parsePdpBrand(html) {
+  const match = html.match(/<p class="pdp-brand">([^<]+)<\/p>/i);
+  return match ? decodeEntities(match[1]).trim() : "";
+}
+
+function parsePdpCategory(html) {
+  const match = html.match(/<div><dt>Category<\/dt><dd>([^<]+)<\/dd><\/div>/i);
+  return match ? decodeEntities(match[1]).trim() : "";
+}
+
+function listBrandSupplementProductIds(brands) {
+  const excluded = new Set([
+    "Training apparel",
+    "Training footwear",
+    "Gym accessory",
+    "Training gear",
+    "Recovery device",
+  ]);
+
+  return catalogData.products
+    .map((product) => String(product.id))
+    .filter((productId) => hasProductHtml(productId))
+    .filter((productId) => {
+      const html = readProductHtml(productId);
+      const brand = parsePdpBrand(html);
+      const category = parsePdpCategory(html);
+      return brands.includes(brand) && !excluded.has(category);
+    });
+}
+
+function listHtmlBrandProductIds(brands) {
+  const excluded = new Set([
+    "Training apparel",
+    "Training footwear",
+    "Gym accessory",
+    "Training gear",
+    "Recovery device",
+  ]);
+
+  return readdirSync(PRODUCT_DIR)
+    .filter((file) => file.endsWith(".html"))
+    .map((file) => file.replace(/\.html$/, ""))
+    .filter((productId) => {
+      const html = readProductHtml(productId);
+      const brand = parsePdpBrand(html);
+      const category = parsePdpCategory(html);
+      return brands.includes(brand) && !excluded.has(category);
+    });
+}
+
 function variantValueGroup(value) {
   const words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
   return {
     compact: words.join(""),
     words: words.filter((word) => word.length >= 3),
+    stems: words.filter((word) => word.length >= 5).map((word) => word.slice(0, 5)),
   };
 }
 
@@ -113,6 +164,8 @@ function pickVariantImage(galleryImages, values) {
         continue;
       }
       if (group.words.some((word) => blob.includes(word))) {
+        score += 1;
+      } else if (group.stems.some((stem) => blob.includes(stem))) {
         score += 1;
       }
     }
@@ -249,6 +302,410 @@ for (const product of sampledProducts) {
     );
   });
 }
+
+test("PDP 183 resolves the Boogieman Punch gallery image from partial flavor tokens", () => {
+  const html = readProductHtml("183");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const galleryImages = parseJsonAssignment(html, "galleryImages");
+  const boogiemanVariant = pageVariants.find(
+    (variant) => String(variant.variant_id) === "41418769236064"
+  );
+
+  assert.ok(boogiemanVariant, "expected Boogieman Punch variant on PDP 183");
+  assert.equal(
+    boogiemanVariant.image_url,
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-creatine-boogie-citrus-front.jpg"
+  );
+  assert.equal(
+    pickVariantImage(galleryImages, ["Boogieman Punch"]),
+    boogiemanVariant.image_url,
+    "Boogieman Punch should resolve the matching front image even when the filename uses 'boogie'"
+  );
+});
+
+test("PDP 174 keeps the vanilla 4 lb variant mapped to the vanilla image", () => {
+  const html = readProductHtml("174");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const vanillaVariant = pageVariants.find(
+    (variant) => variant.key === "4 lb. / French Vanilla Bean"
+  );
+
+  assert.ok(vanillaVariant, "expected French Vanilla Bean 4 lb. variant on PDP 174");
+  assert.equal(
+    vanillaVariant.image_url,
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/NitroTech-Ripped-4lb-van.jpg"
+  );
+});
+
+test("PDP 196 keeps the Citrus Punch variant mapped to the citrus image", () => {
+  const html = readProductHtml("196");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const citrusVariant = pageVariants.find(
+    (variant) => variant.key === "Citrus Punch / 3 lb."
+  );
+
+  assert.ok(citrusVariant, "expected Citrus Punch / 3 lb. variant on PDP 196");
+  assert.equal(
+    citrusVariant.image_url,
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/celltech-citrus-3lb_aa616c64-0d61-4104-a07a-e8b6cc84ad27.jpg"
+  );
+});
+
+test("PDP 199 keeps its single flavor selector aligned with flavor-only variants", () => {
+  const html = readProductHtml("199");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const variantSelects = parseVariantSelects(html);
+
+  assert.equal(variantSelects.length, 1, "expected a single selector on PDP 199");
+  assert.equal(variantSelects[0].name, "Flavor");
+
+  for (const variant of pageVariants) {
+    assert.equal(variant.optionValues.length, 1, "expected flavor-only optionValues");
+    assert.deepEqual(Object.keys(variant.selected_options || {}), ["Flavor"]);
+  }
+});
+
+test("MuscleTech bundle PDPs keep their single variant labeled and imaged", () => {
+  const cases = [
+    [
+      "184",
+      "Creatine Bundle",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/bundle-creatine-bundle-family.jpg",
+    ],
+    [
+      "185",
+      "The OG",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/bundle-og.jpg",
+    ],
+    [
+      "191",
+      "Boogieman Bundle",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/bundle-boogieman.jpg",
+    ],
+    [
+      "192",
+      "Gains Bundle",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/bundle-gains-bundle.jpg",
+    ],
+  ];
+
+  for (const [productId, expectedTitle, expectedImage] of cases) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+
+    assert.equal(pageVariants.length, 1, `expected one variant on PDP ${productId}`);
+    assert.equal(pageVariants[0].title, expectedTitle);
+    assert.equal(pageVariants[0].key, expectedTitle);
+    assert.equal(pageVariants[0].image_url, expectedImage);
+    assert.ok(!html.includes('data-pdp-variant data-variant-name='), `expected no selectors on PDP ${productId}`);
+  }
+});
+
+test("PDP 200 resolves Nitro Tech Whey Gold flavor-size image mappings", () => {
+  const html = readProductHtml("200");
+  const pageVariants = parseJsonAssignment(html, "variantPricing");
+  const galleryImages = parseJsonAssignment(html, "galleryImages");
+  const gallerySources = new Set(galleryImages.map((image) => image.src));
+
+  const cases = [
+    [
+      "French Vanilla Cream / 2 lb.",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-100-whey-gold-french-vanilla-2lb_5eb1c01a-5fe3-44fd-8754-a06f77818fae.png",
+    ],
+    [
+      "Double Rich Chocolate / 2 lb.",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-100-whey-gold-chocolate-2lb.png",
+    ],
+    [
+      "Chocolate Peanut Butter / 2 lb.",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-nitrotech-whey-gold-pb-2lb_296a931b-f6dc-42b3-99ac-ed8aefb0400d.png",
+    ],
+    [
+      "Chocolate Peanut Butter / 5 lb.",
+      "https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-nitrotech-whey-gold-pb-5lb_7fd4821c-139e-45a4-9619-0310705724a4.png",
+    ],
+  ];
+
+  for (const [key, expectedImage] of cases) {
+    const variant = pageVariants.find((entry) => entry.key === key);
+    assert.ok(variant, `expected ${key} variant on PDP 200`);
+    assert.equal(variant.image_url, expectedImage);
+    assert.ok(gallerySources.has(expectedImage), `${key} should ship its image in the gallery`);
+  }
+});
+
+test("MuscleTech creatine PDPs keep unavailable flavors blocked in variantPricing", () => {
+  const cases = [
+    ["187", "Fruit Punch Extreme"],
+    ["195", "Grape Freeze"],
+    ["195", "Red Berry"],
+  ];
+
+  for (const [productId, variantKey] of cases) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const variant = pageVariants.find((entry) => entry.key === variantKey);
+
+    assert.ok(variant, `expected ${variantKey} on PDP ${productId}`);
+    assert.equal(variant.available, false, `${variantKey} should stay blocked on PDP ${productId}`);
+  }
+});
+
+test("RAW, Gorilla Mind, NutraBio, Naked Nutrition, and Inno Supps PDPs keep variant metadata storefront-safe", () => {
+  const productIds = listHtmlBrandProductIds([
+    "Gorilla Mind",
+    "Inno Supps",
+    "Naked Nutrition",
+    "NutraBio",
+    "RAW Nutrition",
+  ]);
+
+  assert.ok(productIds.length > 0, "expected supplement PDPs for audited brands");
+
+  for (const productId of productIds) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const selectors = parseVariantSelects(html);
+    assert.ok(pageVariants.length > 0, `expected variantPricing on PDP ${productId}`);
+
+    for (const variant of pageVariants) {
+      assert.notEqual(
+        String(variant.title || "").trim(),
+        "",
+        `variant title should be present on PDP ${productId}`
+      );
+      assert.ok(
+        !/^\d+$/.test(String(variant.title || "")),
+        `variant title should not be a raw numeric id on PDP ${productId}`
+      );
+      assert.ok(
+        String(variant.image_url || "").trim(),
+        `variant image_url should be present on PDP ${productId}`
+      );
+    }
+
+    if (
+      pageVariants.length === 1 &&
+      selectors.length === 0 &&
+      Object.keys(pageVariants[0].selected_options || {}).length === 0
+    ) {
+      assert.equal(
+        pageVariants[0].title,
+        normalizeText((html.match(/<h1 class="pdp-title"[^>]*>([^<]+)<\/h1>/i) || [])[1] || ""),
+        `single-variant PDP ${productId} should use the product title as the variant title`
+      );
+    }
+  }
+});
+
+test("1st Phorm, 5% Nutrition, Alpha Lion, GHOST, Jocko Fuel, Kaged, Promix, and Quest Nutrition PDPs keep variant metadata storefront-safe", () => {
+  const productIds = listBrandSupplementProductIds([
+    "1st Phorm",
+    "5% Nutrition",
+    "Alpha Lion",
+    "GHOST",
+    "Jocko Fuel",
+    "Kaged",
+    "Promix",
+    "Quest Nutrition",
+  ]);
+
+  assert.ok(productIds.length > 0, "expected supplement PDPs for the secondary audited brands");
+
+  for (const productId of productIds) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const selectors = parseVariantSelects(html);
+
+    assert.ok(pageVariants.length > 0, `expected variantPricing on PDP ${productId}`);
+
+    for (const variant of pageVariants) {
+      assert.notEqual(
+        String(variant.title || "").trim(),
+        "",
+        `variant title should be present on PDP ${productId}`
+      );
+      assert.ok(
+        !/^\d+$/.test(String(variant.title || "")),
+        `variant title should not be a raw numeric id on PDP ${productId}`
+      );
+      assert.ok(
+        String(variant.image_url || "").trim(),
+        `variant image_url should be present on PDP ${productId}`
+      );
+    }
+
+    if (
+      pageVariants.length === 1 &&
+      selectors.length === 0 &&
+      Object.keys(pageVariants[0].selected_options || {}).length === 0
+    ) {
+      assert.equal(
+        pageVariants[0].title,
+        normalizeText((html.match(/<h1 class="pdp-title"[^>]*>([^<]+)<\/h1>/i) || [])[1] || ""),
+        `single-variant PDP ${productId} should use the product title as the variant title`
+      );
+    }
+  }
+});
+
+test("Bloom Nutrition, Cellucor, Codeage, Core Nutritionals, Cymbiotika, Goli, Huge Supplements, Jacked Factory, Liquid I.V., Momentous, MUD/WTR, Nuun, Orgain, OWYN, Ritual, Skratch Labs, Soylent, Swolverine, and Terrasoul Superfoods PDPs keep variant metadata storefront-safe", () => {
+  const productIds = listBrandSupplementProductIds([
+    "Bloom Nutrition",
+    "Cellucor",
+    "Codeage",
+    "Core Nutritionals",
+    "Cymbiotika",
+    "Goli",
+    "Huge Supplements",
+    "Jacked Factory",
+    "Liquid I.V.",
+    "Momentous",
+    "MUD/WTR",
+    "Nuun",
+    "Orgain",
+    "OWYN",
+    "Ritual",
+    "Skratch Labs",
+    "Soylent",
+    "Swolverine",
+    "Terrasoul Superfoods",
+  ]);
+
+  assert.ok(productIds.length > 0, "expected supplement PDPs for the tertiary audited brands");
+
+  for (const productId of productIds) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const selectors = parseVariantSelects(html);
+
+    assert.ok(pageVariants.length > 0, `expected variantPricing on PDP ${productId}`);
+
+    for (const variant of pageVariants) {
+      assert.notEqual(
+        String(variant.title || "").trim(),
+        "",
+        `variant title should be present on PDP ${productId}`
+      );
+      assert.ok(
+        !/^\d+$/.test(String(variant.title || "")),
+        `variant title should not be a raw numeric id on PDP ${productId}`
+      );
+      assert.ok(
+        String(variant.image_url || "").trim(),
+        `variant image_url should be present on PDP ${productId}`
+      );
+    }
+
+    if (
+      pageVariants.length === 1 &&
+      selectors.length === 0 &&
+      Object.keys(pageVariants[0].selected_options || {}).length === 0
+    ) {
+      assert.equal(
+        pageVariants[0].title,
+        normalizeText((html.match(/<h1 class="pdp-title"[^>]*>([^<]+)<\/h1>/i) || [])[1] || ""),
+        `single-variant PDP ${productId} should use the product title as the variant title`
+      );
+    }
+  }
+});
+
+test("Agent Nateur, Amazing Grass, ample, ARMRA, arrae, beekeepers_naturals, black_magic_supps, Bucked Up, Cure Hydration, dose_and_co, DripDrop, elysium, Four Sigmatic, further_food, glaxon, hilma, jshealth_vitamins, jym, kachava, Key Nutrients, KOS, love_wellness, magic_mind, MaryRuth Organics, moon_juice, musclepharm, myprotein, navitas_organics, needed, nested_naturals, novos_labs, nutrex, nuzest, o_positiv, OLLY, Onnit, perelel, performance_lab, PEScience, Primal Kitchen, rae_wellness, Renue By Science, ryse_supplements, the_nue_co, tru_niagen, True Nutrition, truvani, vega, Vital Proteins, welleco, and winged_wellness PDPs keep variant metadata storefront-safe", () => {
+  const productIds = listHtmlBrandProductIds([
+    "Agent Nateur",
+    "Amazing Grass",
+    "ample",
+    "ARMRA",
+    "arrae",
+    "beekeepers_naturals",
+    "black_magic_supps",
+    "Bucked Up",
+    "Cure Hydration",
+    "dose_and_co",
+    "DripDrop",
+    "elysium",
+    "Four Sigmatic",
+    "further_food",
+    "glaxon",
+    "hilma",
+    "jshealth_vitamins",
+    "jym",
+    "kachava",
+    "Key Nutrients",
+    "KOS",
+    "love_wellness",
+    "magic_mind",
+    "MaryRuth Organics",
+    "moon_juice",
+    "musclepharm",
+    "myprotein",
+    "navitas_organics",
+    "needed",
+    "nested_naturals",
+    "novos_labs",
+    "nutrex",
+    "nuzest",
+    "o_positiv",
+    "OLLY",
+    "Onnit",
+    "perelel",
+    "performance_lab",
+    "PEScience",
+    "Primal Kitchen",
+    "rae_wellness",
+    "Renue By Science",
+    "ryse_supplements",
+    "the_nue_co",
+    "tru_niagen",
+    "True Nutrition",
+    "truvani",
+    "vega",
+    "Vital Proteins",
+    "welleco",
+    "winged_wellness",
+  ]);
+
+  assert.ok(productIds.length > 0, "expected supplement PDPs for the remaining audited supplement brands");
+
+  for (const productId of productIds) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const selectors = parseVariantSelects(html);
+
+    assert.ok(pageVariants.length > 0, `expected variantPricing on PDP ${productId}`);
+
+    for (const variant of pageVariants) {
+      assert.notEqual(
+        String(variant.title || "").trim(),
+        "",
+        `variant title should be present on PDP ${productId}`
+      );
+      assert.ok(
+        !/^\d+$/.test(String(variant.title || "")),
+        `variant title should not be a raw numeric id on PDP ${productId}`
+      );
+      assert.ok(
+        String(variant.image_url || "").trim(),
+        `variant image_url should be present on PDP ${productId}`
+      );
+    }
+
+    if (pageVariants.length === 1) {
+      assert.equal(selectors.length, 0, `single-variant PDP ${productId} should not render variant selectors`);
+      assert.deepEqual(
+        pageVariants[0].selected_options || {},
+        {},
+        `single-variant PDP ${productId} should not keep stale selected options`
+      );
+      assert.equal(
+        pageVariants[0].title,
+        normalizeText((html.match(/<h1 class="pdp-title"[^>]*>([^<]+)<\/h1>/i) || [])[1] || ""),
+        `single-variant PDP ${productId} should use the product title as the variant title`
+      );
+    }
+  }
+});
 
 for (const productId of VARIANT_REGRESSION_PRODUCT_IDS) {
   test(`PDP ${productId} keeps variant titles, options, and images aligned with the catalog`, () => {

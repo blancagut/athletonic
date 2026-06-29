@@ -923,15 +923,11 @@ function productCard(product, pathPrefix = "./") {
   const displayPrice = Number(product.price || 0);
   const displayCompare = Number(deal?.original_price || 0);
   const offerNote = deal || variantOffer ? "Limited offer" : "";
-  const externalHref = String(product.external_url ?? product.url ?? "").trim();
-  const isExternalOnly = Boolean(externalHref) && product.hasPdp === false;
   const searchText = [brand, name, label, product.sectionTitle, product.sectionEyebrow]
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
-  const pdpHref = isExternalOnly
-    ? externalHref
-    : `${pathPrefix}product/${html(product.id)}.html`;
+  const pdpHref = `${pathPrefix}product/${html(product.id)}.html`;
   return `
           <article class="product-card" data-product-id="${html(product.id)}" data-category="${html(product.sectionId)}" data-search="${html(searchText)}">
             <a class="product-image" href="${pdpHref}">
@@ -957,8 +953,6 @@ function productCard(product, pathPrefix = "./") {
               ${
                 requiresVariantSelection
                   ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View eligible options for ${html(name)}">View options</a>`
-                  : isExternalOnly
-                  ? `<a class="add-cart-button product-options-button" href="${pdpHref}" aria-label="View ${html(name)}">View product</a>`
                   : `<button
                 class="add-cart-button"
                 type="button"
@@ -2462,14 +2456,6 @@ function normalizedIndexUrl(value) {
   }
 }
 
-function slugifyIndexToken(value) {
-  return String(value ?? "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 function categoryForOfficialCatalogProduct(product) {
   const text = [product?.product_name, product?.category, product?.brand]
     .filter(Boolean)
@@ -2490,6 +2476,15 @@ function categoryForOfficialCatalogProduct(product) {
 function sectionTitleForCatalogId(sectionId) {
   const section = sections.find((entry) => entry.id === sectionId);
   return section?.label ?? section?.title ?? "Athletonic catalog";
+}
+
+function slugifyIndexToken(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function loadOfficialCatalogSearchRecords() {
@@ -2891,11 +2886,6 @@ function indexRecordToProduct(record) {
     sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
     store_collection: record.section_id,
     url: record.url || null,
-    external_url: record.external_url || null,
-    hasPdp: record.has_pdp !== false,
-    externalOnly: record.external_only === true,
-    sku: record.sku || null,
-    description_html: record.full_description || record.short_description || "",
     deal: record.deal
       ? {
           discount_percent: record.deal.discount_percent,
@@ -3131,7 +3121,6 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
   const pathPrefix = "../";
   const brand = brandNames[curated.brand] ?? curated.brand;
   const name = curated.displayName ?? curated.name;
-  const externalOnly = curated.externalOnly === true;
   const price = Number(curated.price ?? fullRow?.price ?? 0);
   const compareAt = Number(curated.deal?.original_price ?? fullRow?.compare_at_price ?? 0);
   const currency = fullRow?.currency || curated.currency || "USD";
@@ -3185,7 +3174,7 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
   const defaultVariant = variantPricing.find((variant) => variant.available) || variantPricing[0] || null;
   const defaultSelectedOptionsJson = JSON.stringify(defaultVariant?.selected_options || {}).replace(/</g, "\\u003c");
 
-  const description = sanitizeDescriptionHtml(fullRow?.description_html || curated.description_html || "");
+  const description = sanitizeDescriptionHtml(fullRow?.description_html);
 
   const galleryHtml = `
         <div class="pdp-gallery">
@@ -3308,10 +3297,7 @@ ${galleryHtml}
 ${variantOfferNote}
 ${variantSelectorsHtml}
           <div class="pdp-cta-row">
-            ${
-              externalOnly
-                ? `<button class="pdp-cta" type="button" disabled aria-disabled="true">Available</button>`
-                : `<button
+            <button
               class="pdp-cta"
               type="button"
               data-add-to-cart
@@ -3328,8 +3314,6 @@ ${variantSelectorsHtml}
               data-cart-variant=""
               ${variantOptions.length ? "disabled" : ""}
             >${variantOptions.length ? "Select options" : "Add to cart"}</button>
-            `
-            }
           </div>
           <p class="pdp-cta-note" data-pdp-cta-note></p>
 
@@ -3349,8 +3333,8 @@ ${variantSelectorsHtml}
                 curated.sectionTitle || collectionLabel(curated.store_collection || "")
               )}</dd></div>
               ${
-                (fullRow?.handle || curated?.sku)
-                  ? `<div><dt>Reference</dt><dd>${html(fullRow?.handle || curated?.sku)}</dd></div>`
+                fullRow?.handle
+                  ? `<div><dt>Reference</dt><dd>${html(fullRow.handle)}</dd></div>`
                   : ""
               }
               ${fixedOptionSpecs
@@ -7195,7 +7179,7 @@ for (const record of searchIndexRecords) {
 }
 
 const nonCuratedRecords = searchIndexRecords.filter(
-  (record) => record.has_pdp !== false && !curatedIdSet.has(record.id)
+  (record) => !curatedIdSet.has(record.id)
 );
 
 let extraPdpCount = 0;
@@ -7211,23 +7195,10 @@ for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
 
   for (const record of batch) {
     const numericId = Number(record.id);
+    const fullRow = batchRows.get(numericId);
+    const imageList = batchImages.get(numericId) || [];
+    const variantRows = batchVariants.get(numericId) || [];
     const product = indexRecordToProduct(record);
-    const officialRecord = officialCatalogRecordById.get(String(record.id)) || null;
-    const fullRow = officialRecord
-      ? officialCatalogPdpRow(officialRecord)
-      : batchRows.get(numericId);
-    const imageList = officialRecord
-      ? (officialRecord.images || []).map((url, index) => ({
-          url,
-          position: index + 1,
-          width: 640,
-          height: 640,
-          alt: officialRecord.name || product.name,
-        }))
-      : (batchImages.get(numericId) || []);
-    const variantRows = officialRecord
-      ? officialCatalogVariantRows(officialRecord)
-      : (batchVariants.get(numericId) || []);
     const peers = (indexRecordsBySection.get(record.section_id) || [])
       .filter((peer) => peer.id !== record.id)
       .slice(0, 4)
