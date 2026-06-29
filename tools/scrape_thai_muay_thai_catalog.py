@@ -987,6 +987,11 @@ def is_headgear_product(product: Dict[str, Any]) -> bool:
     return any(token in text for token in ["head guard", "headguard", "head gear", "headgear", "helmet", "casco"])
 
 
+def is_bag_glove_product(product: Dict[str, Any]) -> bool:
+    text = product_text(product)
+    return "bag glove" in text or "bag gloves" in text
+
+
 def is_boxing_glove_product(product: Dict[str, Any]) -> bool:
     text = product_text(product)
     if "glove" not in text:
@@ -999,10 +1004,13 @@ def is_boxing_glove_product(product: Dict[str, Any]) -> bool:
         "mma glove",
         "wrap",
         "keyring",
+        "key ring",
+        "key rings",
         "key chain",
         "keychain",
-        "kids boxing gloves",
-        "kid's boxing gloves",
+        "hanging mirror",
+        "mini glove",
+        "mini gloves",
     ]
     if any(token in text for token in excluded):
         return False
@@ -1116,7 +1124,7 @@ def apply_boon_price_rules(products: List[Dict[str, Any]]) -> None:
         if is_boxing_glove_product(product):
             product["available_sizes"] = STANDARD_GLOVE_SIZES[:]
             product["available_variants"] = merge_unique(product.get("available_variants") or [], STANDARD_GLOVE_SIZES)
-        if is_shinguard_product(product) or is_headgear_product(product):
+        if is_bag_glove_product(product) or is_shinguard_product(product) or is_headgear_product(product):
             product["available_sizes"] = STANDARD_PROTECTION_SIZES[:]
             product["available_variants"] = merge_unique(product.get("available_variants") or [], STANDARD_PROTECTION_SIZES)
         product["stock_status"] = "in stock"
@@ -1147,7 +1155,7 @@ def apply_topking_rules(products: List[Dict[str, Any]]) -> None:
         if is_boxing_glove_product(product):
             product["available_sizes"] = STANDARD_GLOVE_SIZES[:]
             product["available_variants"] = merge_unique(product.get("available_variants") or [], STANDARD_GLOVE_SIZES)
-        if is_shinguard_product(product) or is_headgear_product(product):
+        if is_bag_glove_product(product) or is_shinguard_product(product) or is_headgear_product(product):
             product["available_sizes"] = STANDARD_PROTECTION_SIZES[:]
             product["available_variants"] = merge_unique(product.get("available_variants") or [], STANDARD_PROTECTION_SIZES)
         product["stock_status"] = "in stock"
