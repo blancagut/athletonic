@@ -478,6 +478,57 @@ test("RAW, Gorilla Mind, NutraBio, Naked Nutrition, and Inno Supps PDPs keep var
   }
 });
 
+test("1st Phorm, 5% Nutrition, Alpha Lion, GHOST, Jocko Fuel, Kaged, Promix, and Quest Nutrition PDPs keep variant metadata storefront-safe", () => {
+  const productIds = listBrandSupplementProductIds([
+    "1st Phorm",
+    "5% Nutrition",
+    "Alpha Lion",
+    "GHOST",
+    "Jocko Fuel",
+    "Kaged",
+    "Promix",
+    "Quest Nutrition",
+  ]);
+
+  assert.ok(productIds.length > 0, "expected supplement PDPs for the secondary audited brands");
+
+  for (const productId of productIds) {
+    const html = readProductHtml(productId);
+    const pageVariants = parseJsonAssignment(html, "variantPricing");
+    const selectors = parseVariantSelects(html);
+
+    assert.ok(pageVariants.length > 0, `expected variantPricing on PDP ${productId}`);
+
+    for (const variant of pageVariants) {
+      assert.notEqual(
+        String(variant.title || "").trim(),
+        "",
+        `variant title should be present on PDP ${productId}`
+      );
+      assert.ok(
+        !/^\d+$/.test(String(variant.title || "")),
+        `variant title should not be a raw numeric id on PDP ${productId}`
+      );
+      assert.ok(
+        String(variant.image_url || "").trim(),
+        `variant image_url should be present on PDP ${productId}`
+      );
+    }
+
+    if (
+      pageVariants.length === 1 &&
+      selectors.length === 0 &&
+      Object.keys(pageVariants[0].selected_options || {}).length === 0
+    ) {
+      assert.equal(
+        pageVariants[0].title,
+        normalizeText((html.match(/<h1 class="pdp-title"[^>]*>([^<]+)<\/h1>/i) || [])[1] || ""),
+        `single-variant PDP ${productId} should use the product title as the variant title`
+      );
+    }
+  }
+});
+
 for (const productId of VARIANT_REGRESSION_PRODUCT_IDS) {
   test(`PDP ${productId} keeps variant titles, options, and images aligned with the catalog`, () => {
     const product = catalogData.products.find((entry) => String(entry.id) === productId);
