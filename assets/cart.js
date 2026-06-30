@@ -1660,6 +1660,36 @@
     accessories: "Gym accessory",
     "training-gear": "Training gear",
   };
+  var BRAND_LABEL_OVERRIDES = {
+    azteca_soccer: "Azteca Soccer",
+    beekeepers_naturals: "Beekeeper's Naturals",
+    black_magic_supps: "Black Magic Supps",
+    dose_and_co: "Dose & Co",
+    fifa_store: "FIFA Store",
+    football_town: "Football Town",
+    fuji_sports: "Fuji Sports",
+    golaco_kits: "Golaco Kits",
+    jshealth_vitamins: "JSHealth Vitamins",
+    love_wellness: "Love Wellness",
+    magic_mind: "Magic Mind",
+    moon_juice: "Moon Juice",
+    navitas_organics: "Navitas Organics",
+    nested_naturals: "Nested Naturals",
+    novos_labs: "Novos Labs",
+    o_positiv: "O Positiv",
+    performance_lab: "Performance Lab",
+    rae_wellness: "Rae Wellness",
+    rdx_sports: "RDX Sports",
+    rival_boxing: "Rival Boxing",
+    ryse_supplements: "RYSE Supplements",
+    shock_doctor: "Shock Doctor",
+    soccer_post: "Soccer Post",
+    soccer_zone_usa: "Soccer Zone USA",
+    the_nue_co: "The Nue Co",
+    tru_niagen: "Tru Niagen",
+    twins_special: "Twins Special",
+    winged_wellness: "Winged Wellness",
+  };
   function normalizeCatalogProductId(value) {
     var raw = String(value || "").trim();
     return raw ? String(raw.split("::")[0] || "").trim() : "";
@@ -1750,6 +1780,63 @@
     if (!category || category === "all") return "";
     return SECTION_LABELS[category] || String(category).replace(/-/g, " ");
   }
+  function titleCaseToken(token) {
+    var upper = {
+      co: "Co",
+      fifa: "FIFA",
+      jshealth: "JSHealth",
+      rdx: "RDX",
+      usa: "USA",
+      ryse: "RYSE",
+    };
+    var lower = String(token || "").toLowerCase();
+    if (upper[lower]) return upper[lower];
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  }
+  function displayLabel(value) {
+    var raw = String(value || "").trim();
+    if (!raw) return "";
+    var key = raw.toLowerCase();
+    if (BRAND_LABEL_OVERRIDES[key]) return BRAND_LABEL_OVERRIDES[key];
+    return raw
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .map(titleCaseToken)
+      .join(" ");
+  }
+  function displayBrand(productOrBrand) {
+    var raw = typeof productOrBrand === "string"
+      ? productOrBrand
+      : (productOrBrand && (productOrBrand.brand || productOrBrand.brand_slug)) || "";
+    return displayLabel(raw);
+  }
+  function normalizeVisibleBrandLabels(root) {
+    var scope = root || document;
+    [".pdp-brand", ".product-body > span", ".sdd-brand"].forEach(function (selector) {
+      scope.querySelectorAll(selector).forEach(function (node) {
+        var clean = displayBrand(node.textContent);
+        if (clean) node.textContent = clean;
+      });
+    });
+    scope.querySelectorAll("dt").forEach(function (dt) {
+      if (String(dt.textContent || "").trim().toLowerCase() !== "brand") return;
+      var dd = dt.nextElementSibling;
+      if (!dd) return;
+      var clean = displayBrand(dd.textContent);
+      if (clean) dd.textContent = clean;
+    });
+    scope.querySelectorAll("[data-cart-brand]").forEach(function (node) {
+      var clean = displayBrand(node.getAttribute("data-cart-brand"));
+      if (clean) node.setAttribute("data-cart-brand", clean);
+    });
+    if (document.title) {
+      Object.keys(BRAND_LABEL_OVERRIDES).forEach(function (slug) {
+        document.title = document.title.replace(new RegExp(slug, "gi"), BRAND_LABEL_OVERRIDES[slug]);
+      });
+    }
+  }
 
   /* ── Utils ── */
   function fmtPrice(cents) {
@@ -1785,6 +1872,7 @@
     return (p.search || [
       p.name,
       p.brand,
+      displayBrand(p),
       p.section_title,
       sectionLabel(p),
       p.section_id,
@@ -1801,6 +1889,7 @@
   function scoreCatalogProduct(p, lq, tokens) {
     var n = (p.name || "").toLowerCase();
     var b = (p.brand || "").toLowerCase();
+    var displayB = displayBrand(p).toLowerCase();
     var label = (sectionLabel(p) || "").toLowerCase();
     var section = String(p.section_id || "").toLowerCase();
     var haystack = productSearchText(p);
@@ -1809,13 +1898,13 @@
     if (!lq) return score;
     if (n === lq) score += 20;
     else if (n.startsWith(lq)) score += 12;
-    if (b === lq) score += 10;
+    if (b === lq || displayB === lq) score += 10;
     if (label === lq || section === lq) score += 6;
     if (haystack.indexOf(lq) !== -1) score += 4;
 
     tokens.forEach(function (token) {
       if (n.indexOf(token) !== -1) score += 3;
-      else if (b.indexOf(token) !== -1) score += 2;
+      else if (b.indexOf(token) !== -1 || displayB.indexOf(token) !== -1) score += 2;
       else if (label.indexOf(token) !== -1 || section.indexOf(token) !== -1) score += 1;
     });
 
@@ -1849,6 +1938,7 @@
     if (b === lq)         return 3;
     if (n.includes(lq))   return 2;
     if (b.includes(lq))   return 1;
+    if (displayBrand(p).toLowerCase().includes(lq)) return 1;
     return 0;
   }
   function productHasDisplayPrice(p) {
@@ -1912,6 +2002,7 @@
         ? (Number(p.compare_at_price_cents) || 0) / 100
         : null);
     var currency = (directVariant && directVariant.currency) || p.currency || "USD";
+    var brandLabel = displayBrand(p);
     var label = sectionLabel(p);
     var variantOffer = p.variant_offer || null;
     var cardImage = (directVariant && directVariant.image) || p.image || "";
@@ -1941,7 +2032,7 @@
             ' data-cart-id="' + esc(p.id) + '"' +
             ' data-cart-product-id="' + esc(p.id) + '"' +
             ' data-cart-variant-id="' + esc(directVariantId) + '"' +
-            ' data-cart-brand="' + esc(p.brand || "") + '"' +
+            ' data-cart-brand="' + esc(brandLabel || p.brand || "") + '"' +
             ' data-cart-name="' + esc(p.name || "") + '"' +
             ' data-cart-price="' + esc(priceStr) + '"' +
             ' data-cart-price-cents="' + esc(String(Math.round(price * 100))) + '"' +
@@ -1960,7 +2051,7 @@
             '" loading="lazy" decoding="async" />' +
         '</a>' +
         '<div class="product-body">' +
-          '<span>' + esc(p.brand || "") + '</span>' +
+          '<span>' + esc(brandLabel || p.brand || "") + '</span>' +
           '<h3><a class="product-card-link" href="' + esc(href) + '">' +
             esc(p.name || "") + '</a></h3>' +
           '<p>' + esc(label) + '</p>' +
@@ -2023,6 +2114,7 @@
     );
     resultsEl.insertAdjacentHTML("beforeend", next.map(catalogCardHtml).join(""));
     _catalogShown += next.length;
+    normalizeVisibleBrandLabels(resultsEl);
     window.requestAnimationFrame(refreshVisibleCatalogCards);
     var btn = ensureLoadMoreButton(resultsEl);
     var remaining = _catalogMatches.length - _catalogShown;
@@ -2083,7 +2175,8 @@
     var colors = [];
     var sizes = [];
     products.forEach(function (p) {
-      if (p.brand) brands.push(p.brand);
+      var brand = displayBrand(p);
+      if (brand) brands.push(brand);
       colors = colors.concat(catalogFacetValues(p, "available_colors"));
       sizes = sizes.concat(catalogFacetValues(p, "available_sizes"));
     });
@@ -2104,7 +2197,7 @@
 
   function productMatchesCatalogFilters(p, filters) {
     var price = catalogProductPrice(p);
-    if (filters.brand && String(p.brand || "").toLowerCase() !== filters.brand.toLowerCase()) {
+    if (filters.brand && displayBrand(p).toLowerCase() !== filters.brand.toLowerCase()) {
       return false;
     }
     if (filters.color) {
@@ -2352,10 +2445,11 @@
         products.forEach(function (p) {
           var pdpHref = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
           var href = (p.has_pdp === false && p.url) ? p.url : pdpHref;
+          var brandLabel = displayBrand(p);
           html += '<li role="option" aria-selected="false" class="sdd-item sdd-item--product" data-href="' + esc(href) + '">'
                 + '<img class="sdd-thumb" src="' + esc(p.image) + '" alt="" width="44" height="44" loading="lazy" decoding="async">'
                 + '<div class="sdd-item-body">'
-                + '<span class="sdd-brand">' + esc(p.brand) + '</span>'
+                + '<span class="sdd-brand">' + esc(brandLabel || p.brand) + '</span>'
                 + '<span class="sdd-name">'  + highlight(p.name, q) + '</span>'
                 + '</div>'
                 + '<span class="sdd-price">' + fmtPrice(p.price_cents) + '</span>'
@@ -2607,6 +2701,7 @@
     applyUrlParams();
     refreshVisibleCatalogCards();
     refreshPdpFromLiveCatalog();
+    normalizeVisibleBrandLabels(document);
   }
 
   if (document.readyState === "loading") {
