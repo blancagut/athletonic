@@ -13,6 +13,20 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
 process.env.RESEND_API_KEY = process.env.RESEND_API_KEY || "test-resend-key";
 process.env.ATHLETONIC_SUPPORT_EMAIL = process.env.ATHLETONIC_SUPPORT_EMAIL || "support@example.com";
 
+const APPROVED_WHOLESALE_BRANDS = new Set(["fairtex", "raja_boxing", "twins_special", "windy"]);
+const BANNED_WHOLESALE_BRANDS = new Set([
+  "century_martial_arts",
+  "everlast",
+  "fuji_sports",
+  "hayabusa",
+  "rdx_sports",
+  "rival_boxing",
+  "sanabul",
+  "venum",
+]);
+const BANNED_WHOLESALE_TERMS =
+  /\b(backpack|beanie|cap|duffle|grappling dummy|hoodie|jacket|jewelry|key ring|keychain|necklace|package protection|personalization|shirt|shoe|supplement|training dummy|venum)\b/i;
+
 function createResponseCapture() {
   return {
     statusCode: 200,
@@ -73,6 +87,30 @@ function createJsonRequest(method, query, body) {
   };
   return req;
 }
+
+test("generated wholesale manifest only contains approved Thai fight brands and no pricing", () => {
+  assert.ok(catalogData.products.length > 0, "expected generated wholesale products");
+
+  for (const product of catalogData.products) {
+    assert.ok(
+      APPROVED_WHOLESALE_BRANDS.has(product.brand_slug),
+      `unexpected wholesale brand ${product.brand_slug} for ${product.name}`
+    );
+    assert.ok(
+      !BANNED_WHOLESALE_BRANDS.has(product.brand_slug),
+      `banned wholesale brand ${product.brand_slug} leaked into catalog`
+    );
+    assert.ok(
+      !BANNED_WHOLESALE_TERMS.test([product.name, product.url, product.category_label, product.product_type].join(" ")),
+      `non-fight wholesale product leaked into catalog: ${product.brand} ${product.name}`
+    );
+    assert.ok(!("price" in product));
+    assert.ok(!("price_cents" in product));
+    assert.ok(!("cost" in product));
+    assert.ok(!("margin" in product));
+    assert.ok(!("supplier_price" in product));
+  }
+});
 
 test("GET /api/wholesale/catalog returns wholesale products without price fields", async () => {
   const sampleProduct = catalogData.products.find((product) => product.brand_slug === "fairtex");

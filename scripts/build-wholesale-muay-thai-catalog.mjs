@@ -18,10 +18,13 @@ const OUTPUT_PATH = path.join(ROOT, "data", "wholesale-muay-thai-catalog.json");
 const THAI_BRANDS = [
   "fairtex",
   "raja_boxing",
+  "raja boxing",
   "twins_special",
+  "twins special",
   "windy",
   "topking",
   "top king",
+  "boon",
   "king pro",
   "sks",
   "thaismai",
@@ -85,10 +88,7 @@ function buildCandidateSql() {
         ),
         ''
       ) != ''
-      and (
-        lower(p.brand) in (${brandList})
-        or lower(coalesce(p.store_collection, '')) = 'fight_gear'
-      );
+      and lower(p.brand) in (${brandList});
   `;
 }
 

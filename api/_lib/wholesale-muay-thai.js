@@ -12,29 +12,19 @@ const WHOLESALE_CATALOG_PATH = path.join(
 const THAI_FIGHT_BRANDS = new Set([
   "fairtex",
   "raja_boxing",
+  "raja boxing",
   "twins_special",
+  "twins special",
   "windy",
   "topking",
   "top king",
+  "boon",
   "king pro",
   "sks",
   "thaismai",
 ]);
 
-const GLOBAL_FIGHT_BRANDS = new Set([
-  "hayabusa",
-  "rival_boxing",
-  "rival boxing",
-  "everlast",
-  "sanabul",
-  "century_martial_arts",
-  "century martial arts",
-  "rdx_sports",
-  "rdx sports",
-  "venum",
-  "fuji_sports",
-  "fuji sports",
-]);
+const GLOBAL_FIGHT_BRANDS = new Set([]);
 
 const POSITIVE_PATTERNS = [
   /\bmuay thai\b/i,
@@ -66,13 +56,47 @@ const POSITIVE_PATTERNS = [
   /\bboxing oil\b/i,
   /\bankle guard(s)?\b/i,
   /\bankle support(s)?\b/i,
-  /\bcompression shorts?\b/i,
-  /\bcompression pants?\b/i,
-  /\brashguard\b/i,
   /\bfight short(s)?\b/i,
   /\bmuay thai short(s)?\b/i,
   /\bboxing short(s)?\b/i,
   /\btraining gear\b/i,
+];
+
+const WHOLESALE_ALLOWED_PRODUCT_PATTERNS = [
+  /\bboxing gloves?\b/i,
+  /\bfight gloves?\b/i,
+  /\bbag gloves?\b/i,
+  /\bgrappling gloves?\b/i,
+  /\bmma gloves?\b/i,
+  /\bfocus mitts?\b/i,
+  /\bpunch mitts?\b/i,
+  /\bthai pads?\b/i,
+  /\bkick pads?\b/i,
+  /\bkicking shields?\b/i,
+  /\bstrike shields?\b/i,
+  /\bbelly pads?\b/i,
+  /\bbody protectors?\b/i,
+  /\bshin guards?\b/i,
+  /\bshin pads?\b/i,
+  /\bheadgear\b/i,
+  /\bhead guards?\b/i,
+  /\bgroin (guards?|protectors?)\b/i,
+  /\bgroin cups?\b/i,
+  /\bmouth ?guards?\b/i,
+  /\bhand wraps?\b/i,
+  /\bwrist wraps?\b/i,
+  /\bankle (guards?|supports?)\b/i,
+  /\bheavy bags?\b/i,
+  /\bpunching bags?\b/i,
+  /\bbanana bags?\b/i,
+  /\bdouble end bags?\b/i,
+  /\bspeed bags?\b/i,
+  /\bboxing tape\b/i,
+  /\bboxing oil\b/i,
+  /\bmuay thai shorts?\b/i,
+  /\bboxing shorts?\b/i,
+  /\bfight shorts?\b/i,
+  /\bkids boxing shorts?\b/i,
 ];
 
 const NEGATIVE_PATTERNS = [
@@ -94,6 +118,7 @@ const NEGATIVE_PATTERNS = [
   /\bcaps?\b/i,
   /\bhats?\b/i,
   /\bjackets?\b/i,
+  /\bbeanies?\b/i,
   /\bsweatshirts?\b/i,
   /\bpants?\b/i,
   /\bleggings?\b/i,
@@ -103,6 +128,9 @@ const NEGATIVE_PATTERNS = [
   /\bcandle\b/i,
   /\bkeychains?\b/i,
   /\bstickers?\b/i,
+  /\bnecklace\b/i,
+  /\bjewelry\b/i,
+  /\bduffle\b/i,
   /\btoys?\b/i,
   /\bshakers?\b/i,
   /\bbottles?\b/i,
@@ -116,6 +144,10 @@ const NEGATIVE_PATTERNS = [
   /\bwallet\b/i,
   /\bblanket\b/i,
   /\bposter\b/i,
+  /\bpackage protection\b/i,
+  /\bpersonalization\b/i,
+  /\bgrappling dummy\b/i,
+  /\btraining dummy\b/i,
   /\bceiling hook\b/i,
   /\bsteel hook\b/i,
   /\bchain\b/i,
@@ -309,8 +341,16 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
   ]);
   const brand = cleanText(productRow.brand);
 
+  if (!THAI_FIGHT_BRANDS.has(brand)) {
+    return {
+      score: -999,
+      reasons: ["unapproved_brand"],
+      text,
+    };
+  }
+
   if (
-    /(tee|shirt|hoodie|sweatshirt|cap|hat|jacket|uniform|gi|kimono|apparel|clothing|belt|patch|mat|underlayment|foam|pant|legging|bra|sock|shoe|running|backpack|mug|candle|keychain|toy|bottle|shaker|deodorant|mouthwash|soap|perfume|blanket|poster|shorts?|rashguard|compression|jersey|singlet|trunks?|ceiling hook|steel hook|chain|anchor)/i.test(
+    /(tee|shirt|hoodie|sweatshirt|cap|hat|beanie|jacket|uniform|gi|kimono|apparel|clothing|belt|patch|mat|underlayment|foam|pant|legging|bra|sock|shoe|running|backpack|duffle|mug|candle|keychain|key ring|necklace|jewelry|toy|bottle|shaker|deodorant|mouthwash|soap|perfume|blanket|poster|rashguard|compression|jersey|singlet|trunks?|package protection|personalization|grappling dummy|training dummy|ceiling hook|steel hook|chain|anchor)/i.test(
       text
     )
   ) {
@@ -321,17 +361,20 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
     };
   }
 
+  if (!WHOLESALE_ALLOWED_PRODUCT_PATTERNS.some((pattern) => pattern.test(text))) {
+    return {
+      score: -999,
+      reasons: ["unsupported_product_type"],
+      text,
+    };
+  }
+
   let score = 0;
   const reasons = [];
 
   if (THAI_FIGHT_BRANDS.has(brand)) {
     score += 6;
     reasons.push("thai_brand");
-  }
-
-  if (GLOBAL_FIGHT_BRANDS.has(brand)) {
-    score += 4;
-    reasons.push("fight_brand");
   }
 
   if (POSITIVE_PATTERNS.some((pattern) => pattern.test(text))) {
