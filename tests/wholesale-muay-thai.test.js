@@ -131,6 +131,25 @@ test("generated wholesale manifest only contains approved combat brands and no p
       `expected ${requiredBrand} products in wholesale catalog`
     );
   }
+
+  for (const requiredCategory of [
+    "Muay Thai Shorts",
+    "Training Gloves",
+    "Bag Gloves",
+    "Shin Guards",
+    "Headgear",
+    "Focus Mitts",
+    "Thai Pads & Kick Pads",
+    "Heavy Bags",
+    "Hand Wraps & Tape",
+    "Groin Protectors",
+    "Mouthguards",
+  ]) {
+    assert.ok(
+      catalogData.products.some((product) => product.category_label === requiredCategory),
+      `expected ${requiredCategory} category in wholesale catalog`
+    );
+  }
 });
 
 test("GET /api/wholesale/catalog returns wholesale products without price fields", async () => {

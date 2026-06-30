@@ -345,68 +345,53 @@ function getBrandOrigin(brandSlug) {
 }
 
 function deriveProductType(text) {
+  const thaiBrand = /\b(raja boxing|raja_boxing|fairtex|twins special|twins_special|windy|boon|topking|top king|thaismai)\b/.test(text);
+
   if (/\b(rfbsg|rsg)[- ]?[a-z0-9]*/.test(text)) return "Shin Guards";
-  if (/\b(rfbgv|rbgv|rbgl|bgv)[- ]?[a-z0-9]*/.test(text)) return "Gloves";
-  if (/\b(gloves?|bag mitts?|mitts?)\b/.test(text) && !/\bfocus mitts?\b/.test(text) && !/\bpunch mitts?\b/.test(text)) return "Gloves";
-  if (/\bgroin (protector|guard|cup)\b/.test(text) || /\bno[- ]?foul protector\b/.test(text) || /\bprotective cup\b/.test(text)) return "Groin Protector";
-  if (/\bmouth ?guard\b/.test(text)) return "Mouthguard";
-  if (/\belbow guards?\b/.test(text)) return "Elbow Guards";
-  if (/\bmongkols?\b/.test(text) || /\bprajits?\b/.test(text) || /\bprajiads?\b/.test(text)) return "Mongkol & Prajiad";
-  if (/\bbelly (pad|protector)s?\b/.test(text)) return "Belly Pad";
   if (/\bshin (guard|pad)(s)?\b/.test(text) || /\bshinguards?\b/.test(text)) return "Shin Guards";
   if (/\bheadgear\b/.test(text) || /\bhead guards?\b/.test(text) || /\bheadguards?\b/.test(text)) return "Headgear";
-  if (/\bhand ?wraps?\b/.test(text) || /\bboxing tape\b/.test(text) || /\bgauze\b/.test(text)) return "Hand Wraps";
-  if (/\bpunch(ing)? mitts?\b/.test(text) || /\bfocus mitts?\b/.test(text) || /\bmitts?\b/.test(text))
-    return "Pads & Mitts";
-  if (/\bheavy bags?\b/.test(text) || /\bspeed bags?\b/.test(text) || /\bpunching bags?\b/.test(text) || /\bbanana bags?\b/.test(text) || /\bdouble end bags?\b/.test(text) || /\bmaize bags?\b/.test(text))
-    return "Bags";
-  if (/\bthai pad(s)?\b/.test(text) || /\bkick(ing)? pad(s)?\b/.test(text) || /\bbody protector\b/.test(text) || /\bstrike shield\b/.test(text) || /\bpunch shield\b/.test(text) || /\btraining shield\b/.test(text) || /\bbody shield\b/.test(text) || /\bblock trainer\b/.test(text) || /\bthigh pad\b/.test(text) || /\bboxing (sticks?|paddles?|pads?)\b/.test(text) || /\bstriking (sticks?|paddles?)\b/.test(text) || /\bcorner supplies?\b/.test(text) || /\bcoach(ing)? (gear|equipment)\b/.test(text) || /\btraining (tools?|equipment)\b/.test(text))
-    return "Training Pads";
-  if (/\bskipping ropes?\b/.test(text) || /\bjump ropes?\b/.test(text)) return "Skipping Rope";
-  if (/\bcompression shorts?\b/.test(text) || /\bcompression pants?\b/.test(text) || /\brashguard\b/.test(text))
-    return "Fight Apparel";
-  if (/\b(raja boxing|raja_boxing|fairtex|twins special|twins_special|windy|boon|topking|top king|thaismai)\b.*\bshorts?\b/.test(text) || /\bshorts?\b.*\b(raja boxing|raja_boxing|fairtex|twins special|twins_special|windy|boon|topking|top king|thaismai)\b/.test(text))
-    return "Fight Apparel";
-  if (/\bfight short(s)?\b/.test(text) || /\bmma short(s)?\b/.test(text) || /\bmuay thai short(s)?\b/.test(text) || /\bthai boxing short(s)?\b/.test(text) || /\bboxing short(s)?\b/.test(text) || /\bboxing trunks?\b/.test(text))
-    return "Fight Apparel";
-  if (/\bboxing oil\b/.test(text)) return "Care";
+  if (/\bgroin (protector|guard|cup)\b/.test(text) || /\bno[- ]?foul protector\b/.test(text) || /\bprotective cup\b/.test(text))
+    return "Groin Protectors";
+  if (/\bmouth ?guards?\b/.test(text)) return "Mouthguards";
+  if (/\bankle (guards?|supports?)\b/.test(text) || /\belbow guards?\b/.test(text)) return "Ankle & Elbow Supports";
+  if (/\bmongkols?\b/.test(text) || /\bprajits?\b/.test(text) || /\bprajiads?\b/.test(text)) return "Mongkol & Prajiad";
+  if (/\bhand ?wraps?\b/.test(text) || /\bboxing tape\b/.test(text) || /\bgauze\b/.test(text)) return "Hand Wraps & Tape";
+  if (/\bbelly (pad|protector)s?\b/.test(text)) return "Belly Pads";
+  if (/\bbody protectors?\b/.test(text) || /\bprotective vests?\b/.test(text)) return "Body Protectors";
+  if (/\btraining shields?\b/.test(text) || /\bbody shields?\b/.test(text) || /\bstrike shields?\b/.test(text) || /\bpunch shields?\b/.test(text) || /\bblock trainers?\b/.test(text) || /\bthigh pads?\b/.test(text))
+    return "Body Shields";
+  if (/\bthai pad(s)?\b/.test(text) || /\bkick(ing)? pad(s)?\b/.test(text)) return "Thai Pads & Kick Pads";
+  if (/\bpunch(ing)? mitts?\b/.test(text) || /\bfocus mitts?\b/.test(text) || /\bpro mitts?\b/.test(text)) return "Focus Mitts";
+  if (/\bboxing (sticks?|paddles?|pads?)\b/.test(text) || /\bstriking (sticks?|paddles?)\b/.test(text)) return "Striking Tools";
+  if (/\b(speed bags?|double end bags?|maize bags?|maize balls?|punch balls?)\b/.test(text)) return "Speed & Double-End Bags";
+  if (/\b(heavy bags?|punching bags?|banana bags?|training bags?)\b/.test(text)) return "Heavy Bags";
+  if (/\bskipping ropes?\b/.test(text) || /\bjump ropes?\b/.test(text)) return "Jump Ropes";
+  if (/\bboxing oil\b/.test(text) || /\bliniment\b/.test(text)) return "Boxing Oil & Care";
+  if (/\bcorner supplies?\b/.test(text) || /\bcorner stools?\b/.test(text)) return "Coach & Corner Gear";
+  if (/\bboxing kits?\b/.test(text) || /\bmma kits?\b/.test(text)) return "Boxing Kits";
+
+  if (/\b(rfbgv|rbgv|rbgl|bgv)[- ]?[a-z0-9]*/.test(text)) return "Training Gloves";
+  if (/\bbag gloves?\b/.test(text) || /\bbag mitts?\b/.test(text)) return "Bag Gloves";
+  if (/\bgrappling gloves?\b/.test(text) || /\bmma gloves?\b/.test(text)) return "MMA & Grappling Gloves";
+  if (/\bkids? boxing gloves?\b/.test(text) || /\byouth boxing gloves?\b/.test(text)) return "Kids Boxing Gloves";
+  if (/\b(lace[- ]?up|competition|fight) gloves?\b/.test(text)) return "Lace-Up & Fight Gloves";
+  if (/\b(sparring|training|boxing|muay thai) gloves?\b/.test(text) || /\bgloves?\b/.test(text)) return "Training Gloves";
+
+  if (/\bmuay thai shorts?\b/.test(text) || /\bthai boxing shorts?\b/.test(text) || (thaiBrand && /\bshorts?\b/.test(text)))
+    return "Muay Thai Shorts";
+  if (/\bboxing trunks?\b/.test(text)) return "Boxing Trunks";
+  if (/\bboxing shorts?\b/.test(text)) return "Boxing Shorts";
+  if (/\bfight short(s)?\b/.test(text) || /\bmma short(s)?\b/.test(text)) return "MMA & Fight Shorts";
+  if (/\brash ?guards?\b/.test(text)) return "Rash Guards";
+  if (/\bcompression shorts?\b/.test(text) || /\bcompression pants?\b/.test(text)) return "Compression Fightwear";
+
   return "Training Gear";
 }
 
 function deriveCategoryLabel(productType) {
   switch (productType) {
-    case "Gloves":
-      return "Gloves";
-    case "Shin Guards":
-      return "Shin guards";
-    case "Headgear":
-      return "Headgear";
-    case "Groin Protector":
-      return "Protectors";
-    case "Mouthguard":
-      return "Protectors";
-    case "Belly Pad":
-      return "Protectors";
-    case "Elbow Guards":
-      return "Protectors";
-    case "Mongkol & Prajiad":
-      return "Muay Thai ceremonial";
-    case "Hand Wraps":
-      return "Wraps & supports";
-    case "Pads & Mitts":
-      return "Pads & mitts";
-    case "Bags":
-      return "Bags";
-    case "Training Pads":
-      return "Pads & shields";
-    case "Skipping Rope":
-      return "Conditioning";
-    case "Fight Apparel":
-      return "Fight apparel";
-    case "Care":
-      return "Care";
     default:
-      return "Training gear";
+      return productType || "Training Gear";
   }
 }
 
@@ -687,10 +672,10 @@ function matchesWholesaleFilters(product, filters = {}) {
   const category = String(filters.category || "").trim().toLowerCase();
   if (category) {
     const categoryCandidates = new Set([
-      product.category_slug.toLowerCase(),
-      product.category_label.toLowerCase(),
-      product.product_type.toLowerCase(),
-    ]);
+      product.category_slug,
+      product.category_label,
+      product.product_type,
+    ].map((value) => String(value || "").toLowerCase()).filter(Boolean));
     if (![...categoryCandidates].some((candidate) => candidate === category || candidate.includes(category))) {
       return false;
     }

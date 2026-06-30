@@ -3,26 +3,26 @@ import { escapeHtml, formatDate, toast } from "../admin-core.js?v=20260623-magic
 import { listView, openModal } from "./_ui.js";
 
 const STATUSES = [
-  { value: "pending", label: "Pendiente" },
-  { value: "under_review", label: "En revisión" },
-  { value: "approved", label: "Aprobada" },
-  { value: "rejected", label: "Rechazada" },
+  { value: "pending", label: "Pending" },
+  { value: "under_review", label: "Under review" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 const STATUS_LABELS = Object.fromEntries(STATUSES.map((status) => [status.value, status.label]));
 
 const TYPE_LABELS = {
-  retail_store: "Tienda minorista",
-  gym_studio: "Gimnasio o estudio",
-  coach_team: "Coach o equipo",
-  distributor: "Distribuidor",
-  corporate_wellness: "Bienestar corporativo",
-  other: "Otro",
+  retail_store: "Retail store",
+  gym_studio: "Gym or studio",
+  coach_team: "Coach or team",
+  distributor: "Distributor",
+  corporate_wellness: "Corporate wellness",
+  other: "Other",
 };
 
 const YEARS_LABELS = {
-  pre_launch: "Pre-lanzamiento",
-  under_1_year: "Menos de 1 año",
+  pre_launch: "Pre-launch",
+  under_1_year: "Under 1 year",
   "1_2_years": "1 - 2 años",
   "3_5_years": "3 - 5 años",
   "6_10_years": "6 - 10 años",
@@ -43,7 +43,7 @@ const PRODUCT_LABELS = {
 };
 
 const BUDGET_LABELS = {
-  under_1000: "Menos de $1,000",
+  under_1000: "Under $1,000",
   "1000_5000": "$1,000 - $5,000",
   "5000_15000": "$5,000 - $15,000",
   "15000_50000": "$15,000 - $50,000",
@@ -51,24 +51,24 @@ const BUDGET_LABELS = {
 };
 
 const IMPORT_LABELS = {
-  none: "Sin experiencia importando",
+  none: "No import experience",
   domestic_only: "Solo compras domésticas",
   imported_before: "Ya importó antes",
   currently_importing: "Importa actualmente",
 };
 
 const CHANNEL_LABELS = {
-  retail_store: "Tienda física",
+  retail_store: "Retail store",
   gym_members: "Miembros de gimnasio",
-  online_store: "Tienda online",
+  online_store: "Online store",
   marketplace: "Marketplace",
-  events: "Eventos o pop-ups",
-  mixed: "Canales mixtos",
-  other: "Otro",
+  events: "Events or pop-ups",
+  mixed: "Mixed channels",
+  other: "Other",
 };
 
 const REACH_LABELS = {
-  under_100: "Menos de 100",
+  under_100: "Under 100",
   "100_500": "100 - 500",
   "500_2500": "500 - 2,500",
   "2500_10000": "2,500 - 10,000",
@@ -76,19 +76,19 @@ const REACH_LABELS = {
 };
 
 const FREQUENCY_LABELS = {
-  one_time: "Orden inicial única",
-  monthly: "Mensual",
+  one_time: "One-time opening order",
+  monthly: "Monthly",
   twice_monthly: "Dos veces al mes",
-  weekly: "Semanal",
-  as_needed: "Según necesidad",
+  weekly: "Weekly",
+  as_needed: "As needed",
 };
 
 const FULFILLMENT_LABELS = {
   store_pick_pack: "Pick & pack en tienda",
-  warehouse: "Bodega propia",
+  warehouse: "Own warehouse",
   third_party_logistics: "3PL / fulfillment partner",
   dropship: "Dropship",
-  not_set: "Aún no definido",
+  not_set: "Not set yet",
 };
 
 function typeLabel(value) {
@@ -134,12 +134,12 @@ async function submitDecision(app, application, action, reload, modal) {
   const profile = profileEl ? profileEl.value.trim() : "wholesale";
 
   if (action === "reject" && !decisionNotes) {
-    toast("Agrega notas de decisión antes de rechazar", "error");
+    toast("Add decision notes before rejecting", "error");
     if (notesEl) notesEl.focus();
     return;
   }
 
-  const label = action === "approve" ? "aprobación" : action === "reject" ? "rechazo" : "revisión";
+  const label = action === "approve" ? "approval" : action === "reject" ? "rejection" : "review";
   if (action !== "under_review" && !window.confirm(`¿Enviar email de ${label} a ${application.email}?`)) return;
 
   try {
@@ -155,18 +155,18 @@ async function submitDecision(app, application, action, reload, modal) {
     });
     toast(
       action === "approve"
-        ? "Solicitud aprobada y email enviado"
+        ? "Application approved and email sent"
         : action === "reject"
-          ? "Solicitud rechazada y email enviado"
-          : "Solicitud marcada en revisión",
+          ? "Application rejected and email sent"
+          : "Application marked under review",
       "success"
     );
-    if (statusEl) statusEl.textContent = result.email_sent ? "Email de decisión enviado." : "Guardado.";
+    if (statusEl) statusEl.textContent = result.email_sent ? "Decision email sent." : "Saved.";
     modal.close();
     reload();
   } catch (err) {
-    toast(err.message || "No se pudo completar la revisión", "error");
-    if (statusEl) statusEl.textContent = err.message || "No se pudo completar la revisión.";
+    toast(err.message || "Could not complete the review", "error");
+    if (statusEl) statusEl.textContent = err.message || "Could not complete the review.";
     if (button) button.disabled = false;
   }
 }
@@ -180,54 +180,54 @@ async function openApplication(app, row, reload) {
     <div class="admin-detail-grid">
       <div>
         <dl class="admin-kv">
-          <dt>Estado</dt><dd>${estadoBadge(application.status)}</dd>
-          <dt>Solicitante</dt><dd>${escapeHtml(application.full_name)}</dd>
-          <dt>Correo</dt><dd>${escapeHtml(application.email)}</dd>
-          <dt>Negocio</dt><dd>${escapeHtml(application.company_name)}</dd>
-          <dt>Tipo</dt><dd>${escapeHtml(typeLabel(application.business_type))}</dd>
-          <dt>Tiempo operando</dt><dd>${escapeHtml(labelFrom(YEARS_LABELS, application.years_in_business))}</dd>
-          <dt>Teléfono</dt><dd>${escapeHtml(application.phone)}</dd>
-          <dt>Sitio web</dt><dd>${application.website_url ? `<a class="admin-link" href="${escapeHtml(application.website_url)}" target="_blank" rel="noopener">Abrir</a>` : "—"}</dd>
-          <dt>Dirección</dt><dd>${addressBlock(application)}</dd>
-          <dt>Productos</dt><dd>${escapeHtml(productList(application.desired_products))}</dd>
-          <dt>Inversión USD</dt><dd>${escapeHtml(labelFrom(BUDGET_LABELS, application.investment_budget_usd))}</dd>
-          <dt>Importación</dt><dd>${escapeHtml(labelFrom(IMPORT_LABELS, application.import_experience))}</dd>
-          <dt>Canal principal</dt><dd>${escapeHtml(labelFrom(CHANNEL_LABELS, application.sales_channel))}</dd>
-          <dt>Alcance mensual</dt><dd>${escapeHtml(labelFrom(REACH_LABELS, application.customer_reach))}</dd>
-          <dt>Frecuencia</dt><dd>${escapeHtml(labelFrom(FREQUENCY_LABELS, application.order_frequency))}</dd>
-          <dt>Regiones</dt><dd>${escapeHtml(application.sales_regions || "—")}</dd>
+          <dt>Status</dt><dd>${estadoBadge(application.status)}</dd>
+          <dt>Applicant</dt><dd>${escapeHtml(application.full_name)}</dd>
+          <dt>Email</dt><dd>${escapeHtml(application.email)}</dd>
+          <dt>Business</dt><dd>${escapeHtml(application.company_name)}</dd>
+          <dt>Type</dt><dd>${escapeHtml(typeLabel(application.business_type))}</dd>
+          <dt>Years operating</dt><dd>${escapeHtml(labelFrom(YEARS_LABELS, application.years_in_business))}</dd>
+          <dt>Phone</dt><dd>${escapeHtml(application.phone)}</dd>
+          <dt>Website</dt><dd>${application.website_url ? `<a class="admin-link" href="${escapeHtml(application.website_url)}" target="_blank" rel="noopener">Open</a>` : "—"}</dd>
+          <dt>Address</dt><dd>${addressBlock(application)}</dd>
+          <dt>Products</dt><dd>${escapeHtml(productList(application.desired_products))}</dd>
+          <dt>USD investment</dt><dd>${escapeHtml(labelFrom(BUDGET_LABELS, application.investment_budget_usd))}</dd>
+          <dt>Import experience</dt><dd>${escapeHtml(labelFrom(IMPORT_LABELS, application.import_experience))}</dd>
+          <dt>Main channel</dt><dd>${escapeHtml(labelFrom(CHANNEL_LABELS, application.sales_channel))}</dd>
+          <dt>Monthly reach</dt><dd>${escapeHtml(labelFrom(REACH_LABELS, application.customer_reach))}</dd>
+          <dt>Frequency</dt><dd>${escapeHtml(labelFrom(FREQUENCY_LABELS, application.order_frequency))}</dd>
+          <dt>Regions</dt><dd>${escapeHtml(application.sales_regions || "—")}</dd>
           <dt>Fulfillment</dt><dd>${escapeHtml(labelFrom(FULFILLMENT_LABELS, application.fulfillment_setup))}</dd>
           <dt>Reseller/tax ID</dt><dd>${escapeHtml(application.reseller_or_tax_id || "—")}</dd>
           <dt>Volumen mensual</dt><dd>${escapeHtml(application.monthly_volume)}</dd>
-          <dt>Enviada</dt><dd>${formatDate(application.created_at)}</dd>
-          <dt>Email enviado</dt><dd>${formatDate(application.decision_email_sent_at)}</dd>
+          <dt>Submitted</dt><dd>${formatDate(application.created_at)}</dd>
+          <dt>Email sent</dt><dd>${formatDate(application.decision_email_sent_at)}</dd>
         </dl>
 
-        <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Interés de productos</h3>
+        <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Product interest</h3>
         <p class="admin-callout">${paragraph(application.product_interest)}</p>
 
-        <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Plan del negocio</h3>
+        <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Business plan</h3>
         <p class="admin-callout">${paragraph(application.business_plan)}</p>
 
-        <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Notas adicionales</h3>
+        <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Additional notes</h3>
         <p class="admin-callout">${paragraph(application.notes)}</p>
       </div>
       <div>
         <form id="wholesale-review">
           <div class="admin-field">
-            <label>Perfil de mayoreo</label>
+            <label>Wholesale profile</label>
             <input name="profile" value="wholesale" ${final ? "disabled" : ""} />
           </div>
           <div class="admin-field">
-            <label>Notas de decisión</label>
-            <textarea name="decision_notes" placeholder="Notas para el email de rechazo y para el registro interno." ${final ? "disabled" : ""}>${escapeHtml(application.decision_notes || "")}</textarea>
+            <label>Decision notes</label>
+            <textarea name="decision_notes" placeholder="Notes for the rejection email and internal record." ${final ? "disabled" : ""}>${escapeHtml(application.decision_notes || "")}</textarea>
           </div>
           ${application.decision_email_error ? `<div class="admin-callout admin-callout-warn">${escapeHtml(application.decision_email_error)}</div>` : ""}
           <p class="admin-metric-sub" data-review-status></p>
           <div class="admin-actions-row">
-            <button type="button" class="admin-btn" data-action="under_review" ${final ? "disabled" : ""}>En revisión</button>
-            <button type="button" class="admin-btn admin-btn-primary" data-action="approve" ${final ? "disabled" : ""}>Aprobar + email</button>
-            <button type="button" class="admin-btn admin-btn-danger" data-action="reject" ${final ? "disabled" : ""}>Rechazar + email</button>
+            <button type="button" class="admin-btn" data-action="under_review" ${final ? "disabled" : ""}>Under review</button>
+            <button type="button" class="admin-btn admin-btn-primary" data-action="approve" ${final ? "disabled" : ""}>Approve + email</button>
+            <button type="button" class="admin-btn admin-btn-danger" data-action="reject" ${final ? "disabled" : ""}>Reject + email</button>
           </div>
         </form>
       </div>
@@ -246,7 +246,7 @@ export default {
   async render(mount, app, context = {}) {
     if (context.actions) {
       context.actions.innerHTML =
-        '<a class="admin-btn admin-btn-primary" href="/wholesale-application" target="_blank" rel="noopener">Abrir solicitud</a>';
+        '<a class="admin-btn admin-btn-primary" href="/wholesale-application" target="_blank" rel="noopener">Open application form</a>';
     }
 
     let controls;
@@ -256,18 +256,18 @@ export default {
       endpoint: "/api/admin/wholesale-applications",
       dataKey: "applications",
       statuses: STATUSES,
-      statusEmptyLabel: "Todos los estados",
-      searchPlaceholder: "Buscar solicitante, correo o negocio...",
+      statusEmptyLabel: "All statuses",
+      searchPlaceholder: "Search applicant, email, or business...",
       columns: [
-        { label: "Negocio", render: (r) => escapeHtml(r.company_name) },
-        { label: "Solicitante", render: (r) => escapeHtml(r.full_name) },
-        { label: "Correo", render: (r) => escapeHtml(r.email) },
-        { label: "Tipo", render: (r) => escapeHtml(typeLabel(r.business_type)) },
-        { label: "Productos", render: (r) => escapeHtml(productList(r.desired_products)) },
-        { label: "Inversión", render: (r) => escapeHtml(labelFrom(BUDGET_LABELS, r.investment_budget_usd)) },
-        { label: "Estado", render: (r) => estadoBadge(r.status) },
-        { label: "Email enviado", render: (r) => formatDate(r.decision_email_sent_at) },
-        { label: "Creada", render: (r) => formatDate(r.created_at) },
+        { label: "Business", render: (r) => escapeHtml(r.company_name) },
+        { label: "Applicant", render: (r) => escapeHtml(r.full_name) },
+        { label: "Email", render: (r) => escapeHtml(r.email) },
+        { label: "Type", render: (r) => escapeHtml(typeLabel(r.business_type)) },
+        { label: "Products", render: (r) => escapeHtml(productList(r.desired_products)) },
+        { label: "Investment", render: (r) => escapeHtml(labelFrom(BUDGET_LABELS, r.investment_budget_usd)) },
+        { label: "Status", render: (r) => estadoBadge(r.status) },
+        { label: "Email sent", render: (r) => formatDate(r.decision_email_sent_at) },
+        { label: "Created", render: (r) => formatDate(r.created_at) },
       ],
       onRowClick: (row) => openApplication(app, row, () => controls.reload()),
     });

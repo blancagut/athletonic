@@ -3,10 +3,10 @@ import { escapeHtml, formatDate, toast } from "../admin-core.js?v=20260623-magic
 import { listView, openModal } from "./_ui.js";
 
 const STATUSES = [
-  { value: "new", label: "Nuevo" },
-  { value: "contacted", label: "Contactado" },
-  { value: "quoted", label: "Cotizado" },
-  { value: "closed", label: "Cerrado" },
+  { value: "new", label: "New" },
+  { value: "contacted", label: "Contacted" },
+  { value: "quoted", label: "Quoted" },
+  { value: "closed", label: "Closed" },
   { value: "spam", label: "Spam" },
 ];
 
@@ -72,12 +72,12 @@ async function updateStatus(app, quoteRequest, status, reload, modal) {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });
-    toast("Quote actualizado", "success");
+    toast("Quote updated", "success");
     modal.close();
     reload();
     return result;
   } catch (err) {
-    toast(err.message || "No se pudo actualizar el quote", "error");
+    toast(err.message || "Could not update the quote", "error");
     return null;
   }
 }
@@ -90,15 +90,15 @@ async function openQuoteRequest(app, row, reload) {
     <div class="admin-detail-grid">
       <div>
         <dl class="admin-kv">
-          <dt>Estado</dt><dd>${statusBadge(quoteRequest.status)}</dd>
+          <dt>Status</dt><dd>${statusBadge(quoteRequest.status)}</dd>
           <dt>Nombre</dt><dd>${escapeHtml(quoteRequest.name)}</dd>
           <dt>Empresa</dt><dd>${escapeHtml(quoteRequest.company_name)}</dd>
           <dt>Email</dt><dd><a class="admin-link" href="mailto:${escapeHtml(quoteRequest.email)}">${escapeHtml(quoteRequest.email)}</a></dd>
           <dt>WhatsApp</dt><dd>${escapeHtml(quoteRequest.whatsapp)}</dd>
-          <dt>País</dt><dd>${escapeHtml(quoteRequest.country)}</dd>
-          <dt>Productos</dt><dd>${escapeHtml(quoteRequest.item_count)} líneas / ${escapeHtml(quoteRequest.quantity_count)} unidades</dd>
+          <dt>Country</dt><dd>${escapeHtml(quoteRequest.country)}</dd>
+          <dt>Products</dt><dd>${escapeHtml(quoteRequest.item_count)} lines / ${escapeHtml(quoteRequest.quantity_count)} units</dd>
           <dt>Origen</dt><dd>${escapeHtml(quoteRequest.source_page || "—")}</dd>
-          <dt>Creado</dt><dd>${formatDate(quoteRequest.created_at)}</dd>
+          <dt>Created</dt><dd>${formatDate(quoteRequest.created_at)}</dd>
           <dt>Actualizado</dt><dd>${formatDate(quoteRequest.updated_at)}</dd>
         </dl>
 
@@ -107,15 +107,15 @@ async function openQuoteRequest(app, row, reload) {
       </div>
       <div>
         <div class="admin-field">
-          <label>Actualizar estado</label>
+          <label>Update status</label>
           <select data-quote-status>
             ${STATUSES.map((status) => `<option value="${escapeHtml(status.value)}"${status.value === quoteRequest.status ? " selected" : ""}>${escapeHtml(status.label)}</option>`).join("")}
           </select>
         </div>
-        <button type="button" class="admin-btn admin-btn-primary" data-save-status>Guardar estado</button>
+        <button type="button" class="admin-btn admin-btn-primary" data-save-status>Save status</button>
       </div>
     </div>
-    <h3 style="margin:1.2rem 0 0.5rem;font-size:1rem;">Productos solicitados</h3>
+    <h3 style="margin:1.2rem 0 0.5rem;font-size:1rem;">Requested products</h3>
     ${itemsTable(quoteRequest.items)}
   `);
 
@@ -130,7 +130,7 @@ export default {
   async render(mount, app, context = {}) {
     if (context.actions) {
       context.actions.innerHTML =
-        '<a class="admin-btn admin-btn-primary" href="/catalog/wholesale-muay-thai" target="_blank" rel="noopener">Abrir catálogo</a>';
+        '<a class="admin-btn admin-btn-primary" href="/catalog/wholesale-muay-thai" target="_blank" rel="noopener">Open catalog</a>';
     }
 
     let controls;
@@ -140,17 +140,17 @@ export default {
       endpoint: "/api/admin/wholesale-quote-requests",
       dataKey: "quote_requests",
       statuses: STATUSES,
-      statusEmptyLabel: "Todos los estados",
-      searchPlaceholder: "Buscar empresa, email, país...",
+      statusEmptyLabel: "All statuses",
+      searchPlaceholder: "Search company, email, country...",
       columns: [
         { label: "Empresa", render: (r) => escapeHtml(r.company_name) },
         { label: "Contacto", render: (r) => escapeHtml(r.name) },
         { label: "Email", render: (r) => escapeHtml(r.email) },
-        { label: "País", render: (r) => escapeHtml(r.country) },
+        { label: "Country", render: (r) => escapeHtml(r.country) },
         { label: "Líneas", render: (r) => escapeHtml(r.item_count) },
         { label: "Unidades", render: (r) => escapeHtml(r.quantity_count) },
-        { label: "Estado", render: (r) => statusBadge(r.status) },
-        { label: "Creado", render: (r) => formatDate(r.created_at) },
+        { label: "Status", render: (r) => statusBadge(r.status) },
+        { label: "Created", render: (r) => formatDate(r.created_at) },
       ],
       onRowClick: (row) => openQuoteRequest(app, row, () => controls.reload()),
     });
@@ -159,7 +159,7 @@ export default {
       try {
         await openQuoteRequest(app, { id: context.param }, () => controls.reload());
       } catch (err) {
-        toast(err.message || "No se pudo abrir el quote", "error");
+        toast(err.message || "Could not open the quote", "error");
       }
     }
   },
