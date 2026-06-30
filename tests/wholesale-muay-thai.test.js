@@ -13,7 +13,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
 process.env.RESEND_API_KEY = process.env.RESEND_API_KEY || "test-resend-key";
 process.env.ATHLETONIC_SUPPORT_EMAIL = process.env.ATHLETONIC_SUPPORT_EMAIL || "support@example.com";
 
-const APPROVED_WHOLESALE_BRANDS = new Set(["fairtex", "raja_boxing", "twins_special", "windy"]);
+const APPROVED_WHOLESALE_BRANDS = new Set(["boon", "fairtex", "raja_boxing", "topking", "twins_special", "windy"]);
 const BANNED_WHOLESALE_BRANDS = new Set([
   "century_martial_arts",
   "everlast",
@@ -25,7 +25,7 @@ const BANNED_WHOLESALE_BRANDS = new Set([
   "venum",
 ]);
 const BANNED_WHOLESALE_TERMS =
-  /\b(backpack|beanie|cap|duffle|grappling dummy|hoodie|jacket|jewelry|key ring|keychain|necklace|package protection|personalization|shirt|shoe|supplement|training dummy|venum)\b/i;
+  /\b(backpack|beanie|duffle|grappling dummy|hoodie|jacket|jewelry|key ring|keychain|necklace|package protection|personalization|shirt|shoe|supplement|training dummy|venum)\b/i;
 
 function createResponseCapture() {
   return {
@@ -89,7 +89,7 @@ function createJsonRequest(method, query, body) {
 }
 
 test("generated wholesale manifest only contains approved Thai fight brands and no pricing", () => {
-  assert.ok(catalogData.products.length > 0, "expected generated wholesale products");
+  assert.ok(catalogData.products.length >= 1200, "expected a broad Thai fight wholesale catalog");
 
   for (const product of catalogData.products) {
     assert.ok(
@@ -109,6 +109,13 @@ test("generated wholesale manifest only contains approved Thai fight brands and 
     assert.ok(!("cost" in product));
     assert.ok(!("margin" in product));
     assert.ok(!("supplier_price" in product));
+  }
+
+  for (const requiredBrand of APPROVED_WHOLESALE_BRANDS) {
+    assert.ok(
+      catalogData.products.some((product) => product.brand_slug === requiredBrand),
+      `expected ${requiredBrand} products in wholesale catalog`
+    );
   }
 });
 

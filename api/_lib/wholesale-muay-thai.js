@@ -10,18 +10,29 @@ const WHOLESALE_CATALOG_PATH = path.join(
 );
 
 const THAI_FIGHT_BRANDS = new Set([
+  "boon",
   "fairtex",
+  "topking",
+  "top king",
   "raja_boxing",
   "raja boxing",
   "twins_special",
   "twins special",
   "windy",
-  "topking",
-  "top king",
-  "boon",
   "king pro",
   "sks",
   "thaismai",
+]);
+
+const APPROVED_WHOLESALE_BRANDS = new Set([
+  ...THAI_FIGHT_BRANDS,
+]);
+
+const BANNED_WHOLESALE_BRANDS = new Set([
+  "allbirds",
+  "bear_komplex",
+  "ghost_lifestyle",
+  "venum",
 ]);
 
 const GLOBAL_FIGHT_BRANDS = new Set([]);
@@ -63,27 +74,47 @@ const POSITIVE_PATTERNS = [
 ];
 
 const WHOLESALE_ALLOWED_PRODUCT_PATTERNS = [
+  /\bgloves?\b/i,
   /\bboxing gloves?\b/i,
+  /\bmuay thai gloves?\b/i,
+  /\btraining gloves?\b/i,
+  /\bsparring gloves?\b/i,
   /\bfight gloves?\b/i,
   /\bbag gloves?\b/i,
+  /\bbag mitts?\b/i,
   /\bgrappling gloves?\b/i,
   /\bmma gloves?\b/i,
   /\bfocus mitts?\b/i,
   /\bpunch mitts?\b/i,
+  /\bpro mitts?\b/i,
   /\bthai pads?\b/i,
   /\bkick pads?\b/i,
+  /\bkicking pads?\b/i,
   /\bkicking shields?\b/i,
   /\bstrike shields?\b/i,
+  /\bpunch shields?\b/i,
+  /\bboxing pads?\b/i,
+  /\bboxing paddles?\b/i,
+  /\bboxing sticks?\b/i,
+  /\bstriking (sticks?|paddles?)\b/i,
   /\bbelly pads?\b/i,
+  /\bbelly protectors?\b/i,
   /\bbody protectors?\b/i,
+  /\bprotective vests?\b/i,
   /\bshin guards?\b/i,
+  /\bshinguards?\b/i,
   /\bshin pads?\b/i,
   /\bheadgear\b/i,
   /\bhead guards?\b/i,
+  /\bheadguards?\b/i,
   /\bgroin (guards?|protectors?)\b/i,
+  /\bno[- ]?foul protectors?\b/i,
   /\bgroin cups?\b/i,
+  /\bprotective cups?\b/i,
+  /\bcups? & supporters?\b/i,
   /\bmouth ?guards?\b/i,
   /\bhand wraps?\b/i,
+  /\bhandwraps?\b/i,
   /\bwrist wraps?\b/i,
   /\bankle (guards?|supports?)\b/i,
   /\bheavy bags?\b/i,
@@ -91,12 +122,19 @@ const WHOLESALE_ALLOWED_PRODUCT_PATTERNS = [
   /\bbanana bags?\b/i,
   /\bdouble end bags?\b/i,
   /\bspeed bags?\b/i,
+  /\bmaize bags?\b/i,
+  /\bmuay thai heavy bags?\b/i,
   /\bboxing tape\b/i,
   /\bboxing oil\b/i,
   /\bmuay thai shorts?\b/i,
+  /\bthai boxing shorts?\b/i,
   /\bboxing shorts?\b/i,
+  /\bboxing trunks?\b/i,
   /\bfight shorts?\b/i,
   /\bkids boxing shorts?\b/i,
+  /\bmma shorts?\b/i,
+  /\bskipping ropes?\b/i,
+  /\bjump ropes?\b/i,
 ];
 
 const NEGATIVE_PATTERNS = [
@@ -120,17 +158,36 @@ const NEGATIVE_PATTERNS = [
   /\bjackets?\b/i,
   /\bbeanies?\b/i,
   /\bsweatshirts?\b/i,
+  /\btank tops?\b/i,
   /\bpants?\b/i,
   /\bleggings?\b/i,
+  /\btrousers?\b/i,
   /\bbra\b/i,
   /\bsock(s)?\b/i,
+  /\bfootwear\b/i,
+  /\buniforms?\b/i,
+  /\bkimono\b/i,
+  /\bkeikogi\b/i,
+  /\bbjj\b/i,
+  /\bjiu[- ]?jitsu\b/i,
+  /\bjudo\b/i,
+  /\bkarate\b/i,
+  /\bgi\b/i,
+  /\bbelts?\b/i,
+  /\bpatch(es)?\b/i,
+  /\bbooks?\b/i,
+  /\bnovelt(y|ies)\b/i,
+  /\begift\b/i,
+  /\bgift cards?\b/i,
   /\bmug\b/i,
   /\bcandle\b/i,
   /\bkeychains?\b/i,
+  /\bkey rings?\b/i,
   /\bstickers?\b/i,
   /\bnecklace\b/i,
   /\bjewelry\b/i,
   /\bduffle\b/i,
+  /\bgym bags?\b/i,
   /\btoys?\b/i,
   /\bshakers?\b/i,
   /\bbottles?\b/i,
@@ -148,6 +205,18 @@ const NEGATIVE_PATTERNS = [
   /\bpersonalization\b/i,
   /\bgrappling dummy\b/i,
   /\btraining dummy\b/i,
+  /\bwall pads?\b/i,
+  /\bpost pads?\b/i,
+  /\broll out mat\b/i,
+  /\bhome roll mat\b/i,
+  /\bmat tape\b/i,
+  /\bunderlayment\b/i,
+  /\bfoam\b/i,
+  /\bcarpet bonded\b/i,
+  /\bcrash pads?\b/i,
+  /\bescrima\b/i,
+  /\bbo staff\b/i,
+  /\brattan cane\b/i,
   /\bceiling hook\b/i,
   /\bsteel hook\b/i,
   /\bchain\b/i,
@@ -219,23 +288,23 @@ function getBrandOrigin(brandSlug) {
 }
 
 function deriveProductType(text) {
-  if (/\bgloves?\b/.test(text)) return "Gloves";
-  if (/\bgroin (protector|guard)\b/.test(text)) return "Groin Protector";
-  if (/\bmouth guard\b/.test(text)) return "Mouthguard";
-  if (/\bbelly pad\b/.test(text)) return "Belly Pad";
-  if (/\bshin guard(s)?\b/.test(text)) return "Shin Guards";
-  if (/\bheadgear\b/.test(text) || /\bhead guard\b/.test(text)) return "Headgear";
-  if (/\bhand wraps?\b/.test(text) || /\bwraps?\b/.test(text)) return "Hand Wraps";
+  if (/\b(gloves?|bag mitts?|mitts?)\b/.test(text) && !/\bfocus mitts?\b/.test(text) && !/\bpunch mitts?\b/.test(text)) return "Gloves";
+  if (/\bgroin (protector|guard|cup)\b/.test(text) || /\bno[- ]?foul protector\b/.test(text) || /\bprotective cup\b/.test(text)) return "Groin Protector";
+  if (/\bmouth ?guard\b/.test(text)) return "Mouthguard";
+  if (/\bbelly (pad|protector)s?\b/.test(text)) return "Belly Pad";
+  if (/\bshin (guard|pad)(s)?\b/.test(text) || /\bshinguards?\b/.test(text)) return "Shin Guards";
+  if (/\bheadgear\b/.test(text) || /\bhead guards?\b/.test(text) || /\bheadguards?\b/.test(text)) return "Headgear";
+  if (/\bhand ?wraps?\b/.test(text) || /\bboxing tape\b/.test(text)) return "Hand Wraps";
   if (/\bpunch mitts?\b/.test(text) || /\bfocus mitts?\b/.test(text) || /\bmitts?\b/.test(text))
     return "Pads & Mitts";
-  if (/\bheavy bag\b/.test(text) || /\bspeed bag\b/.test(text) || /\bbag gloves?\b/.test(text))
+  if (/\bheavy bags?\b/.test(text) || /\bspeed bags?\b/.test(text) || /\bpunching bags?\b/.test(text) || /\bbanana bags?\b/.test(text) || /\bdouble end bags?\b/.test(text) || /\bmaize bags?\b/.test(text))
     return "Bags";
-  if (/\bthai pad(s)?\b/.test(text) || /\bkick pad(s)?\b/.test(text) || /\bbody protector\b/.test(text))
+  if (/\bthai pad(s)?\b/.test(text) || /\bkick(ing)? pad(s)?\b/.test(text) || /\bbody protector\b/.test(text) || /\bstrike shield\b/.test(text) || /\bpunch shield\b/.test(text) || /\bboxing (sticks?|paddles?|pads?)\b/.test(text) || /\bstriking (sticks?|paddles?)\b/.test(text))
     return "Training Pads";
-  if (/\bskipping rope\b/.test(text)) return "Skipping Rope";
+  if (/\bskipping ropes?\b/.test(text) || /\bjump ropes?\b/.test(text)) return "Skipping Rope";
   if (/\bcompression shorts?\b/.test(text) || /\bcompression pants?\b/.test(text) || /\brashguard\b/.test(text))
     return "Fight Apparel";
-  if (/\bfight short(s)?\b/.test(text) || /\bmuay thai short(s)?\b/.test(text) || /\bboxing short(s)?\b/.test(text))
+  if (/\bfight short(s)?\b/.test(text) || /\bmma short(s)?\b/.test(text) || /\bmuay thai short(s)?\b/.test(text) || /\bthai boxing short(s)?\b/.test(text) || /\bboxing short(s)?\b/.test(text) || /\bboxing trunks?\b/.test(text))
     return "Fight Apparel";
   if (/\bboxing oil\b/.test(text)) return "Care";
   return "Training Gear";
@@ -341,7 +410,16 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
   ]);
   const brand = cleanText(productRow.brand);
 
-  if (!THAI_FIGHT_BRANDS.has(brand)) {
+  if (BANNED_WHOLESALE_BRANDS.has(brand)) {
+    return {
+      score: -999,
+      reasons: ["banned_brand"],
+      text,
+    };
+  }
+
+  const hasApprovedBrand = APPROVED_WHOLESALE_BRANDS.has(brand);
+  if (!hasApprovedBrand) {
     return {
       score: -999,
       reasons: ["unapproved_brand"],
@@ -349,11 +427,7 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
     };
   }
 
-  if (
-    /(tee|shirt|hoodie|sweatshirt|cap|hat|beanie|jacket|uniform|gi|kimono|apparel|clothing|belt|patch|mat|underlayment|foam|pant|legging|bra|sock|shoe|running|backpack|duffle|mug|candle|keychain|key ring|necklace|jewelry|toy|bottle|shaker|deodorant|mouthwash|soap|perfume|blanket|poster|rashguard|compression|jersey|singlet|trunks?|package protection|personalization|grappling dummy|training dummy|ceiling hook|steel hook|chain|anchor)/i.test(
-      text
-    )
-  ) {
+  if (NEGATIVE_PATTERNS.some((pattern) => pattern.test(text))) {
     return {
       score: -999,
       reasons: ["hard_exclusion"],
@@ -361,7 +435,11 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
     };
   }
 
-  if (!WHOLESALE_ALLOWED_PRODUCT_PATTERNS.some((pattern) => pattern.test(text))) {
+  const hasAllowedProductType = WHOLESALE_ALLOWED_PRODUCT_PATTERNS.some((pattern) => pattern.test(text));
+  const hasFightCollection = String(productRow.store_collection || "").toLowerCase() === "fight_gear";
+  const hasFightKeyword = POSITIVE_PATTERNS.some((pattern) => pattern.test(text));
+
+  if (!hasAllowedProductType) {
     return {
       score: -999,
       reasons: ["unsupported_product_type"],
@@ -377,12 +455,27 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
     reasons.push("thai_brand");
   }
 
-  if (POSITIVE_PATTERNS.some((pattern) => pattern.test(text))) {
+  if (GLOBAL_FIGHT_BRANDS.has(brand)) {
+    score += 4;
+    reasons.push("fight_brand");
+  }
+
+  if (hasApprovedBrand && hasAllowedProductType) {
+    score += 5;
+    reasons.push("approved_brand_product_type");
+  }
+
+  if (!hasApprovedBrand && hasFightCollection && hasFightKeyword && hasAllowedProductType) {
+    score += 3;
+    reasons.push("fight_collection_product_type");
+  }
+
+  if (hasFightKeyword) {
     score += 4;
     reasons.push("fight_keyword");
   }
 
-  if (String(productRow.store_collection || "").toLowerCase() === "fight_gear") {
+  if (hasFightCollection) {
     score += 2;
     reasons.push("fight_collection");
   }
@@ -636,6 +729,8 @@ function normalizeQuoteRequestBody(body) {
 
 module.exports = {
   THAI_FIGHT_BRANDS,
+  APPROVED_WHOLESALE_BRANDS,
+  BANNED_WHOLESALE_BRANDS,
   GLOBAL_FIGHT_BRANDS,
   POSITIVE_PATTERNS,
   NEGATIVE_PATTERNS,
