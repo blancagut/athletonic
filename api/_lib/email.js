@@ -412,8 +412,103 @@ async function sendWholesaleApplicationDecisionEmail({
   });
 }
 
+async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl }) {
+  if (!recipientEmail) return null;
+
+  const quoteUrl = `${siteUrl}/catalog/wholesale-muay-thai`;
+  const itemsHtml = request.items
+    .map(
+      (item) => `
+        <tr>
+          <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
+            <strong>${escapeHtml(item.name)}</strong>
+            <div style="color:#64748b;font-size:14px;">${escapeHtml(item.brand)} · Qty ${item.quantity}</div>
+            ${
+              item.selected_options && Object.keys(item.selected_options).length
+                ? `<div style="color:#475569;font-size:13px;margin-top:4px;">${escapeHtml(
+                    Object.entries(item.selected_options)
+                      .map(([key, value]) => `${key}: ${value}`)
+                      .join(" / ")
+                  )}</div>`
+                : ""
+            }
+          </td>
+        </tr>
+      `
+    )
+    .join("");
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
+      <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
+        Athletonic wholesale quote request
+      </p>
+      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">New wholesale inquiry</h1>
+      <p style="margin:0 0 16px;">
+        <strong>${escapeHtml(request.company_name)}</strong> submitted a quote request from
+        <strong>${escapeHtml(request.name)}</strong> (${escapeHtml(request.email)}).
+      </p>
+      <p style="margin:0 0 12px;color:#475569;">
+        WhatsApp: ${escapeHtml(request.whatsapp)}<br />
+        Country: ${escapeHtml(request.country)}
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+        ${itemsHtml}
+      </table>
+      ${
+        request.notes
+          ? `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:0 0 20px;"><strong>Notes</strong><br />${escapeHtml(
+              request.notes
+            ).replaceAll("\n", "<br />")}</div>`
+          : ""
+      }
+      <p style="margin:0 0 24px;">
+        <a href="${escapeHtml(quoteUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
+          Open wholesale catalog
+        </a>
+      </p>
+      <p style="margin:0;color:#475569;font-size:14px;">
+        Request ID: ${escapeHtml(request.id)}
+      </p>
+    </div>
+  `;
+
+  const textLines = [
+    "Athletonic wholesale quote request",
+    "",
+    `Company: ${request.company_name}`,
+    `Contact: ${request.name} <${request.email}>`,
+    `WhatsApp: ${request.whatsapp}`,
+    `Country: ${request.country}`,
+    "",
+    "Items:",
+    ...request.items.map((item) => {
+      const options =
+        item.selected_options && Object.keys(item.selected_options).length
+          ? ` (${Object.entries(item.selected_options)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(" / ")})`
+          : "";
+      return `- ${item.brand} ${item.name}${options} x${item.quantity}`;
+    }),
+    request.notes ? "" : null,
+    request.notes ? `Notes:\n${request.notes}` : null,
+    "",
+    `Open catalog: ${quoteUrl}`,
+    `Request ID: ${request.id}`,
+  ].filter((line) => line !== null);
+
+  return sendEmail({
+    to: recipientEmail,
+    subject: `Athletonic wholesale quote request from ${request.company_name}`,
+    html,
+    text: textLines.join("\n"),
+  });
+}
+
 module.exports = {
   sendNewsletterWelcomeEmail,
   sendOrderConfirmationEmail,
   sendWholesaleApplicationDecisionEmail,
+  sendWholesaleQuoteRequestEmail,
 };
