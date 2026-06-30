@@ -2,6 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const path = require("node:path");
 const { Readable } = require("node:stream");
 
@@ -103,6 +104,11 @@ function createJsonRequest(method, query, body) {
   return req;
 }
 
+function hasOzSize(values, ounces) {
+  const pattern = new RegExp(`\\b${ounces}\\s*[- ]?oz\\.?\\b`, "i");
+  return values.some((value) => pattern.test(value));
+}
+
 test("generated wholesale manifest only contains approved combat brands and no pricing", () => {
   assert.ok(catalogData.products.length >= 2500, "expected a broad combat-sports wholesale catalog");
 
@@ -170,6 +176,68 @@ test("generated wholesale manifest only contains approved combat brands and no p
     0,
     "Bag Gloves should not include generic training gloves"
   );
+});
+
+test("Thai adult glove ounce runs include 16oz without inventing S/M/L bag glove sizes", () => {
+  const coreThaiBrands = new Set(["boon", "topking", "twins_special"]);
+  const childPattern = /\b(kids?|children|youth|mini|key ring|keychain|hanging mirror)\b/i;
+  const productText = (product) => [product.name, product.category_label, product.product_type].join(" ");
+
+  const adultOzRunsMissing16 = catalogData.products.filter((product) => {
+    if (!coreThaiBrands.has(product.brand_slug)) return false;
+    if (!/Training Gloves|Lace-Up & Fight Gloves|Bag Gloves/i.test(product.category_label)) return false;
+    if (childPattern.test(productText(product))) return false;
+    const hasAdultOzRun = [8, 10, 12, 14].every((ounces) => hasOzSize(product.sizes, ounces));
+    return hasAdultOzRun && !hasOzSize(product.sizes, 16);
+  });
+
+  assert.deepEqual(
+    adultOzRunsMissing16.map((product) => `${product.brand}: ${product.name}`),
+    [],
+    "adult Thai glove lines that offer 8/10/12/14oz should also expose 16oz"
+  );
+
+  const boonCompactGlove = catalogData.products.find(
+    (product) => product.brand_slug === "boon" && /Compact Velcro Glove Burgundy/i.test(product.name)
+  );
+  assert.ok(boonCompactGlove, "expected Boon Compact Velcro Glove in wholesale catalog");
+  assert.ok(hasOzSize(boonCompactGlove.sizes, 16), "expected Boon glove to include 16oz");
+
+  const topKingProGlove = catalogData.products.find(
+    (product) => product.brand_slug === "topking" && /TOPKING GLOVES "PRO"/i.test(product.name)
+  );
+  assert.ok(topKingProGlove, "expected Top King PRO glove in wholesale catalog");
+  assert.ok(hasOzSize(topKingProGlove.sizes, 16), "expected Top King glove to include 16oz");
+
+  const twinsGlove = catalogData.products.find(
+    (product) => product.brand_slug === "twins_special" && /TWINS Boxing Gloves/i.test(product.name)
+  );
+  assert.ok(twinsGlove, "expected Twins Special glove in wholesale catalog");
+  assert.ok(hasOzSize(twinsGlove.sizes, 16), "expected Twins Special glove to include 16oz");
+
+  const boonBagGlove = catalogData.products.find(
+    (product) => product.brand_slug === "boon" && product.category_label === "Bag Gloves" && /^BGBK Bag Gloves/i.test(product.name)
+  );
+  assert.ok(boonBagGlove, "expected Boon S/M/L bag glove in wholesale catalog");
+  assert.deepEqual(boonBagGlove.sizes, ["S", "M", "L", "XL"], "bag gloves with apparel-style sizes should stay S/M/L/XL");
+
+  const boonChildFourOzGloves = catalogData.products.filter(
+    (product) => product.brand_slug === "boon" && /\b4oz Children's Gloves\b/i.test(product.name)
+  );
+  assert.ok(boonChildFourOzGloves.length > 0, "expected Boon 4oz children's gloves in wholesale catalog");
+  for (const product of boonChildFourOzGloves) {
+    assert.deepEqual(product.sizes, ["4oz"], `${product.name} should expose only the explicit 4oz size`);
+  }
+});
+
+test("wholesale line sheet header stays lean and does not show counts or badges", () => {
+  const html = fs.readFileSync(path.join(__dirname, "..", "pages", "catalog", "wholesale-muay-thai.html"), "utf8");
+
+  assert.ok(!html.includes("Quote only"));
+  assert.ok(!html.includes("No prices shown"));
+  assert.ok(!html.includes("Mobile ready"));
+  assert.ok(!html.includes("data-result-count"));
+  assert.ok(!html.includes("catalog lines"));
 });
 
 test("GET /api/wholesale/catalog returns wholesale products without price fields", async () => {

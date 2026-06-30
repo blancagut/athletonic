@@ -352,6 +352,7 @@ function getBrandOrigin(brandSlug) {
 function deriveProductType(text) {
   const thaiBrand = /\b(raja boxing|raja_boxing|fairtex|twins special|twins_special|windy|boon|topking|top king|thaismai)\b/.test(text);
 
+  if (/\b(shorts?|trunks?)\b/.test(text) || (thaiBrand && /\bshorts?\b/.test(text))) return "Shorts";
   if (/\b(rfbsg|rsg)[- ]?[a-z0-9]*/.test(text)) return "Shin Guards";
   if (/\bshin (guard|pad)(s)?\b/.test(text) || /\bshinguards?\b/.test(text)) return "Shin Guards";
   if (/\bheadgear\b/.test(text) || /\bhead guards?\b/.test(text) || /\bheadguards?\b/.test(text)) return "Headgear";
@@ -382,7 +383,6 @@ function deriveProductType(text) {
   if (/\b(rfbgv|rbgv|rbgl|bgv)[- ]?[a-z0-9]*/.test(text)) return "Training Gloves";
   if (/\b(sparring|training|boxing|muay thai) gloves?\b/.test(text) || /\bgloves?\b/.test(text)) return "Training Gloves";
 
-  if (/\b(shorts?|trunks?)\b/.test(text) || (thaiBrand && /\bshorts?\b/.test(text))) return "Shorts";
   if (/\brash ?guards?\b/.test(text)) return "Rash Guards";
   if (/\bcompression pants?\b/.test(text)) return "Compression Fightwear";
 
@@ -439,6 +439,91 @@ function extractOptionGroups(productRow, variants) {
     colors: dedupeSorted(colorValues),
     other_options: dedupeSorted(otherValues),
   };
+}
+
+function hasOzSize(values, ounces) {
+  const pattern = new RegExp(`\\b${ounces}\\s*[- ]?oz\\.?\\b`, "i");
+  return values.some((value) => pattern.test(value));
+}
+
+function inferOzLabel(values, ounces) {
+  const sample = values.find((value) => /\b\d+\s*[- ]?oz\.?\b/i.test(value)) || "";
+  if (/\d+-oz/i.test(sample)) return `${ounces}-oz`;
+  if (/\d+\s+oz\./i.test(sample)) return `${ounces} oz.`;
+  if (/\d+\s+oz/i.test(sample)) return `${ounces} oz`;
+  return `${ounces}oz`;
+}
+
+function sortSizeValues(values) {
+  const rank = new Map([
+    ["xxs", 1],
+    ["xs", 2],
+    ["s", 3],
+    ["m", 4],
+    ["l", 5],
+    ["xl", 6],
+    ["xxl", 7],
+    ["xxxl", 8],
+  ]);
+  return [...values].sort((a, b) => {
+    const aOz = String(a).match(/\b(\d+)\s*[- ]?oz\.?\b/i);
+    const bOz = String(b).match(/\b(\d+)\s*[- ]?oz\.?\b/i);
+    if (aOz && bOz) return Number(aOz[1]) - Number(bOz[1]);
+    if (aOz) return -1;
+    if (bOz) return 1;
+    const aRank = rank.get(cleanText(a));
+    const bRank = rank.get(cleanText(b));
+    if (aRank && bRank) return aRank - bRank;
+    if (aRank) return -1;
+    if (bRank) return 1;
+    return String(a).localeCompare(String(b), undefined, { sensitivity: "base" });
+  });
+}
+
+function normalizeWholesaleSizes(productRow, productType, sizes) {
+  const nextSizes = dedupeSorted(sizes);
+  const titleOzSizes = [
+    ...new Set(
+      (String(productRow.name || "").match(/\b\d+\s*[- ]?oz\.?\b/gi) || []).map((value) =>
+        value.replace(/\s*-\s*/g, "-").replace(/\s+/g, "").replace(/\.$/, "")
+      )
+    ),
+  ];
+  const text = [
+    productRow.brand,
+    productRow.brand_slug,
+    productRow.name,
+    productRow.category,
+    productRow.category_label,
+    productRow.product_type,
+    productType,
+  ]
+    .map((value) => cleanText(value))
+    .join(" ");
+  const brand = cleanText(productRow.brand || productRow.brand_slug);
+  const isChildGlove = /\b(kids?|children|youth)\b/i.test(text);
+
+  if (isChildGlove && titleOzSizes.length) {
+    return sortSizeValues(titleOzSizes);
+  }
+
+  const isThaiAdultGlove =
+    THAI_FIGHT_BRANDS.has(brand) &&
+    /\b(training gloves|lace-up & fight gloves|bag gloves)\b/i.test(productType || "") &&
+    !/\b(kids?|children|youth|mini|key ring|keychain|hanging mirror)\b/i.test(text);
+
+  if (!isThaiAdultGlove) return sortSizeValues(nextSizes);
+
+  if (brand === "twins_special" && !nextSizes.length) {
+    return ["8oz", "10oz", "12oz", "14oz", "16oz"];
+  }
+
+  const hasStandardRun = [8, 10, 12, 14].every((ounces) => hasOzSize(nextSizes, ounces));
+  if (hasStandardRun && !hasOzSize(nextSizes, 16)) {
+    nextSizes.push(inferOzLabel(nextSizes, 16));
+  }
+
+  return sortSizeValues(dedupeSorted(nextSizes));
 }
 
 function buildSearchText(productRow, extraValues = []) {
@@ -595,6 +680,7 @@ function buildWholesaleProductRecord(productRow, variants = [], images = []) {
   const text = buildProductTypeText(productRow, variants);
   const productType = deriveProductType(text);
   const optionGroups = extractOptionGroups(productRow, variants);
+  optionGroups.sizes = normalizeWholesaleSizes(productRow, productType, optionGroups.sizes);
   const availability = Number(productRow.available) ? "Available" : "Out of stock";
 
   return {
@@ -833,6 +919,7 @@ module.exports = {
   matchesWholesaleFilters,
   normalizeWholesaleCatalogProduct,
   normalizeQuoteRequestBody,
+  normalizeWholesaleSizes,
   paginateWholesaleProducts,
   sanitizeQuoteItem,
   scoreWholesaleProduct,

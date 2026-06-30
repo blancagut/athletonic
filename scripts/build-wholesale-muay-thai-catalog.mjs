@@ -11,6 +11,7 @@ const {
   deriveCategoryLabel,
   deriveProductType,
   humanizeSlug,
+  normalizeWholesaleSizes,
   scoreWholesaleProduct,
   stripHtml,
 } = require("../api/_lib/wholesale-muay-thai.js");
@@ -187,7 +188,16 @@ function buildOfficialProducts() {
         quote_enabled: true,
         available: stockStatusToAvailable(row.stock_status),
         availability_status: stockStatusToAvailable(row.stock_status) ? "Available" : "Out of stock",
-        sizes: [...new Set(sizes.map((value) => stripHtml(value).trim()).filter(Boolean))],
+        sizes: normalizeWholesaleSizes(
+          {
+            brand: source.brandSlug,
+            brand_slug: source.brandSlug,
+            name: row.product_name,
+            category: row.category,
+          },
+          productType,
+          sizes
+        ),
         colors: [...new Set(colors.map((value) => stripHtml(value).trim()).filter(Boolean))],
         other_options: [],
         variant_count: variants.length || Math.max(sizes.length, colors.length, 1),
