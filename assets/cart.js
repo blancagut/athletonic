@@ -1563,7 +1563,7 @@
   "use strict";
 
   var RECENT_KEY  = "ath-recent-searches-v1";
-  var MAX_RESULTS = 7;
+  var MAX_RESULTS = 1200;
   var MAX_RECENT  = 5;
   var DEBOUNCE_MS = 80;
   var formCounter = 0;
@@ -1988,7 +1988,7 @@
      default browse view when there is no active query/category. Results are
      paginated (PAGE_SIZE per chunk) with a "Load more" button so a large match
      set never injects thousands of nodes at once. */
-  var CATALOG_PAGE_SIZE = 60;
+  var CATALOG_PAGE_SIZE = 1200;
   var _catalogMatches = [];
   var _catalogShown = 0;
   var _loadMoreBtn = null;
