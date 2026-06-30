@@ -5653,8 +5653,14 @@ body.wholesale-drawer-open {
 }
 
 /* Wholesale catalog visual refresh */
+.wholesale-muay-thai-body,
+.wholesale-muay-thai-body * {
+  box-sizing: border-box;
+}
+
 .wholesale-muay-thai-body {
   min-height: 100vh;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 8% -12%, rgba(196, 54, 36, 0.18), transparent 28rem),
     radial-gradient(circle at 92% 2%, rgba(26, 69, 61, 0.2), transparent 30rem),
@@ -6077,22 +6083,43 @@ body.wholesale-drawer-open {
 @media (max-width: 760px) {
   .wholesale-header,
   .wholesale-shell {
-    width: min(100vw - 18px, 1400px);
+    width: calc(100vw - 18px) !important;
+    max-width: calc(100vw - 18px);
+    margin-right: 9px;
+    margin-left: 9px;
   }
 
   .wholesale-header {
     position: static;
     grid-template-columns: 1fr;
     border-radius: 22px;
+    overflow: hidden;
   }
 
   .wholesale-brand-lockup {
+    min-width: 0;
     width: 100%;
     justify-content: flex-start;
   }
 
+  .wholesale-brand-lockup span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .wholesale-title h1 {
+    max-width: 100%;
+    font-size: clamp(1.18rem, 6vw, 1.5rem) !important;
+    overflow-wrap: anywhere;
+    white-space: normal !important;
+  }
+
   .wholesale-title > span {
+    max-width: 100%;
     font-size: 0.84rem;
+    white-space: normal !important;
   }
 
   .wholesale-quote-button {
@@ -6110,6 +6137,12 @@ body.wholesale-drawer-open {
 
   .wholesale-filters {
     grid-template-columns: 1fr;
+  }
+
+  .wholesale-filters label,
+  .wholesale-filters input,
+  .wholesale-filters select {
+    min-width: 0;
   }
 
   .wholesale-line-sheet {
