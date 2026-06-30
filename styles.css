@@ -4388,6 +4388,92 @@ h1 {
 }
 .catalog-empty-hint { font-size: 14px; opacity: 0.8; }
 
+.catalog-tools {
+  margin: 18px clamp(14px, 3.6vw, 56px) 22px;
+  padding: clamp(16px, 2.4vw, 24px);
+  border: 1px solid rgba(11, 31, 58, 0.12);
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(49, 195, 190, 0.16), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(180deg, #ffffff, #f7fafc);
+  box-shadow: 0 18px 48px rgba(11, 31, 58, 0.10);
+}
+
+.catalog-tools[hidden] {
+  display: none;
+}
+
+.catalog-tools-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.catalog-tools-header h2 {
+  margin: 2px 0 0;
+  color: var(--blue, #0b1f3a);
+  font-size: clamp(20px, 2.6vw, 30px);
+  letter-spacing: -0.04em;
+}
+
+.catalog-tools-header button {
+  min-height: 40px;
+  border: 1px solid rgba(11, 31, 58, 0.16);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--blue, #0b1f3a);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 850;
+  padding: 0 16px;
+}
+
+.catalog-tools-header button:hover {
+  border-color: var(--teal, #31c3be);
+  background: rgba(49, 195, 190, 0.10);
+}
+
+.catalog-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.catalog-filter-grid label {
+  display: grid;
+  gap: 7px;
+}
+
+.catalog-filter-grid span {
+  color: var(--muted, #667085);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalog-filter-grid select,
+.catalog-filter-grid input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(11, 31, 58, 0.14);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--ink, #101828);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 12px;
+  outline: none;
+}
+
+.catalog-filter-grid select:focus,
+.catalog-filter-grid input:focus {
+  border-color: var(--teal, #31c3be);
+  box-shadow: 0 0 0 4px rgba(49, 195, 190, 0.16);
+}
+
 .catalog-load-more {
   display: block;
   margin: 24px auto 8px;
@@ -4402,6 +4488,23 @@ h1 {
 }
 .catalog-load-more:hover { background: rgba(11, 31, 58, 0.06); }
 .catalog-load-more:focus-visible { outline: 2px solid var(--blue, #0b1f3a); outline-offset: 2px; }
+
+@media (max-width: 1080px) {
+  .catalog-filter-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .catalog-tools-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .catalog-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* Wholesale Muay Thai catalog */
 .wholesale-muay-thai-body {

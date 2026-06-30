@@ -2487,6 +2487,30 @@ function slugifyIndexToken(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+function officialCatalogPrice(product, fallbackPrice) {
+  const brand = String(product?.brand ?? "").trim().toLowerCase();
+  const titleText = [product?.product_name, product?.sku, product?.category]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const text = [
+    product?.product_name,
+    product?.sku,
+    product?.category,
+    product?.short_description,
+    product?.full_description,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const isThaiBrand = brand === "boon" || brand === "top king" || brand === "topking";
+  const isShort = /\bshorts?\b/.test(text);
+  if (isThaiBrand && isShort) {
+    return /\bplain\b/.test(titleText) ? 40 : 60;
+  }
+  return fallbackPrice;
+}
+
 function loadOfficialCatalogSearchRecords() {
   const sources = [
     { brandSlug: "boon", file: new URL("../data/boon-products.json", import.meta.url) },
@@ -2505,7 +2529,7 @@ function loadOfficialCatalogSearchRecords() {
       const name = cleanProductName(product?.product_name, source.brandSlug);
       const image = Array.isArray(product?.images) ? product.images.find(Boolean) : null;
       const url = String(product?.product_url ?? "").trim();
-      const price = Number(product?.price);
+      const price = officialCatalogPrice(product, Number(product?.price));
       if (!name || !image || !url || !Number.isFinite(price) || price <= 0) continue;
       const category = categoryForOfficialCatalogProduct(product);
       const brandLabel = String(product?.brand ?? source.brandSlug).trim() || source.brandSlug;
