@@ -26,16 +26,36 @@ const THAI_FIGHT_BRANDS = new Set([
 
 const APPROVED_WHOLESALE_BRANDS = new Set([
   ...THAI_FIGHT_BRANDS,
+  "century_martial_arts",
+  "everlast",
+  "fuji_sports",
+  "hayabusa",
+  "rdx_sports",
+  "rival_boxing",
+  "sanabul",
+  "shock_doctor",
 ]);
 
 const BANNED_WHOLESALE_BRANDS = new Set([
   "allbirds",
   "bear_komplex",
   "ghost_lifestyle",
+  "soccer90",
+  "soccer_post",
+  "soccer_zone_usa",
   "venum",
 ]);
 
-const GLOBAL_FIGHT_BRANDS = new Set([]);
+const GLOBAL_FIGHT_BRANDS = new Set([
+  "century_martial_arts",
+  "everlast",
+  "fuji_sports",
+  "hayabusa",
+  "rdx_sports",
+  "rival_boxing",
+  "sanabul",
+  "shock_doctor",
+]);
 
 const POSITIVE_PATTERNS = [
   /\bmuay thai\b/i,
@@ -46,6 +66,7 @@ const POSITIVE_PATTERNS = [
   /\bfight glove(s)?\b/i,
   /\bgloves?\b/i,
   /\bpunch mitts?\b/i,
+  /\bpunching mitts?\b/i,
   /\bfocus mitts?\b/i,
   /\bmitts?\b/i,
   /\bhand wraps?\b/i,
@@ -57,16 +78,27 @@ const POSITIVE_PATTERNS = [
   /\bmouth guard\b/i,
   /\bbelly pad\b/i,
   /\bbody protector\b/i,
+  /\btraining shields?\b/i,
+  /\bbody shields?\b/i,
+  /\bblock trainers?\b/i,
+  /\bthigh pads?\b/i,
   /\bbag gloves?\b/i,
   /\bheavy bag\b/i,
+  /\bpunching bag\b/i,
   /\bspeed bag\b/i,
   /\btraining bag\b/i,
   /\bthai pad(s)?\b/i,
   /\bkick pad(s)?\b/i,
   /\bskipping rope\b/i,
+  /\bjump rope\b/i,
+  /\bgauze\b/i,
   /\bboxing oil\b/i,
   /\bankle guard(s)?\b/i,
   /\bankle support(s)?\b/i,
+  /\belbow guard(s)?\b/i,
+  /\bmongkols?\b/i,
+  /\bprajits?\b/i,
+  /\bprajiads?\b/i,
   /\bfight short(s)?\b/i,
   /\bmuay thai short(s)?\b/i,
   /\bboxing short(s)?\b/i,
@@ -80,12 +112,14 @@ const WHOLESALE_ALLOWED_PRODUCT_PATTERNS = [
   /\btraining gloves?\b/i,
   /\bsparring gloves?\b/i,
   /\bfight gloves?\b/i,
+  /\b(rfbgv|rbgv|rbgl|bgv)[- ]?[a-z0-9]*/i,
   /\bbag gloves?\b/i,
   /\bbag mitts?\b/i,
   /\bgrappling gloves?\b/i,
   /\bmma gloves?\b/i,
   /\bfocus mitts?\b/i,
   /\bpunch mitts?\b/i,
+  /\bpunching mitts?\b/i,
   /\bpro mitts?\b/i,
   /\bthai pads?\b/i,
   /\bkick pads?\b/i,
@@ -101,8 +135,13 @@ const WHOLESALE_ALLOWED_PRODUCT_PATTERNS = [
   /\bbelly protectors?\b/i,
   /\bbody protectors?\b/i,
   /\bprotective vests?\b/i,
+  /\btraining shields?\b/i,
+  /\bbody shields?\b/i,
+  /\bblock trainers?\b/i,
+  /\bthigh pads?\b/i,
   /\bshin guards?\b/i,
   /\bshinguards?\b/i,
+  /\b(rfbsg|rsg)[- ]?[a-z0-9]*/i,
   /\bshin pads?\b/i,
   /\bheadgear\b/i,
   /\bhead guards?\b/i,
@@ -124,7 +163,12 @@ const WHOLESALE_ALLOWED_PRODUCT_PATTERNS = [
   /\bspeed bags?\b/i,
   /\bmaize bags?\b/i,
   /\bmuay thai heavy bags?\b/i,
+  /\btraining bags?\b/i,
+  /\bpunch balls?\b/i,
+  /\bboxing kits?\b/i,
+  /\bmma kits?\b/i,
   /\bboxing tape\b/i,
+  /\bgauze\b/i,
   /\bboxing oil\b/i,
   /\bmuay thai shorts?\b/i,
   /\bthai boxing shorts?\b/i,
@@ -133,8 +177,15 @@ const WHOLESALE_ALLOWED_PRODUCT_PATTERNS = [
   /\bfight shorts?\b/i,
   /\bkids boxing shorts?\b/i,
   /\bmma shorts?\b/i,
+  /\belbow guards?\b/i,
+  /\bmongkols?\b/i,
+  /\bprajits?\b/i,
+  /\bprajiads?\b/i,
   /\bskipping ropes?\b/i,
   /\bjump ropes?\b/i,
+  /\bcorner supplies?\b/i,
+  /\bcoach(ing)? (gear|equipment)\b/i,
+  /\btraining (tools?|equipment)\b/i,
 ];
 
 const NEGATIVE_PATTERNS = [
@@ -143,8 +194,12 @@ const NEGATIVE_PATTERNS = [
   /\bwhey\b/i,
   /\bcreatine\b/i,
   /\bvitamin(s)?\b/i,
-  /\bgreens?\b/i,
+  /\b(greens? powder|super greens?|greens? superfoods?|green superfoods?)\b/i,
   /\bpre[- ]workout\b/i,
+  /\bsoccer\b/i,
+  /\bfootball\b/i,
+  /\bgoalkeeper\b/i,
+  /\bcleats?\b/i,
   /\bshoes?\b/i,
   /\brunning\b/i,
   /\bcasual wear\b/i,
@@ -166,6 +221,7 @@ const NEGATIVE_PATTERNS = [
   /\bsock(s)?\b/i,
   /\bfootwear\b/i,
   /\buniforms?\b/i,
+  /\bjerseys?\b/i,
   /\bkimono\b/i,
   /\bkeikogi\b/i,
   /\bbjj\b/i,
@@ -179,8 +235,10 @@ const NEGATIVE_PATTERNS = [
   /\bnovelt(y|ies)\b/i,
   /\begift\b/i,
   /\bgift cards?\b/i,
+  /\bexchange and return credit\b/i,
   /\bmug\b/i,
   /\bcandle\b/i,
+  /\bhanging mirror\b/i,
   /\bkeychains?\b/i,
   /\bkey rings?\b/i,
   /\bstickers?\b/i,
@@ -219,7 +277,6 @@ const NEGATIVE_PATTERNS = [
   /\brattan cane\b/i,
   /\bceiling hook\b/i,
   /\bsteel hook\b/i,
-  /\bchain\b/i,
   /\banchor\b/i,
 ];
 
@@ -288,21 +345,27 @@ function getBrandOrigin(brandSlug) {
 }
 
 function deriveProductType(text) {
+  if (/\b(rfbsg|rsg)[- ]?[a-z0-9]*/.test(text)) return "Shin Guards";
+  if (/\b(rfbgv|rbgv|rbgl|bgv)[- ]?[a-z0-9]*/.test(text)) return "Gloves";
   if (/\b(gloves?|bag mitts?|mitts?)\b/.test(text) && !/\bfocus mitts?\b/.test(text) && !/\bpunch mitts?\b/.test(text)) return "Gloves";
   if (/\bgroin (protector|guard|cup)\b/.test(text) || /\bno[- ]?foul protector\b/.test(text) || /\bprotective cup\b/.test(text)) return "Groin Protector";
   if (/\bmouth ?guard\b/.test(text)) return "Mouthguard";
+  if (/\belbow guards?\b/.test(text)) return "Elbow Guards";
+  if (/\bmongkols?\b/.test(text) || /\bprajits?\b/.test(text) || /\bprajiads?\b/.test(text)) return "Mongkol & Prajiad";
   if (/\bbelly (pad|protector)s?\b/.test(text)) return "Belly Pad";
   if (/\bshin (guard|pad)(s)?\b/.test(text) || /\bshinguards?\b/.test(text)) return "Shin Guards";
   if (/\bheadgear\b/.test(text) || /\bhead guards?\b/.test(text) || /\bheadguards?\b/.test(text)) return "Headgear";
-  if (/\bhand ?wraps?\b/.test(text) || /\bboxing tape\b/.test(text)) return "Hand Wraps";
-  if (/\bpunch mitts?\b/.test(text) || /\bfocus mitts?\b/.test(text) || /\bmitts?\b/.test(text))
+  if (/\bhand ?wraps?\b/.test(text) || /\bboxing tape\b/.test(text) || /\bgauze\b/.test(text)) return "Hand Wraps";
+  if (/\bpunch(ing)? mitts?\b/.test(text) || /\bfocus mitts?\b/.test(text) || /\bmitts?\b/.test(text))
     return "Pads & Mitts";
   if (/\bheavy bags?\b/.test(text) || /\bspeed bags?\b/.test(text) || /\bpunching bags?\b/.test(text) || /\bbanana bags?\b/.test(text) || /\bdouble end bags?\b/.test(text) || /\bmaize bags?\b/.test(text))
     return "Bags";
-  if (/\bthai pad(s)?\b/.test(text) || /\bkick(ing)? pad(s)?\b/.test(text) || /\bbody protector\b/.test(text) || /\bstrike shield\b/.test(text) || /\bpunch shield\b/.test(text) || /\bboxing (sticks?|paddles?|pads?)\b/.test(text) || /\bstriking (sticks?|paddles?)\b/.test(text))
+  if (/\bthai pad(s)?\b/.test(text) || /\bkick(ing)? pad(s)?\b/.test(text) || /\bbody protector\b/.test(text) || /\bstrike shield\b/.test(text) || /\bpunch shield\b/.test(text) || /\btraining shield\b/.test(text) || /\bbody shield\b/.test(text) || /\bblock trainer\b/.test(text) || /\bthigh pad\b/.test(text) || /\bboxing (sticks?|paddles?|pads?)\b/.test(text) || /\bstriking (sticks?|paddles?)\b/.test(text) || /\bcorner supplies?\b/.test(text) || /\bcoach(ing)? (gear|equipment)\b/.test(text) || /\btraining (tools?|equipment)\b/.test(text))
     return "Training Pads";
   if (/\bskipping ropes?\b/.test(text) || /\bjump ropes?\b/.test(text)) return "Skipping Rope";
   if (/\bcompression shorts?\b/.test(text) || /\bcompression pants?\b/.test(text) || /\brashguard\b/.test(text))
+    return "Fight Apparel";
+  if (/\b(raja boxing|raja_boxing|fairtex|twins special|twins_special|windy|boon|topking|top king|thaismai)\b.*\bshorts?\b/.test(text) || /\bshorts?\b.*\b(raja boxing|raja_boxing|fairtex|twins special|twins_special|windy|boon|topking|top king|thaismai)\b/.test(text))
     return "Fight Apparel";
   if (/\bfight short(s)?\b/.test(text) || /\bmma short(s)?\b/.test(text) || /\bmuay thai short(s)?\b/.test(text) || /\bthai boxing short(s)?\b/.test(text) || /\bboxing short(s)?\b/.test(text) || /\bboxing trunks?\b/.test(text))
     return "Fight Apparel";
@@ -324,6 +387,10 @@ function deriveCategoryLabel(productType) {
       return "Protectors";
     case "Belly Pad":
       return "Protectors";
+    case "Elbow Guards":
+      return "Protectors";
+    case "Mongkol & Prajiad":
+      return "Muay Thai ceremonial";
     case "Hand Wraps":
       return "Wraps & supports";
     case "Pads & Mitts":
@@ -404,9 +471,26 @@ function buildSearchText(productRow, extraValues = []) {
 }
 
 function scoreWholesaleProduct(productRow, images = [], variants = []) {
+  const variantText = variants.map((variant) => [variant.title, variant.option1, variant.option2, variant.option3].join(" "));
+  const hardExclusionText = [
+    productRow.brand,
+    productRow.name,
+    productRow.category,
+    productRow.store_department,
+    productRow.store_collection,
+    productRow.category_normalized,
+    ...variantText,
+  ]
+    .map((value) => cleanText(value))
+    .filter(Boolean)
+    .join(" ");
+  const summaryText = buildSearchText(
+    productRow,
+    variantText
+  );
   const text = buildSearchText(productRow, [
     productRow.description_html,
-    ...variants.map((variant) => [variant.title, variant.option1, variant.option2, variant.option3].join(" ")),
+    ...variantText,
   ]);
   const brand = cleanText(productRow.brand);
 
@@ -427,7 +511,7 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
     };
   }
 
-  if (NEGATIVE_PATTERNS.some((pattern) => pattern.test(text))) {
+  if (NEGATIVE_PATTERNS.some((pattern) => pattern.test(hardExclusionText))) {
     return {
       score: -999,
       reasons: ["hard_exclusion"],
@@ -435,7 +519,10 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
     };
   }
 
-  const hasAllowedProductType = WHOLESALE_ALLOWED_PRODUCT_PATTERNS.some((pattern) => pattern.test(text));
+  const hasThaiBrand = THAI_FIGHT_BRANDS.has(brand);
+  const hasThaiGenericFightType =
+    hasThaiBrand && /\b(shorts?|fancy|fightwear|training gear|home)\b/i.test(summaryText);
+  const hasAllowedProductType = WHOLESALE_ALLOWED_PRODUCT_PATTERNS.some((pattern) => pattern.test(text)) || hasThaiGenericFightType;
   const hasFightCollection = String(productRow.store_collection || "").toLowerCase() === "fight_gear";
   const hasFightKeyword = POSITIVE_PATTERNS.some((pattern) => pattern.test(text));
 
@@ -450,7 +537,7 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
   let score = 0;
   const reasons = [];
 
-  if (THAI_FIGHT_BRANDS.has(brand)) {
+  if (hasThaiBrand) {
     score += 6;
     reasons.push("thai_brand");
   }

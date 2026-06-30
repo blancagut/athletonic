@@ -46,6 +46,26 @@ function sumQuantities(items) {
   return items.reduce((total, item) => total + Number(item.quantity || 0), 0);
 }
 
+function uniqueEmails(values) {
+  return [...new Set(
+    values
+      .map((value) => String(value || "").trim().toLowerCase())
+      .filter((value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+  )];
+}
+
+async function getSuperAdminNotificationEmails(supabase) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("role", "super_admin");
+  if (error) {
+    console.warn("Could not load super admin notification recipients:", error);
+    return [];
+  }
+  return uniqueEmails((data || []).map((row) => row.email));
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     methodNotAllowed(res, ["POST"]);
@@ -135,9 +155,12 @@ module.exports = async function handler(req, res) {
       throw error;
     }
 
-    const recipientEmail = String(process.env.ATHLETONIC_SUPPORT_EMAIL || "").trim();
+    const recipientEmails = uniqueEmails([
+      ...(await getSuperAdminNotificationEmails(supabase)),
+      process.env.ATHLETONIC_SUPPORT_EMAIL,
+    ]);
     let notificationSent = false;
-    if (recipientEmail && process.env.RESEND_API_KEY) {
+    if (recipientEmails.length && process.env.RESEND_API_KEY) {
       try {
         await sendWholesaleQuoteRequestEmail({
           request: {
@@ -145,7 +168,7 @@ module.exports = async function handler(req, res) {
             ...body,
             items,
           },
-          recipientEmail,
+          recipientEmail: recipientEmails,
           siteUrl: getSiteUrl(req),
         });
         notificationSent = true;

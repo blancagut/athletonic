@@ -13,15 +13,29 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
 process.env.RESEND_API_KEY = process.env.RESEND_API_KEY || "test-resend-key";
 process.env.ATHLETONIC_SUPPORT_EMAIL = process.env.ATHLETONIC_SUPPORT_EMAIL || "support@example.com";
 
-const APPROVED_WHOLESALE_BRANDS = new Set(["boon", "fairtex", "raja_boxing", "topking", "twins_special", "windy"]);
-const BANNED_WHOLESALE_BRANDS = new Set([
+const APPROVED_WHOLESALE_BRANDS = new Set([
+  "boon",
   "century_martial_arts",
   "everlast",
+  "fairtex",
   "fuji_sports",
   "hayabusa",
+  "raja_boxing",
   "rdx_sports",
   "rival_boxing",
   "sanabul",
+  "shock_doctor",
+  "topking",
+  "twins_special",
+  "windy",
+]);
+const BANNED_WHOLESALE_BRANDS = new Set([
+  "bear_komplex",
+  "ghost_lifestyle",
+  "nike",
+  "soccer90",
+  "soccer_post",
+  "soccer_zone_usa",
   "venum",
 ]);
 const BANNED_WHOLESALE_TERMS =
@@ -88,8 +102,8 @@ function createJsonRequest(method, query, body) {
   return req;
 }
 
-test("generated wholesale manifest only contains approved Thai fight brands and no pricing", () => {
-  assert.ok(catalogData.products.length >= 1200, "expected a broad Thai fight wholesale catalog");
+test("generated wholesale manifest only contains approved combat brands and no pricing", () => {
+  assert.ok(catalogData.products.length >= 2500, "expected a broad combat-sports wholesale catalog");
 
   for (const product of catalogData.products) {
     assert.ok(
@@ -156,7 +170,21 @@ test("POST /api/wholesale/quote-requests stores sanitized items and notifies adm
   const handler = withMockedModules(path.join(__dirname, "..", "api", "wholesale", "quote-requests.js"), {
     [path.join(__dirname, "..", "api", "_lib", "supabase.js")]: {
       getSupabaseAdmin: () => ({
-        from() {
+        from(table) {
+          if (table === "profiles") {
+            return {
+              select() {
+                return {
+                  eq() {
+                    return Promise.resolve({
+                      data: [{ email: "owner@example.com" }, { email: "support@example.com" }],
+                      error: null,
+                    });
+                  },
+                };
+              },
+            };
+          }
           return {
             insert(row) {
               inserts.push(row);
@@ -223,5 +251,5 @@ test("POST /api/wholesale/quote-requests stores sanitized items and notifies adm
   assert.ok(!("price" in inserts[0].items[0]));
   assert.ok(!("price_cents" in inserts[0].items[0]));
   assert.equal(notifications.length, 1);
-  assert.equal(notifications[0].recipientEmail, "support@example.com");
+  assert.deepEqual(notifications[0].recipientEmail, ["owner@example.com", "support@example.com"]);
 });

@@ -416,6 +416,7 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
   if (!recipientEmail) return null;
 
   const quoteUrl = `${siteUrl}/catalog/wholesale-muay-thai`;
+  const adminUrl = `${siteUrl}/pages/admin/index.html#/wholesaleQuotes/${encodeURIComponent(request.id)}`;
   const itemsHtml = request.items
     .map(
       (item) => `
@@ -463,8 +464,11 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
           : ""
       }
       <p style="margin:0 0 24px;">
-        <a href="${escapeHtml(quoteUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
-          Open wholesale catalog
+        <a href="${escapeHtml(adminUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;margin:0 8px 8px 0;">
+          Open quote in admin
+        </a>
+        <a href="${escapeHtml(quoteUrl)}" style="display:inline-block;background:#ffffff;color:#0f172a;text-decoration:none;padding:12px 18px;border-radius:8px;border:1px solid #cbd5e1;margin:0 0 8px 0;">
+          Open catalog
         </a>
       </p>
       <p style="margin:0;color:#475569;font-size:14px;">
@@ -494,6 +498,7 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
     request.notes ? "" : null,
     request.notes ? `Notes:\n${request.notes}` : null,
     "",
+    `Open in admin: ${adminUrl}`,
     `Open catalog: ${quoteUrl}`,
     `Request ID: ${request.id}`,
   ].filter((line) => line !== null);
