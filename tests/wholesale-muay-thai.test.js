@@ -39,7 +39,8 @@ const BANNED_WHOLESALE_BRANDS = new Set([
   "venum",
 ]);
 const BANNED_WHOLESALE_TERMS =
-  /\b(backpack|beanie|duffle|grappling dummy|hoodie|jacket|jewelry|key ring|keychain|necklace|package protection|personalization|shirt|shoe|supplement|training dummy|venum)\b/i;
+  /\b(autograph glove|backpack|beanie|duffle|grappling dummy|hanging mirror|hoodie|jacket|jewelry|key\s*chain|key ring|keychain|mini boxing glove|mini gloves|necklace|package protection|personalization|shirt|shoe|supplement|training dummy|venum)\b/i;
+const OLD_SHORT_CATEGORIES = new Set(["Muay Thai Shorts", "Boxing Shorts", "Boxing Trunks", "MMA & Fight Shorts"]);
 
 function createResponseCapture() {
   return {
@@ -133,7 +134,7 @@ test("generated wholesale manifest only contains approved combat brands and no p
   }
 
   for (const requiredCategory of [
-    "Muay Thai Shorts",
+    "Shorts",
     "Training Gloves",
     "Bag Gloves",
     "Shin Guards",
@@ -150,6 +151,25 @@ test("generated wholesale manifest only contains approved combat brands and no p
       `expected ${requiredCategory} category in wholesale catalog`
     );
   }
+
+  assert.equal(
+    catalogData.products.filter((product) => OLD_SHORT_CATEGORIES.has(product.category_label)).length,
+    0,
+    "shorts should be grouped into the single Shorts category"
+  );
+  assert.ok(
+    catalogData.products.some(
+      (product) => product.brand_slug === "fairtex" && product.category_label === "Shorts" && /boxing shorts?/i.test(product.name)
+    ),
+    "expected Fairtex boxing shorts under Shorts"
+  );
+  assert.equal(
+    catalogData.products.filter(
+      (product) => product.category_label === "Bag Gloves" && !/\b(bag gloves?|bag mitts?)\b/i.test(product.name)
+    ).length,
+    0,
+    "Bag Gloves should not include generic training gloves"
+  );
 });
 
 test("GET /api/wholesale/catalog returns wholesale products without price fields", async () => {
@@ -176,6 +196,30 @@ test("GET /api/wholesale/catalog returns wholesale products without price fields
   assert.ok(!("cost" in payload.products[0]));
   assert.ok(Array.isArray(payload.facets.brands));
   assert.ok(Array.isArray(payload.facets.categories));
+});
+
+test("GET /api/wholesale/catalog supports unified Shorts category search", async () => {
+  const handler = require("../api/wholesale/catalog.js");
+  const req = {
+    method: "GET",
+    url: "/api/wholesale/catalog?brand=fairtex&category=Shorts&search=fairtex%20boxing%20shorts&page_size=10",
+    query: { brand: "fairtex", category: "Shorts", search: "fairtex boxing shorts", page_size: "10" },
+    headers: {},
+  };
+  const res = createResponseCapture();
+
+  await handler(req, res);
+
+  const payload = readJsonResponse(res);
+  assert.equal(res.statusCode, 200);
+  assert.ok(payload.filtered_count > 0, "expected Fairtex boxing shorts to be searchable in Shorts");
+  for (const product of payload.products) {
+    assert.equal(product.brand_slug, "fairtex");
+    assert.equal(product.category_label, "Shorts");
+    assert.match(product.name, /boxing shorts?/i);
+    assert.ok(!("price" in product));
+    assert.ok(!("wholesale_price" in product));
+  }
 });
 
 test("POST /api/wholesale/quote-requests stores sanitized items and notifies admins", async () => {

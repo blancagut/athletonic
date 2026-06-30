@@ -158,8 +158,6 @@ function buildOfficialProducts() {
       const text = [
         row.product_name,
         row.category,
-        row.short_description,
-        row.full_description,
         row.sku,
         source.brandLabel,
       ]

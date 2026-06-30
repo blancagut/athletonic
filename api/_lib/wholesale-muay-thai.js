@@ -239,8 +239,13 @@ const NEGATIVE_PATTERNS = [
   /\bmug\b/i,
   /\bcandle\b/i,
   /\bhanging mirror\b/i,
+  /\bmini boxing gloves?\b/i,
+  /\bmini gloves?\b/i,
   /\bkeychains?\b/i,
+  /\bkey chains?\b/i,
   /\bkey rings?\b/i,
+  /\bautograph gloves?\b/i,
+  /\bautograph boxing gloves?\b/i,
   /\bstickers?\b/i,
   /\bnecklace\b/i,
   /\bjewelry\b/i,
@@ -370,20 +375,16 @@ function deriveProductType(text) {
   if (/\bcorner supplies?\b/.test(text) || /\bcorner stools?\b/.test(text)) return "Coach & Corner Gear";
   if (/\bboxing kits?\b/.test(text) || /\bmma kits?\b/.test(text)) return "Boxing Kits";
 
-  if (/\b(rfbgv|rbgv|rbgl|bgv)[- ]?[a-z0-9]*/.test(text)) return "Training Gloves";
   if (/\bbag gloves?\b/.test(text) || /\bbag mitts?\b/.test(text)) return "Bag Gloves";
   if (/\bgrappling gloves?\b/.test(text) || /\bmma gloves?\b/.test(text)) return "MMA & Grappling Gloves";
   if (/\bkids? boxing gloves?\b/.test(text) || /\byouth boxing gloves?\b/.test(text)) return "Kids Boxing Gloves";
   if (/\b(lace[- ]?up|competition|fight) gloves?\b/.test(text)) return "Lace-Up & Fight Gloves";
+  if (/\b(rfbgv|rbgv|rbgl|bgv)[- ]?[a-z0-9]*/.test(text)) return "Training Gloves";
   if (/\b(sparring|training|boxing|muay thai) gloves?\b/.test(text) || /\bgloves?\b/.test(text)) return "Training Gloves";
 
-  if (/\bmuay thai shorts?\b/.test(text) || /\bthai boxing shorts?\b/.test(text) || (thaiBrand && /\bshorts?\b/.test(text)))
-    return "Muay Thai Shorts";
-  if (/\bboxing trunks?\b/.test(text)) return "Boxing Trunks";
-  if (/\bboxing shorts?\b/.test(text)) return "Boxing Shorts";
-  if (/\bfight short(s)?\b/.test(text) || /\bmma short(s)?\b/.test(text)) return "MMA & Fight Shorts";
+  if (/\b(shorts?|trunks?)\b/.test(text) || (thaiBrand && /\bshorts?\b/.test(text))) return "Shorts";
   if (/\brash ?guards?\b/.test(text)) return "Rash Guards";
-  if (/\bcompression shorts?\b/.test(text) || /\bcompression pants?\b/.test(text)) return "Compression Fightwear";
+  if (/\bcompression pants?\b/.test(text)) return "Compression Fightwear";
 
   return "Training Gear";
 }
@@ -449,6 +450,21 @@ function buildSearchText(productRow, extraValues = []) {
     productRow.store_department,
     productRow.store_collection,
     ...extraValues,
+  ]
+    .map((value) => cleanText(value))
+    .filter(Boolean)
+    .join(" ");
+}
+
+function buildProductTypeText(productRow, variants = []) {
+  const variantText = variants.map((variant) => [variant.title, variant.sku].join(" "));
+  return [
+    productRow.brand,
+    productRow.name,
+    productRow.category,
+    productRow.category_normalized,
+    productRow.url,
+    ...variantText,
   ]
     .map((value) => cleanText(value))
     .filter(Boolean)
@@ -576,7 +592,7 @@ function scoreWholesaleProduct(productRow, images = [], variants = []) {
 
 function buildWholesaleProductRecord(productRow, variants = [], images = []) {
   const firstImage = images[0] || {};
-  const text = buildSearchText(productRow, variants.map((variant) => variant.title || ""));
+  const text = buildProductTypeText(productRow, variants);
   const productType = deriveProductType(text);
   const optionGroups = extractOptionGroups(productRow, variants);
   const availability = Number(productRow.available) ? "Available" : "Out of stock";
