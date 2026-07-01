@@ -417,13 +417,25 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
 
   const quoteUrl = `${siteUrl}/catalog/wholesale-muay-thai`;
   const adminUrl = `${siteUrl}/pages/admin/index.html#/wholesaleQuotes/${encodeURIComponent(request.id)}`;
+  const itemWholesaleCents = (item) => {
+    const value = Number(item && item.wholesale_price_cents);
+    return Number.isInteger(value) && value > 0 ? value : null;
+  };
+  const estimatedTotalCents = request.items.reduce((total, item) => {
+    const unit = itemWholesaleCents(item);
+    return unit ? total + unit * Math.max(1, Number(item.quantity) || 1) : total;
+  }, 0);
   const itemsHtml = request.items
     .map(
       (item) => `
         <tr>
           <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
             <strong>${escapeHtml(item.name)}</strong>
-            <div style="color:#64748b;font-size:14px;">${escapeHtml(item.brand)} · Qty ${item.quantity}</div>
+            <div style="color:#64748b;font-size:14px;">${escapeHtml(item.brand)} · Qty ${item.quantity}${
+              itemWholesaleCents(item)
+                ? ` · Wholesale ${escapeHtml(formatMoney(itemWholesaleCents(item), "usd"))}/unit`
+                : " · Price on quote"
+            }</div>
             ${
               item.selected_options && Object.keys(item.selected_options).length
                 ? `<div style="color:#475569;font-size:13px;margin-top:4px;">${escapeHtml(
@@ -456,6 +468,13 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
       <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
         ${itemsHtml}
       </table>
+      ${
+        estimatedTotalCents
+          ? `<p style="margin:0 0 20px;font-size:15px;"><strong>Est. wholesale total:</strong> ${escapeHtml(
+              formatMoney(estimatedTotalCents, "usd")
+            )}</p>`
+          : ""
+      }
       ${
         request.notes
           ? `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:0 0 20px;"><strong>Notes</strong><br />${escapeHtml(
@@ -493,8 +512,11 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
               .map(([key, value]) => `${key}: ${value}`)
               .join(" / ")})`
           : "";
-      return `- ${item.brand} ${item.name}${options} x${item.quantity}`;
+      const unit = itemWholesaleCents(item);
+      const price = unit ? ` @ ${formatMoney(unit, "usd")}/unit` : " (price on quote)";
+      return `- ${item.brand} ${item.name}${options} x${item.quantity}${price}`;
     }),
+    estimatedTotalCents ? `Est. wholesale total: ${formatMoney(estimatedTotalCents, "usd")}` : null,
     request.notes ? "" : null,
     request.notes ? `Notes:\n${request.notes}` : null,
     "",

@@ -878,6 +878,11 @@ function sanitizeQuoteItem(rawItem, catalogProduct) {
       )
     : {};
 
+  const retailPriceCents =
+    Number.isInteger(catalogProduct.retail_price_cents) && catalogProduct.retail_price_cents > 0
+      ? catalogProduct.retail_price_cents
+      : null;
+
   return {
     product_id: catalogProduct.id,
     brand: catalogProduct.brand,
@@ -889,6 +894,9 @@ function sanitizeQuoteItem(rawItem, catalogProduct) {
     selected_options: selectedOptions,
     quantity: safeQuantity,
     availability_status: catalogProduct.availability_status,
+    retail_price_cents: retailPriceCents,
+    wholesale_price_cents: retailPriceCents ? wholesalePriceCents(retailPriceCents) : null,
+    wholesale_discount_bps: WHOLESALE_DISCOUNT_BPS,
   };
 }
 

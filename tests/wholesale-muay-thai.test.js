@@ -402,8 +402,13 @@ test("POST /api/wholesale/quote-requests stores sanitized items and notifies adm
   assert.equal(inserts[0].quantity_count, 3);
   assert.equal(inserts[0].items[0].product_id, String(sampleProduct.id));
   assert.equal(inserts[0].items[0].quantity, 3);
-  assert.ok(!("price" in inserts[0].items[0]));
-  assert.ok(!("price_cents" in inserts[0].items[0]));
+  assert.equal(inserts[0].items[0].retail_price_cents, sampleProduct.retail_price_cents || null);
+  assert.equal(
+    inserts[0].items[0].wholesale_price_cents,
+    sampleProduct.retail_price_cents ? Math.max(1, Math.round(sampleProduct.retail_price_cents * 0.6)) : null,
+    "stored quote item must snapshot the 40%-off wholesale price"
+  );
+  assert.equal(inserts[0].items[0].wholesale_discount_bps, 4000);
   assert.equal(notifications.length, 1);
   assert.deepEqual(notifications[0].recipientEmail, ["owner@example.com", "support@example.com"]);
 });

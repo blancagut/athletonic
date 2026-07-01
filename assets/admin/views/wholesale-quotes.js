@@ -29,8 +29,22 @@ function itemOptions(item) {
   return selected.map(([key, value]) => `${escapeHtml(key)}: ${escapeHtml(value)}`).join(" / ");
 }
 
+function itemWholesaleCents(item) {
+  const value = Number(item && item.wholesale_price_cents);
+  return Number.isInteger(value) && value > 0 ? value : null;
+}
+
+function formatUsdCents(cents) {
+  return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 function itemsTable(items) {
   if (!Array.isArray(items) || !items.length) return '<div class="admin-empty">No products saved.</div>';
+  const estimatedTotalCents = items.reduce((total, item) => {
+    const unit = itemWholesaleCents(item);
+    return unit ? total + unit * Math.max(1, Number(item.quantity) || 1) : total;
+  }, 0);
+  const hasQuoteOnly = items.some((item) => !itemWholesaleCents(item));
   return `
     <div class="admin-table-wrap">
       <table class="admin-table">
@@ -41,12 +55,17 @@ function itemsTable(items) {
             <th>Category</th>
             <th>Options</th>
             <th>Qty</th>
+            <th>Wholesale/unit</th>
+            <th>Line total</th>
           </tr>
         </thead>
         <tbody>
           ${items
             .map(
-              (item) => `
+              (item) => {
+                const unit = itemWholesaleCents(item);
+                const quantity = Math.max(1, Number(item.quantity) || 1);
+                return `
                 <tr>
                   <td>
                     <strong>${escapeHtml(item.name)}</strong>
@@ -56,11 +75,20 @@ function itemsTable(items) {
                   <td>${escapeHtml(item.category_label || item.product_type || "—")}</td>
                   <td>${itemOptions(item) || "—"}</td>
                   <td>${escapeHtml(item.quantity)}</td>
+                  <td>${unit ? escapeHtml(formatUsdCents(unit)) : "Quote only"}</td>
+                  <td>${unit ? escapeHtml(formatUsdCents(unit * quantity)) : "—"}</td>
                 </tr>
-              `
+              `;
+              }
             )
             .join("")}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" style="text-align:right;"><strong>Est. wholesale total${hasQuoteOnly ? " (priced items)" : ""}</strong></td>
+            <td><strong>${estimatedTotalCents ? escapeHtml(formatUsdCents(estimatedTotalCents)) : "—"}</strong></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   `;
