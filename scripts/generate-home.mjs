@@ -9,6 +9,7 @@ import {
 } from "node:fs";
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
 import {
+  esPathFor,
   loadEsDict,
   toSpanishHtml,
   hreflangBlock,
@@ -881,6 +882,52 @@ function canonicalLink(pathname = "/") {
   return `<link rel="canonical" href="${html(canonicalUrl(pathname))}" />`;
 }
 
+function jsonLdScript(data) {
+  const json = JSON.stringify(data, null, 2).replace(/</g, "\\u003c");
+  return `<script type="application/ld+json">
+${json}
+    </script>`;
+}
+
+function siteIdentityJsonLd() {
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_ORIGIN}/#organization`,
+        name: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.name,
+        url: SITE_ORIGIN,
+        logo: canonicalUrl("/assets/logo.png"),
+        description: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.businessModel,
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_ORIGIN}/#website`,
+        name: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.name,
+        url: SITE_ORIGIN,
+        publisher: { "@id": `${SITE_ORIGIN}/#organization` },
+        inLanguage: "en-US",
+      },
+    ],
+  });
+}
+
+function siteNavigationJsonLd(links) {
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${SITE_ORIGIN}/#priority-sitelinks`,
+    name: "Athletonic priority site navigation",
+    itemListElement: links.map((link, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: link.label,
+      url: canonicalUrl(link.pathname),
+    })),
+  });
+}
+
 function assetHeadLinks(pathPrefix = "./") {
   return `<link rel="icon" href="${pathPrefix}favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="${pathPrefix}assets/favicon-32x32.png" />
@@ -1170,6 +1217,50 @@ const BRANDS_PAGE_HREF = existsSync(
 )
   ? "pages/brands.html"
   : "#brands";
+
+const PRIORITY_SITELINKS = [
+  {
+    label: "Shop All Products",
+    href: "pages/catalog.html",
+    pathname: "/pages/catalog.html",
+  },
+  {
+    label: "Protein",
+    href: SECTION_PAGE_HREFS.protein,
+    pathname: "/pages/protein.html",
+  },
+  {
+    label: "Creatine",
+    href: SECTION_PAGE_HREFS.creatine,
+    pathname: "/pages/creatine.html",
+  },
+  {
+    label: "Pre-workout",
+    href: SECTION_PAGE_HREFS["pre-workout"],
+    pathname: "/pages/pre-workout.html",
+  },
+  {
+    label: "Hydration",
+    href: SECTION_PAGE_HREFS.hydration,
+    pathname: "/pages/hydration.html",
+  },
+  {
+    label: "Brands",
+    href: BRANDS_PAGE_HREF,
+    pathname: "/pages/brands.html",
+  },
+];
+
+function prioritySitelinksHtml(pathPrefix = "./") {
+  return `<nav class="priority-sitelinks" aria-label="Popular Athletonic pages">
+        ${PRIORITY_SITELINKS.map(
+          (link) =>
+            `<a href="${html(resolveSiteHref(link.href, pathPrefix))}">${html(
+              link.label
+            )}</a>`
+        ).join("\n        ")}
+      </nav>`;
+}
 
 // Department navigation, reused by the home header and the PDP/info headers so
 // every page (including category pages) gets the same reachable nav. A leading
@@ -1844,6 +1935,36 @@ function normalizedCatalogProductRecord(product, fullRow, imageList = [], varian
   };
 }
 
+// When the storefront advertises a manual/scheduled offer price (record.deal),
+// make the authoritative checkout record charge that exact sale price on the
+// product AND on every variant — checkout prices from the resolved variant, so
+// without this a deal item would be charged its pre-offer variant price (more
+// than the shopper was shown). Non-deal products pass through unchanged.
+function checkoutCatalogRecordWithOffer(record, catalogRecord) {
+  const saleCents = Number(record?.price_cents) || 0;
+  if (!record?.deal || saleCents <= 0) return catalogRecord;
+  const originalCents = Number(record?.compare_at_price_cents) || 0;
+  const compareAtCents = originalCents > saleCents ? originalCents : null;
+  return {
+    ...catalogRecord,
+    price_cents: saleCents,
+    price_min_cents: saleCents,
+    price_max_cents: saleCents,
+    compare_at_price_cents: compareAtCents,
+    variants: (catalogRecord.variants || []).map((variant) => ({
+      ...variant,
+      price_cents: saleCents,
+      regular_price_cents: compareAtCents || saleCents,
+      compare_at_price_cents: compareAtCents,
+    })),
+    deal: {
+      discount_percent: record.deal.discount_percent,
+      expires_at: record.deal.expires_at,
+      reason: record.deal.reason,
+    },
+  };
+}
+
 function externalCatalogProductRecord(record) {
   const variants = officialCatalogVariantRecords(record);
   const defaultVariant = variants[0] || null;
@@ -2369,23 +2490,31 @@ const officialCatalogSearchRecords = loadOfficialCatalogSearchRecords();
 const officialCatalogRecordById = new Map(
   officialCatalogSearchRecords.map((record) => [String(record.id), record])
 );
+// Curated + official (boon/topking) checkout records. `athletonic-catalog.json`
+// stays intentionally lightweight — it is fetched CLIENT-side (search dropdown,
+// category browse, account recommendations) and by the admin panel/tests, so it
+// must not balloon. The AUTHORITATIVE checkout catalog (`checkout-catalog.json`,
+// written after PDP generation below) reuses these same records AND adds every
+// non-curated storefront product, so nothing a shopper can add to cart is ever
+// rejected server-side as "not ready for checkout".
+const curatedCatalogRecords = allCuratedProductsWithPurchaseMeta.map((product) =>
+  normalizedCatalogProductRecord(
+    product,
+    catalogRowsById.get(product.id),
+    catalogImagesById.get(product.id) || [],
+    catalogVariantsById.get(product.id) || []
+  )
+);
+const officialCatalogRecords = officialCatalogSearchRecords.map((record) =>
+  externalCatalogProductRecord(record)
+);
 writeFileSync(
   new URL("athletonic-catalog.json", commerceCatalogDir),
   JSON.stringify(
     {
       generated_at: new Date().toISOString(),
       currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
-      products: [
-        ...allCuratedProductsWithPurchaseMeta.map((product) =>
-          normalizedCatalogProductRecord(
-            product,
-            catalogRowsById.get(product.id),
-            catalogImagesById.get(product.id) || [],
-            catalogVariantsById.get(product.id) || []
-          )
-        ),
-        ...officialCatalogSearchRecords.map((record) => externalCatalogProductRecord(record)),
-      ],
+      products: [...curatedCatalogRecords, ...officialCatalogRecords],
     },
     null,
     2
@@ -2686,6 +2815,54 @@ function categoryForRow(row) {
   const coll = String(row.store_collection ?? "");
   const key = `${dept}/${coll}`;
   const nameCategory = categoryFromProductName(row.name);
+  // Ingestible supplement buckets vs. physical-goods buckets. Used to keep a
+  // supplement from being shelved as an accessory (and vice versa) when the
+  // store collection and the product name disagree.
+  const SUPPLEMENT_CATEGORIES = new Set([
+    "protein",
+    "creatine",
+    "pre-workout",
+    "hydration",
+    "greens",
+    "bars-shakes",
+    "vitamins",
+  ]);
+  const PHYSICAL_CATEGORIES = new Set([
+    "accessories",
+    "apparel",
+    "shoes",
+    "training-gear",
+  ]);
+  // A name that mentions a tangible item (shaker, bottle, bag, apparel, shoe…)
+  // is a real physical good even if it also mentions a supplement word, so it
+  // must stay in its physical bucket instead of being moved to a supplement.
+  const physicalGoodToken =
+    /\b(shaker|bottle|tumbler|jug|cup|bag|backpack|duffle|duffel|tote|mat|towel|band|strap|sleeve|glove|wrap|belt|roller|shirt|tee|hoodie|short|shorts|legging|sock|shoe|cleat|jersey|hat|cap|beanie|sticker|keychain|keyring)\b/i.test(
+      String(row.name ?? "")
+    );
+  // Supplement multipack / "Special Offer" bundles are frequently mis-filed
+  // under bags_bottles or needs_review because they ship with a free shaker or
+  // bottle. Their names ("6 Bottles of Max Mane", "…Shaker & Frother Special
+  // Offer", "SUPERHUMAN PRE-WORKOUT (SPECIAL OFFER)") trip the physical-good
+  // token above, so detect the bundle signal explicitly and treat them as the
+  // ingestible product they actually are.
+  const rawName = String(row.name ?? "");
+  const supplementBundleSignal =
+    /special offer/i.test(rawName) ||
+    /\d+\s*(?:bottles?|month|months|pack)\b\s*(?:of\b)?/i.test(rawName) ||
+    /\b(?:shaker|frother)\b/i.test(rawName);
+  const supplementContentToken =
+    /\b(protein|whey|casein|isolate|creatine|pre[-\s]?workout|magnesium|d3|k2|omega|collagen|ashwagandha|greens?|superfood|spirulina|bcaa|eaa|amino|hmb|glutamine|multivitamin|vitamin|probiotic|electrolyte|shred|burner|nootropic|carb cut|max mane|volcarn|superhuman|inno)\b/i.test(
+      rawName
+    );
+  // A name that describes an ingestible dosage form (powder, capsules, gummies,
+  // "20 Serving Bag", …) is a supplement even when the collection or a stray
+  // "bag"/"bottle" token says otherwise. Drinkware (shakers, ice cups) does not
+  // count and is handled by physicalGoodToken.
+  const strongIngestibleToken =
+    /\b(powder|capsules?|softgels?|gummies|tablets?|\d+\s*servings?)\b/i.test(
+      rawName
+    );
   const map = {
     "sports_nutrition/protein": "protein",
     "sports_nutrition/mass_gainers": "protein",
@@ -2712,24 +2889,100 @@ function categoryForRow(row) {
     "sports_gear/soccer_accessories": "accessories",
   };
   if (map[key]) {
-    if (map[key] === "apparel" && (nameCategory === "shoes" || nameCategory === "accessories")) {
+    const mapped = map[key];
+    // A supplement multipack/"Special Offer" bundle mis-filed in a physical
+    // collection is really an ingestible product — route it to its supplement
+    // page (or the vitamins catch-all) instead of shelving it as an accessory.
+    if (
+      PHYSICAL_CATEGORIES.has(mapped) &&
+      supplementBundleSignal &&
+      supplementContentToken
+    ) {
+      if (
+        SUPPLEMENT_CATEGORIES.has(nameCategory) ||
+        nameCategory === "recovery" ||
+        nameCategory === "sleep"
+      ) {
+        return nameCategory;
+      }
+      return "vitamins";
+    }
+    // An explicit dosage form (powder/capsules/gummies/servings) always wins
+    // over a physical collection mapping, unless the name is clearly drinkware.
+    if (
+      PHYSICAL_CATEGORIES.has(mapped) &&
+      strongIngestibleToken &&
+      !/\b(shaker|tumbler|jug|blender)\b/i.test(rawName)
+    ) {
+      if (
+        SUPPLEMENT_CATEGORIES.has(nameCategory) ||
+        nameCategory === "recovery" ||
+        nameCategory === "sleep"
+      ) {
+        return nameCategory;
+      }
+      return "vitamins";
+    }
+    // Move a clearly ingestible supplement out of a physical-goods collection
+    // (e.g. a "Creatine + Shaker" bundle mis-filed under bags/bottles) unless
+    // the name itself describes a tangible item.
+    if (
+      PHYSICAL_CATEGORIES.has(mapped) &&
+      SUPPLEMENT_CATEGORIES.has(nameCategory) &&
+      !physicalGoodToken
+    ) {
       return nameCategory;
     }
-    if (map[key] === "accessories" && nameCategory === "apparel") return "apparel";
-    if (map[key] === "accessories" && nameCategory === "shoes") return "shoes";
-    if (map[key] === "accessories" && nameCategory === "training-gear") return "training-gear";
-    if (map[key] === "greens" && nameCategory && nameCategory !== "greens") {
+    if (mapped === "apparel" && (nameCategory === "shoes" || nameCategory === "accessories")) {
       return nameCategory;
     }
-    if (map[key] === "training-gear" && nameCategory === "shoes") return "shoes";
-    return map[key];
+    if (mapped === "accessories" && nameCategory === "apparel") return "apparel";
+    if (mapped === "accessories" && nameCategory === "shoes") return "shoes";
+    if (mapped === "accessories" && nameCategory === "training-gear") return "training-gear";
+    if (mapped === "greens" && nameCategory && nameCategory !== "greens" && !PHYSICAL_CATEGORIES.has(nameCategory)) {
+      return nameCategory;
+    }
+    if (mapped === "training-gear" && nameCategory === "shoes") return "shoes";
+    return mapped;
   }
-  if (dept === "vitamins_health") return "vitamins";
-  if (dept === "womens_wellness") return "vitamins";
-  if (dept === "supplements" || dept === "wellness_goals") return "vitamins";
+  // Supplement / wellness departments (all_supplements, womens_wellness,
+  // adaptogens, gut/focus/weight/longevity, vitamins_health, …): classify by
+  // the product name first so protein, creatine, hydration, greens, and bars
+  // land on their own pages instead of everything piling into daily-health.
+  const wellnessDepts = new Set([
+    "vitamins_health",
+    "womens_wellness",
+    "supplements",
+    "wellness_goals",
+  ]);
+  if (wellnessDepts.has(dept)) {
+    if (
+      SUPPLEMENT_CATEGORIES.has(nameCategory) ||
+      nameCategory === "recovery" ||
+      nameCategory === "sleep"
+    ) {
+      return nameCategory;
+    }
+    return "vitamins";
+  }
+  // Uncategorized/needs-review rows: a supplement bundle or explicit dosage
+  // form must not fall through to an accessory name-match ("2 Bottle Max Mane
+  // Special Offer" contains "bottle").
+  if (
+    (strongIngestibleToken || (supplementBundleSignal && supplementContentToken)) &&
+    (nameCategory === "" || PHYSICAL_CATEGORIES.has(nameCategory))
+  ) {
+    if (
+      SUPPLEMENT_CATEGORIES.has(nameCategory) ||
+      nameCategory === "recovery" ||
+      nameCategory === "sleep"
+    ) {
+      return nameCategory;
+    }
+    return "vitamins";
+  }
   return nameCategory;
 }
-
 const sectionTitleById = Object.fromEntries(
   sections.map((section) => [section.id, section.label ?? section.title])
 );
@@ -2759,6 +3012,11 @@ const indexJunkNameFilters = [
 function buildSearchIndex() {
   const forbiddenSql = notLikeAllSql("lower(p.name)", indexJunkNameFilters);
   const excludedProductIdsSql = [...excludedProductIds].join(",");
+  // Athletonic is a sports-nutrition / fitness marketplace. The source database
+  // also carries a large soccer storefront (jerseys, cleats, and soccer
+  // accessories) that is not part of this catalog and was polluting the
+  // apparel/shoes/accessories pages, so it is excluded from the search index.
+  const soccerBrandSql = excludedBrands.map((slug) => `'${slug}'`).join(",");
   const sql = `
     select
       p.id,
@@ -2778,6 +3036,8 @@ function buildSearchIndex() {
       and p.url is not null
       and coalesce(p.currency, 'USD') = 'USD'
       and p.id not in (${excludedProductIdsSql})
+      and coalesce(p.store_collection, '') not like 'soccer_%'
+      and p.brand not in (${soccerBrandSql})
       and ${forbiddenSql}
     group by p.id
     order by coalesce(p.store_priority, 0) desc, p.price desc, p.name asc;
@@ -4804,10 +5064,24 @@ const page = `<!doctype html>
     ${canonicalLink("/")}
     ${hreflangBlock("/", SITE_ORIGIN)}
     ${assetHeadLinks("./")}
+    ${siteIdentityJsonLd()}
+    ${siteNavigationJsonLd(PRIORITY_SITELINKS)}
     <link rel="stylesheet" href="./styles.css?v=home-marketplace-fix-2" />
   </head>
   <body class="home-body">
     <a id="top" tabindex="-1" aria-hidden="true"></a>
+    <div class="ship-bar" role="region" aria-label="Shipping offers">
+      <div class="ship-bar-inner">
+        <span class="ship-ups" aria-hidden="true"><img src="./assets/ups-logo.svg" alt="UPS" width="22" height="22" loading="eager" decoding="async" /></span>
+        <span class="ship-lead">Ships worldwide with UPS</span>
+        <span class="ship-divider" aria-hidden="true"></span>
+        <ul class="ship-rotator">
+          <li><span class="free">FREE</span> USA ground shipping &mdash; any order, no minimum</li>
+          <li>Flat <strong>$199</strong> shipping to South America</li>
+          <li>Flat <strong>$299</strong> shipping to Europe &amp; Asia</li>
+        </ul>
+      </div>
+    </div>
     <header class="market-header">
       <div class="header-main">
         ${navToggleButton()}
@@ -4906,6 +5180,7 @@ const page = `<!doctype html>
     <main>
       <p class="search-status" id="catalog" aria-live="polite" hidden></p>
 
+${prioritySitelinksHtml("./")}
 ${renderHomeHero(heroSlides)}
 ${renderCategoryCards(categoryCards)}
 ${homeShelves.map((shelf, index) => renderShelfSection(shelf, index)).join("\n")}
@@ -5000,6 +5275,8 @@ const staticPages = [
     eyebrow: "Sports Nutrition",
     summary:
       "Shop protein powders, shakes, bars, isolates, plant protein, and recovery-focused protein products.",
+    dynamicSearch: true,
+    dynamicCategory: "protein",
     productSections: [shelfFromSection("protein")],
     sections: [
       {
@@ -5015,6 +5292,8 @@ const staticPages = [
     eyebrow: "Strength",
     summary:
       "Shop creatine powders, capsules, gummies, and strength-focused daily staples.",
+    dynamicSearch: true,
+    dynamicCategory: "creatine",
     productSections: [shelfFromSection("creatine")],
     sections: [
       {
@@ -5030,6 +5309,8 @@ const staticPages = [
     eyebrow: "Energy",
     summary:
       "Shop pre-workout, pump, focus, and training energy formulas from performance brands.",
+    dynamicSearch: true,
+    dynamicCategory: "pre-workout",
     productSections: [shelfFromSection("pre-workout")],
     sections: [
       {
@@ -5045,6 +5326,8 @@ const staticPages = [
     eyebrow: "Daily Performance",
     summary:
       "Shop hydration mixes, electrolyte sticks, amino drinks, and functional hydration products.",
+    dynamicSearch: true,
+    dynamicCategory: "hydration",
     productSections: [shelfFromSection("hydration")],
     sections: [
       {
@@ -5060,6 +5343,8 @@ const staticPages = [
     eyebrow: "Wellness",
     summary:
       "Shop multivitamins, minerals, omegas, immune support, joint support, and daily wellness products.",
+    dynamicSearch: true,
+    dynamicCategory: "vitamins",
     productSections: [shelfFromSection("vitamins")],
     sections: [
       {
@@ -5075,6 +5360,8 @@ const staticPages = [
     eyebrow: "Wellness",
     summary:
       "Shop greens blends, superfood powders, cacao blends, spirulina, chlorella, and daily nutrition products.",
+    dynamicSearch: true,
+    dynamicCategory: "greens",
     productSections: [shelfFromSection("greens")],
     sections: [
       {
@@ -5090,6 +5377,8 @@ const staticPages = [
     eyebrow: "Ready Now",
     summary:
       "Shop protein bars, ready-to-drink shakes, complete meals, and convenient nutrition products.",
+    dynamicSearch: true,
+    dynamicCategory: "bars-shakes",
     productSections: [shelfFromSection("bars-shakes")],
     sections: [
       {
@@ -5105,6 +5394,8 @@ const staticPages = [
     eyebrow: "Recovery",
     summary:
       "Shop massage, mobility, red light, compression, and recovery accessories.",
+    dynamicSearch: true,
+    dynamicCategory: "recovery",
     productSections: [shelfFromSection("recovery")],
     sections: [
       {
@@ -5120,6 +5411,8 @@ const staticPages = [
     eyebrow: "Recovery",
     summary:
       "Shop sleep masks, nighttime recovery products, and relaxation support.",
+    dynamicSearch: true,
+    dynamicCategory: "sleep",
     productSections: [shelfFromSection("sleep")],
     sections: [
       {
@@ -5365,6 +5658,8 @@ const staticPages = [
     eyebrow: "Apparel",
     summary:
       "Shop training apparel, gym wear, tees, shorts, leggings, hoodies, and active layers.",
+    dynamicSearch: true,
+    dynamicCategory: "apparel",
     productSections: [shelfFromSection("apparel")],
     sections: [
       {
@@ -5380,6 +5675,8 @@ const staticPages = [
     eyebrow: "Apparel",
     summary:
       "Shop running, training, trail, and performance footwear.",
+    dynamicSearch: true,
+    dynamicCategory: "shoes",
     productSections: [shelfFromSection("shoes")],
     sections: [
       {
@@ -5395,6 +5692,8 @@ const staticPages = [
     eyebrow: "Gear",
     summary:
       "Shop gym accessories including shakers, bottles, bags, belts, grips, wraps, straps, and sleeves.",
+    dynamicSearch: true,
+    dynamicCategory: "accessories",
     productSections: [shelfFromSection("accessories")],
     sections: [
       {
@@ -6692,6 +6991,10 @@ ${renderDrawers()}
 
     <main class="info-main${hasExtendedContent ? " listing-main" : ""}"${
       pageInfo.dynamicSearch ? " data-catalog-page" : ""
+    }${
+      pageInfo.dynamicCategory
+        ? ` data-catalog-category="${html(pageInfo.dynamicCategory)}"`
+        : ""
     }>
       <section class="info-hero">
         <p class="eyebrow">${html(pageInfo.eyebrow)}</p>
@@ -7209,6 +7512,11 @@ const nonCuratedRecords = searchIndexRecords.filter(
 );
 
 let extraPdpCount = 0;
+// Authoritative checkout records for every non-curated storefront product, built
+// from the SAME PDP data (rows/images/variants) already fetched here so there is
+// no extra DB cost. Official (boon/topking) records are skipped — they carry
+// non-numeric ids and are already covered by `officialCatalogRecords` above.
+const checkoutCatalogExtraRecords = [];
 const PDP_BATCH = 3000;
 for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
   const batch = nonCuratedRecords.slice(i, i + PDP_BATCH);
@@ -7232,6 +7540,15 @@ for (let i = 0; i < nonCuratedRecords.length; i += PDP_BATCH) {
     const pageHtml = productPage(product, fullRow, imageList, peers, variantRows);
     writeFileSync(new URL(`${record.id}.html`, pdpDir), cleanGeneratedText(pageHtml));
     extraPdpCount += 1;
+
+    if (Number.isInteger(numericId) && numericId > 0) {
+      checkoutCatalogExtraRecords.push(
+        checkoutCatalogRecordWithOffer(
+          record,
+          normalizedCatalogProductRecord(product, fullRow, imageList, variantRows)
+        )
+      );
+    }
   }
 }
 
@@ -7239,6 +7556,33 @@ console.log(
   `Generated ${extraPdpCount} additional catalog PDPs (total ${
     pdpCount + extraPdpCount
   }) in /product/.`
+);
+
+// ---------------------------------------------------------------------------
+// Authoritative checkout catalog (data/checkout-catalog.json)
+//
+// The server (/api/cart/validate, /api/checkout/quote, /api/checkout) recomputes
+// item names/prices from THIS file. It must contain every product the storefront
+// lets a shopper add to cart, otherwise valid products are rejected as "not ready
+// for checkout". Curated + official records are reused verbatim from the
+// lightweight preview catalog; every other active storefront product is appended
+// with full variant/pricing data. Written minified because it is server-only.
+// ---------------------------------------------------------------------------
+const checkoutCatalogRecords = [
+  ...curatedCatalogRecords,
+  ...officialCatalogRecords,
+  ...checkoutCatalogExtraRecords,
+];
+writeFileSync(
+  new URL("checkout-catalog.json", commerceCatalogDir),
+  JSON.stringify({
+    generated_at: new Date().toISOString(),
+    currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+    products: checkoutCatalogRecords,
+  })
+);
+console.log(
+  `Generated authoritative checkout catalog with ${checkoutCatalogRecords.length} products in /data/checkout-catalog.json.`
 );
 
 const pagesDir = new URL("../pages/", import.meta.url);
@@ -7267,18 +7611,30 @@ console.log(
 );
 
 const sitemapLastModified = new Date().toISOString().slice(0, 10);
-const sitemapEntries = [
+const englishSitemapPaths = [
   "/",
   ...staticPages.map((pageInfo) => `/pages/${pageInfo.slug}.html`),
 ];
+const sitemapEntries = englishSitemapPaths.flatMap((pathname) => [
+  { pathname, englishPathname: pathname },
+  { pathname: esPathFor(pathname), englishPathname: pathname },
+]);
 const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${sitemapEntries
   .map(
-    (pathname) => `  <url>
+    ({ pathname, englishPathname }) => {
+      const englishLoc = canonicalUrl(englishPathname);
+      const spanishLoc = canonicalUrl(esPathFor(englishPathname));
+      return `  <url>
     <loc>${html(canonicalUrl(pathname))}</loc>
     <lastmod>${sitemapLastModified}</lastmod>
-  </url>`
+    <xhtml:link rel="alternate" hreflang="en" href="${html(englishLoc)}" />
+    <xhtml:link rel="alternate" hreflang="es" href="${html(spanishLoc)}" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="${html(englishLoc)}" />
+  </url>`;
+    }
   )
   .join("\n")}
 </urlset>
