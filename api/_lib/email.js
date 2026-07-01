@@ -412,7 +412,7 @@ async function sendWholesaleApplicationDecisionEmail({
   });
 }
 
-async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl }) {
+async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl, quotePdf }) {
   if (!recipientEmail) return null;
 
   const quoteUrl = `${siteUrl}/catalog/wholesale-muay-thai`;
@@ -530,6 +530,83 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
     subject: `Athletonic wholesale quote request from ${request.company_name}`,
     html,
     text: textLines.join("\n"),
+    ...(quotePdf && quotePdf.buffer
+      ? { attachments: [{ filename: quotePdf.filename, content: quotePdf.buffer.toString("base64") }] }
+      : {}),
+  });
+}
+
+async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
+  if (!request || !request.email) return null;
+
+  const catalogUrl = `${siteUrl}/catalog/wholesale-muay-thai`;
+  const reference = quotePdf && quotePdf.reference ? quotePdf.reference : request.id;
+  const itemWholesaleCents = (item) => {
+    const value = Number(item && item.wholesale_price_cents);
+    return Number.isInteger(value) && value > 0 ? value : null;
+  };
+  const estimatedTotalCents = request.items.reduce((total, item) => {
+    const unit = itemWholesaleCents(item);
+    return unit ? total + unit * Math.max(1, Number(item.quantity) || 1) : total;
+  }, 0);
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
+      <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
+        Athletonic Wholesale
+      </p>
+      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">Your quotation is attached</h1>
+      <p style="margin:0 0 16px;">
+        Hi ${escapeHtml(request.name)}, thank you for your wholesale inquiry from
+        <strong>${escapeHtml(request.company_name)}</strong>.
+      </p>
+      <p style="margin:0 0 16px;">
+        Your quotation <strong>${escapeHtml(reference)}</strong> is attached as a PDF. It covers
+        ${escapeHtml(request.items.length)} product line${request.items.length === 1 ? "" : "s"}${
+          estimatedTotalCents
+            ? ` with an estimated wholesale total of <strong>${escapeHtml(formatMoney(estimatedTotalCents, "usd"))}</strong>`
+            : ""
+        }.
+      </p>
+      <p style="margin:0 0 16px;color:#475569;">
+        Our sales team will contact you shortly on WhatsApp (${escapeHtml(request.whatsapp)}) or by email to
+        confirm availability, MOQ, and shipping to ${escapeHtml(request.country)}.
+      </p>
+      <p style="margin:0 0 24px;">
+        <a href="${escapeHtml(catalogUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
+          Browse the wholesale catalog
+        </a>
+      </p>
+      <p style="margin:0;color:#475569;font-size:14px;">
+        Reference: ${escapeHtml(reference)} · ${escapeHtml(ATHLETONIC_OFFICE_ADDRESS_TEXT)}
+      </p>
+    </div>
+  `;
+
+  const textLines = [
+    "Athletonic Wholesale",
+    "",
+    `Hi ${request.name},`,
+    "",
+    `Thank you for your wholesale inquiry from ${request.company_name}.`,
+    `Your quotation ${reference} is attached as a PDF (${request.items.length} product line${request.items.length === 1 ? "" : "s"}).`,
+    estimatedTotalCents ? `Estimated wholesale total: ${formatMoney(estimatedTotalCents, "usd")}` : null,
+    "",
+    `Our sales team will contact you shortly on WhatsApp (${request.whatsapp}) or by email to confirm availability, MOQ, and shipping to ${request.country}.`,
+    "",
+    `Catalog: ${catalogUrl}`,
+    `Reference: ${reference}`,
+    ATHLETONIC_OFFICE_ADDRESS_TEXT,
+  ].filter((line) => line !== null);
+
+  return sendEmail({
+    to: request.email,
+    subject: `Your Athletonic wholesale quotation ${reference}`,
+    html,
+    text: textLines.join("\n"),
+    ...(quotePdf && quotePdf.buffer
+      ? { attachments: [{ filename: quotePdf.filename, content: quotePdf.buffer.toString("base64") }] }
+      : {}),
   });
 }
 
@@ -538,4 +615,5 @@ module.exports = {
   sendOrderConfirmationEmail,
   sendWholesaleApplicationDecisionEmail,
   sendWholesaleQuoteRequestEmail,
+  sendWholesaleQuoteBuyerEmail,
 };

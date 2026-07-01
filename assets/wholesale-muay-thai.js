@@ -481,12 +481,13 @@
 
   async function submitQuoteRequest(event) {
     event.preventDefault();
+    const form = event.currentTarget;
     if (!state.quoteCart.length) {
       setQuoteStatus("Add products first.", true);
       return;
     }
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const payload = {
       name: String(formData.get("name") || "").trim(),
       company_name: String(formData.get("company_name") || "").trim(),
@@ -502,21 +503,31 @@
       source_page: window.location.pathname,
     };
 
+    const submitButton = form.querySelector("[type=submit]");
+    if (submitButton) submitButton.disabled = true;
     setQuoteStatus("Submitting...");
-    const response = await fetch(QUOTE_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(body.message || "Could not submit quote request.");
+    try {
+      const response = await fetch(QUOTE_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.message || "Could not submit quote request.");
 
-    state.quoteCart = [];
-    saveQuoteCart();
-    renderQuoteCart();
-    updateQuoteBadges();
-    event.currentTarget.reset();
-    setQuoteStatus("Submitted.");
+      state.quoteCart = [];
+      saveQuoteCart();
+      renderQuoteCart();
+      updateQuoteBadges();
+      form.reset();
+      setQuoteStatus(
+        body.buyer_confirmation_sent
+          ? "Submitted. Your PDF quotation is on its way to your email."
+          : "Submitted. Our team will reply with your quotation shortly."
+      );
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
   }
 
   function bindEvents() {
@@ -545,6 +556,7 @@
     if (els.quoteItems) {
       els.quoteItems.addEventListener("click", handleQuoteCartClick);
       els.quoteItems.addEventListener("change", handleQuoteCartInput);
+      els.quoteItems.addEventListener("input", handleQuoteCartInput);
     }
     if (els.quoteForm) {
       els.quoteForm.addEventListener("submit", (event) => {

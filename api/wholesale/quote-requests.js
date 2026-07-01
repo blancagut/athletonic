@@ -5,7 +5,8 @@ const {
   normalizeQuoteRequestBody,
   sanitizeQuoteItem,
 } = require("../_lib/wholesale-muay-thai");
-const { sendWholesaleQuoteRequestEmail } = require("../_lib/email");
+const { sendWholesaleQuoteRequestEmail, sendWholesaleQuoteBuyerEmail } = require("../_lib/email");
+const { buildWholesaleQuotePdf } = require("../_lib/quote-pdf");
 
 function normalizeSelectedOptions(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -159,6 +160,32 @@ module.exports = async function handler(req, res) {
       ...(await getSuperAdminNotificationEmails(supabase)),
       process.env.ATHLETONIC_SUPPORT_EMAIL,
     ]);
+
+    let quotePdf = null;
+    try {
+      quotePdf = buildWholesaleQuotePdf({
+        request: { id: quoteRequest.id, created_at: quoteRequest.created_at, ...body, items },
+        supportEmail: process.env.ATHLETONIC_SUPPORT_EMAIL,
+        siteHost: getSiteUrl(req).replace(/^https?:\/\//, ""),
+      });
+    } catch (pdfError) {
+      console.warn("Wholesale quotation PDF generation failed:", pdfError);
+    }
+
+    let buyerConfirmationSent = false;
+    if (process.env.RESEND_API_KEY) {
+      try {
+        await sendWholesaleQuoteBuyerEmail({
+          request: { id: quoteRequest.id, ...body, items },
+          siteUrl: getSiteUrl(req),
+          quotePdf,
+        });
+        buyerConfirmationSent = true;
+      } catch (emailError) {
+        console.warn("Wholesale buyer quotation email failed:", emailError);
+      }
+    }
+
     let notificationSent = false;
     if (recipientEmails.length && process.env.RESEND_API_KEY) {
       try {
@@ -170,6 +197,7 @@ module.exports = async function handler(req, res) {
           },
           recipientEmail: recipientEmails,
           siteUrl: getSiteUrl(req),
+          quotePdf,
         });
         notificationSent = true;
       } catch (emailError) {
@@ -182,6 +210,7 @@ module.exports = async function handler(req, res) {
       request_id: quoteRequest.id,
       created_at: quoteRequest.created_at,
       notification_sent: notificationSent,
+      buyer_confirmation_sent: buyerConfirmationSent,
     });
   } catch (error) {
     handleError(res, error);

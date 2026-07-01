@@ -321,6 +321,7 @@ test("POST /api/wholesale/quote-requests stores sanitized items and notifies adm
 
   const inserts = [];
   const notifications = [];
+  const buyerEmails = [];
   const handler = withMockedModules(path.join(__dirname, "..", "api", "wholesale", "quote-requests.js"), {
     [path.join(__dirname, "..", "api", "_lib", "supabase.js")]: {
       getSupabaseAdmin: () => ({
@@ -364,6 +365,10 @@ test("POST /api/wholesale/quote-requests stores sanitized items and notifies adm
         notifications.push(payload);
         return { id: "email-1" };
       },
+      sendWholesaleQuoteBuyerEmail: async (payload) => {
+        buyerEmails.push(payload);
+        return { id: "email-2" };
+      },
     },
   });
 
@@ -397,6 +402,7 @@ test("POST /api/wholesale/quote-requests stores sanitized items and notifies adm
   assert.equal(res.statusCode, 201);
   assert.equal(payload.ok, true);
   assert.equal(payload.notification_sent, true);
+  assert.equal(payload.buyer_confirmation_sent, true);
   assert.equal(inserts.length, 1);
   assert.equal(inserts[0].item_count, 1);
   assert.equal(inserts[0].quantity_count, 3);
@@ -411,4 +417,11 @@ test("POST /api/wholesale/quote-requests stores sanitized items and notifies adm
   assert.equal(inserts[0].items[0].wholesale_discount_bps, 4000);
   assert.equal(notifications.length, 1);
   assert.deepEqual(notifications[0].recipientEmail, ["owner@example.com", "support@example.com"]);
+  assert.ok(notifications[0].quotePdf && Buffer.isBuffer(notifications[0].quotePdf.buffer), "admin email must carry the PDF");
+  assert.equal(buyerEmails.length, 1);
+  assert.equal(buyerEmails[0].request.email, "alex@example.com");
+  assert.ok(buyerEmails[0].quotePdf, "buyer email must carry the quotation PDF");
+  assert.ok(Buffer.isBuffer(buyerEmails[0].quotePdf.buffer), "quotation PDF must be a buffer");
+  assert.equal(buyerEmails[0].quotePdf.buffer.subarray(0, 5).toString(), "%PDF-", "attachment must be a valid PDF");
+  assert.match(buyerEmails[0].quotePdf.filename, /^Athletonic-Quotation-AW-[0-9A-Z]+\.pdf$/);
 });
