@@ -285,13 +285,28 @@
     state.filters.availability = String((els.availability && els.availability.value) || "").trim();
   }
 
+  function skeletonRows(count) {
+    const cells =
+      '<span class="ws-skel ws-skel--photo"></span><span class="ws-skel ws-skel--text"></span>' +
+      '<span class="ws-skel ws-skel--chip"></span><span class="ws-skel ws-skel--chip"></span>' +
+      '<span class="ws-skel ws-skel--text"></span><span class="ws-skel ws-skel--chip"></span>' +
+      '<span class="ws-skel ws-skel--chip"></span>';
+    return Array.from(
+      { length: count },
+      () => `<div class="wholesale-line wholesale-line--skeleton" aria-hidden="true">${cells}</div>`
+    ).join("");
+  }
+
   function setLoading(loading) {
     state.loading = loading;
     if (els.loadMore) {
       els.loadMore.disabled = loading;
       els.loadMore.hidden = loading || !state.hasMore;
     }
-    if (loading && state.page === 1) setStatus("Loading line sheet...");
+    if (loading && state.page === 1) {
+      setStatus("Loading line sheet...");
+      if (els.list) els.list.innerHTML = skeletonRows(8);
+    }
   }
 
   async function loadCatalog(options) {
