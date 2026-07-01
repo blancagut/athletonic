@@ -22,6 +22,7 @@
     quoteItems: document.querySelector("[data-quote-items]"),
     quoteItemCount: document.querySelector("[data-quote-item-count]"),
     quoteUnitCount: document.querySelector("[data-quote-unit-count]"),
+    quoteEstimate: document.querySelector("[data-quote-estimate]"),
     quoteCount: document.querySelector("[data-quote-count]"),
     quoteStatus: document.querySelector("[data-quote-status]"),
     quoteForm: document.querySelector("[data-quote-form]"),
@@ -90,6 +91,40 @@
     return state.quoteCart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
   }
 
+  function formatUsd(cents) {
+    const value = Number(cents);
+    if (!Number.isFinite(value) || value <= 0) return "";
+    return (value / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
+  }
+
+  function discountLabel(bps) {
+    const value = Number(bps);
+    if (!Number.isFinite(value) || value <= 0) return "";
+    return `${Math.round(value / 100)}% off`;
+  }
+
+  function priceCellHtml(product) {
+    const retail = formatUsd(product.retail_price_cents);
+    const wholesale = formatUsd(product.wholesale_price_cents);
+    if (!retail || !wholesale) {
+      return '<div class="wholesale-line__price"><span class="wholesale-muted">Quote only</span></div>';
+    }
+    return `
+      <div class="wholesale-line__price">
+        <strong>${retail}</strong>
+        <span>Wholesale <b>${wholesale}</b></span>
+      </div>
+    `;
+  }
+
+  function estimatedWholesaleTotalCents() {
+    return state.quoteCart.reduce((sum, item) => {
+      const unit = Number(item.wholesale_price_cents);
+      if (!Number.isFinite(unit) || unit <= 0) return sum;
+      return sum + unit * Number(item.quantity || 0);
+    }, 0);
+  }
+
   function setStatus(message) {
     if (els.status) els.status.textContent = message;
   }
@@ -138,6 +173,10 @@
     if (els.quoteUnitCount) els.quoteUnitCount.textContent = String(unitCount);
     if (els.quoteCount) els.quoteCount.textContent = String(lineCount);
     if (els.quoteOpen) els.quoteOpen.dataset.hasItems = lineCount > 0 ? "true" : "false";
+    if (els.quoteEstimate) {
+      const totalCents = estimatedWholesaleTotalCents();
+      els.quoteEstimate.textContent = totalCents > 0 ? formatUsd(totalCents) : "\u2014";
+    }
   }
 
   function renderSelect(selectEl, items, currentValue, placeholder) {
@@ -227,6 +266,7 @@
               ${!product.sizes.length && !product.colors.length ? '<span class="wholesale-muted">No variants listed</span>' : ""}
               <div class="wholesale-line__selectors">${sizeOptions}${colorOptions}</div>
             </div>
+            ${priceCellHtml(product)}
             <label class="wholesale-line__qty">
               <span>Qty</span>
               <input type="number" min="1" max="999" step="1" value="1" data-card-qty />
@@ -254,12 +294,17 @@
         const options = Object.entries(item.selected_options || {})
           .map(([key, value]) => `<span>${escapeHtml(key)}: ${escapeHtml(value)}</span>`)
           .join("");
+        const wholesale = formatUsd(item.wholesale_price_cents);
+        const priceLine = wholesale
+          ? `<span class="wholesale-quote-item__price">Wholesale <b>${wholesale}</b>/unit</span>`
+          : '<span class="wholesale-quote-item__price wholesale-muted">Price on quote</span>';
         return `
           <article class="wholesale-quote-item" data-quote-key="${escapeHtml(quoteItemKey(item))}">
             <img src="${escapeHtml(item.image_url || "")}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async" />
             <div class="wholesale-quote-item__body">
               <strong>${escapeHtml(item.name)}</strong>
               <span>${escapeHtml(item.brand)}</span>
+              ${priceLine}
               <div class="wholesale-quote-item__meta">${options || `<span>${escapeHtml(item.category_label || "")}</span>`}</div>
               <div class="wholesale-quote-item__controls">
                 <label>
@@ -290,7 +335,7 @@
       '<span class="ws-skel ws-skel--photo"></span><span class="ws-skel ws-skel--text"></span>' +
       '<span class="ws-skel ws-skel--chip"></span><span class="ws-skel ws-skel--chip"></span>' +
       '<span class="ws-skel ws-skel--text"></span><span class="ws-skel ws-skel--chip"></span>' +
-      '<span class="ws-skel ws-skel--chip"></span>';
+      '<span class="ws-skel ws-skel--chip"></span><span class="ws-skel ws-skel--chip"></span>';
     return Array.from(
       { length: count },
       () => `<div class="wholesale-line wholesale-line--skeleton" aria-hidden="true">${cells}</div>`
@@ -382,6 +427,8 @@
         image_url: product.image_url,
         url: product.url,
         availability_status: product.availability_status,
+        retail_price_cents: product.retail_price_cents || null,
+        wholesale_price_cents: product.wholesale_price_cents || null,
         selected_options: selectedOptions,
         quantity,
       });

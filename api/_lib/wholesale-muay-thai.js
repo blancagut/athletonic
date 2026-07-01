@@ -2,12 +2,29 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { DEFAULT_DISCOUNT_BPS } = require("./private-pricing");
 
 const WHOLESALE_CATALOG_PATH = path.join(
   process.cwd(),
   "data",
   "wholesale-muay-thai-catalog.json"
 );
+
+// Wholesale pricing mirrors the private-pricing gear tier: 40% off US retail.
+const WHOLESALE_DISCOUNT_BPS = DEFAULT_DISCOUNT_BPS;
+
+function toPriceCents(price, currency) {
+  const value = Number(price);
+  if (!Number.isFinite(value) || value <= 0) return null;
+  if (String(currency || "USD").trim().toUpperCase() !== "USD") return null;
+  return Math.round(value * 100);
+}
+
+function wholesalePriceCents(retailPriceCents) {
+  const retail = Number(retailPriceCents);
+  if (!Number.isInteger(retail) || retail <= 0) return null;
+  return Math.max(1, Math.round((retail * (10000 - WHOLESALE_DISCOUNT_BPS)) / 10000));
+}
 
 const THAI_FIGHT_BRANDS = new Set([
   "boon",
@@ -700,6 +717,7 @@ function buildWholesaleProductRecord(productRow, variants = [], images = []) {
     quote_enabled: true,
     available: Boolean(productRow.available),
     availability_status: availability,
+    retail_price_cents: toPriceCents(productRow.price, productRow.currency),
     sizes: optionGroups.sizes,
     colors: optionGroups.colors,
     other_options: optionGroups.other_options,
@@ -725,6 +743,12 @@ function normalizeWholesaleCatalogProduct(product) {
     quote_enabled: product.quote_enabled !== false,
     available: Boolean(product.available),
     availability_status: String(product.availability_status || (product.available ? "Available" : "Out of stock")).trim(),
+    retail_price_cents:
+      Number.isInteger(product.retail_price_cents) && product.retail_price_cents > 0
+        ? product.retail_price_cents
+        : null,
+    wholesale_price_cents: wholesalePriceCents(product.retail_price_cents),
+    wholesale_discount_bps: WHOLESALE_DISCOUNT_BPS,
     sizes: Array.isArray(product.sizes) ? normalizeTextList(product.sizes) : [],
     colors: Array.isArray(product.colors) ? normalizeTextList(product.colors) : [],
     other_options: Array.isArray(product.other_options) ? normalizeTextList(product.other_options) : [],
@@ -909,6 +933,7 @@ module.exports = {
   POSITIVE_PATTERNS,
   NEGATIVE_PATTERNS,
   WHOLESALE_CATALOG_PATH,
+  WHOLESALE_DISCOUNT_BPS,
   buildWholesaleProductRecord,
   buildSearchCorpus,
   collectWholesaleFacets,
@@ -926,4 +951,6 @@ module.exports = {
   humanizeSlug,
   stripHtml,
   cleanText,
+  toPriceCents,
+  wholesalePriceCents,
 };

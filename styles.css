@@ -7317,7 +7317,7 @@ body.wholesale-drawer-open {
 /* Wholesale line-sheet polish: loading skeleton, hover states, scanability */
 .wholesale-line-head,
 .wholesale-line {
-  grid-template-columns: 104px minmax(240px, 1.7fr) minmax(105px, 0.8fr) minmax(110px, 0.8fr) minmax(220px, 1.3fr) 72px 122px;
+  grid-template-columns: 104px minmax(220px, 1.6fr) minmax(100px, 0.7fr) minmax(105px, 0.7fr) minmax(200px, 1.2fr) minmax(118px, 0.8fr) 72px 122px;
 }
 
 .wholesale-line {
@@ -7458,6 +7458,46 @@ body.wholesale-drawer-open {
   }
 }
 
+/* Pricing: unit retail price large, wholesale price smaller below */
+.wholesale-line__price {
+  display: grid;
+  gap: 3px;
+  align-content: center;
+  min-width: 0;
+}
+
+.wholesale-line__price strong {
+  font-size: 1.22rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.wholesale-line__price span {
+  font-size: 0.74rem;
+  color: #5d6b76;
+}
+
+.wholesale-line__price span b {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0b7263;
+}
+
+.wholesale-quote-item__price {
+  font-size: 0.78rem;
+  color: #5d6b76;
+}
+
+.wholesale-quote-item__price b {
+  font-weight: 700;
+  color: #0b7263;
+}
+
+.wholesale-quote-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ws-skel {
     animation: none;
@@ -7483,6 +7523,14 @@ body.wholesale-drawer-open {
     min-height: 0;
   }
 
+  .wholesale-line__price {
+    grid-column: 2 / -1;
+    grid-auto-flow: column;
+    justify-content: start;
+    align-items: baseline;
+    gap: 10px;
+  }
+
   .wholesale-line--skeleton .ws-skel--photo {
     grid-row: span 3;
   }
@@ -7492,5 +7540,13 @@ body.wholesale-drawer-open {
   .wholesale-line-head,
   .wholesale-line {
     grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .wholesale-quote-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wholesale-quote-summary__estimate {
+    grid-column: 1 / -1;
   }
 }

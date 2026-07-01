@@ -14,6 +14,7 @@ const {
   normalizeWholesaleSizes,
   scoreWholesaleProduct,
   stripHtml,
+  toPriceCents,
 } = require("../api/_lib/wholesale-muay-thai.js");
 
 const ROOT = process.cwd();
@@ -62,6 +63,8 @@ function buildCandidateSql() {
       p.category_normalized,
       p.description_html,
       p.options,
+      p.price,
+      p.currency,
       (
         select i.url
         from images i
@@ -188,6 +191,7 @@ function buildOfficialProducts() {
         quote_enabled: true,
         available: stockStatusToAvailable(row.stock_status),
         availability_status: stockStatusToAvailable(row.stock_status) ? "Available" : "Out of stock",
+        retail_price_cents: toPriceCents(row.price, row.currency),
         sizes: normalizeWholesaleSizes(
           {
             brand: source.brandSlug,
@@ -279,6 +283,8 @@ function main() {
         store_collection: row.store_collection,
         category_normalized: row.category_normalized,
         options: row.options,
+        price: row.price,
+        currency: row.currency,
         image_url: row.image_url,
         image_width: row.image_width,
         image_height: row.image_height,
@@ -303,6 +309,7 @@ function main() {
       quote_enabled: product.quote_enabled,
       available: product.available,
       availability_status: product.availability_status,
+      retail_price_cents: product.retail_price_cents,
       sizes: product.sizes,
       colors: product.colors,
       other_options: product.other_options,

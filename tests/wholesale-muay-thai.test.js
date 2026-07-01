@@ -240,7 +240,7 @@ test("wholesale line sheet header stays lean and does not show counts or badges"
   assert.ok(!html.includes("catalog lines"));
 });
 
-test("GET /api/wholesale/catalog returns wholesale products without price fields", async () => {
+test("GET /api/wholesale/catalog returns retail + wholesale pricing (40% off)", async () => {
   const sampleProduct = catalogData.products.find((product) => product.brand_slug === "fairtex");
   assert.ok(sampleProduct, "expected a fairtex wholesale catalog product");
 
@@ -259,11 +259,36 @@ test("GET /api/wholesale/catalog returns wholesale products without price fields
   assert.equal(res.statusCode, 200);
   assert.equal(payload.products.length, 1);
   assert.equal(payload.products[0].brand_slug, "fairtex");
-  assert.ok(!("price" in payload.products[0]));
-  assert.ok(!("price_cents" in payload.products[0]));
-  assert.ok(!("cost" in payload.products[0]));
+  assert.ok(Number.isInteger(payload.products[0].retail_price_cents) && payload.products[0].retail_price_cents > 0);
+  assert.equal(
+    payload.products[0].wholesale_price_cents,
+    Math.max(1, Math.round(payload.products[0].retail_price_cents * 0.6)),
+    "wholesale price must be retail minus 40%"
+  );
+  assert.equal(payload.products[0].wholesale_discount_bps, 4000);
   assert.ok(Array.isArray(payload.facets.brands));
   assert.ok(Array.isArray(payload.facets.categories));
+});
+
+test("THB-sourced brands (raja_boxing) stay quote-only with no invented USD price", async () => {
+  const handler = require("../api/wholesale/catalog.js");
+  const req = {
+    method: "GET",
+    url: "/api/wholesale/catalog?brand=raja_boxing&page_size=5",
+    query: { brand: "raja_boxing", page_size: "5" },
+    headers: {},
+  };
+  const res = createResponseCapture();
+
+  await handler(req, res);
+
+  const payload = readJsonResponse(res);
+  assert.equal(res.statusCode, 200);
+  assert.ok(payload.products.length > 0);
+  for (const product of payload.products) {
+    assert.equal(product.retail_price_cents, null);
+    assert.equal(product.wholesale_price_cents, null);
+  }
 });
 
 test("GET /api/wholesale/catalog supports unified Shorts category search", async () => {
@@ -285,8 +310,6 @@ test("GET /api/wholesale/catalog supports unified Shorts category search", async
     assert.equal(product.brand_slug, "fairtex");
     assert.equal(product.category_label, "Shorts");
     assert.match(product.name, /boxing shorts?/i);
-    assert.ok(!("price" in product));
-    assert.ok(!("wholesale_price" in product));
   }
 });
 
