@@ -416,7 +416,7 @@ test("POST /api/wholesale/quote-requests stores sanitized items and notifies adm
   );
   assert.equal(inserts[0].items[0].wholesale_discount_bps, 4000);
   assert.equal(notifications.length, 1);
-  assert.deepEqual(notifications[0].recipientEmail, ["owner@example.com", "support@example.com"]);
+  assert.deepEqual(notifications[0].recipientEmail, ["owner@example.com", "support@example.com", "sales@athletonic.com"]);
   assert.ok(notifications[0].quotePdf && Buffer.isBuffer(notifications[0].quotePdf.buffer), "admin email must carry the PDF");
   assert.equal(buyerEmails.length, 1);
   assert.equal(buyerEmails[0].request.email, "alex@example.com");

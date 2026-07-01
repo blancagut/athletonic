@@ -539,6 +539,7 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
 async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
   if (!request || !request.email) return null;
 
+  const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
   const catalogUrl = `${siteUrl}/catalog/wholesale-muay-thai`;
   const reference = quotePdf && quotePdf.reference ? quotePdf.reference : request.id;
   const itemWholesaleCents = (item) => {
@@ -570,7 +571,8 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
       </p>
       <p style="margin:0 0 16px;color:#475569;">
         Our sales team will contact you shortly on WhatsApp (${escapeHtml(request.whatsapp)}) or by email to
-        confirm availability, MOQ, and shipping to ${escapeHtml(request.country)}.
+        confirm availability, MOQ, and shipping to ${escapeHtml(request.country)}. You can reach us any time at
+        <a href="mailto:${escapeHtml(salesEmail)}" style="color:#0f172a;font-weight:bold;">${escapeHtml(salesEmail)}</a>.
       </p>
       <p style="margin:0 0 24px;">
         <a href="${escapeHtml(catalogUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
@@ -593,6 +595,7 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
     estimatedTotalCents ? `Estimated wholesale total: ${formatMoney(estimatedTotalCents, "usd")}` : null,
     "",
     `Our sales team will contact you shortly on WhatsApp (${request.whatsapp}) or by email to confirm availability, MOQ, and shipping to ${request.country}.`,
+    `Contact us: ${salesEmail}`,
     "",
     `Catalog: ${catalogUrl}`,
     `Reference: ${reference}`,
@@ -604,6 +607,7 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
     subject: `Your Athletonic wholesale quotation ${reference}`,
     html,
     text: textLines.join("\n"),
+    replyTo: salesEmail,
     ...(quotePdf && quotePdf.buffer
       ? { attachments: [{ filename: quotePdf.filename, content: quotePdf.buffer.toString("base64") }] }
       : {}),

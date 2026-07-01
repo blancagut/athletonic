@@ -156,16 +156,18 @@ module.exports = async function handler(req, res) {
       throw error;
     }
 
+    const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
     const recipientEmails = uniqueEmails([
       ...(await getSuperAdminNotificationEmails(supabase)),
       process.env.ATHLETONIC_SUPPORT_EMAIL,
+      salesEmail,
     ]);
 
     let quotePdf = null;
     try {
       quotePdf = buildWholesaleQuotePdf({
         request: { id: quoteRequest.id, created_at: quoteRequest.created_at, ...body, items },
-        supportEmail: process.env.ATHLETONIC_SUPPORT_EMAIL,
+        supportEmail: salesEmail,
         siteHost: getSiteUrl(req).replace(/^https?:\/\//, ""),
       });
     } catch (pdfError) {
