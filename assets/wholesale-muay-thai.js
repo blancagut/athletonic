@@ -14,7 +14,6 @@
     category: document.querySelector("[data-filter-category]"),
     size: document.querySelector("[data-filter-size]"),
     color: document.querySelector("[data-filter-color]"),
-    availability: document.querySelector("[data-filter-availability]"),
     quoteOpen: document.querySelector("[data-quote-open]"),
     quoteClose: document.querySelector("[data-quote-close]"),
     quoteDrawer: document.querySelector("[data-quote-drawer]"),
@@ -32,7 +31,7 @@
   };
 
   const state = {
-    filters: { search: "", brand: "", category: "", size: "", color: "", availability: "" },
+    filters: { search: "", brand: "", category: "", size: "", color: "" },
     facets: { brands: [], categories: [], sizes: [], colors: [] },
     page: 1,
     pageSize: PAGE_SIZE,
@@ -258,7 +257,6 @@
             <div class="wholesale-line__brand">${escapeHtml(product.brand)}</div>
             <div class="wholesale-line__type">
               <b>${escapeHtml(product.category_label || product.product_type)}</b>
-              <span>${escapeHtml(product.availability_status || "")}</span>
             </div>
             <div class="wholesale-line__options">
               ${optionChips(product.sizes, "Sizes")}
@@ -327,7 +325,6 @@
     state.filters.category = String((els.category && els.category.value) || "").trim();
     state.filters.size = String((els.size && els.size.value) || "").trim();
     state.filters.color = String((els.color && els.color.value) || "").trim();
-    state.filters.availability = String((els.availability && els.availability.value) || "").trim();
   }
 
   function skeletonRows(count) {
@@ -539,7 +536,7 @@
         searchTimer = window.setTimeout(reload, 180);
       });
     }
-    [els.brand, els.category, els.size, els.color, els.availability].forEach((el) => {
+    [els.brand, els.category, els.size, els.color].forEach((el) => {
       if (el) el.addEventListener("change", reload);
     });
     if (els.loadMore) {
