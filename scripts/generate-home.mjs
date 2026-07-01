@@ -883,6 +883,9 @@ function canonicalLink(pathname = "/") {
 
 function assetHeadLinks(pathPrefix = "./") {
   return `<link rel="icon" href="${pathPrefix}favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="${pathPrefix}assets/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="${pathPrefix}assets/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="${pathPrefix}assets/apple-touch-icon.png" />
     <link rel="manifest" href="${pathPrefix}site.webmanifest" />`;
 }
 
@@ -6736,7 +6739,6 @@ function accountDashboardPage(pageInfo) {
     <meta name="description" content="${html(pageInfo.summary)}" />
     ${canonicalLink(`/pages/${pageInfo.slug}.html`)}
     ${assetHeadLinks(pathPrefix)}
-    <link rel="apple-touch-icon" href="${pathPrefix}assets/logo.png" />
     <link rel="stylesheet" href="${pathPrefix}styles.css" />
   </head>
   <body class="info-body">
