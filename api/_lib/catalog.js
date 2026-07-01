@@ -782,6 +782,27 @@ function evaluateCartAgainstIndexes(
         variantResolution = variant ? "label" : variantResolution;
       }
 
+      // Products that carry variants only for catalog structure (a single
+      // default variant with requires_variant_selection === false) are added to
+      // the cart straight from category cards without any variant metadata.
+      // Fall back to the default/available variant instead of blocking checkout.
+      if (
+        !variant &&
+        !selectedOptionsProvided &&
+        !clientVariantLabel &&
+        product.requires_variant_selection === false
+      ) {
+        const defaultVariant =
+          activeVariantsByProductAndId.get(`${productId}::${product.default_variant_id}`) || null;
+        variant =
+          (defaultVariant && defaultVariant.available !== false ? defaultVariant : null) ||
+          product.variants.find((candidate) => candidate.available !== false) ||
+          defaultVariant ||
+          product.variants[0] ||
+          null;
+        variantResolution = variant ? "default" : variantResolution;
+      }
+
       if (!variant) {
         if (product.has_variants) {
           const failure = buildLineFailure({
