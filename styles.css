@@ -39,6 +39,167 @@ textarea {
   font: inherit;
 }
 
+/* Shipping announcement bar */
+.ship-bar {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #071426 0%, #0b1f3a 50%, #071426 100%);
+  color: var(--white);
+  border-bottom: 1px solid rgba(46, 196, 182, 0.28);
+}
+
+.ship-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 48%,
+    rgba(255, 255, 255, 0.14) 50%,
+    rgba(255, 255, 255, 0.08) 52%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: shipShine 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shipShine {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.ship-bar-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 7px clamp(14px, 3.6vw, 56px);
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.ship-lead {
+  font-weight: 600;
+  color: #e9eef5;
+  white-space: nowrap;
+}
+
+.ship-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.28);
+  flex: none;
+}
+
+.ship-rotator {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  height: 1.3em;
+  min-width: min(62vw, 380px);
+  overflow: hidden;
+}
+
+.ship-rotator li {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  white-space: nowrap;
+  color: #dfe7f1;
+  opacity: 0;
+  transform: translateY(130%);
+  animation: shipCycle 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ship-rotator li:nth-child(2) {
+  animation-delay: 4s;
+}
+
+.ship-rotator li:nth-child(3) {
+  animation-delay: 8s;
+}
+
+.ship-rotator strong {
+  color: var(--teal);
+  font-weight: 800;
+}
+
+.ship-rotator .free {
+  color: #ffd166;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+@keyframes shipCycle {
+  0% {
+    opacity: 0;
+    transform: translateY(130%);
+  }
+  5%,
+  28% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  33%,
+  100% {
+    opacity: 0;
+    transform: translateY(-130%);
+  }
+}
+
+@media (max-width: 640px) {
+  .ship-bar-inner {
+    gap: 9px;
+    padding: 6px 12px;
+    font-size: 0.74rem;
+  }
+  .ship-lead,
+  .ship-divider {
+    display: none;
+  }
+  .ship-rotator {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ship-bar::after {
+    display: none;
+  }
+  .ship-rotator {
+    height: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 14px;
+  }
+  .ship-rotator li {
+    position: static;
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+  .ship-rotator li:not(:last-child)::after {
+    content: "\2022";
+    margin-left: 14px;
+    opacity: 0.5;
+  }
+}
+
 .market-header {
   position: sticky;
   top: 0;
@@ -47,6 +208,7 @@ textarea {
   color: var(--white);
   box-shadow: 0 12px 30px rgba(11, 31, 58, 0.18);
 }
+
 
 .header-main {
   display: grid;
@@ -509,6 +671,7 @@ textarea {
 .cart-controls button:focus-visible,
 .add-cart-button:focus-visible,
 .hero-actions a:focus-visible,
+.priority-sitelinks a:focus-visible,
 .quick-grid a:focus-visible,
 .product-card-link:focus-visible,
 .nav-toggle:focus-visible,
@@ -1700,6 +1863,42 @@ h1 {
   letter-spacing: 0.12em;
   padding: 0 14px;
   text-transform: uppercase;
+}
+
+.priority-sitelinks {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 12px clamp(14px, 3.6vw, 56px);
+  overflow-x: auto;
+  background: #ffffff;
+  border-top: 1px solid rgba(11, 31, 58, 0.08);
+  border-bottom: 1px solid rgba(11, 31, 58, 0.08);
+  scrollbar-width: none;
+}
+
+.priority-sitelinks::-webkit-scrollbar {
+  display: none;
+}
+
+.priority-sitelinks a {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #f5f7fa;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.priority-sitelinks a:hover {
+  color: #067c73;
 }
 
 .quick-grid {
