@@ -396,6 +396,14 @@
     return formatMoney((Number(cents || 0) / 100), currency || "USD");
   }
 
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function buildCartValidationSnapshot() {
     return cart.map((item) => ({
       productId: normalizeProductId(item.productId || item.id || ""),
