@@ -42,21 +42,6 @@ const excludedBrands = [
   "football_town",
 ];
 
-// Brands that must always be sold at the US MSRP. Their source store lists
-// temporary markdown/clearance prices (e.g. Nike's x.97 sale prices) with the
-// manufacturer list price in compare_at_price; the retail price we publish is
-// the MSRP whenever the source row is marked down.
-const MSRP_PRICE_BRANDS = ["nike"];
-const msrpBrandListSql = MSRP_PRICE_BRANDS.map((slug) => `'${slug}'`).join(",");
-function msrpPriceSql(alias) {
-  return `case
-    when lower(${alias}.brand) in (${msrpBrandListSql})
-      and coalesce(${alias}.compare_at_price, 0) > coalesce(${alias}.price, 0)
-    then ${alias}.compare_at_price
-    else ${alias}.price
-  end`;
-}
-
 const excludedProductIds = new Set([
   4977,
   6837,
@@ -802,7 +787,7 @@ function productsForSection(section) {
       p.brand,
       p.name,
       p.store_collection,
-      ${msrpPriceSql("p")} as price,
+      p.price,
       coalesce(p.currency, 'USD') currency,
       p.url
     from products p
@@ -2046,7 +2031,7 @@ function purchaseMetaByProductId(productIds) {
         v.option1,
         v.option2,
         v.option3,
-        ${msrpPriceSql("v")} as price,
+        v.price,
         v.available
       from products p
       left join variants v on v.product_row_id = p.id
@@ -2155,7 +2140,7 @@ function latestOfficialProducts(limit = 12) {
       p.name,
       p.store_collection,
       p.store_department,
-      ${msrpPriceSql("p")} as price,
+      p.price,
       coalesce(p.currency, 'USD') currency,
       p.url,
       p.scraped_at
@@ -3049,7 +3034,7 @@ function buildSearchIndex() {
       p.name,
       p.store_department,
       p.store_collection,
-      ${msrpPriceSql("p")} as price,
+      p.price,
       coalesce(p.currency, 'USD') currency,
       p.url,
       coalesce(p.store_priority, 0) store_priority
@@ -3242,8 +3227,7 @@ function fetchPdpData(productIds) {
     const chunk = ids.slice(i, i + BATCH);
 
     const rows = runQuery(`
-      select id, brand, name, handle, description_html,
-             ${msrpPriceSql("products")} as price, compare_at_price,
+      select id, brand, name, handle, description_html, price, compare_at_price,
              currency, options, tags, store_collection, category_normalized, url
       from products
       where id in (${chunk.join(",")});
@@ -3267,7 +3251,7 @@ function fetchPdpData(productIds) {
 
     const variants = runQuery(`
       select product_row_id, variant_id, title, option1, option2, option3,
-             ${msrpPriceSql("variants")} as price, compare_at_price, available
+             price, compare_at_price, available
       from variants
       where product_row_id in (${chunk.join(",")})
       order by product_row_id asc, id asc;
