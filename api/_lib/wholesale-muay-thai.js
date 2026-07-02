@@ -39,6 +39,8 @@ const THAI_FIGHT_BRANDS = new Set([
   "king pro",
   "sks",
   "thaismai",
+  "yokkao",
+  "primo",
 ]);
 
 const APPROVED_WHOLESALE_BRANDS = new Set([

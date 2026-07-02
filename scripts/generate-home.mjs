@@ -130,6 +130,8 @@ const combatGloveBrands = new Set([
   "top_king",
   "twins_special",
   "venum",
+  "yokkao",
+  "primo",
 ]);
 
 const boxingGloveSizeValues = ["8oz", "10oz", "12oz", "14oz", "16oz", "18oz"];
@@ -2647,6 +2649,8 @@ function loadOfficialCatalogSearchRecords() {
   const sources = [
     { brandSlug: "boon", file: new URL("../data/boon-products.json", import.meta.url) },
     { brandSlug: "topking", file: new URL("../data/topking-products.json", import.meta.url) },
+    { brandSlug: "yokkao", file: new URL("../data/yokkao-products.json", import.meta.url) },
+    { brandSlug: "primo", file: new URL("../data/primo-products.json", import.meta.url) },
   ];
   const records = [];
   for (const source of sources) {

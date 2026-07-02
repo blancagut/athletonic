@@ -21,6 +21,7 @@ const APPROVED_WHOLESALE_BRANDS = new Set([
   "fairtex",
   "fuji_sports",
   "hayabusa",
+  "primo",
   "raja_boxing",
   "rdx_sports",
   "rival_boxing",
@@ -28,6 +29,7 @@ const APPROVED_WHOLESALE_BRANDS = new Set([
   "shock_doctor",
   "topking",
   "twins_special",
+  "yokkao",
   "windy",
 ]);
 const BANNED_WHOLESALE_BRANDS = new Set([

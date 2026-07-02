@@ -24,6 +24,8 @@ const OUTPUT_PATH = path.join(ROOT, "data", "wholesale-muay-thai-catalog.json");
 const OFFICIAL_SOURCES = [
   { brandSlug: "boon", brandLabel: "Boon", file: path.join(ROOT, "data", "boon-products.json") },
   { brandSlug: "topking", brandLabel: "Top King", file: path.join(ROOT, "data", "topking-products.json") },
+  { brandSlug: "yokkao", brandLabel: "YOKKAO", file: path.join(ROOT, "data", "yokkao-products.json") },
+  { brandSlug: "primo", brandLabel: "Primo", file: path.join(ROOT, "data", "primo-products.json") },
 ];
 
 function slugify(value) {
@@ -156,9 +158,10 @@ function buildOfficialProducts() {
       if (!idToken) continue;
       const id = `official-${source.brandSlug}-${idToken}`;
       const localUrl = `/product/${id}.html`;
+      // Never link to the official brand stores: local PDP or nothing.
       const productUrl = fs.existsSync(path.join(ROOT, "product", `${id}.html`))
         ? localUrl
-        : String(row.product_url || "").trim() || null;
+        : null;
       const text = [
         row.product_name,
         row.category,
@@ -179,7 +182,7 @@ function buildOfficialProducts() {
         brand: source.brandLabel,
         name: stripHtml(row.product_name || "").trim(),
         url: productUrl,
-        external_url: String(row.product_url || "").trim() || null,
+        external_url: null,
         image_url: images[0],
         image_width: null,
         image_height: null,
