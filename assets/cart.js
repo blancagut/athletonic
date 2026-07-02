@@ -1566,6 +1566,7 @@
 
   var RECENT_KEY  = "ath-recent-searches-v1";
   var MAX_RESULTS = 1200;
+  var DROPDOWN_MAX_RESULTS = 8;
   var MAX_RECENT  = 5;
   var DEBOUNCE_MS = 80;
   var formCounter = 0;
@@ -1582,14 +1583,26 @@
   ];
 
   /* ── Path helpers ── */
+  /* Resolve data files relative to THIS script's own URL so they work at any
+     directory depth (root, /pages/, /product/, and the localized /es/ tree,
+     which has no /es/data/ copy). Falls back to the pathname heuristic. */
+  var SCRIPT_ROOT = (function () {
+    var el =
+      document.currentScript ||
+      document.querySelector('script[src*="assets/cart.js"]');
+    return el && el.src ? el.src.replace(/assets\/cart\.js.*$/, "") : null;
+  })();
   function isProductOrPages() {
     return /\/(product|pages)\//.test(window.location.pathname);
   }
   function baseHref() {
     return isProductOrPages() ? "../" : "./";
   }
+  function dataRoot() {
+    return SCRIPT_ROOT || baseHref();
+  }
   function catalogUrl() {
-    return baseHref() + "data/athletonic-catalog.json";
+    return dataRoot() + "data/athletonic-catalog.json";
   }
   function isHome() {
     var p = window.location.pathname;
@@ -1617,15 +1630,19 @@
      active/US/official-source catalog. The dropdown still uses the curated
      athletonic-catalog.json preview set. */
   function searchIndexUrl() {
-    return baseHref() + "data/search-index.json";
+    return dataRoot() + "data/search-index.json";
   }
   var _searchIndex = null;
   var _searchIndexReq = null;
+  var _searchIndexError = false;
   function loadSearchIndex() {
     if (_searchIndex) return Promise.resolve(_searchIndex);
     if (_searchIndexReq) return _searchIndexReq;
     _searchIndexReq = Promise.all([
-      fetch(searchIndexUrl()).then(function (r) { return r.json(); }),
+      fetch(searchIndexUrl()).then(function (r) {
+        if (!r.ok) throw new Error("search index HTTP " + r.status);
+        return r.json();
+      }),
       loadCatalog(),
     ])
       .then(function (results) {
@@ -1636,13 +1653,21 @@
             return [normalizeCatalogProductId(product && product.id), product];
           }).filter(function (entry) { return entry[0]; })
         );
+        _searchIndexError = false;
         _searchIndex = (indexData.products || []).map(function (product) {
           var richProduct = catalogById.get(normalizeCatalogProductId(product && product.id));
           return richProduct ? Object.assign({}, richProduct, product) : product;
         });
         return _searchIndex;
       })
-      .catch(function () { _searchIndex = []; return _searchIndex; });
+      .catch(function () {
+        /* Don't cache the failure: clear the in-flight promise so the next
+           keystroke retries, and flag the error so the UI can say "search
+           unavailable" instead of a misleading "No results". */
+        _searchIndexReq = null;
+        _searchIndexError = true;
+        return [];
+      });
     return _searchIndexReq;
   }
 
@@ -1856,12 +1881,16 @@
     var rx = new RegExp("(" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
     return esc(text).replace(rx, "<mark>$1</mark>");
   }
+  function normalizeSearchText(value) {
+    var text = String(value || "").toLowerCase();
+    try {
+      text = text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+    } catch (e) { /* older engines without String.normalize */ }
+    return text.replace(/[^a-z0-9]+/g, " ").trim();
+  }
   function queryTokens(q) {
     var seen = {};
-    return String(q || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, " ")
-      .trim()
+    return normalizeSearchText(q)
       .split(/\s+/)
       .filter(function (token) { return token && (token.length > 1 || /\d/.test(token)); })
       .filter(function (token) {
@@ -1870,22 +1899,90 @@
         return true;
       });
   }
+  /* Cached normalized search blobs per product: `text` (space separated) and
+     `squashed` (no spaces) so compound-word queries match in both directions
+     ("shinguards" ↔ "shin guards", "muscle tech" ↔ "muscletech"). */
+  function productSearchBlobs(p) {
+    if (!p._athSearchBlobs) {
+      var text = normalizeSearchText(
+        p.search || [
+          p.name,
+          p.brand,
+          displayBrand(p),
+          p.section_title,
+          sectionLabel(p),
+          p.section_id,
+        ].filter(Boolean).join(" ")
+      );
+      p._athSearchBlobs = { text: text, squashed: text.replace(/ /g, ""), words: null };
+    }
+    return p._athSearchBlobs;
+  }
   function productSearchText(p) {
-    return (p.search || [
-      p.name,
-      p.brand,
-      displayBrand(p),
-      p.section_title,
-      sectionLabel(p),
-      p.section_id,
-    ].filter(Boolean).join(" ")).toLowerCase();
+    return productSearchBlobs(p).text;
+  }
+  function tokenVariants(token) {
+    /* Singular/plural tolerance: "glove" ↔ "gloves", "guard" ↔ "guards". */
+    var variants = [token];
+    if (token.length > 3 && token.charAt(token.length - 1) === "s") {
+      variants.push(token.slice(0, -1));
+    }
+    return variants;
+  }
+  function tokenInBlobs(blobs, token) {
+    var variants = tokenVariants(token);
+    for (var i = 0; i < variants.length; i++) {
+      if (
+        blobs.text.indexOf(variants[i]) !== -1 ||
+        blobs.squashed.indexOf(variants[i]) !== -1
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+  /* One-edit typo tolerance (insert/delete/substitute/transpose) for longer tokens. */
+  function tokenAlmostMatchesWord(token, word) {
+    var tl = token.length;
+    var wl = word.length;
+    if (Math.abs(tl - wl) > 1) return false;
+    var i = 0;
+    var j = 0;
+    var edits = 0;
+    while (i < tl && j < wl) {
+      if (token.charAt(i) === word.charAt(j)) { i++; j++; continue; }
+      if (++edits > 1) return false;
+      if (
+        tl === wl &&
+        i + 1 < tl && j + 1 < wl &&
+        token.charAt(i) === word.charAt(j + 1) &&
+        token.charAt(i + 1) === word.charAt(j)
+      ) {
+        /* Adjacent transposition counts as a single edit. */
+        i += 2;
+        j += 2;
+      } else if (tl > wl) i++;
+      else if (wl > tl) j++;
+      else { i++; j++; }
+    }
+    return edits + (tl - i) + (wl - j) <= 1;
+  }
+  function fuzzyTokenInBlobs(blobs, token) {
+    if (token.length < 5) return false;
+    if (!blobs.words) blobs.words = blobs.text.split(" ");
+    for (var i = 0; i < blobs.words.length; i++) {
+      if (tokenAlmostMatchesWord(token, blobs.words[i])) return true;
+    }
+    return false;
   }
   function matchesProductQuery(p, lq, tokens) {
     if (!lq) return true;
-    var haystack = productSearchText(p);
-    if (haystack.indexOf(lq) !== -1) return true;
+    var blobs = productSearchBlobs(p);
+    if (blobs.text.indexOf(lq) !== -1) return true;
+    var squashedQuery = lq.replace(/ /g, "");
+    if (squashedQuery && blobs.squashed.indexOf(squashedQuery) !== -1) return true;
     return tokens.length > 0 && tokens.every(function (token) {
-      return haystack.indexOf(token) !== -1;
+      return tokenInBlobs(blobs, token);
     });
   }
   function scoreCatalogProduct(p, lq, tokens) {
@@ -1968,13 +2065,36 @@
      against the prebuilt lowercased `search` blob when present (index records),
      falling back to name/brand/section_title for curated records. */
   function filterCatalogFull(products, q, category) {
-    var lq = (q || "").trim().toLowerCase();
+    var lq = normalizeSearchText(q);
     var tokens = queryTokens(lq);
-    var res = products.filter(function (p) {
+    var base = products.filter(function (p) {
       if (!productHasDisplayPrice(p)) return false;
       if (category && category !== "all" && p.section_id !== category) return false;
-      return matchesProductQuery(p, lq, tokens);
+      return true;
     });
+    var res = lq
+      ? base.filter(function (p) { return matchesProductQuery(p, lq, tokens); })
+      : base;
+    /* Never dead-end: if strict AND-matching finds nothing, fall back to the
+       best partial matches (most tokens matched, with typo tolerance). */
+    if (lq && !res.length && tokens.length) {
+      var scored = [];
+      base.forEach(function (p) {
+        var blobs = productSearchBlobs(p);
+        var hits = 0;
+        tokens.forEach(function (token) {
+          if (tokenInBlobs(blobs, token) || fuzzyTokenInBlobs(blobs, token)) hits += 1;
+        });
+        if (hits > 0) scored.push({ product: p, hits: hits });
+      });
+      scored.sort(function (a, b) {
+        return (
+          b.hits - a.hits ||
+          scoreCatalogProduct(b.product, lq, tokens) - scoreCatalogProduct(a.product, lq, tokens)
+        );
+      });
+      return scored.slice(0, 400).map(function (entry) { return entry.product; });
+    }
     if (lq) {
       res.sort(function (a, b) {
         return scoreCatalogProduct(b, lq, tokens) - scoreCatalogProduct(a, lq, tokens);
@@ -2288,6 +2408,22 @@
     }
 
     loadSearchIndex().then(function (products) {
+      if (_searchIndexError && !products.length) {
+        if (browseEl) browseEl.hidden = true;
+        if (toolsEl) toolsEl.hidden = true;
+        if (_loadMoreBtn) _loadMoreBtn.hidden = true;
+        resultsEl.hidden = false;
+        resultsEl.innerHTML =
+          '<div class="catalog-empty">' +
+            '<p>Search is temporarily unavailable.</p>' +
+            '<p class="catalog-empty-hint">Please check your connection and refresh the page.</p>' +
+          '</div>';
+        if (statusEl) {
+          statusEl.hidden = false;
+          statusEl.textContent = "Search is temporarily unavailable.";
+        }
+        return;
+      }
       var matches = filterCatalogFull(products, q, category);
       _catalogBaseMatches = matches;
       populateCatalogFilters(matches);
@@ -2463,7 +2599,9 @@
               + '<svg viewBox="0 0 24 24" aria-hidden="true">'
               + '<circle cx="11" cy="11" r="8"></circle>'
               + '<line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
-              + '<p>No results for <strong>&ldquo;' + esc(q) + '&rdquo;</strong></p>'
+              + (_searchIndexError
+                ? '<p>Search is temporarily unavailable. Please check your connection and try again.</p>'
+                : '<p>No results for <strong>&ldquo;' + esc(q) + '&rdquo;</strong></p>')
               + '</div>';
       }
 
@@ -2536,7 +2674,7 @@
     /* ── Run search query ── */
     function runSearch(q) {
       loadSearchIndex().then(function (products) {
-        renderResults(q, filterCatalogFull(products, q, getCategory()).slice(0, MAX_RESULTS));
+        renderResults(q, filterCatalogFull(products, q, getCategory()).slice(0, DROPDOWN_MAX_RESULTS));
       });
     }
 
@@ -2615,6 +2753,7 @@
 
     /* ── Focus opens dropdown ── */
     qInput.addEventListener("focus", function () {
+      loadSearchIndex(); /* warm the index so the first keystroke is instant */
       if (qInput.value.trim()) {
         runSearch(qInput.value.trim());
       } else {
@@ -2661,8 +2800,9 @@
       if (!wrapper.contains(e.target)) closeDD();
     });
 
-    /* Preload silently so the first interaction feels instant: the dropdown
-       uses the curated catalog; the results page uses the full search index. */
+    /* Preload silently so the first interaction feels instant: both the
+       dropdown and the results page use the full search index (also warmed
+       on input focus above). */
     loadCatalog();
     if (isCatalogPage()) loadSearchIndex();
   }
