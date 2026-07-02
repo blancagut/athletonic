@@ -1829,12 +1829,18 @@ function normalizedVariantRecord(row, optionNames = [], galleryImageMeta = []) {
   const optionEntries = optionValueEntriesFromVariantRow(row, optionNames);
   const sourceAvailable = parseAvailabilityFlag(row?.available);
   const imageUrl = pickGalleryImageForOptionValues(galleryImageMeta, optionValues);
-  const title = variantLabelFromRow(row) || String(row?.variant_id || "").trim();
-  if (!title || priceCents <= 0) return null;
+  // Display label: a variant whose only "label" would be its internal SKU/id
+  // (e.g. a single "Default" variant) shows nothing rather than an ugly
+  // "TW49-BOXING-GLOVES-…" string in the cart/checkout. `key` keeps the id
+  // fallback so the variant stays identifiable and is never filtered out.
+  const label = variantLabelFromRow(row);
+  const variantId = String(row?.variant_id || "").trim();
+  const key = label || variantId;
+  if (!key || priceCents <= 0) return null;
   return {
-    variant_id: String(row?.variant_id || "").trim(),
-    key: title,
-    title,
+    variant_id: variantId,
+    key,
+    title: label,
     sku: row?.sku ? String(row.sku).trim() : null,
     optionValues,
     option_values: optionEntries,
@@ -5077,10 +5083,9 @@ const page = `<!doctype html>
     <div class="ship-bar" role="region" aria-label="Shipping offers">
       <div class="ship-bar-inner">
         <span class="ship-ups" aria-hidden="true"><img src="./assets/ups-logo.svg" alt="UPS" width="22" height="22" loading="eager" decoding="async" /></span>
-        <span class="ship-lead">Ships worldwide with UPS</span>
+        <span class="ship-free"><span class="free">FREE</span> USA ground shipping &mdash; any order, no minimum</span>
         <span class="ship-divider" aria-hidden="true"></span>
-        <ul class="ship-rotator">
-          <li><span class="free">FREE</span> USA ground shipping &mdash; any order, no minimum</li>
+        <ul class="ship-rotator ship-rotator-duo">
           <li>Flat <strong>$199</strong> shipping to South America</li>
           <li>Flat <strong>$299</strong> shipping to Europe &amp; Asia</li>
         </ul>

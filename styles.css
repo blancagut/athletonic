@@ -108,6 +108,18 @@ textarea {
   white-space: nowrap;
 }
 
+.ship-free {
+  font-weight: 700;
+  color: #e9eef5;
+  white-space: nowrap;
+}
+
+.ship-free .free {
+  color: #ffd166;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
 .ship-divider {
   width: 1px;
   height: 16px;
@@ -145,6 +157,37 @@ textarea {
   animation-delay: 8s;
 }
 
+/* Two-item rotator (the FREE USA offer is pinned outside the rotator so it
+   is always visible; only the international flat rates cycle). */
+.ship-rotator-duo {
+  min-width: min(40vw, 300px);
+}
+
+.ship-rotator-duo li {
+  animation: shipCycleDuo 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ship-rotator-duo li:nth-child(2) {
+  animation-delay: 4s;
+}
+
+@keyframes shipCycleDuo {
+  0% {
+    opacity: 0;
+    transform: translateY(130%);
+  }
+  6%,
+  44% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50%,
+  100% {
+    opacity: 0;
+    transform: translateY(-130%);
+  }
+}
+
 .ship-rotator strong {
   color: var(--teal);
   font-weight: 800;
@@ -175,17 +218,25 @@ textarea {
 
 @media (max-width: 640px) {
   .ship-bar-inner {
-    gap: 9px;
-    padding: 6px 12px;
+    flex-wrap: wrap;
+    gap: 3px 8px;
+    padding: 6px 12px 5px;
     font-size: 0.74rem;
   }
   .ship-lead,
   .ship-divider {
     display: none;
   }
+  .ship-free {
+    white-space: normal;
+    line-height: 1.25;
+  }
   .ship-rotator {
     min-width: 0;
-    flex: 1;
+    flex: 1 1 100%;
+  }
+  .ship-rotator li {
+    text-align: center;
   }
 }
 
@@ -5217,7 +5268,7 @@ h1 {
     left: 0;
     z-index: 70;
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     min-height: 62px;
     padding: 5px max(8px, env(safe-area-inset-left)) calc(5px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right));
     border-top: 1px solid var(--line);
