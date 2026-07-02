@@ -7,8 +7,9 @@
  *     paths, and /es/ internal links.
  *   - reciprocal hreflang (en <-> es <-> x-default) injected into the
  *     English sources AND the Spanish copies.
- *   - sitemap.xml rewritten to list both locales with xhtml:link
- *     alternates.
+ *   - sitemap-pages.xml rewritten to list both locales with xhtml:link
+ *     alternates (sitemap.xml is a sitemap index; product URLs live in
+ *     sitemap-products-N.xml shards).
  *
  *  Product PDPs (product/*.html) stay English this phase and are not
  *  part of the locale set.
@@ -74,9 +75,14 @@ for (const t of targets) {
 }
 
 /* ------------------------------------------------------------
- *  2. Rewrite sitemap.xml with both locales + hreflang alternates
+ *  2. Rewrite the pages sitemap with both locales + hreflang alternates.
+ *     sitemap.xml is now a sitemap index; the static-page urlset lives
+ *     in sitemap-pages.xml.
  * ---------------------------------------------------------- */
-const sitemapPath = abs("sitemap.xml");
+import { existsSync } from "node:fs";
+const sitemapPath = existsSync(abs("sitemap-pages.xml"))
+  ? abs("sitemap-pages.xml")
+  : abs("sitemap.xml");
 const sitemap = readFileSync(sitemapPath, "utf8");
 
 const entries = [];
