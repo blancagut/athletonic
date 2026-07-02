@@ -1,4 +1,16 @@
-const catalog = require("../../data/athletonic-catalog.json");
+// Authoritative checkout catalog: contains EVERY purchasable storefront product
+// (curated + official + full indexed catalog, ~12k records) with variants and
+// pricing. The curated preview catalog (athletonic-catalog.json, ~1.3k records)
+// only covers homepage/category picks — validating against it rejected every
+// non-curated product as "not ready for checkout". Fall back to the curated
+// catalog only if the authoritative file is missing (regenerate via
+// scripts/generate-home.mjs).
+let catalog;
+try {
+  catalog = require("../../data/checkout-catalog.json");
+} catch (error) {
+  catalog = require("../../data/athletonic-catalog.json");
+}
 const {
   applyVariantPricingToProduct,
   loadVariantPricingOverrideMap,

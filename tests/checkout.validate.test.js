@@ -12,8 +12,14 @@ const assert = require("node:assert/strict");
 // Inject synthetic products BEFORE catalog.js loads so they are included when it
 // builds its in-memory index. catalog.js requires the SAME cached JSON object
 // (same resolved path), so this mutation is visible to it. Done at module top
-// level, which runs before any test registers.
-const catalogData = require("../data/athletonic-catalog.json");
+// level, which runs before any test registers. Must mirror catalog.js: it loads
+// the authoritative checkout catalog first, curated catalog as fallback.
+let catalogData;
+try {
+  catalogData = require("../data/checkout-catalog.json");
+} catch (error) {
+  catalogData = require("../data/athletonic-catalog.json");
+}
 
 const SYN_UNPURCHASABLE = "__test_unpurchasable__";
 const SYN_UNAVAILABLE = "__test_unavailable__";
