@@ -1552,6 +1552,8 @@
       queueCartValidation({ force: true });
     },
     formatMoney,
+    refreshVisibleCatalogCards,
+    refreshPdpFromLiveCatalog,
   };
 })();
 
@@ -2699,8 +2701,12 @@
     initCatalogFilters();
     document.querySelectorAll("[data-catalog-search]").forEach(initForm);
     applyUrlParams();
-    refreshVisibleCatalogCards();
-    refreshPdpFromLiveCatalog();
+    /* Live-refresh helpers live in the cart module (first IIFE); reach them
+       through its public API — referencing them directly here throws a
+       ReferenceError that aborts the rest of this init. */
+    var cartApi = window.AthletonicCart || {};
+    if (typeof cartApi.refreshVisibleCatalogCards === "function") cartApi.refreshVisibleCatalogCards();
+    if (typeof cartApi.refreshPdpFromLiveCatalog === "function") cartApi.refreshPdpFromLiveCatalog();
     normalizeVisibleBrandLabels(document);
   }
 
@@ -2736,4 +2742,73 @@
   s.src = base + "assets/i18n.js";
   s.defer = true;
   (document.head || document.documentElement).appendChild(s);
+})();
+
+/* ── Deal savings chips ────────────────────────────────────────────────────
+   Computes "-N%" chips client-side from rendered prices (current + struck-
+   through compare-at) so no page regeneration is needed. Applies to home
+   hero deal cards and every .product-price-line; re-runs for catalog cards
+   rendered later via a MutationObserver. Skips chips under 5% or over 90%. */
+(function () {
+  "use strict";
+
+  function priceNum(text) {
+    var digits = String(text || "").replace(/[^0-9.]/g, "");
+    return digits ? parseFloat(digits) : NaN;
+  }
+
+  function addChip(container, current, original) {
+    if (!container || container.querySelector(".deal-pct")) return;
+    var pct = Math.round((1 - current / original) * 100);
+    if (!isFinite(pct) || pct < 5 || pct > 90) return;
+    var chip = document.createElement("span");
+    chip.className = "deal-pct";
+    chip.textContent = "-" + pct + "%";
+    container.insertBefore(chip, container.firstChild);
+  }
+
+  function applyDealChips(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll(".product-price-line").forEach(function (line) {
+      var current = line.querySelector("strong");
+      var original = line.querySelector("span");
+      if (!current || !original) return;
+      addChip(line, priceNum(current.textContent), priceNum(original.textContent));
+    });
+    scope.querySelectorAll(".hero-deal").forEach(function (card) {
+      var priceEl = card.querySelector("strong");
+      var original = priceEl && priceEl.querySelector("span");
+      if (!priceEl || !original) return;
+      var current = priceNum(priceEl.childNodes[0] && priceEl.childNodes[0].textContent);
+      addChip(priceEl, current, priceNum(original.textContent));
+    });
+  }
+
+  var chipTimer = null;
+
+  function queueDealChips() {
+    clearTimeout(chipTimer);
+    chipTimer = setTimeout(function () {
+      applyDealChips(document);
+    }, 120);
+  }
+
+  function init() {
+    applyDealChips(document);
+    /* Price lines are rewritten asynchronously (live catalog refresh, catalog
+       search rendering) — watch for that and re-apply. addChip() is
+       idempotent, so repeated passes are safe. */
+    if (typeof MutationObserver !== "undefined" && document.body) {
+      new MutationObserver(queueDealChips).observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();

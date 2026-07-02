@@ -7604,3 +7604,238 @@ body.wholesale-drawer-open {
     grid-column: auto;
   }
 }
+
+/* ── Mobile home visual refresh (2026-07-02) ──────────────────────────────
+   The phone overrides in the ≤760px block earlier in this file were being
+   DEFEATED by the higher-specificity desktop rules (.home-body .hero.hero-offers
+   …), which squeezed the hero into two columns and kept the oversized white
+   copy card on phones. These rules match that specificity and win by source
+   order. Also adds Amazon-style savings chips + deal tags (see cart.js). */
+
+span.deal-pct,
+.product-price-line span.deal-pct,
+.hero-deal strong span.deal-pct,
+.home-body .product-price-line span.deal-pct,
+.home-body .hero-deal strong span.deal-pct {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin: 0;
+  border-radius: 4px;
+  background: #cc0c39;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 4px 6px;
+  text-decoration: none;
+  text-transform: none;
+}
+
+.hero-deal strong span.deal-pct,
+.home-body .hero-deal strong span.deal-pct {
+  margin: 0 8px 0 0;
+  vertical-align: 3px;
+}
+
+.product-body .product-deal-note {
+  width: fit-content;
+  border-radius: 4px;
+  background: rgba(204, 12, 57, 0.08);
+  color: #cc0c39;
+  font-weight: 850;
+  padding: 3px 7px;
+}
+
+@media (max-width: 760px) {
+  /* Hero: compact dark promo banner + swipeable deal cards (products above
+     the fold instead of a giant empty white card). */
+  .home-body .hero.hero-offers {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 12px 18px;
+    background:
+      radial-gradient(120% 140% at 100% 0%, rgba(46, 196, 182, 0.28), rgba(46, 196, 182, 0) 55%),
+      linear-gradient(165deg, #0b1f3a 0%, #10294b 60%, #0b1f3a 100%);
+  }
+
+  .home-body .hero.hero-offers .hero-copy {
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--white);
+    padding: 2px 2px 0;
+  }
+
+  /* Eyebrow repeats the h1 text verbatim on the home hero — drop it. */
+  .home-body .hero.hero-offers .hero-copy .eyebrow {
+    display: none;
+  }
+
+  .home-body .hero.hero-offers .hero-copy h1 {
+    max-width: none;
+    margin-bottom: 6px;
+    color: var(--white);
+    font-size: 27px;
+    line-height: 1.05;
+    text-transform: none;
+  }
+
+  .home-body .hero.hero-offers .hero-copy p:not(.eyebrow) {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 13px;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .home-body .hero.hero-offers .hero-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .home-body .hero.hero-offers .hero-actions a {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 42px;
+    border-radius: 8px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    line-height: 1.15;
+    padding: 0 10px;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .home-body .hero.hero-offers .hero-actions a + a {
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--white);
+  }
+
+  .home-body .hero.hero-offers .hero-offer-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: min(78vw, 300px);
+    grid-template-columns: none;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .home-body .hero.hero-offers .hero-offer-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-body .hero-offer-grid .hero-deal {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 4px 12px;
+    min-height: 150px;
+    align-items: center;
+    border-radius: 12px;
+    box-shadow: 0 10px 26px rgba(3, 12, 27, 0.35);
+    padding: 12px;
+    scroll-snap-align: start;
+  }
+
+  .home-body .hero-offer-grid .hero-deal img {
+    grid-row: 1 / span 5;
+    width: 92px;
+    height: 92px;
+    object-fit: contain;
+    padding: 4px;
+  }
+
+  .home-body .hero-offer-grid .hero-deal h2 {
+    font-size: 16px;
+    line-height: 1.1;
+  }
+
+  .home-body .hero-offer-grid .hero-deal p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .home-body .hero-offer-grid .hero-deal strong {
+    font-size: 19px;
+  }
+
+  .home-body .hero-offer-grid .hero-deal strong span:not(.deal-pct) {
+    display: inline-block;
+    margin: 0 0 0 6px;
+    font-size: 12px;
+  }
+
+  .home-body .hero-offer-grid .hero-deal .hero-deal-link {
+    margin-top: 6px;
+    min-height: 36px;
+    border-radius: 8px;
+    background: var(--teal);
+    color: var(--blue);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 0 14px;
+  }
+
+  /* Product cards: defined edges, stronger price hierarchy, bigger tap
+     targets — closer to marketplace card conventions. */
+  .home-body .product-card {
+    border: 1px solid rgba(11, 31, 58, 0.1);
+    box-shadow: none;
+  }
+
+  .home-body .product-price-line {
+    align-items: center;
+    gap: 6px;
+  }
+
+  .home-body .product-price-line strong {
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+
+  .home-body .product-price-line span:not(.deal-pct) {
+    font-size: 11px;
+  }
+
+  .home-body .add-cart-button {
+    min-height: 40px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  /* Section headers: teal accent bar for faster scanning between shelves. */
+  .home-body .section-title h2 {
+    position: relative;
+    padding-left: 11px;
+  }
+
+  .home-body .section-title h2::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 0;
+    width: 4px;
+    border-radius: 2px;
+    background: var(--teal);
+  }
+
+  .home-body .quick-grid article {
+    border: 1px solid rgba(11, 31, 58, 0.08);
+  }
+}
