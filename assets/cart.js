@@ -700,7 +700,8 @@
     }
 
     function render() {
-      const variant = currentVariant() || baseVariant;
+      const resolved = currentVariant();
+      const variant = resolved || baseVariant;
       const variantTitle = variant && variant.title ? variant.title : "";
       const mergedName = variantTitle ? baseName + " - " + variantTitle : baseName;
       const priceCents = variant
@@ -709,7 +710,17 @@
       const compareCents = variant
         ? variantRecordCompareAtCents(variant, product)
         : Math.round(Number(product.compare_at_price_cents || 0));
-      const imageUrl = variantImageUrl(variant) || String(product.image || "").trim();
+      /* The gallery-scored pick (assets/cart.js PDP image fixer) is more
+         reliable than variant.image_url from the catalog data, which can
+         point at a sibling flavor's photo. */
+      const galleryPick =
+        resolved && window.AthletonicPdpImage
+          ? window.AthletonicPdpImage.pick(
+              selects.map((s) => String(s.value || "").trim()).filter(Boolean)
+            )
+          : null;
+      const imageUrl =
+        galleryPick || variantImageUrl(variant) || String(product.image || "").trim();
       const available = variant ? variant.available !== false : product.available !== false;
 
       titleEl.textContent = mergedName;
@@ -733,7 +744,12 @@
           : "Out of stock · Sold by Athletonic";
       }
       if (mainImg && imageUrl) {
-        mainImg.src = imageUrl;
+        /* Without a full selection, keep the page's default image instead of
+           swapping to the default variant's (possibly mismatched) photo. */
+        if (resolved || !selects.length) {
+          mainImg.src = imageUrl;
+          if (window.AthletonicPdpImage) window.AthletonicPdpImage.markActive(imageUrl);
+        }
         mainImg.alt = mergedName;
       }
 
@@ -3050,11 +3066,19 @@
       var src = bestImage(values);
       if (!src) return;
       if (mainImg.src !== src) mainImg.src = src;
+      markActive(src);
+      if (addBtn) addBtn.dataset.cartImage = src;
+    }
+
+    function markActive(src) {
       thumbs.forEach(function (b) {
         b.classList.toggle("is-active", b.getAttribute("data-src") === src);
       });
-      if (addBtn) addBtn.dataset.cartImage = src;
     }
+
+    /* Shared with the live-catalog PDP renderer so a late API refresh
+       can't reintroduce a mismatched variant image. */
+    window.AthletonicPdpImage = { pick: bestImage, markActive: markActive };
 
     selects.forEach(function (s) {
       /* Registered after the inline PDP script's own listener, so this
