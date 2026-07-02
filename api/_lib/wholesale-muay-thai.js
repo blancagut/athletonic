@@ -882,6 +882,15 @@ function sanitizeQuoteItem(rawItem, catalogProduct) {
     Number.isInteger(catalogProduct.retail_price_cents) && catalogProduct.retail_price_cents > 0
       ? catalogProduct.retail_price_cents
       : null;
+  const discountBps =
+    Number.isInteger(catalogProduct.wholesale_discount_bps) && catalogProduct.wholesale_discount_bps > 0
+      ? catalogProduct.wholesale_discount_bps
+      : WHOLESALE_DISCOUNT_BPS;
+  const wholesaleCents = retailPriceCents
+    ? Number.isInteger(catalogProduct.wholesale_price_cents) && catalogProduct.wholesale_price_cents > 0
+      ? catalogProduct.wholesale_price_cents
+      : Math.max(1, Math.round((retailPriceCents * (10000 - discountBps)) / 10000))
+    : null;
 
   return {
     product_id: catalogProduct.id,
@@ -895,8 +904,8 @@ function sanitizeQuoteItem(rawItem, catalogProduct) {
     quantity: safeQuantity,
     availability_status: catalogProduct.availability_status,
     retail_price_cents: retailPriceCents,
-    wholesale_price_cents: retailPriceCents ? wholesalePriceCents(retailPriceCents) : null,
-    wholesale_discount_bps: WHOLESALE_DISCOUNT_BPS,
+    wholesale_price_cents: wholesaleCents,
+    wholesale_discount_bps: discountBps,
   };
 }
 

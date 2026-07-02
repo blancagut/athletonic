@@ -5,6 +5,7 @@ const {
   normalizeQuoteRequestBody,
   sanitizeQuoteItem,
 } = require("../_lib/wholesale-muay-thai");
+const { loadSupplementsCatalogManifest } = require("../_lib/wholesale-supplements");
 const { sendWholesaleQuoteRequestEmail, sendWholesaleQuoteBuyerEmail } = require("../_lib/email");
 const { buildWholesaleQuotePdf } = require("../_lib/quote-pdf");
 
@@ -76,9 +77,12 @@ module.exports = async function handler(req, res) {
   try {
     requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
     const manifest = loadWholesaleCatalogManifest();
+    const supplementsManifest = loadSupplementsCatalogManifest();
     const rawBody = await readJson(req);
     const body = normalizeQuoteRequestBody(rawBody);
-    const productsById = new Map(manifest.products.map((product) => [String(product.id), product]));
+    const productsById = new Map(
+      [...manifest.products, ...supplementsManifest.products].map((product) => [String(product.id), product])
+    );
     const items = body.items.map((rawItem) => {
       const productId = String(rawItem.product_id || rawItem.id || "").trim();
       if (!productId) {
