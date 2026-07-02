@@ -2925,6 +2925,27 @@
   (document.head || document.documentElement).appendChild(s);
 })();
 
+/* ============================================================
+ *  Currency loader
+ *  Loads the FX display-conversion runtime (assets/currency.js)
+ *  on every page, mirroring the i18n loader above.
+ * ============================================================ */
+(function () {
+  if (window.AthletonicCurrency) return;
+  var base = null;
+  var self =
+    document.currentScript ||
+    document.querySelector('script[src*="assets/cart.js"]');
+  if (self && self.src) base = self.src.replace(/assets\/cart\.js.*$/, "");
+  if (base === null) {
+    base = /\/(pages|product)\//.test(window.location.pathname) ? "../" : "./";
+  }
+  var s = document.createElement("script");
+  s.src = base + "assets/currency.js";
+  s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
+
 /* ── Deal savings chips ────────────────────────────────────────────────────
    Computes "-N%" chips client-side from rendered prices (current + struck-
    through compare-at) so no page regeneration is needed. Applies to home
@@ -2936,6 +2957,16 @@
   function priceNum(text) {
     var digits = String(text || "").replace(/[^0-9.]/g, "");
     return digits ? parseFloat(digits) : NaN;
+  }
+
+  /* Prefer the true USD value stamped by assets/currency.js (data-usd)
+     so chips stay correct when displayed prices are FX-converted. */
+  function priceOf(el) {
+    if (el && el.getAttribute) {
+      var usd = parseFloat(el.getAttribute("data-usd"));
+      if (isFinite(usd)) return usd;
+    }
+    return priceNum(el && el.textContent);
   }
 
   function addChip(container, current, original) {
@@ -2954,14 +2985,16 @@
       var current = line.querySelector("strong");
       var original = line.querySelector("span");
       if (!current || !original) return;
-      addChip(line, priceNum(current.textContent), priceNum(original.textContent));
+      addChip(line, priceOf(current), priceOf(original));
     });
     scope.querySelectorAll(".hero-deal").forEach(function (card) {
       var priceEl = card.querySelector("strong");
       var original = priceEl && priceEl.querySelector("span");
       if (!priceEl || !original) return;
-      var current = priceNum(priceEl.childNodes[0] && priceEl.childNodes[0].textContent);
-      addChip(priceEl, current, priceNum(original.textContent));
+      var current = priceEl.getAttribute("data-usd")
+        ? parseFloat(priceEl.getAttribute("data-usd"))
+        : priceNum(priceEl.childNodes[0] && priceEl.childNodes[0].textContent);
+      addChip(priceEl, current, priceOf(original));
     });
   }
 

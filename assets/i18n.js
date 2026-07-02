@@ -110,6 +110,8 @@
     "Language": "Idioma",
     "English": "English",
     "Currency": "Moneda",
+    "Choose currency": "Elegir moneda",
+    "Orders are billed in USD. Converted prices are estimates.": "Los pedidos se cobran en USD. Los precios convertidos son estimados.",
     "USD — $": "USD — $",
     "Ship to": "Enviar a",
     "United States": "Estados Unidos",
