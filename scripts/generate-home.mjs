@@ -7648,7 +7648,48 @@ ${sitemapEntries
   .join("\n")}
 </urlset>
 `;
-writeFileSync(new URL("../sitemap.xml", import.meta.url), cleanGeneratedText(sitemapXml));
+writeFileSync(new URL("../sitemap-pages.xml", import.meta.url), cleanGeneratedText(sitemapXml));
+
+// Product sitemap shards: every generated PDP is indexable. Shards stay well
+// under the 50k-URL sitemap limit and leave headroom for catalog growth.
+const PRODUCT_SITEMAP_SHARD_SIZE = 10000;
+const productSitemapPaths = readdirSync(pdpDir)
+  .filter((file) => /^[A-Za-z0-9_-]+\.html$/.test(file))
+  .sort()
+  .map((file) => `/product/${file}`);
+const productSitemapFiles = [];
+for (let i = 0; i < productSitemapPaths.length; i += PRODUCT_SITEMAP_SHARD_SIZE) {
+  const shard = productSitemapPaths.slice(i, i + PRODUCT_SITEMAP_SHARD_SIZE);
+  const shardName = `sitemap-products-${productSitemapFiles.length + 1}.xml`;
+  const shardXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${shard
+  .map(
+    (pathname) => `  <url>
+    <loc>${html(canonicalUrl(pathname))}</loc>
+    <lastmod>${sitemapLastModified}</lastmod>
+  </url>`
+  )
+  .join("\n")}
+</urlset>
+`;
+  writeFileSync(new URL(`../${shardName}`, import.meta.url), cleanGeneratedText(shardXml));
+  productSitemapFiles.push(shardName);
+}
+
+const sitemapIndexXml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${["sitemap-pages.xml", ...productSitemapFiles]
+  .map(
+    (file) => `  <sitemap>
+    <loc>${html(canonicalUrl(`/${file}`))}</loc>
+    <lastmod>${sitemapLastModified}</lastmod>
+  </sitemap>`
+  )
+  .join("\n")}
+</sitemapindex>
+`;
+writeFileSync(new URL("../sitemap.xml", import.meta.url), cleanGeneratedText(sitemapIndexXml));
 
 const webManifest = {
   name: "Athletonic",
@@ -7693,5 +7734,5 @@ Sitemap: ${canonicalUrl("/sitemap.xml")}
 writeFileSync(new URL("../robots.txt", import.meta.url), cleanGeneratedText(robotsTxt));
 
 console.log(
-  `Generated robots.txt and sitemap.xml with ${sitemapEntries.length} indexable URLs.`
+  `Generated robots.txt and sitemap index with ${sitemapEntries.length} page URLs + ${productSitemapPaths.length} product URLs across ${productSitemapFiles.length + 1} sitemaps.`
 );

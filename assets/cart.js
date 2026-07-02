@@ -1635,6 +1635,7 @@
   var _searchIndex = null;
   var _searchIndexReq = null;
   var _searchIndexError = false;
+  var _searchApiBroken = false;
   function loadSearchIndex() {
     if (_searchIndex) return Promise.resolve(_searchIndex);
     if (_searchIndexReq) return _searchIndexReq;
@@ -2672,10 +2673,47 @@
     }
 
     /* ── Run search query ── */
-    function runSearch(q) {
-      loadSearchIndex().then(function (products) {
-        renderResults(q, filterCatalogFull(products, q, getCategory()).slice(0, DROPDOWN_MAX_RESULTS));
+    /* The dropdown asks the server first (tiny per-query payloads instead of the
+       multi-MB index download); if the API is unavailable (static dev server,
+       offline) it permanently falls back to the local index for the session. */
+    var _searchSeq = 0;
+    function searchViaApi(q, category) {
+      if (_searchApiBroken || typeof fetch !== "function") {
+        return Promise.reject(new Error("search api unavailable"));
+      }
+      var url =
+        (SCRIPT_ROOT || "/") +
+        "api/catalog/search?q=" + encodeURIComponent(q) +
+        "&category=" + encodeURIComponent(category || "all") +
+        "&limit=" + DROPDOWN_MAX_RESULTS;
+      return fetch(url).then(function (r) {
+        if (!r.ok) {
+          _searchApiBroken = true;
+          throw new Error("search api http " + r.status);
+        }
+        return r.json();
+      }).then(function (data) {
+        if (!data || !Array.isArray(data.products)) {
+          _searchApiBroken = true;
+          throw new Error("search api bad payload");
+        }
+        return data.products;
       });
+    }
+    function runSearch(q) {
+      var seq = ++_searchSeq;
+      var category = getCategory();
+      searchViaApi(q, category)
+        .then(function (products) {
+          if (seq !== _searchSeq) return;
+          renderResults(q, products.slice(0, DROPDOWN_MAX_RESULTS));
+        })
+        .catch(function () {
+          loadSearchIndex().then(function (products) {
+            if (seq !== _searchSeq) return;
+            renderResults(q, filterCatalogFull(products, q, category).slice(0, DROPDOWN_MAX_RESULTS));
+          });
+        });
     }
 
     /* ── Input change handler ── */
@@ -2753,7 +2791,10 @@
 
     /* ── Focus opens dropdown ── */
     qInput.addEventListener("focus", function () {
-      loadSearchIndex(); /* warm the index so the first keystroke is instant */
+      /* Warm the full index only where it is actually needed (catalog results
+         page, or when the search API is unavailable); the dropdown itself is
+         served by /api/catalog/search. */
+      if (isCatalogPage() || _searchApiBroken) loadSearchIndex();
       if (qInput.value.trim()) {
         runSearch(qInput.value.trim());
       } else {
