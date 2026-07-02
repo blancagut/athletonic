@@ -2954,6 +2954,123 @@
   (document.head || document.documentElement).appendChild(s);
 })();
 
+/* ── PDP variant image fixer ───────────────────────────────────────────────
+   The inline script baked into product/*.html picks the variant image by
+   scoring gallery filenames with a flat "+1 per any word hit" rule. That
+   makes "French Vanilla Cream / 2 lb." tie with "cookies-cream-2lb.png"
+   (shared word "cream" + size) and the wrong flavor wins by array order.
+   Some baked variant data also carries a wrong image_url outright.
+
+   This module re-scores after the inline handler runs (cart.js is deferred,
+   so our change listeners are registered later and always run last):
+   - flavor-like values (no digits) weigh far more than size-like values
+   - word matches are proportional (matched/total), so "french vanilla"
+     (2/3) beats a stray "cream" (1/3)
+   - if nothing matches the flavor signal, the image is left untouched
+   It also overwrites the Add-to-Cart image (data-cart-image) so the cart
+   thumbnail matches the chosen variant. No page regeneration needed. */
+(function () {
+  function initPdpImageFix() {
+    var mainImg = document.getElementById("pdp-main-image");
+    var selects = Array.prototype.slice.call(
+      document.querySelectorAll("[data-pdp-variant]")
+    );
+    if (!mainImg || !selects.length) return;
+
+    var thumbs = Array.prototype.slice.call(
+      document.querySelectorAll("[data-pdp-thumb]")
+    );
+    var addBtn = document.querySelector("[data-pdp-add-button]");
+
+    function fileBlob(src) {
+      var last = String(src || "").split("?")[0].split("/").pop() || "";
+      try { last = decodeURIComponent(last); } catch (e) { /* keep raw */ }
+      return last.toLowerCase().replace(/[^a-z0-9]+/g, "");
+    }
+
+    var gallery = thumbs
+      .map(function (btn) {
+        var src = btn.getAttribute("data-src");
+        return src ? { src: src, blob: fileBlob(src) } : null;
+      })
+      .filter(Boolean);
+    if (!gallery.length && mainImg.src) {
+      gallery = [{ src: mainImg.src, blob: fileBlob(mainImg.src) }];
+    }
+
+    function groupOf(value) {
+      var words =
+        String(value == null ? "" : value)
+          .toLowerCase()
+          .match(/[a-z0-9]+/g) || [];
+      return {
+        compact: words.join(""),
+        words: words.filter(function (w) { return w.length >= 3; }),
+        sizeLike: /\d/.test(words.join("")),
+      };
+    }
+
+    function bestImage(values) {
+      var groups = values.map(groupOf).filter(function (g) { return g.compact; });
+      if (!groups.length || !gallery.length) return null;
+      var best = null;
+      var bestScore = 0;
+      gallery.forEach(function (img) {
+        if (!img.blob) return;
+        var score = 0;
+        groups.forEach(function (g) {
+          var full = g.sizeLike ? 1 : 4;
+          if (img.blob.indexOf(g.compact) !== -1) {
+            score += full;
+            return;
+          }
+          if (!g.words.length) return;
+          var matched = g.words.filter(function (w) {
+            return img.blob.indexOf(w) !== -1;
+          }).length;
+          if (matched > 0) score += (full * 0.75 * matched) / g.words.length;
+        });
+        if (score > bestScore) {
+          bestScore = score;
+          best = img.src;
+        }
+      });
+      /* Require a non-size signal so a size-only hit can never swap the
+         image to a different flavor. */
+      var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+      var threshold = hasNonSize ? 1 : 0.5;
+      return bestScore >= threshold ? best : null;
+    }
+
+    function apply() {
+      var values = selects
+        .map(function (s) { return s.value; })
+        .filter(Boolean);
+      if (!values.length) return;
+      var src = bestImage(values);
+      if (!src) return;
+      if (mainImg.src !== src) mainImg.src = src;
+      thumbs.forEach(function (b) {
+        b.classList.toggle("is-active", b.getAttribute("data-src") === src);
+      });
+      if (addBtn) addBtn.dataset.cartImage = src;
+    }
+
+    selects.forEach(function (s) {
+      /* Registered after the inline PDP script's own listener, so this
+         always runs last and wins. */
+      s.addEventListener("change", apply);
+    });
+    apply();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPdpImageFix);
+  } else {
+    initPdpImageFix();
+  }
+})();
+
 /* ── Deal savings chips ────────────────────────────────────────────────────
    Computes "-N%" chips client-side from rendered prices (current + struck-
    through compare-at) so no page regeneration is needed. Applies to home

@@ -1807,19 +1807,29 @@ function pickGalleryImageForOptionValues(galleryImages = [], values = []) {
     if (!blob) continue;
     let score = 0;
     for (const group of groups) {
+      // Size-like values ("2 lb.", "30 servings") are weak signals; flavor-
+      // like values dominate so "French Vanilla Cream" can never lose to
+      // "cookies-cream" via a shared word + matching size.
+      const full = /\d/.test(group.compact) ? 1 : 4;
       if (group.compact && blob.includes(group.compact)) {
-        score += 2;
+        score += full;
         continue;
       }
-      if (group.words.some((word) => blob.includes(word))) score += 1;
-      else if (group.stems.some((stem) => blob.includes(stem))) score += 1;
+      const pool = group.words.length ? group.words : group.stems;
+      if (!pool.length) continue;
+      const matched = pool.filter((word) => blob.includes(word)).length;
+      if (matched > 0) score += (full * 0.75 * matched) / pool.length;
     }
     if (score > bestScore) {
       bestScore = score;
       best = image?.src || null;
     }
   }
-  return bestScore > 0 ? best : null;
+  // Require a non-size signal so a size-only hit can never select a
+  // different flavor's image.
+  const hasNonSize = groups.some((group) => !/\d/.test(group.compact));
+  const threshold = hasNonSize ? 1 : 0.5;
+  return bestScore >= threshold ? best : null;
 }
 
 function normalizedVariantRecord(row, optionNames = [], galleryImageMeta = []) {
@@ -3672,17 +3682,18 @@ ${mobileBottomNav(pathPrefix)}
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = ${galleryImageMetaJson};
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -3698,21 +3709,25 @@ ${mobileBottomNav(pathPrefix)}
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
