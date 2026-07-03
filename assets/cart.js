@@ -26,6 +26,17 @@
     return /\/(pages|product)\//.test(window.location.pathname) ? "../" : "./";
   }
 
+  function primaryProductHref(product) {
+    const id = normalizeProductId(product && product.id);
+    const pdpHref = pagePathPrefix() + "product/" + encodeURIComponent(id) + ".html";
+    // External product URLs are source/reference data. They become the primary
+    // click destination only for an explicitly external-only record.
+    if (product && product.external_only === true && product.has_pdp === false && product.url) {
+      return product.url;
+    }
+    return pdpHref;
+  }
+
   function ensureMobileBottomNav() {
     if (document.querySelector(".mobile-bottom-nav")) return;
     if (/\/pages\/admin\//.test(window.location.pathname)) return;
@@ -611,9 +622,7 @@
     const imageEl = imageLink ? $("img", imageLink) : null;
     const priceLine = $(".product-price-line", card);
     const addBtn = $("[data-add-to-cart]", card);
-    const href = product.has_pdp
-      ? baseHref() + "product/" + encodeURIComponent(product.id) + ".html"
-      : (product.url || (baseHref() + "product/" + encodeURIComponent(product.id) + ".html"));
+    const href = primaryProductHref(product);
     const title = String(product.name || "").trim();
     const currency = (directVariant && directVariant.currency) || product.currency || "USD";
     const priceCents = directVariant
@@ -1622,6 +1631,18 @@
   function baseHref() {
     return isProductOrPages() ? "../" : "./";
   }
+  function productPdpHref(product) {
+    return baseHref() + "product/" + encodeURIComponent(product && product.id) + ".html";
+  }
+  function primaryProductHref(product) {
+    var pdpHref = productPdpHref(product);
+    // Marketplace cards/search results must stay on Athletonic. External URLs
+    // are allowed only for records explicitly marked external-only.
+    if (product && product.external_only === true && product.has_pdp === false && product.url) {
+      return product.url;
+    }
+    return pdpHref;
+  }
   function dataRoot() {
     return SCRIPT_ROOT || baseHref();
   }
@@ -2130,11 +2151,10 @@
 
   /* Build a product card matching the generated markup so the delegated
      add-to-cart handler in the cart module works on these dynamic cards.
-     Index records carry has_pdp + url so the link points at the generated PDP
-     when one exists, otherwise the brand's official product page. */
+     Marketplace records point at generated PDPs. Official/external URLs remain
+     reference data unless a record is explicitly marked external-only. */
   function catalogCardHtml(p) {
-    var pdpHref = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
-    var href = p.has_pdp ? pdpHref : (p.url || pdpHref);
+    var href = primaryProductHref(p);
     var directVariant = directCatalogVariantData(p);
     var price = directVariant && directVariant.price > 0
       ? directVariant.price
@@ -2262,7 +2282,12 @@
     resultsEl.insertAdjacentHTML("beforeend", next.map(catalogCardHtml).join(""));
     _catalogShown += next.length;
     normalizeVisibleBrandLabels(resultsEl);
-    window.requestAnimationFrame(refreshVisibleCatalogCards);
+    window.requestAnimationFrame(function () {
+      var cartApi = window.AthletonicCart || {};
+      if (typeof cartApi.refreshVisibleCatalogCards === "function") {
+        cartApi.refreshVisibleCatalogCards();
+      }
+    });
     var btn = ensureLoadMoreButton(resultsEl);
     var remaining = _catalogMatches.length - _catalogShown;
     if (remaining > 0) {
@@ -2606,8 +2631,7 @@
       if (products.length) {
         html += '<ul class="sdd-results">';
         products.forEach(function (p) {
-          var pdpHref = baseHref() + "product/" + encodeURIComponent(p.id) + ".html";
-          var href = (p.has_pdp === false && p.url) ? p.url : pdpHref;
+          var href = primaryProductHref(p);
           var brandLabel = displayBrand(p);
           html += '<li role="option" aria-selected="false" class="sdd-item sdd-item--product" data-href="' + esc(href) + '">'
                 + '<img class="sdd-thumb" src="' + esc(p.image) + '" alt="" width="44" height="44" loading="lazy" decoding="async">'
