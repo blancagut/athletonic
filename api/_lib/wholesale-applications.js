@@ -1,4 +1,4 @@
-const { normalizeEmail } = require("./catalog");
+const { normalizeEmail } = require("./validation");
 
 const WHOLESALE_APPLICATION_STATUSES = [
   "pending",

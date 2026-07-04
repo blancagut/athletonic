@@ -1,4 +1,4 @@
-const { normalizeAttribution, normalizeEmail } = require("../_lib/catalog");
+const { normalizeAttribution, normalizeEmail } = require("../_lib/validation");
 const { buildCheckoutPricing, publicQuotePayload } = require("../_lib/checkout-pricing");
 const { getOptionalAuthedUser } = require("../_lib/auth");
 const {

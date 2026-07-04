@@ -1,4 +1,4 @@
-const { normalizeEmail } = require("../_lib/catalog");
+const { normalizeEmail } = require("../_lib/validation");
 const { handleError, json, methodNotAllowed, readJson, requireEnv } = require("../_lib/http");
 const { fetchOrderByReferenceAndEmail } = require("../_lib/orders");
 const { getSupabaseAdmin } = require("../_lib/supabase");

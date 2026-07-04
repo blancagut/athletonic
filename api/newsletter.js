@@ -1,4 +1,4 @@
-const { normalizeEmail } = require("./_lib/catalog");
+const { normalizeEmail } = require("./_lib/validation");
 const { sendNewsletterWelcomeEmail } = require("./_lib/email");
 const {
   getSiteUrl,

@@ -1,4 +1,4 @@
-const { normalizeEmail } = require("../_lib/catalog");
+const { normalizeEmail } = require("../_lib/validation");
 const { buildCheckoutPricing, publicQuotePayload } = require("../_lib/checkout-pricing");
 const {
   getClientIp,

@@ -13,7 +13,7 @@ const {
   hashAccessCode,
   sanitizeProfile,
 } = require("../../_lib/private-pricing");
-const { normalizeEmail } = require("../../_lib/catalog");
+const { normalizeEmail } = require("../../_lib/validation");
 
 const LIST_SELECT = `
   id,

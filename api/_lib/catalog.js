@@ -16,7 +16,8 @@ const {
   loadVariantPricingOverrideMap,
 } = require("./variant-pricing");
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const { normalizeAttribution, normalizeEmail } = require("./validation");
+
 const MAX_CART_ITEMS = 40;
 const MAX_ITEM_QUANTITY = 20;
 const LEGACY_PRODUCT_ID_ALIASES = Object.freeze({
@@ -457,47 +458,6 @@ async function loadProductsWithOverrides(productIds, options = {}) {
 
 function centsFromMoney(value) {
   return Math.round(Number(value || 0) * 100);
-}
-
-function normalizeEmail(email) {
-  const normalized = String(email || "").trim().toLowerCase();
-  if (!EMAIL_RE.test(normalized)) {
-    const error = new Error("Enter a valid email address.");
-    error.statusCode = 400;
-    error.code = "invalid_email";
-    throw error;
-  }
-  return normalized;
-}
-
-function normalizeAttribution(attribution) {
-  if (!attribution || typeof attribution !== "object" || Array.isArray(attribution)) {
-    return {};
-  }
-
-  const allowedKeys = [
-    "utm_source",
-    "utm_medium",
-    "utm_campaign",
-    "utm_content",
-    "utm_term",
-    "fbclid",
-    "fbp",
-    "fbc",
-    "landing_page",
-    "referrer",
-    "client_timezone",
-  ];
-
-  const clean = {};
-  for (const key of allowedKeys) {
-    const value = attribution[key];
-    if (typeof value === "string" && value.trim()) {
-      clean[key] = value.trim().slice(0, 500);
-    }
-  }
-
-  return clean;
 }
 
 function linePriceCents(product, variant, options) {
