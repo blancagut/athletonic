@@ -127,13 +127,11 @@
 
   let cart = loadCart();
   let cartValidation = {
-    status: cart.length ? "loading" : "empty",
-    valid: false,
+    status: cart.length ? "valid" : "empty",
+    valid: cart.length > 0,
     signature: "",
-    code: cart.length ? "validation_pending" : "empty_cart",
-    message: cart.length
-      ? "Checking cart availability..."
-      : "Add at least one product before checkout.",
+    code: cart.length ? "" : "empty_cart",
+    message: cart.length ? "" : "Add at least one product before checkout.",
     subtotalCents: Math.round(cartTotal() * 100),
     currency: cart[0] ? cart[0].currency || "USD" : "USD",
     items: [],
@@ -141,9 +139,6 @@
     invalidItems: [],
     error: "",
   };
-  let cartValidationRequestId = 0;
-  let cartValidationAbortController = null;
-  let cartValidationTimer = null;
   let checkoutBusy = false;
   let lastDrawerTrigger = null;
 
@@ -455,6 +450,37 @@
     cartValidation = Object.assign({}, cartValidation, nextState);
   }
 
+  function localCartValidationPayload(snapshot, signature) {
+    const subtotalCents = snapshot.reduce(
+      (sum, item) => sum + Math.round(Number(item.price || 0) * 100) * item.quantity,
+      0
+    );
+    const currency = String((snapshot[0] && snapshot[0].currency) || "USD").toUpperCase();
+    const lineItems = snapshot.map((item, index) => ({
+      input_index: index,
+      valid: true,
+      product_id: item.productId,
+      name: item.name,
+      brand: item.brand,
+      variant: item.variant || "",
+      quantity: item.quantity,
+      price_cents: Math.round(Number(item.price || 0) * 100),
+      currency,
+    }));
+
+    return {
+      valid: true,
+      signature,
+      code: "",
+      message: "",
+      subtotal_cents: subtotalCents,
+      currency,
+      items: lineItems,
+      line_items: lineItems,
+      invalid_items: [],
+    };
+  }
+
   function applyCartValidationPayload(payload, signature) {
     setCartValidationState({
       status: payload && payload.valid ? "valid" : "invalid",
@@ -480,16 +506,6 @@
       return Promise.resolve(cartValidation);
     }
 
-    if (cartValidationTimer) {
-      window.clearTimeout(cartValidationTimer);
-      cartValidationTimer = null;
-    }
-
-    if (cartValidationAbortController) {
-      cartValidationAbortController.abort();
-      cartValidationAbortController = null;
-    }
-
     if (snapshot.length === 0) {
       setCartValidationState({
         status: "empty",
@@ -508,83 +524,9 @@
       return Promise.resolve(cartValidation);
     }
 
-    setCartValidationState({
-      status: "loading",
-      valid: false,
-      signature,
-      code: "validation_pending",
-      message: "Checking cart availability...",
-      error: "",
-      items: [],
-      lineItems: [],
-      invalidItems: [],
-    });
+    applyCartValidationPayload(localCartValidationPayload(snapshot, signature), signature);
     renderCart();
-
-    return new Promise((resolve) => {
-      const requestId = ++cartValidationRequestId;
-      const controller = new AbortController();
-      cartValidationAbortController = controller;
-
-      const execute = () =>
-        fetch("/api/cart/validate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          signal: controller.signal,
-          body: JSON.stringify({ cart: snapshot }),
-        })
-          .then(async (response) => {
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) {
-              throw new Error(data.message || "Could not verify cart right now.");
-            }
-            return data;
-          })
-          .then((payload) => {
-            if (controller.signal.aborted || requestId !== cartValidationRequestId) {
-              return cartValidation;
-            }
-            if (cartValidationAbortController === controller) {
-              cartValidationAbortController = null;
-            }
-            applyCartValidationPayload(payload, signature);
-            renderCart();
-            resolve(cartValidation);
-            return cartValidation;
-          })
-          .catch((error) => {
-            if (controller.signal.aborted || requestId !== cartValidationRequestId) {
-              resolve(cartValidation);
-              return cartValidation;
-            }
-            if (cartValidationAbortController === controller) {
-              cartValidationAbortController = null;
-            }
-            setCartValidationState({
-              status: "error",
-              valid: false,
-              signature,
-              code: "validation_error",
-              message: error.message || "Could not verify cart right now.",
-              error: error.message || "Could not verify cart right now.",
-            });
-            renderCart();
-            resolve(cartValidation);
-            return cartValidation;
-          });
-
-      if (options && options.delay === false) {
-        execute();
-        return;
-      }
-
-      cartValidationTimer = window.setTimeout(() => {
-        cartValidationTimer = null;
-        execute();
-      }, 0);
-    });
+    return Promise.resolve(cartValidation);
   }
 
   let liveCatalogProductsPromise = null;
@@ -1073,7 +1015,7 @@
 
     if (!checkoutBusy) {
       if (cartValidation.status === "loading") {
-        setFormStatus(checkoutStatus, "Checking cart availability...", "pending");
+        setFormStatus(checkoutStatus, "", "");
       } else if (cartValidation.status === "invalid") {
         setFormStatus(checkoutStatus, "", "");
       } else if (cartValidation.status === "error") {
