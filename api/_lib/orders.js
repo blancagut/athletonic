@@ -121,17 +121,6 @@ async function fetchOrderByReferenceAndEmail(supabase, reference, email) {
   return { order: sanitizeOrder(data), error: null };
 }
 
-async function fetchOrderBySession(supabase, sessionId) {
-  const { data, error } = await supabase
-    .from("orders")
-    .select(ORDER_SELECT)
-    .eq("stripe_checkout_session_id", sessionId)
-    .single();
-
-  if (error) return { order: null, error };
-  return { order: sanitizeOrder(data), error: null };
-}
-
 async function fetchOrdersForCustomer(supabase, options) {
   const userId = String(options?.userId || "").trim();
   const email = String(options?.email || "").trim().toLowerCase();
@@ -156,6 +145,5 @@ module.exports = {
   fetchOrderById,
   fetchOrderByReferenceAndEmail,
   fetchOrdersForCustomer,
-  fetchOrderBySession,
   sanitizeOrder,
 };

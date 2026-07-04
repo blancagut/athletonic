@@ -3418,8 +3418,8 @@ function renderDrawers() {
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>`;
 }
@@ -5196,8 +5196,8 @@ const page = `<!doctype html>
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -7180,7 +7180,7 @@ ${renderDrawers()}
                   <a href="contact.html">Profile information <span>Contact support if your account name needs correction</span></a>
                   <button class="account-link-button" type="button" id="btn-security-reset">Email and password/security <span id="security-reset-status">Email a secure password reset link</span></button>
                   <a href="order-tracking.html">Addresses <span>Delivery addresses are collected during secure checkout</span></a>
-                  <a href="help.html">Payment methods <span>Payment is handled securely by Stripe at checkout</span></a>
+                  <a href="help.html">Payment methods <span>Athletonic confirms the final total and bank transfer instructions by email</span></a>
                   <a href="cookie-preferences.html">Communication preferences <span>Manage privacy and preference choices</span></a>
                   <button class="account-link-button" type="button" id="btn-signout">Sign out <span>End this account session</span></button>
                 </div>
@@ -7363,7 +7363,7 @@ const orderConfirmationContent = `
       <section class="commerce-hero">
         <p class="eyebrow">Order confirmation</p>
         <h1>Thanks for your order.</h1>
-        <p data-confirmation-status data-state="pending">Confirming your payment with Stripe...</p>
+        <p data-confirmation-status data-state="pending">Loading your Athletonic order...</p>
       </section>
 
       <section class="commerce-grid">
@@ -7585,7 +7585,7 @@ console.log(
 // ---------------------------------------------------------------------------
 // Authoritative checkout catalog (data/checkout-catalog.json)
 //
-// The server (/api/cart/validate, /api/checkout/quote, /api/checkout) recomputes
+// The server (/api/checkout) recomputes
 // item names/prices from THIS file. It must contain every product the storefront
 // lets a shopper add to cart, otherwise valid products are rejected as "not ready
 // for checkout". Curated + official records are reused verbatim from the

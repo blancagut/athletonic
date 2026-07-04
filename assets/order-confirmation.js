@@ -12,9 +12,8 @@
   const emailEl = document.querySelector("[data-order-email]");
 
   const params = new URLSearchParams(window.location.search);
-  const sessionId = params.get("session_id");
   const transferReference = String(params.get("order_reference") || "").trim();
-  const isTransferOrder = params.get("transfer") === "1" || (transferReference && !sessionId);
+  const isTransferOrder = params.get("transfer") === "1" || Boolean(transferReference);
 
   function setStatus(message, state) {
     if (!statusEl) return;
@@ -145,25 +144,7 @@
       return;
     }
 
-    if (!sessionId) {
-      setStatus("Use order tracking with your Athletonic reference.", "error");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `/api/orders/session?session_id=${encodeURIComponent(sessionId)}`
-      );
-      if (!response.ok) throw new Error("Order is not available yet.");
-      const data = await response.json();
-      renderOrder(data.order);
-
-      if (data.order.order_status === "pending_payment" && attempt < 8) {
-        window.setTimeout(() => loadOrder(attempt + 1), 2500);
-      }
-    } catch (error) {
-      setStatus(error.message, "error");
-    }
+    setStatus("Use order tracking with your Athletonic reference.", "error");
   }
 
   loadOrder(0);
