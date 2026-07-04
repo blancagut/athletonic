@@ -193,6 +193,190 @@ async function sendOrderConfirmationEmail({ order, siteUrl }) {
   });
 }
 
+function bankTransferInstructionLines(order, salesEmail) {
+  const configured = String(
+    process.env.ATHLETONIC_BANK_TRANSFER_INSTRUCTIONS || ""
+  ).trim();
+  if (configured) {
+    return configured
+      .split(/\r?\n/)
+      .map((line) =>
+        line
+          .replaceAll("{order_reference}", order.order_reference)
+          .replaceAll("{sales_email}", salesEmail)
+      )
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
+  return [
+    "Your Athletonic order has been received for final review.",
+    "Shipping, duties, and local taxes vary by country in Latin America, so Athletonic sales will confirm the final cost before payment.",
+    "Once the final cost is confirmed, we will send the Athletonic bank transfer details.",
+    `Use ${order.order_reference} as the transfer memo or reference when payment is requested.`,
+    `Reply to this email if your destination country or delivery details need to be updated. You can also contact ${salesEmail}.`,
+  ];
+}
+
+function bankTransferItemsHtml(order) {
+  return order.items
+    .map(
+      (item) => `
+        <tr>
+          <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
+            <strong>${escapeHtml(item.name)}</strong>${item.variant ? ` - ${escapeHtml(item.variant)}` : ""}
+            <div style="color:#64748b;font-size:14px;">${escapeHtml(item.brand)} · Qty ${item.quantity}</div>
+          </td>
+          <td style="padding:10px 0 10px 16px;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap;">
+            ${escapeHtml(formatMoney(item.line_subtotal_cents, item.currency))}
+          </td>
+        </tr>
+      `
+    )
+    .join("");
+}
+
+function bankTransferItemsText(order) {
+  return order.items.map(
+    (item) =>
+      `- ${item.name}${item.variant ? ` - ${item.variant}` : ""} x${item.quantity} (${formatMoney(
+        item.line_subtotal_cents,
+        item.currency
+      )})`
+  );
+}
+
+async function sendBankTransferOrderCustomerEmail({ order, siteUrl, salesEmail }) {
+  const confirmationUrl = `${siteUrl}/pages/order-confirmation.html?transfer=1&order_reference=${encodeURIComponent(
+    order.order_reference
+  )}`;
+  const trackingUrl = `${siteUrl}/pages/order-tracking.html?email=${encodeURIComponent(
+    order.customer_email
+  )}&order_reference=${encodeURIComponent(order.order_reference)}`;
+  const subject = `Athletonic order received: ${order.order_reference}`;
+  const instructions = bankTransferInstructionLines(order, salesEmail);
+  const instructionsHtml = instructions
+    .map((line) => `<li>${escapeHtml(line)}</li>`)
+    .join("");
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
+      <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
+        Athletonic order received
+      </p>
+      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">Thanks for your order.</h1>
+      <p style="margin:0 0 8px;">
+        We received <strong>${escapeHtml(order.order_reference)}</strong> and sent it to Athletonic sales for final cost review.
+      </p>
+      <p style="margin:0 0 20px;color:#475569;">
+        Placed ${escapeHtml(formatDate(order.timestamps.created_at))}
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+        ${bankTransferItemsHtml(order)}
+      </table>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin:0 0 20px;">
+        <p style="margin:0 0 8px;"><strong>Cart subtotal:</strong> ${escapeHtml(
+          formatMoney(order.amounts.total_cents, order.currency)
+        )}</p>
+        <p style="margin:0 0 8px;"><strong>Payment method:</strong> Bank transfer to Athletonic after final cost confirmation</p>
+        <ul style="margin:10px 0 0;padding-left:20px;color:#475569;">
+          ${instructionsHtml}
+        </ul>
+      </div>
+      <p style="margin:0 0 24px;">
+        <a href="${escapeHtml(confirmationUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;margin:0 8px 8px 0;">
+          View order confirmation
+        </a>
+        <a href="${escapeHtml(trackingUrl)}" style="display:inline-block;background:#ffffff;color:#0f172a;text-decoration:none;padding:12px 18px;border-radius:8px;border:1px solid #cbd5e1;margin:0 0 8px 0;">
+          Track order
+        </a>
+      </p>
+      <p style="margin:0;color:#475569;font-size:14px;">
+        Questions? Reply to this email or contact ${escapeHtml(salesEmail)}.
+      </p>
+    </div>
+  `;
+  const text = [
+    `Athletonic order received: ${order.order_reference}`,
+    "",
+    `Cart subtotal: ${formatMoney(order.amounts.total_cents, order.currency)}`,
+    "Payment method: Bank transfer to Athletonic after final cost confirmation",
+    "",
+    "Items:",
+    ...bankTransferItemsText(order),
+    "",
+    "Next steps:",
+    ...instructions,
+    "",
+    `Confirmation: ${confirmationUrl}`,
+    `Track order: ${trackingUrl}`,
+  ].join("\n");
+
+  return sendEmail({
+    to: order.customer_email,
+    subject,
+    html,
+    text,
+    replyTo: salesEmail,
+  });
+}
+
+async function sendBankTransferOrderSalesEmail({ order, siteUrl, salesEmail }) {
+  const adminUrl = order.id
+    ? `${siteUrl}/pages/admin/index.html#/orders/${encodeURIComponent(order.id)}`
+    : `${siteUrl}/pages/admin/index.html#/orders`;
+  const subject = `New bank transfer order: ${order.order_reference}`;
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
+      <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
+        Athletonic sales order
+      </p>
+      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">New bank transfer order</h1>
+      <p style="margin:0 0 8px;">
+        <strong>${escapeHtml(order.order_reference)}</strong> was placed by
+        <a href="mailto:${escapeHtml(order.customer_email)}" style="color:#0f172a;font-weight:bold;">${escapeHtml(order.customer_email)}</a>.
+      </p>
+      <p style="margin:0 0 20px;color:#475569;">
+        Cart subtotal ${escapeHtml(formatMoney(order.amounts.total_cents, order.currency))} · ${escapeHtml(order.items.length)} line${order.items.length === 1 ? "" : "s"}
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+        ${bankTransferItemsHtml(order)}
+      </table>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin:0 0 20px;">
+        <p style="margin:0 0 8px;"><strong>Next step:</strong> confirm final cost with shipping, duties, and local taxes, then send Athletonic bank transfer details.</p>
+        <p style="margin:0;"><strong>Reference:</strong> ${escapeHtml(order.order_reference)}</p>
+      </div>
+      <p style="margin:0 0 24px;">
+        <a href="${escapeHtml(adminUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
+          Open order in admin
+        </a>
+      </p>
+      <p style="margin:0;color:#475569;font-size:14px;">
+        Sales inbox: ${escapeHtml(salesEmail)}
+      </p>
+    </div>
+  `;
+  const text = [
+    `New bank transfer order: ${order.order_reference}`,
+    "",
+    `Customer: ${order.customer_email}`,
+    `Cart subtotal: ${formatMoney(order.amounts.total_cents, order.currency)}`,
+    "",
+    "Items:",
+    ...bankTransferItemsText(order),
+    "",
+    "Next step: confirm final cost with shipping, duties, and local taxes, then send Athletonic bank transfer details.",
+    `Admin: ${adminUrl}`,
+  ].join("\n");
+
+  return sendEmail({
+    to: salesEmail,
+    subject,
+    html,
+    text,
+    replyTo: order.customer_email,
+  });
+}
+
 const WHOLESALE_PRODUCT_LABELS = {
   protein: "Protein",
   creatine: "Creatine",
@@ -617,6 +801,8 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
 module.exports = {
   sendNewsletterWelcomeEmail,
   sendOrderConfirmationEmail,
+  sendBankTransferOrderCustomerEmail,
+  sendBankTransferOrderSalesEmail,
   sendWholesaleApplicationDecisionEmail,
   sendWholesaleQuoteRequestEmail,
   sendWholesaleQuoteBuyerEmail,

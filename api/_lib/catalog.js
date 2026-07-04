@@ -510,6 +510,50 @@ function linePriceCents(product, variant, options) {
   return variant ? variant.price_cents : product.price_cents;
 }
 
+function cartPriceCents(rawItem) {
+  const explicitCents = intCents(
+    rawItem.unit_amount_cents || rawItem.price_cents || rawItem.priceCents
+  );
+  if (explicitCents > 0) return explicitCents;
+
+  const price = Number(rawItem.price);
+  return Number.isFinite(price) && price > 0 ? Math.round(price * 100) : 0;
+}
+
+function manualOrderProductFromCartItem(rawItem, productId) {
+  const priceCents = cartPriceCents(rawItem);
+  const name = normalizeText(rawItem.name || "").slice(0, 240);
+  if (!productId || !name || priceCents <= 0) return null;
+
+  const currency = String(rawItem.currency || "USD").toUpperCase();
+  return {
+    id: productId,
+    external_product_id: null,
+    brand_slug: null,
+    brand: normalizeText(rawItem.brand || "Athletonic").slice(0, 120) || "Athletonic",
+    name,
+    sku: rawItem.sku ? String(rawItem.sku).slice(0, 120) : null,
+    url: null,
+    image: normalizeImageUrl(rawItem.image || rawItem.image_url),
+    price_cents: priceCents,
+    price_min_cents: priceCents,
+    price_max_cents: priceCents,
+    compare_at_price_cents: null,
+    currency: /^[A-Z]{3}$/.test(currency) ? currency : "USD",
+    available: true,
+    purchasable: true,
+    ready_for_sale: true,
+    has_variants: false,
+    requires_variant_selection: false,
+    default_variant_id: null,
+    section_id: "",
+    section_title: "",
+    variants: [],
+    manual_order: true,
+    requires_order_review: true,
+  };
+}
+
 function validationError(message, code) {
   const error = new Error(message);
   error.statusCode = 400;
@@ -640,6 +684,8 @@ function buildLineSuccess({
       catalog_schema_version: catalog.schema_version || 1,
       catalog_generated_at: catalog.generated_at || null,
       deal: variant?.deal || null,
+      manual_order: product.manual_order === true || undefined,
+      requires_order_review: product.requires_order_review === true || undefined,
     },
   };
 }
@@ -650,6 +696,7 @@ function evaluateCartAgainstIndexes(
   activeVariantsByProductAndId,
   options = {}
 ) {
+  const allowManualOrder = Boolean(options && options.allowManualOrder);
   const emptyResult = {
     valid: false,
     code: "empty_cart",
@@ -685,7 +732,9 @@ function evaluateCartAgainstIndexes(
     const rawProductId = String(rawItem.productId || rawItem.id || "").trim();
     const productId = normalizeProductId(rawProductId);
     const aliasContext = legacyProductAlias(rawProductId);
-    const product = activeProductsById.get(productId);
+    const product =
+      activeProductsById.get(productId) ||
+      (allowManualOrder ? manualOrderProductFromCartItem(rawItem, productId) : null);
     const quantity = normalizeQuantity(rawItem.quantity);
     const suppliedVariantId = String(rawItem.variant_id || rawItem.variantId || "").trim();
     const selectedOptions = normalizeSelectedOptions(
@@ -698,7 +747,10 @@ function evaluateCartAgainstIndexes(
     const clientVariantLabel = normalizeText(rawItem.variant || "").slice(0, 200);
     const selectedOptionsProvided = Object.keys(mergedSelectedOptions).length > 0;
 
-    if (!product || product.available === false || product.purchasable === false) {
+    if (
+      !product ||
+      (!allowManualOrder && (product.available === false || product.purchasable === false))
+    ) {
       const failure = buildLineFailure({
         index,
         rawItem,
@@ -745,26 +797,29 @@ function evaluateCartAgainstIndexes(
       variant = activeVariantsByProductAndId.get(`${productId}::${suppliedVariantId}`) || null;
       variantResolution = variant ? "id" : "";
       if (!variant) {
-        const failure = buildLineFailure({
-          index,
-          rawItem,
-          productId,
-          quantity,
-          code: "variant_unavailable",
-          message: "One of the selected product variants is no longer available.",
-          selectedOptions: mergedSelectedOptions,
-          variantLabel: clientVariantLabel,
-          suppliedVariantId,
-        });
-        lineItems.push(failure);
-        if (!topLevelCode) {
-          topLevelCode = failure.code;
-          topLevelMessage = failure.message;
+        if (!allowManualOrder) {
+          const failure = buildLineFailure({
+            index,
+            rawItem,
+            productId,
+            quantity,
+            code: "variant_unavailable",
+            message: "One of the selected product variants is no longer available.",
+            selectedOptions: mergedSelectedOptions,
+            variantLabel: clientVariantLabel,
+            suppliedVariantId,
+          });
+          lineItems.push(failure);
+          if (!topLevelCode) {
+            topLevelCode = failure.code;
+            topLevelMessage = failure.message;
+          }
+          continue;
         }
-        continue;
+        variantResolution = "manual_order_variant_id";
       }
 
-      if (variant.available === false) {
+      if (variant && variant.available === false && !allowManualOrder) {
         const failure = buildLineFailure({
           index,
           rawItem,
@@ -815,7 +870,9 @@ function evaluateCartAgainstIndexes(
         variantResolution = variant ? "default" : variantResolution;
       }
 
-      if (!variant) {
+      if (!variant && allowManualOrder) {
+        variantResolution = variantResolution || "manual_order";
+      } else if (!variant) {
         if (product.has_variants) {
           const failure = buildLineFailure({
             index,
@@ -864,7 +921,7 @@ function evaluateCartAgainstIndexes(
       }
     }
 
-    if (variant && variant.available === false) {
+    if (variant && variant.available === false && !allowManualOrder) {
       const failure = buildLineFailure({
         index,
         rawItem,

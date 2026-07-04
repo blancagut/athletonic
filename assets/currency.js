@@ -1,11 +1,11 @@
 /* ============================================================
  *  Athletonic currency switcher (assets/currency.js)
  *
- *  Live FX display conversion for international shoppers (South
+ *  Live FX display conversion for international shoppers (Latin
  *  America focus). All prices on the site are authored in USD;
  *  this runtime rewrites *displayed* prices client-side using
  *  rates from /api/currency/rates (ExchangeRate-API, cached).
- *  Checkout always bills in USD — a note in the menu says so.
+ *  Checkout always bills in USD; converted prices are display estimates.
  *
  *  - Header pill + dropdown injected into .header-actions on every
  *    page (mirrors the i18n language switcher; no HTML edits).
@@ -15,8 +15,8 @@
  *    live search, catalog pagination, PDP variant updates).
  *  - Stamps data-usd on price elements so the deal-chip "-N%"
  *    logic in cart.js keeps computing from true USD numbers.
- *  - First visit: currency auto-detected from browser locale
- *    region (e.g. pt-BR -> BRL); explicit choice persists.
+ *  - First visit: currency auto-detected from browser locale or
+ *    time zone region (e.g. pt-BR -> BRL); explicit choice persists.
  * ============================================================ */
 (function () {
   "use strict";
@@ -46,6 +46,14 @@
     ["CRC", "Colón costarricense", "es-CR"],
     ["DOP", "Peso dominicano", "es-DO"],
     ["GTQ", "Quetzal guatemalteco", "es-GT"],
+    ["HNL", "Lempira hondureño", "es-HN"],
+    ["NIO", "Córdoba nicaragüense", "es-NI"],
+    ["VES", "Bolívar venezolano", "es-VE"],
+    ["CUP", "Peso cubano", "es-CU"],
+    ["BZD", "Belize Dollar", "en-BZ"],
+    ["GYD", "Guyana Dollar", "en-GY"],
+    ["SRD", "Suriname Dollar", "nl-SR"],
+    ["HTG", "Gourde haitien", "fr-HT"],
     ["EUR", "Euro", "es-ES"],
     ["GBP", "British Pound", "en-GB"],
     ["CAD", "Canadian Dollar", "en-CA"],
@@ -117,6 +125,46 @@
       '<rect width="8" height="18" fill="#4997D0"/>' +
       '<rect x="8" width="8" height="18" fill="#fff"/>' +
       '<rect x="16" width="8" height="18" fill="#4997D0"/>',
+    HNL:
+      '<rect width="24" height="18" fill="#0073CF"/>' +
+      '<rect y="6" width="24" height="6" fill="#fff"/>' +
+      '<g fill="#0073CF"><circle cx="12" cy="9" r="0.7"/><circle cx="9.7" cy="8" r="0.55"/><circle cx="14.3" cy="8" r="0.55"/><circle cx="9.7" cy="10" r="0.55"/><circle cx="14.3" cy="10" r="0.55"/></g>',
+    NIO:
+      '<rect width="24" height="18" fill="#0067C6"/>' +
+      '<rect y="6" width="24" height="6" fill="#fff"/>' +
+      '<path d="m12 7.2 2.2 3.8H9.8z" fill="#FCD116" stroke="#0067C6" stroke-width="0.5"/>',
+    VES:
+      '<rect width="24" height="6" fill="#FCD116"/>' +
+      '<rect y="6" width="24" height="6" fill="#0033A0"/>' +
+      '<rect y="12" width="24" height="6" fill="#CF142B"/>' +
+      '<g fill="#fff"><circle cx="8" cy="9" r="0.45"/><circle cx="10" cy="8.5" r="0.45"/><circle cx="12" cy="8.3" r="0.45"/><circle cx="14" cy="8.5" r="0.45"/><circle cx="16" cy="9" r="0.45"/></g>',
+    CUP:
+      '<rect width="24" height="18" fill="#002A8F"/>' +
+      '<path d="M0 3.6h24v3.6H0zM0 10.8h24v3.6H0z" fill="#fff"/>' +
+      '<path d="M0 0v18l11-9z" fill="#CF142B"/>' +
+      '<path d="m3.8 6.7.55 1.55 1.65.04-1.31 1 .48 1.58-1.37-.93-1.37.93.48-1.58-1.31-1 1.65-.04z" fill="#fff"/>',
+    BZD:
+      '<rect width="24" height="18" fill="#003F87"/>' +
+      '<rect width="24" height="2" fill="#CE1126"/>' +
+      '<rect y="16" width="24" height="2" fill="#CE1126"/>' +
+      '<circle cx="12" cy="9" r="3.1" fill="#fff"/>' +
+      '<circle cx="12" cy="9" r="2" fill="#6AB04A"/>',
+    GYD:
+      '<rect width="24" height="18" fill="#009E49"/>' +
+      '<path d="M0 0v18l24-9z" fill="#fff"/>' +
+      '<path d="M0 1.8v14.4L20 9z" fill="#FCD116"/>' +
+      '<path d="M0 0v18l11-9z" fill="#000"/>' +
+      '<path d="M0 2v14l9-7z" fill="#CE1126"/>',
+    SRD:
+      '<rect width="24" height="18" fill="#377E3F"/>' +
+      '<rect y="4" width="24" height="10" fill="#fff"/>' +
+      '<rect y="6" width="24" height="6" fill="#B40A2D"/>' +
+      '<path d="m12 6.4.7 1.7 1.8.1-1.4 1.1.5 1.8-1.6-1-1.6 1 .5-1.8-1.4-1.1 1.8-.1z" fill="#ECC81D"/>',
+    HTG:
+      '<rect width="24" height="9" fill="#00209F"/>' +
+      '<rect y="9" width="24" height="9" fill="#D21034"/>' +
+      '<rect x="8" y="6" width="8" height="6" fill="#fff"/>' +
+      '<rect x="10.5" y="8" width="3" height="2" fill="#3C8D0D"/>',
     EUR:
       '<rect width="24" height="18" fill="#003399"/>' +
       '<g fill="#FFCC00">' +
@@ -152,9 +200,59 @@
   var REGION_CURRENCY = {
     BR: "BRL", MX: "MXN", AR: "ARS", CL: "CLP", CO: "COP", PE: "PEN",
     UY: "UYU", PY: "PYG", BO: "BOB", CR: "CRC", DO: "DOP", GT: "GTQ",
+    HN: "HNL", NI: "NIO", VE: "VES", CU: "CUP", BZ: "BZD", GY: "GYD",
+    SR: "SRD", HT: "HTG", EC: "USD", PA: "USD", SV: "USD", PR: "USD",
     GB: "GBP", CA: "CAD",
     ES: "EUR", FR: "EUR", DE: "EUR", IT: "EUR", PT: "EUR", NL: "EUR",
     IE: "EUR", AT: "EUR", BE: "EUR", FI: "EUR", GR: "EUR",
+  };
+
+  var TIMEZONE_REGION = {
+    "America/Sao_Paulo": "BR",
+    "America/Bahia": "BR",
+    "America/Belem": "BR",
+    "America/Fortaleza": "BR",
+    "America/Maceio": "BR",
+    "America/Manaus": "BR",
+    "America/Recife": "BR",
+    "America/Rio_Branco": "BR",
+    "America/Boa_Vista": "BR",
+    "America/Campo_Grande": "BR",
+    "America/Cuiaba": "BR",
+    "America/Santarem": "BR",
+    "America/Porto_Velho": "BR",
+    "America/Araguaina": "BR",
+    "America/Noronha": "BR",
+    "America/Mexico_City": "MX",
+    "America/Cancun": "MX",
+    "America/Merida": "MX",
+    "America/Monterrey": "MX",
+    "America/Chihuahua": "MX",
+    "America/Hermosillo": "MX",
+    "America/Mazatlan": "MX",
+    "America/Tijuana": "MX",
+    "America/Bogota": "CO",
+    "America/Lima": "PE",
+    "America/Santiago": "CL",
+    "America/Montevideo": "UY",
+    "America/Asuncion": "PY",
+    "America/La_Paz": "BO",
+    "America/Costa_Rica": "CR",
+    "America/Santo_Domingo": "DO",
+    "America/Guatemala": "GT",
+    "America/Tegucigalpa": "HN",
+    "America/Managua": "NI",
+    "America/Caracas": "VE",
+    "America/Havana": "CU",
+    "America/Belize": "BZ",
+    "America/Guyana": "GY",
+    "America/Paramaribo": "SR",
+    "America/Port-au-Prince": "HT",
+    "America/Guayaquil": "EC",
+    "Pacific/Galapagos": "EC",
+    "America/Panama": "PA",
+    "America/El_Salvador": "SV",
+    "America/Puerto_Rico": "PR",
   };
 
   var PRICE_RE = /\$\s?(\d{1,3}(?:,\d{3})+|\d+)(\.\d{1,2})?/g;
@@ -189,12 +287,26 @@
     } catch (e) { /* ignore */ }
   }
 
-  function detectCurrency() {
+  function detectRegion() {
     var langs = navigator.languages || [navigator.language || ""];
     for (var i = 0; i < langs.length; i++) {
-      var m = /^[a-z]{2,3}-([A-Z]{2})/.exec(String(langs[i] || ""));
-      if (m && REGION_CURRENCY[m[1]]) return REGION_CURRENCY[m[1]];
+      var m = /^[a-z]{2,3}-([a-z]{2})/i.exec(String(langs[i] || ""));
+      var region = m && String(m[1] || "").toUpperCase();
+      if (region && REGION_CURRENCY[region]) return region;
     }
+    try {
+      var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+      if (TIMEZONE_REGION[tz]) return TIMEZONE_REGION[tz];
+      if (tz.indexOf("America/Argentina/") === 0) return "AR";
+    } catch (e) {
+      /* ignore */
+    }
+    return "";
+  }
+
+  function detectCurrency() {
+    var region = detectRegion();
+    if (region && REGION_CURRENCY[region]) return REGION_CURRENCY[region];
     return "USD";
   }
 
@@ -404,6 +516,7 @@
     }
     loadRates()
       .then(function () {
+        if (code !== "USD" && !rates[code]) currentCurrency = "USD";
         applyAll();
       })
       .catch(function () {
@@ -420,7 +533,7 @@
     var codeEl = document.querySelector(".header-currency-code");
     if (codeEl) codeEl.textContent = currentCurrency;
     var flagEl = document.querySelector(".header-currency-button .header-currency-flag");
-    if (flagEl && FLAGS[currentCurrency]) flagEl.innerHTML = FLAGS[currentCurrency];
+    if (flagEl) flagEl.innerHTML = FLAGS[currentCurrency] || "";
     var items = document.querySelectorAll(".header-currency-item");
     for (var i = 0; i < items.length; i++) {
       var on = items[i].getAttribute("data-currency") === currentCurrency;
@@ -505,7 +618,8 @@
 
     var note = document.createElement("p");
     note.className = "header-currency-note";
-    note.textContent = "Orders are billed in USD. Converted prices are estimates.";
+    note.textContent =
+      "Converted prices are estimates. Athletonic confirms final shipping, duties, taxes, and bank transfer details by email before payment.";
     menu.appendChild(note);
 
     btn.addEventListener("click", function (e) {
@@ -574,6 +688,7 @@
     get: function () {
       return currentCurrency;
     },
+    detectRegion: detectRegion,
     supported: CURRENCIES.map(function (row) {
       return row[0];
     }),

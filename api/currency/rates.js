@@ -4,7 +4,8 @@ const { handleError, json, methodNotAllowed } = require("../_lib/http");
    USD is the base — everything on the site is priced/billed in USD. */
 const SUPPORTED = [
   "USD", "BRL", "MXN", "ARS", "CLP", "COP", "PEN", "UYU", "PYG",
-  "BOB", "CRC", "DOP", "GTQ", "EUR", "GBP", "CAD",
+  "BOB", "CRC", "DOP", "GTQ", "HNL", "NIO", "VES", "CUP", "BZD",
+  "GYD", "SRD", "HTG", "EUR", "GBP", "CAD",
 ];
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours

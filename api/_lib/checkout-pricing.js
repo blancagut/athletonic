@@ -14,6 +14,7 @@ async function buildCheckoutPricing(options) {
   });
 
   const { items, subtotalCents, currency } = await validateCartWithOverrides(options.cart, {
+    allowManualOrder: options.allowManualOrder === true,
     priceBasis: privateGrant ? "regular" : "current",
     supabase,
   });

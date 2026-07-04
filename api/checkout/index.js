@@ -2,6 +2,10 @@ const { normalizeAttribution, normalizeEmail } = require("../_lib/catalog");
 const { buildCheckoutPricing, publicQuotePayload } = require("../_lib/checkout-pricing");
 const { getOptionalAuthedUser } = require("../_lib/auth");
 const {
+  sendBankTransferOrderCustomerEmail,
+  sendBankTransferOrderSalesEmail,
+} = require("../_lib/email");
+const {
   getClientIp,
   getSiteUrl,
   handleError,
@@ -14,79 +18,152 @@ const {
   accessCodeProvided,
   recordPrivatePricingUsage,
 } = require("../_lib/private-pricing");
-const { getStripe } = require("../_lib/stripe");
 const { getSupabaseAdmin } = require("../_lib/supabase");
 
-function buildShippingOptions(shippingCents, currency) {
-  if (process.env.STRIPE_SHIPPING_RATE_ID) {
-    return [{ shipping_rate: process.env.STRIPE_SHIPPING_RATE_ID }];
+function getSalesEmail() {
+  return process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
+}
+
+function buildCheckoutCart(pricing) {
+  return pricing.items.map((item) => ({
+    id: item.product_id,
+    brand: item.brand,
+    name: item.name,
+    variant: item.variant || null,
+    price: item.unit_amount_cents / 100,
+    public_price: item.public_unit_amount_cents / 100,
+    regular_price: item.regular_unit_amount_cents / 100,
+    section_id: item.section_id || null,
+    currency: pricing.currency,
+    quantity: item.quantity,
+  }));
+}
+
+function buildOrderItems(pricing) {
+  return pricing.items.map((item) => ({
+    product_id: item.product_id,
+    sku: item.sku || null,
+    brand: item.brand,
+    name: item.name,
+    variant: item.variant || null,
+    image_url: item.image_url || null,
+    quantity: item.quantity,
+    unit_amount_cents: item.unit_amount_cents,
+    line_subtotal_cents: item.quantity * item.unit_amount_cents,
+    currency: pricing.currency,
+    product_snapshot: item.product_snapshot || {},
+  }));
+}
+
+function buildTransferOrder({ createdOrder, customerEmail, pricing }) {
+  const createdAt = new Date().toISOString();
+  return {
+    id: createdOrder.order_id,
+    order_reference: createdOrder.order_reference,
+    customer_email: customerEmail,
+    currency: pricing.currency,
+    payment_method: "bank_transfer",
+    payment_status: "pending",
+    order_status: "pending_payment",
+    fulfillment_status: "not_started",
+    amounts: {
+      subtotal_cents: pricing.subtotalCents,
+      shipping_cents: pricing.shippingCents,
+      tax_cents: pricing.taxCents,
+      discount_cents: pricing.discountCents,
+      total_cents: pricing.totalCents,
+    },
+    timestamps: {
+      created_at: createdAt,
+    },
+    items: buildOrderItems(pricing),
+  };
+}
+
+function publicOrderPayload(order) {
+  return {
+    order_reference: order.order_reference,
+    customer_email: order.customer_email,
+    currency: order.currency,
+    payment_method: order.payment_method,
+    payment_status: order.payment_status,
+    order_status: order.order_status,
+    fulfillment_status: order.fulfillment_status,
+    amounts: order.amounts,
+    timestamps: order.timestamps,
+    items: order.items.map((item) => ({
+      product_id: item.product_id,
+      sku: item.sku,
+      brand: item.brand,
+      name: item.name,
+      variant: item.variant,
+      image_url: item.image_url,
+      quantity: item.quantity,
+      unit_amount_cents: item.unit_amount_cents,
+      line_subtotal_cents: item.line_subtotal_cents,
+      currency: item.currency,
+    })),
+  };
+}
+
+function confirmationUrl(siteUrl, orderReference) {
+  return `${siteUrl}/pages/order-confirmation.html?transfer=1&order_reference=${encodeURIComponent(
+    orderReference
+  )}`;
+}
+
+async function updateOrderTimelineForTransfer(supabase, orderId) {
+  try {
+    const { error } = await supabase
+      .from("order_status_events")
+      .update({
+        message: "Order received; final cost and bank transfer instructions will be sent by email.",
+        created_by: "checkout",
+      })
+      .eq("order_id", orderId)
+      .eq("status", "pending_payment")
+      .eq("created_by", "checkout");
+    if (error) throw error;
+  } catch (error) {
+    console.warn("bank_transfer_order_event_update_failed", error);
+  }
+}
+
+async function sendTransferOrderEmails({ order, siteUrl }) {
+  const emailStatus = {
+    customer_email_sent: false,
+    sales_email_sent: false,
+  };
+
+  try {
+    await sendBankTransferOrderCustomerEmail({
+      order,
+      siteUrl,
+      salesEmail: getSalesEmail(),
+    });
+    emailStatus.customer_email_sent = true;
+  } catch (error) {
+    console.error("bank_transfer_customer_email_failed", {
+      order_reference: order.order_reference,
+      message: error.message,
+    });
   }
 
-  return [
-    {
-      shipping_rate_data: {
-        type: "fixed_amount",
-        display_name: shippingCents > 0 ? "Standard shipping" : "Free shipping",
-        fixed_amount: {
-          amount: shippingCents,
-          currency: currency.toLowerCase(),
-        },
-        delivery_estimate: {
-          minimum: { unit: "business_day", value: 3 },
-          maximum: { unit: "business_day", value: 7 },
-        },
-      },
-    },
-  ];
-}
+  try {
+    await sendBankTransferOrderSalesEmail({
+      order,
+      siteUrl,
+      salesEmail: getSalesEmail(),
+    });
+    emailStatus.sales_email_sent = true;
+  } catch (error) {
+    console.error("bank_transfer_sales_email_failed", {
+      order_reference: order.order_reference,
+      message: error.message,
+    });
+  }
 
-function buildLineItems(items, currency) {
-  return items.map((item) => {
-    const productData = {
-      name: item.variant ? `${item.name} - ${item.variant}` : item.name,
-      metadata: {
-        product_id: item.product_id,
-        brand: item.brand,
-        section_id: item.section_id || "",
-      },
-    };
-
-    if (item.image_url && /^https:\/\//i.test(item.image_url)) {
-      productData.images = [item.image_url];
-    }
-
-    return {
-      quantity: item.quantity,
-      price_data: {
-        currency: currency.toLowerCase(),
-        unit_amount: item.unit_amount_cents,
-        product_data: productData,
-      },
-    };
-  });
-}
-
-async function buildStripeDiscounts(stripe, pricing, orderId, orderReference) {
-  if (pricing.discountCents <= 0) return [];
-
-  const coupon = await stripe.coupons.create(
-    {
-      amount_off: pricing.discountCents,
-      currency: pricing.currency.toLowerCase(),
-      duration: "once",
-      name: "Access pricing",
-      metadata: {
-        order_id: orderId,
-        order_reference: orderReference,
-        pricing_mode: pricing.pricingContext.mode || "private_access",
-      },
-    },
-    {
-      idempotencyKey: `checkout-discount-${orderId}`,
-    }
-  );
-
-  return [{ coupon: coupon.id }];
+  return emailStatus;
 }
 
 module.exports = async function handler(req, res) {
@@ -101,19 +178,15 @@ module.exports = async function handler(req, res) {
     requireEnv([
       "SUPABASE_URL",
       "SUPABASE_SERVICE_ROLE_KEY",
-      "STRIPE_SECRET_KEY",
+      "RESEND_API_KEY",
       ...(hasAccessCode ? ["ATHLETONIC_PRIVATE_PRICING_SECRET"] : []),
     ]);
 
     const attribution = normalizeAttribution(body.attribution);
     const supabase = getSupabaseAdmin();
-    const stripe = getStripe();
     const siteUrl = getSiteUrl(req);
     const clientIp = getClientIp(req);
 
-    // Authenticated checkout: trust the verified token identity, never the
-    // client-supplied email, so a signed-in user cannot apply another
-    // account's wholesale pricing by spoofing body.email.
     const authedUser = await getOptionalAuthedUser(req);
     const customerEmail = authedUser
       ? normalizeEmail(authedUser.email)
@@ -126,21 +199,10 @@ module.exports = async function handler(req, res) {
       accessCode: body.access_code,
       clientIp,
       authUserId: authedUser ? authedUser.id : null,
+      allowManualOrder: true,
     });
 
-    const checkoutCart = pricing.items.map((item) => ({
-      id: item.product_id,
-      brand: item.brand,
-      name: item.name,
-      variant: item.variant || null,
-      price: item.unit_amount_cents / 100,
-      public_price: item.public_unit_amount_cents / 100,
-      regular_price: item.regular_unit_amount_cents / 100,
-      section_id: item.section_id || null,
-      currency: pricing.currency,
-      quantity: item.quantity,
-    }));
-
+    const checkoutCart = buildCheckoutCart(pricing);
     const { data: checkoutIntent, error: checkoutIntentError } = await supabase
       .from("checkout_intents")
       .insert({
@@ -149,9 +211,13 @@ module.exports = async function handler(req, res) {
         subtotal: pricing.subtotalCents / 100,
         discount_cents: pricing.discountCents,
         total: pricing.totalCents / 100,
-        pricing_context: pricing.pricingContext,
+        pricing_context: {
+          ...pricing.pricingContext,
+          payment_method: "bank_transfer",
+        },
         currency: pricing.currency,
         status: "new",
+        notes: `Bank transfer order. Confirm final shipping, duties, taxes, and payment instructions through ${getSalesEmail()}.`,
       })
       .select("id")
       .single();
@@ -176,7 +242,10 @@ module.exports = async function handler(req, res) {
         p_user_agent: req.headers["user-agent"] || null,
         p_attribution: attribution,
         p_private_pricing_grant_id: pricing.privateGrant ? pricing.privateGrant.id : null,
-        p_pricing_context: pricing.pricingContext,
+        p_pricing_context: {
+          ...pricing.pricingContext,
+          payment_method: "bank_transfer",
+        },
       }
     );
 
@@ -188,79 +257,9 @@ module.exports = async function handler(req, res) {
     const createdOrder = Array.isArray(createdOrderRows)
       ? createdOrderRows[0]
       : createdOrderRows;
+    const order = buildTransferOrder({ createdOrder, customerEmail, pricing });
 
-    const orderId = createdOrder.order_id;
-    const orderReference = createdOrder.order_reference;
-    const successUrl = `${siteUrl}/pages/order-confirmation.html?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${siteUrl}/?checkout=cancelled&order_reference=${encodeURIComponent(
-      orderReference
-    )}`;
-    const shippingCountries = (process.env.ATHLETONIC_SHIPPING_COUNTRIES || "US")
-      .split(",")
-      .map((country) => country.trim().toUpperCase())
-      .filter(Boolean);
-    const stripeDiscounts = await buildStripeDiscounts(
-      stripe,
-      pricing,
-      orderId,
-      orderReference
-    );
-
-    const sessionParams = {
-      mode: "payment",
-      customer_email: customerEmail,
-      client_reference_id: orderReference,
-      line_items: buildLineItems(pricing.items, pricing.currency),
-      shipping_address_collection: {
-        allowed_countries: shippingCountries,
-      },
-      shipping_options: buildShippingOptions(pricing.shippingCents, pricing.currency),
-      automatic_tax: {
-        enabled: process.env.STRIPE_AUTOMATIC_TAX === "true",
-      },
-      allow_promotion_codes:
-        stripeDiscounts.length === 0 &&
-        process.env.STRIPE_ALLOW_PROMOTION_CODES === "true",
-      phone_number_collection: {
-        enabled: process.env.STRIPE_COLLECT_PHONE === "true",
-      },
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: {
-        order_id: orderId,
-        order_reference: orderReference,
-        checkout_intent_id: checkoutIntent.id,
-        pricing_mode: pricing.pricingContext.mode || "standard",
-        private_pricing_grant_id: pricing.privateGrant ? pricing.privateGrant.id : "",
-      },
-      payment_intent_data: {
-        metadata: {
-          order_id: orderId,
-          order_reference: orderReference,
-          checkout_intent_id: checkoutIntent.id,
-          pricing_mode: pricing.pricingContext.mode || "standard",
-          private_pricing_grant_id: pricing.privateGrant ? pricing.privateGrant.id : "",
-        },
-      },
-    };
-    if (stripeDiscounts.length > 0) sessionParams.discounts = stripeDiscounts;
-
-    const session = await stripe.checkout.sessions.create(
-      sessionParams,
-      {
-        idempotencyKey: `checkout-${orderId}`,
-      }
-    );
-
-    const { error: updateError } = await supabase
-      .from("orders")
-      .update({ stripe_checkout_session_id: session.id })
-      .eq("id", orderId);
-
-    if (updateError) {
-      updateError.statusCode = 500;
-      throw updateError;
-    }
+    await updateOrderTimelineForTransfer(supabase, order.id);
 
     if (pricing.privateGrant) {
       try {
@@ -270,11 +269,18 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    const emailStatus = await sendTransferOrderEmails({ order, siteUrl });
+    const url = confirmationUrl(siteUrl, order.order_reference);
+
     json(res, 200, {
-      url: session.url,
-      session_id: session.id,
-      order_id: orderId,
-      order_reference: orderReference,
+      ok: true,
+      url,
+      order_id: order.id,
+      order_reference: order.order_reference,
+      payment_method: "bank_transfer",
+      sales_email: getSalesEmail(),
+      ...emailStatus,
+      order: publicOrderPayload(order),
       ...publicQuotePayload(pricing),
     });
   } catch (error) {

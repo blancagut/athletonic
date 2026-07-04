@@ -25,6 +25,7 @@ const SYN_UNPURCHASABLE = "__test_unpurchasable__";
 const SYN_UNAVAILABLE = "__test_unavailable__";
 const SYN_FLAGGED_UNAVAILABLE_WITH_PRICE = "__test_flagged_unavailable_with_price__";
 const SYN_VARIANT = "__test_variant_required__";
+const SYN_MANUAL_VARIANT = "__test_manual_order_variant__";
 
 catalogData.products.push({
   id: SYN_UNPURCHASABLE,
@@ -61,6 +62,25 @@ catalogData.products.push({
   currency: "USD",
   available: true,
   requires_variant_selection: true,
+});
+catalogData.products.push({
+  id: SYN_MANUAL_VARIANT,
+  brand: "Test",
+  name: "Synthetic Manual Variant Order",
+  price_cents: 2500,
+  currency: "USD",
+  available: true,
+  has_variants: true,
+  requires_variant_selection: true,
+  variants: [
+    {
+      variant_id: "known-variant",
+      title: "Known Variant",
+      price_cents: 2500,
+      currency: "USD",
+      available: true,
+    },
+  ],
 });
 
 const { evaluateCart, validateCart } = require("../api/_lib/catalog.js");
@@ -142,6 +162,45 @@ test("an unknown product id is rejected", () => {
   expectReject([{ productId: "does-not-exist-xyz", quantity: 1 }], "product_unavailable");
 });
 
+test("manual order mode accepts an unpublished cart product with review metadata", () => {
+  expectReject(
+    [
+      {
+        productId: "manual-product-not-in-checkout-catalog",
+        name: "Manual Catalog Product",
+        brand: "Test Brand",
+        price: 19.99,
+        currency: "USD",
+        quantity: 1,
+      },
+    ],
+    "product_unavailable"
+  );
+
+  const result = evaluateCart(
+    [
+      {
+        productId: "manual-product-not-in-checkout-catalog",
+        name: "Manual Catalog Product",
+        brand: "Test Brand",
+        price: 19.99,
+        currency: "USD",
+        image: "https://example.com/manual-product.png",
+        quantity: 2,
+      },
+    ],
+    { allowManualOrder: true }
+  );
+
+  assert.equal(result.valid, true);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].product_id, "manual-product-not-in-checkout-catalog");
+  assert.equal(result.items[0].unit_amount_cents, 1999);
+  assert.equal(result.subtotalCents, 3998);
+  assert.equal(result.items[0].product_snapshot.manual_order, true);
+  assert.equal(result.items[0].product_snapshot.requires_order_review, true);
+});
+
 test("an empty cart is rejected", () => {
   expectReject([], "empty_cart");
 });
@@ -179,6 +238,37 @@ test("a variant-required product with a chosen option validates and carries the 
   // Price is the flat catalog price regardless of the chosen option.
   assert.equal(result.items[0].unit_amount_cents, 4999);
   assert.equal(result.items[0].product_snapshot.variant_title, "Cookies N Cream");
+});
+
+test("manual order mode accepts a stale selected variant without changing strict checkout validation", () => {
+  expectReject(
+    [
+      {
+        productId: SYN_MANUAL_VARIANT,
+        variant_id: "stale-variant",
+        variant: "Legacy Option",
+        quantity: 1,
+      },
+    ],
+    "variant_unavailable"
+  );
+
+  const result = evaluateCart(
+    [
+      {
+        productId: SYN_MANUAL_VARIANT,
+        variant_id: "stale-variant",
+        variant: "Legacy Option",
+        quantity: 2,
+      },
+    ],
+    { allowManualOrder: true }
+  );
+  assert.equal(result.valid, true);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].variant, "Legacy Option");
+  assert.equal(result.items[0].unit_amount_cents, 2500);
+  assert.equal(result.subtotalCents, 5000);
 });
 
 test("distinct chosen options of the same product stay separate lines", () => {

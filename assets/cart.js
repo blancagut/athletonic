@@ -12,6 +12,7 @@
   const CART_STORAGE_KEY = "athletonic-cart-v1";
   const GUEST_EMAIL_KEY = "athletonic-guest-email";
   const LAST_ORDER_REFERENCE_KEY = "athletonic-last-order-reference";
+  const LAST_TRANSFER_ORDER_KEY = "athletonic-last-transfer-order";
   const LEGACY_PRODUCT_ID_ALIASES = {
     "1509-extreme": "1509",
     "1509-other": "1509",
@@ -133,7 +134,7 @@
     message: cart.length
       ? "Checking cart availability..."
       : "Add at least one product before checkout.",
-    subtotalCents: cartTotal(),
+    subtotalCents: Math.round(cartTotal() * 100),
     currency: cart[0] ? cart[0].currency || "USD" : "USD",
     items: [],
     lineItems: [],
@@ -157,6 +158,15 @@
   function storageSet(key, value) {
     try {
       localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function storageRemove(key) {
+    try {
+      localStorage.removeItem(key);
       return true;
     } catch {
       return false;
@@ -418,6 +428,12 @@
   function buildCartValidationSnapshot() {
     return cart.map((item) => ({
       productId: normalizeProductId(item.productId || item.id || ""),
+      brand: item.brand || "",
+      name: item.name || "",
+      price: Number(item.price || 0),
+      currency: item.currency || "USD",
+      image: item.image || "",
+      sku: item.sku || "",
       variant_id: String(item.variantId || "").trim(),
       variantId: String(item.variantId || "").trim(),
       selected_options: item.selectedOptions || {},
@@ -980,11 +996,11 @@
   }
 
   function applyCheckoutLabels() {
-    if (checkoutSubmit) checkoutSubmit.textContent = "Continue to secure payment";
+    if (checkoutSubmit) checkoutSubmit.textContent = "Place order";
     const note = checkoutForm ? $(".form-note", checkoutForm) : null;
     if (note) {
       note.textContent =
-        "Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.";
+        "Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.";
     }
   }
 
@@ -1026,14 +1042,14 @@
     const subtotalCents =
       cartValidation.status === "valid" || cartValidation.status === "invalid"
         ? cartValidation.subtotalCents
-        : cartTotal();
+        : Math.round(cartTotal() * 100);
     const subtotalCurrency = cartValidation.currency || (cart[0] && cart[0].currency) || "USD";
     for (const cartCount of cartCounts) {
       cartCount.textContent = String(totalItems);
       cartCount.hidden = totalItems === 0;
     }
     if (cartSubtotal) {
-      cartSubtotal.textContent = formatMoney(subtotalCents, subtotalCurrency);
+      cartSubtotal.textContent = formatMoneyFromCents(subtotalCents, subtotalCurrency);
     }
     if (!cartItems) return;
     cartItems.textContent = "";
@@ -1464,16 +1480,32 @@
       hydrateEmailFields();
       checkoutBusy = true;
       if (checkoutSubmit) checkoutSubmit.disabled = true;
-      setFormStatus(checkoutStatus, "Creating secure checkout...", "pending");
+      setFormStatus(checkoutStatus, "Placing your order...", "pending");
       try {
         const checkout = await submitCheckout(email);
         storageSet(
           LAST_ORDER_REFERENCE_KEY,
           checkout.order_reference || ""
         );
+        if (checkout.order) {
+          storageSet(
+            LAST_TRANSFER_ORDER_KEY,
+            JSON.stringify({
+              ...checkout.order,
+              sales_email: checkout.sales_email || "sales@athletonic.com",
+              customer_email_sent: checkout.customer_email_sent !== false,
+            })
+          );
+        } else {
+          storageRemove(LAST_TRANSFER_ORDER_KEY);
+        }
+        cart = [];
+        saveCart();
         setFormStatus(
           checkoutStatus,
-          "Redirecting to secure payment...",
+          checkout.customer_email_sent === false
+            ? "Order received. Athletonic sales will follow up with the final cost and bank transfer instructions."
+            : "Order received. Check your email for the final cost and bank transfer instructions.",
           "success"
         );
         window.location.assign(checkout.url);
@@ -1483,7 +1515,7 @@
         renderCart();
         setFormStatus(
           checkoutStatus,
-          error.message || "Could not start checkout. Your cart is still saved here.",
+          error.message || "Could not place the order. Your cart is still saved here.",
           "error"
         );
       }
