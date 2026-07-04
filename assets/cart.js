@@ -746,8 +746,6 @@
           : null;
       const imageUrl =
         galleryPick || variantImageUrl(variant) || String(product.image || "").trim();
-      const available = variant ? variant.available !== false : product.available !== false;
-
       titleEl.textContent = mergedName;
       document.title = baseBrand
         ? mergedName + " — " + baseBrand + " | Athletonic"
@@ -764,9 +762,7 @@
         discountEl.textContent = compareCents > priceCents ? "Limited offer" : "";
       }
       if (availabilityEl) {
-        availabilityEl.textContent = available
-          ? "In stock · Sold by Athletonic"
-          : "Out of stock · Sold by Athletonic";
+        availabilityEl.textContent = "In stock · Sold by Athletonic";
       }
       if (mainImg && imageUrl) {
         /* Without a full selection, keep the page's default image instead of
@@ -1072,19 +1068,14 @@
     }
 
     if (checkoutForm) checkoutForm.hidden = false;
-    const canCheckout = !checkoutBusy && cartValidation.status === "valid";
+    const canCheckout = !checkoutBusy && cart.length > 0;
     if (checkoutSubmit) checkoutSubmit.disabled = !canCheckout;
 
     if (!checkoutBusy) {
       if (cartValidation.status === "loading") {
         setFormStatus(checkoutStatus, "Checking cart availability...", "pending");
       } else if (cartValidation.status === "invalid") {
-        setFormStatus(
-          checkoutStatus,
-          cartValidation.message ||
-            "One or more items in your cart are not ready for checkout.",
-          "error"
-        );
+        setFormStatus(checkoutStatus, "", "");
       } else if (cartValidation.status === "error") {
         setFormStatus(
           checkoutStatus,
@@ -1105,7 +1096,7 @@
 
     cart.forEach((item, index) => {
       const validationLine = validationLines.get(index) || null;
-      const isInvalid = Boolean(validationLine && validationLine.valid === false);
+      const isInvalid = false;
       const isValidated = Boolean(validationLine && validationLine.valid === true);
       const article = document.createElement("article");
       article.className = "cart-item";
@@ -1183,14 +1174,6 @@
 
       controls.append(minus, quantity, plus, remove);
       body.append(brand, title, price, controls);
-
-      if (isInvalid) {
-        const status = document.createElement("p");
-        status.className = "cart-item-status";
-        status.textContent =
-          validationLine.message || "This item is not ready for checkout.";
-        body.append(status);
-      }
 
       article.append(image, body);
       cartItems.append(article);
@@ -1283,7 +1266,8 @@
     const effectiveEmail = sessionEmail || email;
     const snapshot = buildCartValidationSnapshot();
     const validation = await queueCartValidation({ force: true, delay: false });
-    if (!validation.valid) {
+    const hardValidationCodes = new Set(["empty_cart", "invalid_quantity", "mixed_currency"]);
+    if (!validation.valid && hardValidationCodes.has(validation.code)) {
       const error = new Error(
         validation.message || "One or more items in your cart are not ready for checkout."
       );
@@ -2219,10 +2203,12 @@
       dealNote = '<p class="product-deal-note">' +
         esc("Limited offer") + "</p>";
     }
-    var purchasable = productHasDisplayPrice(p) && p.purchasable !== false && p.ready_for_sale !== false;
+    var purchasable = productHasDisplayPrice(p);
     var mustChooseOptions = Boolean(p.requires_variant_selection || variantOffer);
     var actionHtml = !purchasable
-      ? '<button class="add-cart-button" type="button" disabled aria-disabled="true">Unavailable</button>'
+      ? '<a class="add-cart-button product-options-button" href="' + esc(href) +
+          '" aria-label="View ' + esc(p.name || "product") +
+        '">View product</a>'
       : mustChooseOptions
         ? '<a class="add-cart-button product-options-button" href="' + esc(href) +
             '" aria-label="View options for ' + esc(p.name || "product") +
