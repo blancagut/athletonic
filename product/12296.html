@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -612,17 +612,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01301.jpg","t":"dsc01301jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC00971.jpg","t":"dsc00971jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01294.jpg","t":"dsc01294jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKTOPOGRAPHYRANGERPANTIES-LIFESTYLE_11.jpg","t":"blacktopographyrangerpantieslifestyle11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_9.jpg","t":"yallneedjesusoriginalripstopblackogtigerstripeclassycheckerssnapback9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_1.jpg","t":"yallneedjesusoriginalripstopblackogtigerstripeclassycheckerssnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_5.jpg","t":"yallneedjesusoriginalripstopblackogtigerstripeclassycheckerssnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_4.jpg","t":"yallneedjesusoriginalripstopblackogtigerstripeclassycheckerssnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_6.jpg","t":"yallneedjesusoriginalripstopblackogtigerstripeclassycheckerssnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_3.jpg","t":"yallneedjesusoriginalripstopblackogtigerstripeclassycheckerssnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YALLNEEDJESUS-TIGERSTRIPE_BLACK_CLASSYCHECKERSRIPSTOPSNAPBACK-LIFESTYLEREVSOC_2.jpg","t":"yallneedjesustigerstripeblackclassycheckersripstopsnapbacklifestylerevsoc2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_2.jpg","t":"yallneedjesusoriginalripstopblackogtigerstripeclassycheckerssnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALTIGERSTRIPEBRIM_BLACKORIGINALRIPSTOPSNAPBACK_9.jpg","t":"yallneedjesusoriginaltigerstripebrimblackoriginalripstopsnapback9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALTIGERSTRIPEBRIM_BLACKORIGINALRIPSTOPSNAPBACK_1.jpg","t":"yallneedjesusoriginaltigerstripebrimblackoriginalripstopsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALTIGERSTRIPEBRIM_BLACKORIGINALRIPSTOPSNAPBACK_3.jpg","t":"yallneedjesusoriginaltigerstripebrimblackoriginalripstopsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_1_7b4ae0dd-d365-4a81-97c1-eafd9a4dbfc6.jpg","t":"yallneedjesusgreyfrontwoodlandbdubrimblackmeshsnapback17b4ae0ddd3654a8197c1eafd9a4dbfc6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALTIGERSTRIPEBRIM_BLACKORIGINALRIPSTOPSNAPBACK_4.jpg","t":"yallneedjesusoriginaltigerstripebrimblackoriginalripstopsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_4_fe0de2fa-6254-4960-998b-cbb93c9b1c70.jpg","t":"yallneedjesusgreyfrontwoodlandbdubrimblackmeshsnapback4fe0de2fa62544960998bcbb93c9b1c70jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALTIGERSTRIPEBRIM_BLACKORIGINALRIPSTOPSNAPBACK_2.jpg","t":"yallneedjesusoriginaltigerstripebrimblackoriginalripstopsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_5_ea4cb68f-6c4a-4904-9f31-7fdd62fb3cf2.jpg","t":"yallneedjesusgreyfrontwoodlandbdubrimblackmeshsnapback5ea4cb68f6c4a49049f317fdd62fb3cf2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALTIGERSTRIPEBRIM_BLACKORIGINALRIPSTOPSNAPBACK_7.jpg","t":"yallneedjesusoriginaltigerstripebrimblackoriginalripstopsnapback7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_3_dc43b80e-6f4e-427b-86d9-5976a3ee2233.jpg","t":"yallneedjesusgreyfrontwoodlandbdubrimblackmeshsnapback3dc43b80e6f4e427b86d95976a3ee2233jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALTIGERSTRIPEBRIM_BLACKORIGINALRIPSTOPSNAPBACK_6.jpg","t":"yallneedjesusoriginaltigerstripebrimblackoriginalripstopsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_6_1aede281-bb23-4285-8de0-5210554e9a63.jpg","t":"yallneedjesusgreyfrontwoodlandbdubrimblackmeshsnapback61aede281bb2342858de05210554e9a63jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALTIGERSTRIPEBRIM_BLACKORIGINALRIPSTOPSNAPBACK_5.jpg","t":"yallneedjesusoriginaltigerstripebrimblackoriginalripstopsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_2_e62c1393-a5dd-4c62-96c3-29cd2974d207.jpg","t":"yallneedjesusgreyfrontwoodlandbdubrimblackmeshsnapback2e62c1393a5dd4c6296c329cd2974d207jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -638,21 +639,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -674,7 +679,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813888713074","key":"BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS","title":"BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS","sku":null,"optionValues":["BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS"}],"selected_options":{"COLOR":"BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKTOPOGRAPHYRANGERPANTIES-LIFESTYLE_11.jpg"},{"variant_id":"61813888745842","key":"ORIGINAL TIGER STRIPE / BLACK","title":"ORIGINAL TIGER STRIPE / BLACK","sku":null,"optionValues":["ORIGINAL TIGER STRIPE / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"ORIGINAL TIGER STRIPE / BLACK"}],"selected_options":{"COLOR":"ORIGINAL TIGER STRIPE / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKTOPOGRAPHYRANGERPANTIES-LIFESTYLE_11.jpg"},{"variant_id":"61813888778610","key":"BDU CAMO / BLACK / GRAY","title":"BDU CAMO / BLACK / GRAY","sku":null,"optionValues":["BDU CAMO / BLACK / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / BLACK / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / BLACK / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKTOPOGRAPHYRANGERPANTIES-LIFESTYLE_11.jpg"}];
+        var variantPricing = [{"variant_id":"61813888713074","key":"BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS","title":"BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS","sku":null,"optionValues":["BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS"}],"selected_options":{"COLOR":"BLACK / ORIGINAL TIGER STRIPE / CLASSY CHECKERS"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_9.jpg"},{"variant_id":"61813888745842","key":"ORIGINAL TIGER STRIPE / BLACK","title":"ORIGINAL TIGER STRIPE / BLACK","sku":null,"optionValues":["ORIGINAL TIGER STRIPE / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"ORIGINAL TIGER STRIPE / BLACK"}],"selected_options":{"COLOR":"ORIGINAL TIGER STRIPE / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-ORIGINALRIPSTOPBLACK_OGTIGERSTRIPE_CLASSYCHECKERSSNAPBACK_9.jpg"},{"variant_id":"61813888778610","key":"BDU CAMO / BLACK / GRAY","title":"BDU CAMO / BLACK / GRAY","sku":null,"optionValues":["BDU CAMO / BLACK / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / BLACK / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / BLACK / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/Y_ALLNEEDJESUS-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_1_7b4ae0dd-d365-4a81-97c1-eafd9a4dbfc6.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

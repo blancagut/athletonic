@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -552,17 +552,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4764a887-837f-45cf-91a1-65924106f7ea/zegama-2-mens-trail-running-shoes-xeTRbJ5L.png","t":"nikezegama2menstrailrunningshoeszegama2menstrailrunningshoesxetrbj5lpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ef310fe9-7852-4d15-b170-0d2309002479/zegama-2-mens-trail-running-shoes-xeTRbJ5L.png","t":"nikezegama2menstrailrunningshoeszegama2menstrailrunningshoesxetrbj5lpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/85017696-8f27-4142-8e53-6d21ffb1cabd/zegama-2-mens-trail-running-shoes-xeTRbJ5L.png","t":"nikezegama2menstrailrunningshoeszegama2menstrailrunningshoesxetrbj5lpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a0d7d829-c15d-4cb1-aa5b-a49139424c5c/zegama-2-mens-trail-running-shoes-xeTRbJ5L.png","t":"nikezegama2menstrailrunningshoeszegama2menstrailrunningshoesxetrbj5lpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7c088bee-9a37-4dc5-8a47-03e7befda20e/zegama-2-mens-trail-running-shoes-xeTRbJ5L.png","t":"nikezegama2menstrailrunningshoeszegama2menstrailrunningshoesxetrbj5lpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9b526b44-cc62-4c38-a03f-58958c2e5e79/zegama-2-mens-trail-running-shoes-xeTRbJ5L.png","t":"nikezegama2menstrailrunningshoeszegama2menstrailrunningshoesxetrbj5lpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9414977c-7d4d-47b9-ad30-b13ecd2a7352/zegama-2-mens-trail-running-shoes-xeTRbJ5L.png","t":"nikezegama2menstrailrunningshoeszegama2menstrailrunningshoesxetrbj5lpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c662245f-9b58-4438-afbb-d657e214c1ef/zegama-2-mens-trail-running-shoes-xeTRbJ5L.png","t":"nikezegama2menstrailrunningshoeszegama2menstrailrunningshoesxetrbj5lpng"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/f7d427c2-39fd-4271-9a78-339234c3e1c2/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/9f375537-b7f4-44bc-836b-c5d3702029a4/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod_ps/w_1536,c_limit/b7717cf6-509d-4a0a-ba97-a22b791eb4b2/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod_pc/w_1536,c_limit/08d2caf7-ef61-4625-ade5-69ba05c38573/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/e9da0098-7ded-4861-9a1b-3f060da6fd2e/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_960,c_limit/47a5f738-cf13-43e0-9643-7fdff7e539fb/image.jpg","t":"imagejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -578,21 +579,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -553,17 +553,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/dd1b40fa-0b50-4a9b-97be-ef49d4c44b0c/vomero-plus-mens-realtree-road-running-shoes-5npsVBwT.png","t":"nikevomeroplusmensrealtreeroadrunningshoesvomeroplusmensrealtreeroadrunningshoes5npsvbwtpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a9f1ebd5-6aa1-4365-b996-0e53f7257e6d/vomero-plus-mens-realtree-road-running-shoes-5npsVBwT.png","t":"nikevomeroplusmensrealtreeroadrunningshoesvomeroplusmensrealtreeroadrunningshoes5npsvbwtpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/ed0d32fd-f022-4091-b6b5-d20e8acdf909/vomero-plus-mens-realtree-road-running-shoes-5npsVBwT.png","t":"nikevomeroplusmensrealtreeroadrunningshoesvomeroplusmensrealtreeroadrunningshoes5npsvbwtpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1e5dd87e-e6fe-4dd5-bc6c-5753b5349819/vomero-plus-mens-realtree-road-running-shoes-5npsVBwT.png","t":"nikevomeroplusmensrealtreeroadrunningshoesvomeroplusmensrealtreeroadrunningshoes5npsvbwtpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/0e159fe6-8eb9-490a-a14a-cde2a627a967/vomero-plus-mens-realtree-road-running-shoes-5npsVBwT.png","t":"nikevomeroplusmensrealtreeroadrunningshoesvomeroplusmensrealtreeroadrunningshoes5npsvbwtpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7e512ba1-56b5-438c-8a18-d41cca930c75/vomero-plus-mens-realtree-road-running-shoes-5npsVBwT.png","t":"nikevomeroplusmensrealtreeroadrunningshoesvomeroplusmensrealtreeroadrunningshoes5npsvbwtpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/20831fba-19df-4df3-b789-b53023a53b31/vomero-plus-mens-realtree-road-running-shoes-5npsVBwT.png","t":"nikevomeroplusmensrealtreeroadrunningshoesvomeroplusmensrealtreeroadrunningshoes5npsvbwtpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1a742619-089c-45e9-8c21-d858eb3243a4/vomero-plus-mens-realtree-road-running-shoes-5npsVBwT.png","t":"nikevomeroplusmensrealtreeroadrunningshoesvomeroplusmensrealtreeroadrunningshoes5npsvbwtpng"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/f5814d75-8b67-4309-bf32-0d3cc8d3ffb4/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/92157896-f9c6-4896-8b36-0b28300e08a6/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod_ps/w_1536,c_limit/696e1013-1452-4538-9460-15a012ffc748/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_960,c_limit/a117b9a5-880f-48fa-b8d3-931faa734fd9/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/5dc964ce-cc75-4986-bb4f-b3879a712315/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/62246924-bb29-40d0-b20a-836227924278/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/df3680e9-3b7b-47aa-b84d-31d264e674a9/image.jpg","t":"imagejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -579,21 +580,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -639,17 +639,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-1.png","t":"spcbuybox1png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-White-2.jpg","t":"spcbuyboxwhite2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-3.jpg","t":"spcbuybox3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-4_4582c9ff-b74f-4b03-9cfc-abeb4bc0b258.jpg","t":"spcbuybox44582c9ffb74f4b039cfcabeb4bc0b258jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-5_V2_7a746fcd-d7d1-4b60-95f9-395a51708da8.jpg","t":"spcbuybox5v27a746fcdd7d14b6095f9395a51708da8jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-White-6.jpg","t":"spcbuyboxwhite6jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-White-7.jpg","t":"spcbuyboxwhite7jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-8.jpg","t":"spcbuybox8jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-9_1.jpg","t":"spcbuybox91jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-10_1.jpg","t":"spcbuybox101jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-11_V2.jpg","t":"spcbuybox11v2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-12_1.jpg","t":"spcbuybox121jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-13_V2.jpg","t":"spcbuybox13v2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-14_V2.jpg","t":"spcbuybox14v2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-15_1.jpg","t":"spcbuybox151jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-1-v2_36eef534-fa86-4a98-bf2d-95a101c44dd9.png","t":"spcbuyboxpink1v236eef534fa864a98bf2d95a101c44dd9png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-2-v2.jpg","t":"spcbuyboxpink2v2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-3.jpg","t":"spcbuyboxpink3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-4.jpg","t":"spcbuyboxpink4jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-5.jpg","t":"spcbuyboxpink5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-6-v2.jpg","t":"spcbuyboxpink6v2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-7.jpg","t":"spcbuyboxpink7jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-8.jpg","t":"spcbuyboxpink8jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-9.jpg","t":"spcbuyboxpink9jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-10.jpg","t":"spcbuyboxpink10jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-11.jpg","t":"spcbuyboxpink11jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-12-v2.jpg","t":"spcbuyboxpink12v2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Pink-14.jpg","t":"spcbuyboxpink14jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-pink-15-v3.jpg","t":"spcbuyboxpink15v3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-1-v2_fc43227d-5a46-463f-81f4-8d870883157f.png","t":"spcbuyboxsilver1v2fc43227d5a46463f81f48d870883157fpng"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-2-v3.jpg","t":"spcbuyboxsilver2v3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-silver-3_844ad7d6-f15b-4ccb-b2e4-f44cc00f6b73.jpg","t":"spcbuyboxsilver3844ad7d6f15b4ccbb2e4f44cc00f6b73jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-4_cc0763a5-941b-4012-9e8e-0c4525fff0fa.jpg","t":"spcbuyboxsilver4cc0763a5941b40129e8e0c4525fff0fajpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-5_561e368c-88cb-4e43-af51-1f356e86991d.jpg","t":"spcbuyboxsilver5561e368c88cb4e43af511f356e86991djpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-6-v3.jpg","t":"spcbuyboxsilver6v3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-7-v2.jpg","t":"spcbuyboxsilver7v2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-8_537993bf-c1e7-451e-86d3-69d047dc3fc1.jpg","t":"spcbuyboxsilver8537993bfc1e7451e86d369d047dc3fc1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-9_8a5d6a2d-f0e7-4e40-9166-bc64f2053a78.jpg","t":"spcbuyboxsilver98a5d6a2df0e74e409166bc64f2053a78jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-10_36c49c6b-3a8f-49f7-bbc6-00758dd09a15.jpg","t":"spcbuyboxsilver1036c49c6b3a8f49f7bbc600758dd09a15jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-11_bfa4af54-0517-42f1-a2a9-649bcdb4a682.jpg","t":"spcbuyboxsilver11bfa4af54051742f1a2a9649bcdb4a682jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-12_553c3965-fd74-4669-b67e-7a7a4f7f228d.jpg","t":"spcbuyboxsilver12553c3965fd744669b67e7a7a4f7f228djpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-14_47ec821d-dfab-42fb-a084-f18b6f0c4c84.jpg","t":"spcbuyboxsilver1447ec821ddfab42fba084f18b6f0c4c84jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SPC-Buy-Box-Silver-15-v3.jpg","t":"spcbuyboxsilver15v3jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -665,21 +666,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

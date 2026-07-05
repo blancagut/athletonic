@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -591,17 +591,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/4897039310479_Boost_Cacao_Mix_Box_Front_072023_2e50d630-3de5-4fd5-a81e-54eaf238b655.jpg","t":"4897039310479boostcacaomixboxfront0720232e50d6303de54fd5a81e54eaf238b655jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/4897039310479_Boost_Cacao_Mix_Box_1_Pack_072023.jpg","t":"4897039310479boostcacaomixbox1pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/4897039310479_Boost_Cacao_Mix_Box_2_Pack_072023.jpg","t":"4897039310479boostcacaomixbox2pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/4897039310479_Boost_Cacao_Mix_Box_4_Pack_072023.jpg","t":"4897039310479boostcacaomixbox4pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/4897039310479_Boost_Cacao_Mix_Box_8_Pack_072023.jpg","t":"4897039310479boostcacaomixbox8pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/FS_Photoshoot_080223_Day4-2541_a51d9af1-598e-45ef-9051-76a85150753b.jpg","t":"fsphotoshoot080223day42541794b7538d24847e7bf04821e705e8f93jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/4897039310479_Boost_Cacao_Mix_Box_6_Pack_072023.jpg","t":"4897039310479boostcacaomixbox6pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/4897039310479_Boost_Cacao_Mix_Benefit_080123_4db334fb-91b9-487e-bd57-e9b507659455.jpg","t":"4897039310479boostcacaomixbenefit0801234db334fb91b9487ebd57e9b507659455jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/4897039310479_Boost_Organic_Cacao_Facts_Panel_a9bff62c-93c7-495c-90fd-71bafc3ec362.jpg","t":"4897039310479boostorganiccacaofactspanela9bff62c93c7495c90fd71bafc3ec362jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -617,21 +618,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

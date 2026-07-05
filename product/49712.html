@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -564,17 +564,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c39f47c7-2b26-4c43-b92f-68cede0b19ed/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/b98db537-00a3-4f6e-8b4d-af992f8381a3/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/35c2b0ad-6975-4718-a62d-d8d2c84d307e/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1098718a-c908-4be9-b446-740cf317e661/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/35ff0406-d3df-4327-8b5c-72445fcf9884/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/cfbb9bd7-f728-4cb8-975f-4607eb84201c/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/011b7bb8-e833-4dae-ac5a-4eab54ec9aa9/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8d2f3643-1ce4-449a-9f87-0c4ca5f39550/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8e8cf5f2-8ac7-4b39-ac1a-9be8c624a8a1/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f4777d61-4af3-4774-bc4e-59119aece765/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/255b6201-9e2d-424e-b1af-7bd1ab1b71fd/zoom-rival-sprint-track-field-sprinting-spikes-9Xtr2A3x.png","t":"nikezoomrivalsprinttrackfieldsprintingspikeszoomrivalsprinttrackfieldsprintingspikes9xtr2a3xpng"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/75c4a11e-a589-4513-a916-07028be32645/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/1ff55e4c-9623-468d-a2cf-e31a2c57cf7a/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/0abcc053-877b-4409-8eae-b47d3520923a/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod_ps/w_1536,c_limit/9b061845-77fb-4b96-88e9-4bb8f6ac812c/image.jpg","t":"imagejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -590,21 +591,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

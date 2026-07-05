@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -565,17 +565,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/files/all-change-plates_540x_6a66c3a4-15ae-4ae8-9f92-e9515b61c550.webp","t":"allchangeplates540x6a66c3a415ae4ae89f92e9515b61c550webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-1-25-lb-white-side.webp","t":"changeplate125lbwhitesidewebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-2-5-lb-green-side.webp","t":"changeplate25lbgreensidewebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-5-lb-blue-side.webp","t":"changeplate5lbbluesidewebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-10-lb-white-side.webp","t":"changeplate10lbwhitesidewebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-1-25-lb-white.webp","t":"changeplate125lbwhitewebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-2-5-lb-green.webp","t":"changeplate25lbgreenwebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-5-lb-blue.webp","t":"changeplate5lbbluewebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-10-lb-white.webp","t":"changeplate10lbwhitewebp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -591,21 +592,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -627,7 +632,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"42162756190377","key":"1.25LB Pair","title":"1.25LB Pair","sku":null,"optionValues":["1.25LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"1.25LB Pair"}],"selected_options":{"Weight":"1.25LB Pair"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-1-25-lb-white-side.webp"},{"variant_id":"42162756223145","key":"2.5LB Pair","title":"2.5LB Pair","sku":null,"optionValues":["2.5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"2.5LB Pair"}],"selected_options":{"Weight":"2.5LB Pair"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-1-25-lb-white-side.webp"},{"variant_id":"42162756255913","key":"5LB Pair","title":"5LB Pair","sku":null,"optionValues":["5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"5LB Pair"}],"selected_options":{"Weight":"5LB Pair"},"price_cents":5000,"regular_price_cents":5000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-1-25-lb-white-side.webp"},{"variant_id":"42162756288681","key":"10LB Pair","title":"10LB Pair","sku":null,"optionValues":["10LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"10LB Pair"}],"selected_options":{"Weight":"10LB Pair"},"price_cents":10000,"regular_price_cents":10000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-10-lb-white-side.webp"},{"variant_id":"43779377856681","key":"17.5LB Set","title":"17.5LB Set","sku":null,"optionValues":["17.5LB Set"],"option_values":[{"position":1,"name":"Weight","value":"17.5LB Set"}],"selected_options":{"Weight":"17.5LB Set"},"price_cents":12500,"regular_price_cents":12500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-1-25-lb-white-side.webp"},{"variant_id":"43780526342313","key":"37.5LB Set","title":"37.5LB Set","sku":null,"optionValues":["37.5LB Set"],"option_values":[{"position":1,"name":"Weight","value":"37.5LB Set"}],"selected_options":{"Weight":"37.5LB Set"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/change-plate-1-25-lb-white-side.webp"}];
+        var variantPricing = [{"variant_id":"42162756190377","key":"1.25LB Pair","title":"1.25LB Pair","sku":null,"optionValues":["1.25LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"1.25LB Pair"}],"selected_options":{"Weight":"1.25LB Pair"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42162756223145","key":"2.5LB Pair","title":"2.5LB Pair","sku":null,"optionValues":["2.5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"2.5LB Pair"}],"selected_options":{"Weight":"2.5LB Pair"},"price_cents":4000,"regular_price_cents":4000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42162756255913","key":"5LB Pair","title":"5LB Pair","sku":null,"optionValues":["5LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"5LB Pair"}],"selected_options":{"Weight":"5LB Pair"},"price_cents":5000,"regular_price_cents":5000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42162756288681","key":"10LB Pair","title":"10LB Pair","sku":null,"optionValues":["10LB Pair"],"option_values":[{"position":1,"name":"Weight","value":"10LB Pair"}],"selected_options":{"Weight":"10LB Pair"},"price_cents":10000,"regular_price_cents":10000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43779377856681","key":"17.5LB Set","title":"17.5LB Set","sku":null,"optionValues":["17.5LB Set"],"option_values":[{"position":1,"name":"Weight","value":"17.5LB Set"}],"selected_options":{"Weight":"17.5LB Set"},"price_cents":12500,"regular_price_cents":12500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43780526342313","key":"37.5LB Set","title":"37.5LB Set","sku":null,"optionValues":["37.5LB Set"],"option_values":[{"position":1,"name":"Weight","value":"37.5LB Set"}],"selected_options":{"Weight":"37.5LB Set"},"price_cents":20000,"regular_price_cents":20000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -532,17 +532,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/1_c23f3442-7385-4930-a6f3-cc43410c7b0f.jpg","t":"1c23f344273854930a6f3cc43410c7b0fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/2_1ef7e53e-e632-4711-a4fc-0131c93fe095.jpg","t":"21ef7e53ee6324711a4fc0131c93fe095jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/3_5ad131fe-a531-459c-8a81-9aa459f69a02.jpg","t":"35ad131fea531459c8a819aa459f69a02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/4_55433fea-7a55-4c14-9da4-65ef9346dddd.jpg","t":"455433fea7a554c149da465ef9346ddddjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/5_75ef2ef2-41f2-4211-9e4f-7531803d7c40.jpg","t":"575ef2ef241f242119e4f7531803d7c40jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/6_a672069d-3748-4d74-9921-9a12eea21ff3.jpg","t":"6a672069d37484d7499219a12eea21ff3jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -558,21 +559,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

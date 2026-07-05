@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -584,17 +584,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897023622_Memory_Mushroom_Complex_Bottle_Front_771a3e1d-e385-4a40-abf8-e0475bb2a393.jpg","t":"816897023622memorymushroomcomplexbottlefront771a3e1de3854a40abf8e0475bb2a393jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897023622_Memory_Mushroom_Complex_Bottle_1_Pack_99a1681e-6216-4711-8c4f-e4ac3d41b111.jpg","t":"816897023622memorymushroomcomplexbottle1pack99a1681e621647118c4fe4ac3d41b111jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897023622_Memory_Mushroom_Complex_Bottle_2_Pack_7a318200-a6b9-4fb9-838d-5490283a0d28.jpg","t":"816897023622memorymushroomcomplexbottle2pack7a318200a6b94fb9838d5490283a0d28jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897023622_Memory_Mushroom_Complex_Bottle_6_Pack_1.jpg","t":"816897023622memorymushroomcomplexbottle6pack1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897023622_Memory_Mushroom_Complex_Bottle_4_Pack_1a0e65a5-dcea-472a-89f7-7dd4ab8846b6.jpg","t":"816897023622memorymushroomcomplexbottle4pack1a0e65a5dcea472a89f77dd4ab8846b6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/FSF_Photoshoot_August_2023_Day_3-656-Edit_11334648-8ef0-4a3b-bdce-11d27b161134.jpg","t":"fsfphotoshootaugust2023day3656edit6fecf0e7b6c54b15b8ab11d2e7153da5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897023622_Memory_Mushroom_Complex_Benefit_030724.jpg","t":"816897023622memorymushroomcomplexbenefit030724jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897023622_Memory_Mushroom_Complex_Facts_Panel.jpg","t":"816897023622memorymushroomcomplexfactspaneljpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/FSF_Photoshoot_August_2023_Day_1-288-Edit_e9218b1b-0b9c-4ee4-8f51-689e5b9157c1.jpg","t":"fsfphotoshootaugust2023day1288editcb9c07b731654bbeafca23064adb1982jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/Frame_427318810.jpg","t":"frame427318810jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -610,21 +611,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

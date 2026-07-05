@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -581,17 +581,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/RAW_Hydration_Lemon_Lime_-_1080x1080_72_82f2f821-038f-43eb-b7b3-7f7936635e5a.webp","t":"rawhydrationlemonlime1080x10807282f2f821038f43ebb7b37f7936635e5awebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/RAW_Hydration_Blue_Raspberry_-_1080x1080_100.webp","t":"rawhydrationblueraspberry1080x1080100webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/hydradition_box_mockup_render_FRUIT_PUNCH_NO_BG_SHADOW_2.webp","t":"hydraditionboxmockuprenderfruitpunchnobgshadow2webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/hydradition_box_mockup_render_LEMON_LIME_NO_BG_2.webp","t":"hydraditionboxmockuprenderlemonlimenobg2webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Copy_of_BLUE_RAS_HYDRATION_BOX_NO_BG_SHADOW_2.webp","t":"copyofbluerashydrationboxnobgshadow2webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/lemonlime-flavor_68_ecb713f6-36cf-48c5-ba22-1ff46b6172b8.png","t":"lemonlimeflavor68ecb713f636cf48c5ba221ff46b6172b8png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/blueraspberry-flavor_11_e2b6bf50-534f-40d8-b447-0fcfd7bb71c7.png","t":"blueraspberryflavor11e2b6bf50534f40d8b4470fcfd7bb71c7png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Hydration-FruitPunch-SFP_caab7919-8d83-4a83-afe1-c125531cc4ff.png","t":"hydrationfruitpunchsfpcaab79198d834a83afe1c125531cc4ffpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Hydration-LemonLime-SFP_bbbffac9-f5ad-43be-acf9-626c43cee1a6.png","t":"hydrationlemonlimesfpbbbffac9f5ad43beacf9626c43cee1a6png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Hydration-BlueRaspberry-SFP_71260293-6bb5-499c-b68e-122842e02b12.png","t":"hydrationblueraspberrysfp712602936bb5499cb68e122842e02b12png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -607,21 +608,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

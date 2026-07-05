@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -622,17 +622,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-ALLBLACKSANPBACK_1.jpg","t":"jesuswasamisfittooallblacksanpback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-ALLBLACKSANPBACK_2.jpg","t":"jesuswasamisfittooallblacksanpback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-ALLBLACKSANPBACK_4.jpg","t":"jesuswasamisfittooallblacksanpback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-ALLBLACKSANPBACK_3.jpg","t":"jesuswasamisfittooallblacksanpback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-ALLBLACKSANPBACK_5.jpg","t":"jesuswasamisfittooallblacksanpback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_1.jpg","t":"jesuswasamisfittoogreyfrontwoodlandbdubrimblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BLACKMULTICAMSNAPBACK_1.jpg","t":"jesuswasamisfittooblackmulticamsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_3.jpg","t":"jesuswasamisfittoogreyfrontwoodlandbdubrimblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BLACKMULTICAMSNAPBACK_3.jpg","t":"jesuswasamisfittooblackmulticamsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_6.jpg","t":"jesuswasamisfittoogreyfrontwoodlandbdubrimblackmeshsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BLACKMULTICAMSNAPBACK_4.jpg","t":"jesuswasamisfittooblackmulticamsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_2.jpg","t":"jesuswasamisfittoogreyfrontwoodlandbdubrimblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BLACKMULTICAMSNAPBACK_2.jpg","t":"jesuswasamisfittooblackmulticamsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_4.jpg","t":"jesuswasamisfittoogreyfrontwoodlandbdubrimblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BLACKMULTICAMSNAPBACK_5.jpg","t":"jesuswasamisfittooblackmulticamsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-GREYFRONT_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_5.jpg","t":"jesuswasamisfittoogreyfrontwoodlandbdubrimblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BDUBRIM_GRAY_BLACKMESHSNAPBACK-REVSOCLIFESTYLE_4.jpg","t":"jesuswasamisfittoobdubrimgrayblackmeshsnapbackrevsoclifestyle4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BDUBRIM_GRAY_BLACKMESHSNAPBACK-REVSOCLIFESTYLE_2.jpg","t":"jesuswasamisfittoobdubrimgrayblackmeshsnapbackrevsoclifestyle2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BDUBRIM_GRAY_BLACKMESHSNAPBACK-REVSOCLIFESTYLE_1.jpg","t":"jesuswasamisfittoobdubrimgrayblackmeshsnapbackrevsoclifestyle1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BDUBRIM_GRAY_BLACKMESHSNAPBACK-REVSOCLIFESTYLE_3.jpg","t":"jesuswasamisfittoobdubrimgrayblackmeshsnapbackrevsoclifestyle3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-MULTICAM_BLACKMESHSNAPBACK_1.jpg","t":"jesuswasamisfittoomulticamblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-MULTICAM_BLACKMESHSNAPBACK_2.jpg","t":"jesuswasamisfittoomulticamblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-MULTICAM_BLACKMESHSNAPBACK_4.jpg","t":"jesuswasamisfittoomulticamblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-MULTICAM_BLACKMESHSNAPBACK_3.jpg","t":"jesuswasamisfittoomulticamblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-MULTICAM_BLACKMESHSNAPBACK_5.jpg","t":"jesuswasamisfittoomulticamblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK_1.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK_2.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK_5.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK_4.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK_3.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK-LIFESTYLE_2.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapbacklifestyle2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK-LIFESTYLE_4.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapbacklifestyle4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK-LIFESTYLE_1.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapbacklifestyle1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK-LIFESTYLE_3.jpg","t":"jesuswasamisfittoorealtreecamoblackmeshsnapbacklifestyle3jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -648,21 +649,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -684,7 +689,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813889565042","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-ALLBLACKSANPBACK_1.jpg"},{"variant_id":"61813889597810","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-MULTICAM_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813889630578","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BLACKMULTICAMSNAPBACK_1.jpg"},{"variant_id":"61813889663346","key":"REALTREE ORIGINAL CAMO","title":"REALTREE ORIGINAL CAMO","sku":null,"optionValues":["REALTREE ORIGINAL CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"REALTREE ORIGINAL CAMO"}],"selected_options":{"COLOR":"REALTREE ORIGINAL CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813889696114","key":"BDU CAMO / BLACK / GRAY","title":"BDU CAMO / BLACK / GRAY","sku":null,"optionValues":["BDU CAMO / BLACK / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / BLACK / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / BLACK / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-ALLBLACKSANPBACK_1.jpg"}];
+        var variantPricing = [{"variant_id":"61813889565042","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-ALLBLACKSANPBACK_1.jpg"},{"variant_id":"61813889597810","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-MULTICAM_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813889630578","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BLACKMULTICAMSNAPBACK_1.jpg"},{"variant_id":"61813889663346","key":"REALTREE ORIGINAL CAMO","title":"REALTREE ORIGINAL CAMO","sku":null,"optionValues":["REALTREE ORIGINAL CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"REALTREE ORIGINAL CAMO"}],"selected_options":{"COLOR":"REALTREE ORIGINAL CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-REALTREECAMO_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813889696114","key":"BDU CAMO / BLACK / GRAY","title":"BDU CAMO / BLACK / GRAY","sku":null,"optionValues":["BDU CAMO / BLACK / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / BLACK / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / BLACK / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/JESUSWASAMISFITTOO-BDUBRIM_GRAY_BLACKMESHSNAPBACK-REVSOCLIFESTYLE_4.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

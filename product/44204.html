@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -605,17 +605,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/H_E60_s_a1884995-1cff-4738-9aac-1f0b08ee274b.png","t":"he60sa18849951cff47389aac1f0b08ee274bpng"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergyPDP_2000x2000px_2.jpg","t":"hairenergypdp2000x2000px2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergy-Shopify-Tile06.jpg","t":"hairenergyshopifytile06jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergy-Shopify-Tile04.jpg","t":"hairenergyshopifytile04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergy-Shopify-Tile02.jpg","t":"hairenergyshopifytile02jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergy-Shopify-Tile03.jpg","t":"hairenergyshopifytile03jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergy-Shopify-Tile05.jpg","t":"hairenergyshopifytile05jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/1_c8c913c3-77ed-49d4-961d-98752b2cd9a2.jpg","t":"1c8c913c377ed49d4961d98752b2cd9a2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/2_3c431d3e-9fcc-42b3-ac3d-4eae9d1f0ed4.jpg","t":"23c431d3e9fcc42b3ac3d4eae9d1f0ed4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/3_e651bd1b-fed5-497a-94f4-80c4537a9dbd.jpg","t":"3e651bd1bfed5497a94f480c4537a9dbdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/4_0741c9d3-3081-43b4-a914-208c7a1ddcef.jpg","t":"40741c9d3308143b4a914208c7a1ddcefjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/5_14a4c314-94fe-4515-a905-d19f6fc5e7d7.jpg","t":"514a4c31494fe4515a905d19f6fc5e7d7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/Hair_Energy_1_47e64718-fd43-4f6a-8c32-64961de9fa8f.jpg","t":"hairenergy147e64718fd434f6a8c3264961de9fa8fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/H_E30.png","t":"he30png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/H_ETwinpack.png","t":"hetwinpackpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -631,21 +632,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -667,7 +672,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"41240876908626","key":"Hair + Energy Formula - 2 Month Supply","title":"Hair + Energy Formula - 2 Month Supply","sku":null,"optionValues":["Hair + Energy Formula - 2 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"Hair + Energy Formula - 2 Month Supply"}],"selected_options":{"Size":"Hair + Energy Formula - 2 Month Supply"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergyPDP_2000x2000px_2.jpg"},{"variant_id":"41240876875858","key":"Hair + Energy Formula - 1 Month Supply","title":"Hair + Energy Formula - 1 Month Supply","sku":null,"optionValues":["Hair + Energy Formula - 1 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"Hair + Energy Formula - 1 Month Supply"}],"selected_options":{"Size":"Hair + Energy Formula - 1 Month Supply"},"price_cents":3999,"regular_price_cents":3999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergyPDP_2000x2000px_2.jpg"},{"variant_id":"41241073975378","key":"Hair + Energy Formula - 4 Month Supply","title":"Hair + Energy Formula - 4 Month Supply","sku":null,"optionValues":["Hair + Energy Formula - 4 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"Hair + Energy Formula - 4 Month Supply"}],"selected_options":{"Size":"Hair + Energy Formula - 4 Month Supply"},"price_cents":13499,"regular_price_cents":15999,"compare_at_cents":15999,"compare_at_price_cents":15999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/HairEnergyPDP_2000x2000px_2.jpg"},{"variant_id":"41240876941394","key":"1 Month Supply","title":"1 Month Supply","sku":null,"optionValues":["1 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"1 Month Supply"}],"selected_options":{"Size":"1 Month Supply"},"price_cents":3999,"regular_price_cents":3999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41240876974162","key":"3 Month Supply","title":"3 Month Supply","sku":null,"optionValues":["3 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"3 Month Supply"}],"selected_options":{"Size":"3 Month Supply"},"price_cents":11997,"regular_price_cents":11997,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41240877006930","key":"6 Month Supply","title":"6 Month Supply","sku":null,"optionValues":["6 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"6 Month Supply"}],"selected_options":{"Size":"6 Month Supply"},"price_cents":23994,"regular_price_cents":23994,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"41240876908626","key":"Hair + Energy Formula - 2 Month Supply","title":"Hair + Energy Formula - 2 Month Supply","sku":null,"optionValues":["Hair + Energy Formula - 2 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"Hair + Energy Formula - 2 Month Supply"}],"selected_options":{"Size":"Hair + Energy Formula - 2 Month Supply"},"price_cents":6999,"regular_price_cents":7999,"compare_at_cents":7999,"compare_at_price_cents":7999,"source_available":true,"available":true,"image_url":null},{"variant_id":"41240876875858","key":"Hair + Energy Formula - 1 Month Supply","title":"Hair + Energy Formula - 1 Month Supply","sku":null,"optionValues":["Hair + Energy Formula - 1 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"Hair + Energy Formula - 1 Month Supply"}],"selected_options":{"Size":"Hair + Energy Formula - 1 Month Supply"},"price_cents":3999,"regular_price_cents":3999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41241073975378","key":"Hair + Energy Formula - 4 Month Supply","title":"Hair + Energy Formula - 4 Month Supply","sku":null,"optionValues":["Hair + Energy Formula - 4 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"Hair + Energy Formula - 4 Month Supply"}],"selected_options":{"Size":"Hair + Energy Formula - 4 Month Supply"},"price_cents":13499,"regular_price_cents":15999,"compare_at_cents":15999,"compare_at_price_cents":15999,"source_available":true,"available":true,"image_url":null},{"variant_id":"41240876941394","key":"1 Month Supply","title":"1 Month Supply","sku":null,"optionValues":["1 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"1 Month Supply"}],"selected_options":{"Size":"1 Month Supply"},"price_cents":3999,"regular_price_cents":3999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41240876974162","key":"3 Month Supply","title":"3 Month Supply","sku":null,"optionValues":["3 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"3 Month Supply"}],"selected_options":{"Size":"3 Month Supply"},"price_cents":11997,"regular_price_cents":11997,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41240877006930","key":"6 Month Supply","title":"6 Month Supply","sku":null,"optionValues":["6 Month Supply"],"option_values":[{"position":1,"name":"Size","value":"6 Month Supply"}],"selected_options":{"Size":"6 Month Supply"},"price_cents":23994,"regular_price_cents":23994,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -602,17 +602,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03287.jpg","t":"cia03287jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/woodlandcamohatsideleo_b9fc385e-24b5-4700-92cc-c59d484a5bb9.jpg","t":"woodlandcamohatsideleob9fc385e24b5470092ccc59d484a5bb9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03290_c7d79c8e-4e32-4e0c-8a54-b8f66f449dda.jpg","t":"cia03290c7d79c8e4e324e0c8a54b8f66f449ddajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03308.jpg","t":"cia03308jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03306.jpg","t":"cia03306jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-ALLBLACKSNAPBACK_1.jpg","t":"supportyourlocallawenforcementallblacksnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLE-MULTICAMSNAPBACK_1.jpg","t":"supportyourlocallemulticamsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLE-MULTICAMSNAPBACK_4.jpg","t":"supportyourlocallemulticamsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLE-MULTICAMSNAPBACK_2.jpg","t":"supportyourlocallemulticamsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLE-MULTICAMSNAPBACK_5.jpg","t":"supportyourlocallemulticamsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLE-MULTICAMSNAPBACK_3.jpg","t":"supportyourlocallemulticamsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-ALLBLACKSNAPBACK_4.jpg","t":"supportyourlocallawenforcementallblacksnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-ALLBLACKSNAPBACK_2.jpg","t":"supportyourlocallawenforcementallblacksnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-ALLBLACKSNAPBACK_5.jpg","t":"supportyourlocallawenforcementallblacksnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-ALLBLACKSNAPBACK_3.jpg","t":"supportyourlocallawenforcementallblacksnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-WOODLANDBDU_WHITEMESHSNAPBACK_5_431f9185-2b0e-4f9b-8c41-80a7f79524f9.jpg","t":"supportyourlocallawenforcementwoodlandbduwhitemeshsnapback5431f91852b0e4f9b8c4180a7f79524f9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-MULTICAMBLACKSNAPBACK_1_dead5f32-5c6f-4765-b7df-463941ccf30f.jpg","t":"supportyourlocallawenforcementmulticamblacksnapback1dead5f325c6f4765b7df463941ccf30fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-MULTICAMBLACKSNAPBACK_4_f5544cb5-81a5-44ac-8efd-a8884e1a7c93.jpg","t":"supportyourlocallawenforcementmulticamblacksnapback4f5544cb581a544ac8efda8884e1a7c93jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-MULTICAMBLACKSNAPBACK_3_ab584ef8-af6c-4383-9297-550641a2c1dc.jpg","t":"supportyourlocallawenforcementmulticamblacksnapback3ab584ef8af6c43839297550641a2c1dcjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-MULTICAMBLACKSNAPBACK_5_1a3377a3-5d6d-40b5-a122-80f9f20a5452.jpg","t":"supportyourlocallawenforcementmulticamblacksnapback51a3377a35d6d40b5a12280f9f20a5452jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-MULTICAMBLACKSNAPBACK_2_e6ee8480-74e8-4d7a-860b-83454ba0688f.jpg","t":"supportyourlocallawenforcementmulticamblacksnapback2e6ee848074e84d7a860b83454ba0688fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-WOODLANDBDU_WHITEMESHSNAPBACK_1_61f6adcd-c4f6-47ba-b424-cdafa9c79252.jpg","t":"supportyourlocallawenforcementwoodlandbduwhitemeshsnapback161f6adcdc4f647bab424cdafa9c79252jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-WOODLANDBDU_WHITEMESHSNAPBACK_2_7a956501-eda7-4a37-817f-dd61435b9957.jpg","t":"supportyourlocallawenforcementwoodlandbduwhitemeshsnapback27a956501eda74a37817fdd61435b9957jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-WOODLANDBDU_WHITEMESHSNAPBACK_3_9a371709-1d2a-4f23-ae65-097c88ca27ee.jpg","t":"supportyourlocallawenforcementwoodlandbduwhitemeshsnapback39a3717091d2a4f23ae65097c88ca27eejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-WOODLANDBDU_WHITEMESHSNAPBACK_4_06d79d13-04db-457e-b203-15fa057782cc.jpg","t":"supportyourlocallawenforcementwoodlandbduwhitemeshsnapback406d79d1304db457eb20315fa057782ccjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -628,21 +629,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -664,7 +669,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813868659058","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-ALLBLACKSNAPBACK_1.jpg"},{"variant_id":"61813868691826","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/woodlandcamohatsideleo_b9fc385e-24b5-4700-92cc-c59d484a5bb9.jpg"},{"variant_id":"61813868724594","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-MULTICAMBLACKSNAPBACK_1_dead5f32-5c6f-4765-b7df-463941ccf30f.jpg"},{"variant_id":"61813868757362","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-ALLBLACKSNAPBACK_1.jpg"},{"variant_id":"61813868790130","key":"WOODLAND BDU CAMO / WHITE","title":"WOODLAND BDU CAMO / WHITE","sku":null,"optionValues":["WOODLAND BDU CAMO / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / WHITE"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/woodlandcamohatsideleo_b9fc385e-24b5-4700-92cc-c59d484a5bb9.jpg"}];
+        var variantPricing = [{"variant_id":"61813868659058","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-ALLBLACKSNAPBACK_1.jpg"},{"variant_id":"61813868691826","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/woodlandcamohatsideleo_b9fc385e-24b5-4700-92cc-c59d484a5bb9.jpg"},{"variant_id":"61813868724594","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-MULTICAMBLACKSNAPBACK_1_dead5f32-5c6f-4765-b7df-463941ccf30f.jpg"},{"variant_id":"61813868757362","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-MULTICAMBLACKSNAPBACK_1_dead5f32-5c6f-4765-b7df-463941ccf30f.jpg"},{"variant_id":"61813868790130","key":"WOODLAND BDU CAMO / WHITE","title":"WOODLAND BDU CAMO / WHITE","sku":null,"optionValues":["WOODLAND BDU CAMO / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / WHITE"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALLAWENFORCEMENT-WOODLANDBDU_WHITEMESHSNAPBACK_5_431f9185-2b0e-4f9b-8c41-80a7f79524f9.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

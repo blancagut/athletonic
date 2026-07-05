@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -556,17 +556,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/twilightpurple-leggings-hero.png","t":"twilightpurpleleggingsheropng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/omnitwilightpurple1_84c09c83-7c32-4452-87a4-51a72f84190a.png","t":"omnitwilightpurple184c09c837c32445287a451a72f84190apng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/omnitwilightpurple2_b8f024b3-b4cf-4cb0-ac0e-cd7adb61cf52.png","t":"omnitwilightpurple2b8f024b3b4cf4cb0ac0ecd7adb61cf52png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/twilightpurple-leggings-fulllength.png","t":"twilightpurpleleggingsfulllengthpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/twilightpurple-leggings-capri_84f19038-04f4-49d4-95db-9ddb032b1ee1.png","t":"twilightpurpleleggingscapri84f1903804f449d495db9ddb032b1ee1png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/isley-omni-twilightpurple_ac54b7fc-6fc4-4c00-8a86-841cba77cf51.png","t":"isleyomnitwilightpurpleac54b7fc6fc44c008a86841cba77cf51png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/midori-omni-twilightpurple_b99f4646-0d02-4beb-a8c6-b8732437c747.png","t":"midoriomnitwilightpurpleb99f46460d024beba8c6b8732437c747png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/twilightpurple-leggings-phone.png","t":"twilightpurpleleggingsphonepng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/legging_available_lengths_1000x1300_96426288-3c97-493e-9f15-0609e7bd6deb.png","t":"leggingavailablelengths1000x1300964262883c97493e9f150609e7bd6debpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/twilightpurple-cuffeddetailing_436e40a6-6be3-4eb1-8aeb-f20f87a4a267.png","t":"twilightpurplecuffeddetailing436e40a66be34eb18aebf20f87a4a267png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/twilightpurple-leggings-back.png","t":"twilightpurpleleggingsbackpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -582,21 +583,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

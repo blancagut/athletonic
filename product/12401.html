@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -608,17 +608,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshit.jpg","t":"takenoshitjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitside_5f554f06-ac2f-4bb2-b765-ca07e261df6c.jpg","t":"takenoshitside5f554f06ac2f4bb2b765ca07e261df6cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/gtakenoshit_ea5dc8b6-9365-40e6-8a40-77a74f0325f0.jpg","t":"gtakenoshitjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitside2.jpg","t":"takenoshitside2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitcamosidejj_32e3b0c1-a5fc-4243-88ef-d298a8a17750.jpg","t":"takenoshitcamosidejjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitcamoside.jpg","t":"takenoshitcamosidejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09584_1_dfc9791d-601d-4a9d-99bb-3b64cc133b6a.jpg","t":"cia09584146e5853ea2954f9dbb42e127a2e2b1cejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitsideyuel_7c8038ce-4db7-4fcf-8282-6778d9377216.jpg","t":"takenoshitsideyueljpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitkellygreen_a0237d40-44e3-4e3a-b749-df985ca8e243.jpg","t":"takenoshitkellygreenjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitkelly.jpg","t":"takenoshitkellyjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00085_1_89dcf622-05f4-4534-a296-94f8c77f97f9.jpg","t":"cia00085189dcf62205f44534a29694f8c77f97f9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00082_1_4632a2e8-06ac-436e-a456-8ad52a5738ab.jpg","t":"cia000821jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00084_1_9e29e69f-9752-42fe-a096-25cf8efdd809.jpg","t":"cia0008419e29e69f975242fea09625cf8efdd809jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitgrayfront.jpg","t":"takenoshitgrayfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09585_1.jpg","t":"cia095851jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitsidegray_5ccfa711-ef14-4fa6-a081-89ac6ddf30e7.jpg","t":"takenoshitsidegray5ccfa711ef144fa6a08189ac6ddf30e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09581_1.jpg","t":"cia095811jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/blkwhitetakenoshitsid.jpg","t":"blkwhitetakenoshitsidjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitprintfileside2.jpg","t":"takenoshitprintfileside2jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -634,21 +635,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -598,17 +598,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-01.png","t":"silkbuybox01png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-02.jpg","t":"silkbuybox02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-03.jpg","t":"silkbuybox03jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-04.jpg","t":"silkbuybox04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-05.jpg","t":"silkbuybox05jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-06.jpg","t":"silkbuybox06jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-07.jpg","t":"silkbuybox07jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-08.jpg","t":"silkbuybox08jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-09.jpg","t":"silkbuybox09jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-10.jpg","t":"silkbuybox10jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-11.jpg","t":"silkbuybox11jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-12_bd3b0c61-fe16-4f07-9b71-30d2d5795ff6.jpg","t":"silkbuybox12bd3b0c61fe164f079b7130d2d5795ff6jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-13.jpg","t":"silkbuybox13jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-14.jpg","t":"silkbuybox14jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-15.jpg","t":"silkbuybox15jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-16_7a10f212-5a57-48c8-910f-3f490cc71757.jpg","t":"silkbuybox167a10f2125a5748c8910f3f490cc71757jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-17.jpg","t":"silkbuybox17jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-18.jpg","t":"silkbuybox18jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-19.jpg","t":"silkbuybox19jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-20.jpg","t":"silkbuybox20jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-21.jpg","t":"silkbuybox21jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/Testimonial-Thumbnails-5.jpg","t":"testimonialthumbnails5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-1_1.png","t":"silkpbuybox11png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-2_1_c9cd2b24-a15a-4fa0-ad7e-dc355ea36a17.jpg","t":"silkpbuybox21c9cd2b24a15a4fa0ad7edc355ea36a17jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK---Video-1---Edited.jpg","t":"silkvideo1editedjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-3_1_ceb31acf-b1c7-443f-80ef-f6787ca1fe94.jpg","t":"silkpbuybox31ceb31acfb1c7443f80eff6787ca1fe94jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK---Video-2.jpg","t":"silkvideo2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-4_1_7800817b-2c16-45d2-81ae-1213a5da40d8.jpg","t":"silkpbuybox417800817b2c1645d281ae1213a5da40d8jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/MantaSM-Video-3.jpg","t":"mantasmvideo3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-5_1_8dc4469c-1776-493f-b811-900518f1287c.jpg","t":"silkpbuybox518dc4469c1776493fb811900518f1287cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-6_1_f186b465-05b0-4d00-93e4-55fef1847ae1.jpg","t":"silkpbuybox61f186b46505b04d0093e455fef1847ae1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-7_1_f1f9eaef-982b-4dc2-8a84-5513cf28d138.jpg","t":"silkpbuybox71f1f9eaef982b4dc28a845513cf28d138jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-8_1_79734595-7f31-4a26-ac73-f8ffe47e95e5.jpg","t":"silkpbuybox81797345957f314a26ac73f8ffe47e95e5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-9_1_2be3833c-a7dd-44ab-83a6-6cc0f62ff810.jpg","t":"silkpbuybox912be3833ca7dd44ab83a66cc0f62ff810jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-10_1_4e0078a3-abc9-4292-ab0f-62c6ba3908ad.jpg","t":"silkpbuybox1014e0078a3abc94292ab0f62c6ba3908adjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-11_1_2c53db16-fdc0-49d7-a9cc-722f541f9a2e.jpg","t":"silkpbuybox1112c53db16fdc049d7a9cc722f541f9a2ejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-12_f95960bd-1f1c-42e7-a6dc-a5b124d5bb05.jpg","t":"silkpbuybox12f95960bd1f1c42e7a6dca5b124d5bb05jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-13_1_009e6462-5154-4677-a6f0-7c4875d0d5a2.jpg","t":"silkpbuybox131009e646251544677a6f07c4875d0d5a2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-14_1_1b2f4831-2a59-4f1a-952c-f1b098b02c67.jpg","t":"silkpbuybox1411b2f48312a594f1a952cf1b098b02c67jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -624,21 +625,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

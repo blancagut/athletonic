@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -557,17 +557,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_4.jpg","t":"mrertdpdp4jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_5.jpg","t":"mrertdpdp5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_TWINKIE_3_3x-8_646d598f-bfd6-4ca9-ac99-605a5591b05c.png","t":"mrertdpdptwinkie33x8646d598fbfd64ca9ac99605a5591b05cpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_TWINKIE_6_3x-8_a7258eb3-96c3-4508-b611-352e67cfa30f.png","t":"mrertdpdptwinkie63x8a7258eb396c34508b611352e67cfa30fpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/hostess-mre-rtd-twinkies.png","t":"hostessmrertdtwinkiespng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_TWINKIE_7_3x-8_9a2f6c5c-f4d1-43fa-b04c-2318175779dc.png","t":"mrertdpdptwinkie73x89a2f6c5cf4d143fab04c2318175779dcpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_TWINKIE_2_3x-8_3a935214-0cad-4cdb-8ac9-5411abd48907.png","t":"mrertdpdptwinkie23x83a9352140cad4cdb8ac95411abd48907png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_CUPCAKES_1_3x-8_951554b5-e6a1-4844-85d2-ecb73b57c47d.png","t":"mrertdpdpcupcakes13x8951554b5e6a1484485d2ecb73b57c47dpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_CUPCAKES_2_3x-8_e75121ae-20cd-441b-9919-e21e069e7b6e.png","t":"mrertdpdpcupcakes23x8e75121ae20cd441b9919e21e069e7b6epng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-RTD-PEP-BOX-STRAWBERRY_704bd49a-b1db-4728-b3d2-4f4dd5e508de.png","t":"mrertdpepboxstrawberry704bd49ab1db4728b3d24f4dd5e508depng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/STRAWBERRY_SHORTCAKE.jpg","t":"strawberryshortcakejpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-RTD-PEP-BOX-C_C_copy_4cb0d30b-d076-4f65-992e-966819e7e24c.png","t":"mrertdpepboxcccopy4cb0d30bd0764f65992e966819e7e24cpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/C_C_fe7310a8-7edb-4bbe-a552-99a4f8d805f4.jpg","t":"ccfe7310a87edb4bbea55299a4f8d805f4jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-RTD-PEP-BOX-CHOCOLATE_24c127d2-c0b6-4e3d-8877-50ffceb20e12.png","t":"mrertdpepboxchocolate24c127d2c0b64e3d887750ffceb20e12png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MILK_CHOCOLATE.jpg","t":"milkchocolatejpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-RTD-PEP-BOX-VANILLA.png","t":"mrertdpepboxvanillapng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/VANILLA.jpg","t":"vanillajpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -583,21 +584,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -619,7 +624,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"42710921707568","key":"Hostess™ Twinkies","title":"Hostess™ Twinkies","sku":null,"optionValues":["Hostess™ Twinkies"],"option_values":[{"position":1,"name":"Flavor","value":"Hostess™ Twinkies"}],"selected_options":{"Flavor":"Hostess™ Twinkies"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":4999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_RTD_PDP_TWINKIE_3_3x-8_646d598f-bfd6-4ca9-ac99-605a5591b05c.png"},{"variant_id":"42710921740336","key":"Hostess™ Cupcakes","title":"Hostess™ Cupcakes","sku":null,"optionValues":["Hostess™ Cupcakes"],"option_values":[{"position":1,"name":"Flavor","value":"Hostess™ Cupcakes"}],"selected_options":{"Flavor":"Hostess™ Cupcakes"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":4999,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/hostess-mre-rtd-twinkies.png"},{"variant_id":"41329818533936","key":"Vanilla Milkshake","title":"Vanilla Milkshake","sku":null,"optionValues":["Vanilla Milkshake"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Milkshake"}],"selected_options":{"Flavor":"Vanilla Milkshake"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-RTD-PEP-BOX-VANILLA.png"},{"variant_id":"41284984242224","key":"Strawberry Shortcake","title":"Strawberry Shortcake","sku":null,"optionValues":["Strawberry Shortcake"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Shortcake"}],"selected_options":{"Flavor":"Strawberry Shortcake"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/STRAWBERRY_SHORTCAKE.jpg"},{"variant_id":"41287249002544","key":"Milk Chocolate","title":"Milk Chocolate","sku":null,"optionValues":["Milk Chocolate"],"option_values":[{"position":1,"name":"Flavor","value":"Milk Chocolate"}],"selected_options":{"Flavor":"Milk Chocolate"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MILK_CHOCOLATE.jpg"},{"variant_id":"41329821876272","key":"Cookies N Cream","title":"Cookies N Cream","sku":null,"optionValues":["Cookies N Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Cookies N Cream"}],"selected_options":{"Flavor":"Cookies N Cream"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":4999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"42710921707568","key":"Hostess™ Twinkies","title":"Hostess™ Twinkies","sku":null,"optionValues":["Hostess™ Twinkies"],"option_values":[{"position":1,"name":"Flavor","value":"Hostess™ Twinkies"}],"selected_options":{"Flavor":"Hostess™ Twinkies"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":4999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/hostess-mre-rtd-twinkies.png"},{"variant_id":"42710921740336","key":"Hostess™ Cupcakes","title":"Hostess™ Cupcakes","sku":null,"optionValues":["Hostess™ Cupcakes"],"option_values":[{"position":1,"name":"Flavor","value":"Hostess™ Cupcakes"}],"selected_options":{"Flavor":"Hostess™ Cupcakes"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":4999,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/hostess-mre-rtd-twinkies.png"},{"variant_id":"41329818533936","key":"Vanilla Milkshake","title":"Vanilla Milkshake","sku":null,"optionValues":["Vanilla Milkshake"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Milkshake"}],"selected_options":{"Flavor":"Vanilla Milkshake"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-RTD-PEP-BOX-VANILLA.png"},{"variant_id":"41284984242224","key":"Strawberry Shortcake","title":"Strawberry Shortcake","sku":null,"optionValues":["Strawberry Shortcake"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Shortcake"}],"selected_options":{"Flavor":"Strawberry Shortcake"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/STRAWBERRY_SHORTCAKE.jpg"},{"variant_id":"41287249002544","key":"Milk Chocolate","title":"Milk Chocolate","sku":null,"optionValues":["Milk Chocolate"],"option_values":[{"position":1,"name":"Flavor","value":"Milk Chocolate"}],"selected_options":{"Flavor":"Milk Chocolate"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MILK_CHOCOLATE.jpg"},{"variant_id":"41329821876272","key":"Cookies N Cream","title":"Cookies N Cream","sku":null,"optionValues":["Cookies N Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Cookies N Cream"}],"selected_options":{"Flavor":"Cookies N Cream"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":4999,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

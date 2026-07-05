@@ -104,6 +104,33 @@ const imagePenaltyFragments = [
 
 const blockedImageFragments = ["no-image", "placeholder", "missing-image"];
 
+const twinsColorTokens = [
+  "black",
+  "white",
+  "blue",
+  "red",
+  "green",
+  "pink",
+  "yellow",
+  "orange",
+  "purple",
+  "grey",
+  "gray",
+  "navy",
+  "gold",
+  "silver",
+  "brown",
+  "maroon",
+  "olive",
+  "copper",
+  "light blue",
+  "dark red",
+  "dark brown",
+  "dark green",
+  "light pink",
+  "light yellow",
+];
+
 const displayOnlyFragments = [
   "front",
   "hero",
@@ -113,6 +140,109 @@ const displayOnlyFragments = [
   "thumbnail",
   "plp",
 ];
+
+function isTwinsSpecialBrand(value) {
+  const brand = String(value || "")
+    .trim()
+    .toLowerCase();
+  return brand === "twins_special" || brand === "twins special";
+}
+
+function twinsSpecialPricingRule(productLike) {
+  const brand = productLike?.brand_slug || productLike?.brand;
+  if (!isTwinsSpecialBrand(brand)) return null;
+
+  const text = [
+    productLike?.name,
+    productLike?.category,
+    productLike?.category_text,
+    productLike?.section_title,
+    productLike?.url,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!text) return null;
+
+  if (/\bshin ?guards?\b|\bshinguards?\b|\bshin pads?\b/.test(text)) {
+    return { price_cents: 11000, compare_at_price_cents: null };
+  }
+
+  if (/\bhead ?gear\b|\bheadgear\b|\bhead ?guards?\b|\bheadguards?\b/.test(text)) {
+    const colorHits = twinsColorTokens.filter((token) => text.includes(token)).length;
+    const dualColor = /\bdual\b|\btwo color\b|\b2 color\b/.test(text) || colorHits >= 2;
+    return {
+      price_cents: dualColor ? 12000 : 11000,
+      compare_at_price_cents: null,
+    };
+  }
+
+  if (!/\bgloves?\b/.test(text)) return null;
+
+  if (/\blaceup\b|\blace up\b|\blace up\b|\blace\b/.test(text)) {
+    return { price_cents: 9900, compare_at_price_cents: null };
+  }
+  if (/\b2025 special edition\b/.test(text)) {
+    return { price_cents: 15000, compare_at_price_cents: null };
+  }
+  if (/\bangle color\b/.test(text) && /\bvelcro\b/.test(text) && /\b8\b/.test(text)) {
+    return { price_cents: 13000, compare_at_price_cents: null };
+  }
+  if (/\bdual color\b/.test(text) && /\bair palm\b/.test(text) && /\bvelcro\b/.test(text)) {
+    return { price_cents: 14000, compare_at_price_cents: null };
+  }
+  if (/\bdual color\b/.test(text) && /\bvelcro\b/.test(text) && /\b7\b/.test(text)) {
+    return { price_cents: 12000, compare_at_price_cents: null };
+  }
+  if (/\bair velcro\b/.test(text) && /\bpremium leather\b/.test(text)) {
+    return { price_cents: 19900, compare_at_price_cents: null };
+  }
+  if (/\bdual bold colors?\b/.test(text) && /\bpremium leather\b/.test(text) && /\bvelcro\b/.test(text)) {
+    return { price_cents: 19900, compare_at_price_cents: null };
+  }
+  if (
+    /\bpremium leather\b/.test(text) &&
+    /\bvelcro\b/.test(text) &&
+    !/\bdual\b|\bair\b|\b2025\b|\bangle\b|\bdagger\b|\bthumb\b|\bbold colors?\b|\bdark colors?\b|\blight colors?\b/.test(text)
+  ) {
+    return { price_cents: 9500, compare_at_price_cents: 11500 };
+  }
+
+  return { price_cents: 11900, compare_at_price_cents: null };
+}
+
+function applyTwinsSpecialPricing(record) {
+  const rule = twinsSpecialPricingRule(record);
+  if (!rule) return record;
+  const priceCents = Number(rule.price_cents) || 0;
+  const compareAtCents = Number(rule.compare_at_price_cents) || 0;
+  const compareAt = compareAtCents > priceCents ? compareAtCents : null;
+  const next = {
+    ...record,
+    price_cents: priceCents,
+    compare_at_price_cents: compareAt,
+    deal: null,
+  };
+  if (Object.prototype.hasOwnProperty.call(record || {}, "price_min_cents")) {
+    next.price_min_cents = priceCents;
+  }
+  if (Object.prototype.hasOwnProperty.call(record || {}, "price_max_cents")) {
+    next.price_max_cents = priceCents;
+  }
+  if (Array.isArray(record?.variants)) {
+    next.variants = record.variants.map((variant) => ({
+      ...variant,
+      price_cents: priceCents,
+      regular_price_cents: compareAt || priceCents,
+      compare_at_price_cents: compareAt,
+    }));
+  }
+  return next;
+}
 
 const combatGloveBrands = new Set([
   "boon",
@@ -1904,7 +2034,7 @@ function normalizedCatalogProductRecord(product, fullRow, imageList = [], varian
     ? Math.max(...variantPriceCents)
     : storefrontPriceCents;
 
-  return {
+  return applyTwinsSpecialPricing({
     id: String(product.id),
     brand_slug: product.brand,
     brand: brandNames[product.brand] ?? product.brand,
@@ -1950,7 +2080,7 @@ function normalizedCatalogProductRecord(product, fullRow, imageList = [], varian
           reason: product.deal.reason,
         }
       : null,
-  };
+  });
 }
 
 // When the storefront advertises a manual/scheduled offer price (record.deal),
@@ -1986,7 +2116,7 @@ function checkoutCatalogRecordWithOffer(record, catalogRecord) {
 function externalCatalogProductRecord(record) {
   const variants = officialCatalogVariantRecords(record);
   const defaultVariant = variants[0] || null;
-  return {
+  return applyTwinsSpecialPricing({
     id: String(record.id),
     brand_slug: record.brand_slug,
     brand: record.brand,
@@ -2015,7 +2145,7 @@ function externalCatalogProductRecord(record) {
     search: record.search,
     variants,
     deal: null,
-  };
+  });
 }
 
 function purchaseMetaByProductId(productIds) {
@@ -2667,6 +2797,7 @@ function loadOfficialCatalogSearchRecords() {
     { brandSlug: "topking", file: new URL("../data/topking-products.json", import.meta.url) },
     { brandSlug: "yokkao", file: new URL("../data/yokkao-products.json", import.meta.url) },
     { brandSlug: "primo", file: new URL("../data/primo-products.json", import.meta.url) },
+    { brandSlug: "twins_special", file: new URL("../data/twins-special-shinguards.json", import.meta.url) },
   ];
   const records = [];
   for (const source of sources) {
@@ -2699,7 +2830,7 @@ function loadOfficialCatalogSearchRecords() {
         sku: product?.sku || null,
       };
       const variantCount = officialCatalogVariantRecords(draftRecord).length;
-      records.push({
+      records.push(applyTwinsSpecialPricing({
         id,
         name,
         brand: brandLabel,
@@ -2726,7 +2857,7 @@ function loadOfficialCatalogSearchRecords() {
         has_pdp: true,
         external_only: false,
         requires_variant_selection: variantCount > 1,
-      });
+      }));
     }
   }
   return records;
@@ -3121,7 +3252,7 @@ function buildSearchIndex() {
     // catalogCardHtml always links on-site instead of the external brand url.
     record.has_pdp = true;
     seenProductUrls.add(normalizedUrl);
-    records.push(record);
+    records.push(applyTwinsSpecialPricing(record));
   }
   for (const record of officialCatalogSearchRecords) {
     if (records.length >= MAX_RECORDS) break;

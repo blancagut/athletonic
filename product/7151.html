@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -595,17 +595,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26875_NutraBio_Ashwaghanda_60Caps_Front.png","t":"26875nutrabioashwaghanda60capsfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26876_NutraBio_Ashwaghanda_90Caps_Front.png","t":"26876nutrabioashwaghanda90capsfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26875_1.png","t":"268751png"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26876_1.png","t":"268761png"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/products/fourth-img_082bc7f6-f1c1-4ed8-90da-4e046fcf80ca.jpg","t":"fourthimg082bc7f6f1c14ed890da4e046fcf80cajpg"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/products/third-img_12899dec-0453-44ad-a1e5-8e31be391ef8.jpg","t":"thirdimg12899dec045344ada1e58e31be391ef8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26875_abe54ab3-858a-478c-8b84-bb905ec4d6d6.png","t":"26875abe54ab3858a478c8b84bb905ec4d6d6png"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26876_4104e605-eebf-4ef8-a4c8-9711b712d338.png","t":"268764104e605eebf4ef8a4c89711b712d338png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -621,21 +622,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -559,17 +559,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/00d9db34-1ee6-4a0f-b2f4-d404abd87d89/pegasus-premium-mens-road-running-shoes-kWXqW9yR.png","t":"nikepegasuspremiummensroadrunningshoespegasuspremiummensroadrunningshoeskwxqw9yrpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7fd2d102-041a-4da9-884b-67a3a4d85781/pegasus-premium-mens-road-running-shoes-kWXqW9yR.png","t":"nikepegasuspremiummensroadrunningshoespegasuspremiummensroadrunningshoeskwxqw9yrpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/30eed4ee-0e17-43ab-abb0-129519209e63/pegasus-premium-mens-road-running-shoes-kWXqW9yR.png","t":"nikepegasuspremiummensroadrunningshoespegasuspremiummensroadrunningshoeskwxqw9yrpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/1631316e-54c9-40be-a353-82c2de83cedc/pegasus-premium-mens-road-running-shoes-kWXqW9yR.png","t":"nikepegasuspremiummensroadrunningshoespegasuspremiummensroadrunningshoeskwxqw9yrpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4762842a-7ee8-4ccd-9e07-1a9172d91677/pegasus-premium-mens-road-running-shoes-kWXqW9yR.png","t":"nikepegasuspremiummensroadrunningshoespegasuspremiummensroadrunningshoeskwxqw9yrpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6627abcf-0e9b-491f-90ef-66ac367370c6/pegasus-premium-mens-road-running-shoes-kWXqW9yR.png","t":"nikepegasuspremiummensroadrunningshoespegasuspremiummensroadrunningshoeskwxqw9yrpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/719f06e8-7da5-4d09-9327-c2df8cddaad9/pegasus-premium-mens-road-running-shoes-kWXqW9yR.png","t":"nikepegasuspremiummensroadrunningshoespegasuspremiummensroadrunningshoeskwxqw9yrpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/31ff90da-6187-4f6a-a63d-d64a48ea7560/pegasus-premium-mens-road-running-shoes-kWXqW9yR.png","t":"nikepegasuspremiummensroadrunningshoespegasuspremiummensroadrunningshoeskwxqw9yrpng"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/12fb497e-7bac-486f-a5e2-e8856fc8748c/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/84fbb2b0-4eee-4dab-9c9c-7b61f1178204/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod_ps/w_1536,c_limit/37019b4c-7868-466b-80e4-0d563e87eb5f/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod_ps/w_1536,c_limit/18cfa212-c2a2-438c-8807-76d41d2f1ccc/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_960,c_limit/3e0b3d63-f7c4-4b25-84a8-fbd8ac654443/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/5dc964ce-cc75-4986-bb4f-b3879a712315/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/62246924-bb29-40d0-b20a-836227924278/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/df3680e9-3b7b-47aa-b84d-31d264e674a9/image.jpg","t":"imagejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -585,21 +586,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

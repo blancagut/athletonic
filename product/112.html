@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -581,17 +581,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_CycleanPM_1500x1500_14bba0aa-4bcf-4cc4-89b7-7cd812a63581.png","t":"gmherocycleanpm1500x150014bba0aa4bcf4cc489b77cd812a63581png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_CycleanPM_HowToUse_1500x1500_2b986c34-0144-4d6e-bb41-2c3579a4aebb.png","t":"gmthumbscycleanpmhowtouse1500x15002b986c3401444d6ebb412c3579a4aebbpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_SFP_CycleanPM_1500x1500_51460499-7301-4d22-b863-76cf47e4b3ab.png","t":"gmsfpcycleanpm1500x15005146049973014d22b86376cf47e4b3abpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_CycleanPM_KeyCallouts_1500x1500_ab81a57e-8d08-4617-8f29-8b6b71f8ced4.png","t":"gmthumbscycleanpmkeycallouts1500x1500ab81a57e8d0846178f298b6b71f8ced4png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -607,21 +608,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -594,17 +594,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-01_c7a0eda4-18f5-43ac-a633-e27c8abd4682.png","t":"silkbuybox01c7a0eda418f543aca633e27c8abd4682png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-02_a5e5486e-51ee-4920-8f3e-316a128ecf41.jpg","t":"silkbuybox02a5e5486e51ee49208f3e316a128ecf41jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-03_5885cbf1-800f-4ad0-9aab-8eb62067c441.jpg","t":"silkbuybox035885cbf1800f4ad09aab8eb62067c441jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-04_ffd3496a-864f-4942-8b4c-0852d9eed82c.jpg","t":"silkbuybox04ffd3496a864f49428b4c0852d9eed82cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-05_9602142a-6879-4ef5-9f1b-18df624154f3.jpg","t":"silkbuybox059602142a68794ef59f1b18df624154f3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-06_5a8e96b4-0776-4995-9503-6d4c039f5daf.jpg","t":"silkbuybox065a8e96b40776499595036d4c039f5dafjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-07_d5c1c733-79d2-4cf7-9c84-94bdcb87b446.jpg","t":"silkbuybox07d5c1c73379d24cf79c8494bdcb87b446jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-08_4bf67b8b-6e8a-4c2c-a1d6-25c197f01420.jpg","t":"silkbuybox084bf67b8b6e8a4c2ca1d625c197f01420jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-09_11cb8c7e-a511-4851-a2d0-0989222e8e57.jpg","t":"silkbuybox0911cb8c7ea5114851a2d00989222e8e57jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-10_8eaaea3e-0f9a-478a-b9ab-d0b77ed97d54.jpg","t":"silkbuybox108eaaea3e0f9a478ab9abd0b77ed97d54jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-11_7587af93-b4f1-4f5c-a3d5-7b5e4651b435.jpg","t":"silkbuybox117587af93b4f14f5ca3d57b5e4651b435jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-12_aa8d5688-fb72-42d4-8080-66e425b30ab5.jpg","t":"silkbuybox12aa8d5688fb7242d4808066e425b30ab5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-13_68d0052e-b444-4c7f-a5b0-7b07ba2ecab0.jpg","t":"silkbuybox1368d0052eb4444c7fa5b07b07ba2ecab0jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-14_5bba7242-b89f-49fd-837f-306e3011798d.jpg","t":"silkbuybox145bba7242b89f49fd837f306e3011798djpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-15_126dc46e-402e-4016-b99c-3d12f5003abc.jpg","t":"silkbuybox15126dc46e402e4016b99c3d12f5003abcjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-16_5d5016bb-a654-4cc3-87c3-de59b63a149c.jpg","t":"silkbuybox165d5016bba6544cc387c3de59b63a149cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-17_aafec345-a9be-4275-ab5c-3aba706b8001.jpg","t":"silkbuybox17aafec345a9be4275ab5c3aba706b8001jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-18_870974f8-9270-4a86-a501-a09393ee20cf.jpg","t":"silkbuybox18870974f892704a86a501a09393ee20cfjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-19_881a3935-9862-40a1-bfd8-a4c1f8299597.jpg","t":"silkbuybox19881a3935986240a1bfd8a4c1f8299597jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-20_32e7711e-4b98-4d05-a8ff-63038c531c6b.jpg","t":"silkbuybox2032e7711e4b984d05a8ff63038c531c6bjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SILK-Buy-Box-21_3e532008-5bc5-4bbd-8959-da47df8e9327.jpg","t":"silkbuybox213e5320085bc54bbd8959da47df8e9327jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-1_1_8099f7d5-fb0c-4f26-8be9-7402d4b35f3d.png","t":"silkpbuybox118099f7d5fb0c4f268be97402d4b35f3dpng"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-2_1_334c7abe-1e44-443d-9036-39aa288d1fb4.jpg","t":"silkpbuybox21334c7abe1e44443d903639aa288d1fb4jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-3_1_2452a374-349d-4768-a7eb-7b1e11f39ddc.jpg","t":"silkpbuybox312452a374349d4768a7eb7b1e11f39ddcjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-4_1_be5bbc8d-0a24-43f5-b547-2b90ac525436.jpg","t":"silkpbuybox41be5bbc8d0a2443f5b5472b90ac525436jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-5_1_cb856ac2-37af-4990-98cf-067ea973a3fe.jpg","t":"silkpbuybox51cb856ac237af499098cf067ea973a3fejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-6_1_9d2b9f45-8aff-44ca-a406-6198835adbde.jpg","t":"silkpbuybox619d2b9f458aff44caa4066198835adbdejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-7_1_94cbfc47-2ee7-43db-966f-429bccb45feb.jpg","t":"silkpbuybox7194cbfc472ee743db966f429bccb45febjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-8_1_49eeb2e5-4513-4243-beb1-9dca76a7eaaa.jpg","t":"silkpbuybox8149eeb2e545134243beb19dca76a7eaaajpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-9_1_da187e80-c450-449a-a83d-045c5417114e.jpg","t":"silkpbuybox91da187e80c450449aa83d045c5417114ejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-10_1_4e42e34e-969b-451c-9022-3bf0374ed304.jpg","t":"silkpbuybox1014e42e34e969b451c90223bf0374ed304jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-11_1_09a74dcb-8482-4f0c-8bde-c762d044470b.jpg","t":"silkpbuybox11109a74dcb84824f0c8bdec762d044470bjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-12_fedc67ad-25cb-45d1-a824-71ae2704a11b.jpg","t":"silkpbuybox12fedc67ad25cb45d1a82471ae2704a11bjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-13_1_24667d53-dac8-426d-a19d-900d9924d0cb.jpg","t":"silkpbuybox13124667d53dac8426da19d900d9924d0cbjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/SilkP-Buybox-14_1_003e6434-6eb5-48a1-b695-816b253785c9.jpg","t":"silkpbuybox141003e64346eb548a1b695816b253785c9jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -620,21 +621,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

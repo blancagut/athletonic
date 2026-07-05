@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -587,17 +587,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nightshred-front_7a88b9aa-162f-4a69-922f-5b27d0326501.webp","t":"nightshredfront7a88b9aa162f4a69922f5b27d0326501webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-black-s1_a3d4ed95-324c-474c-9d62-e57072cf09bb.png","t":"nightshredblacks1a3d4ed95324c474c9d62e57072cf09bbpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-2_b1e96411-25a6-4310-9da2-4a2254da5332.png","t":"nightshred2b1e9641125a643109da24a2254da5332png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-3_54ffd7f0-81e3-458f-8506-c87881e77390.png","t":"nightshred354ffd7f081e3458f8506c87881e77390png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -613,21 +614,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -649,7 +654,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"43391046549640","key":"Night Shred","title":"Night Shred","sku":null,"optionValues":["Night Shred"],"option_values":[{"position":1,"name":"Type","value":"Night Shred"}],"selected_options":{"Type":"Night Shred"},"price_cents":4499,"regular_price_cents":6499,"compare_at_cents":6499,"compare_at_price_cents":6499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nightshred-front_7a88b9aa-162f-4a69-922f-5b27d0326501.webp"},{"variant_id":"43391046582408","key":"Night Shred Black","title":"Night Shred Black","sku":null,"optionValues":["Night Shred Black"],"option_values":[{"position":1,"name":"Type","value":"Night Shred Black"}],"selected_options":{"Type":"Night Shred Black"},"price_cents":5999,"regular_price_cents":6499,"compare_at_cents":6499,"compare_at_price_cents":6499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-black-s1_a3d4ed95-324c-474c-9d62-e57072cf09bb.png"},{"variant_id":"43391046615176","key":"Night Shred Black Melatonin Free","title":"Night Shred Black Melatonin Free","sku":null,"optionValues":["Night Shred Black Melatonin Free"],"option_values":[{"position":1,"name":"Type","value":"Night Shred Black Melatonin Free"}],"selected_options":{"Type":"Night Shred Black Melatonin Free"},"price_cents":5999,"regular_price_cents":6499,"compare_at_cents":6499,"compare_at_price_cents":6499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nightshred-front_7a88b9aa-162f-4a69-922f-5b27d0326501.webp"}];
+        var variantPricing = [{"variant_id":"43391046549640","key":"Night Shred","title":"Night Shred","sku":null,"optionValues":["Night Shred"],"option_values":[{"position":1,"name":"Type","value":"Night Shred"}],"selected_options":{"Type":"Night Shred"},"price_cents":4499,"regular_price_cents":6499,"compare_at_cents":6499,"compare_at_price_cents":6499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/nightshred-front_7a88b9aa-162f-4a69-922f-5b27d0326501.webp"},{"variant_id":"43391046582408","key":"Night Shred Black","title":"Night Shred Black","sku":null,"optionValues":["Night Shred Black"],"option_values":[{"position":1,"name":"Type","value":"Night Shred Black"}],"selected_options":{"Type":"Night Shred Black"},"price_cents":5999,"regular_price_cents":6499,"compare_at_cents":6499,"compare_at_price_cents":6499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-black-s1_a3d4ed95-324c-474c-9d62-e57072cf09bb.png"},{"variant_id":"43391046615176","key":"Night Shred Black Melatonin Free","title":"Night Shred Black Melatonin Free","sku":null,"optionValues":["Night Shred Black Melatonin Free"],"option_values":[{"position":1,"name":"Type","value":"Night Shred Black Melatonin Free"}],"selected_options":{"Type":"Night Shred Black Melatonin Free"},"price_cents":5999,"regular_price_cents":6499,"compare_at_cents":6499,"compare_at_price_cents":6499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-black-s1_a3d4ed95-324c-474c-9d62-e57072cf09bb.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

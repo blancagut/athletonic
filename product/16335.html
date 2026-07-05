@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -556,17 +556,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVP-Shortbread-Instagram-Feed-02-copy_a4873391-6c7e-422d-97a4-a19211e2a31d.jpg","t":"cvpshortbreadinstagramfeed02copya48733916c7e422d97a4a19211e2a31djpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-shortbreadcookie-1_a1bc29ea-d518-474a-9aee-33b9a806788b.png","t":"cvpshortbreadcookie1c1d22e2feb0440a28bf1460a3d97436dpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-ssc-black-side1_7e13f1b3-3117-46d1-917f-242d1c427194.png","t":"cvpsscblackside17e13f1b3311746d1917f242d1c427194png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-maplewaffle2_07c0aa36-1e59-4ab8-af28-3d8e1f41774d.png","t":"cleanveganmaplewaffle207c0aa361e594ab8af283d8e1f41774dpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-fruitycereal_1a1ae547-03e0-484c-af2d-d8a41d147fd9.png","t":"cleanveganfruitycereal1a1ae54703e0484caf2dd8a41d147fd9png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-chocolatebrownie_a86ff0b4-bc77-4a0b-a5ff-47023b0d37bf.png","t":"cleanveganchocolatebrowniea86ff0b4bc774a0ba5ff47023b0d37bfpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-cinnamonfrenchtoast_80fabff9-4084-446b-9787-ae41067c4720.png","t":"cleanvegancinnamonfrenchtoast80fabff94084446b9787ae41067c4720png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-birthdaycake_511baf4c-7954-43d9-9e8a-68d0d35fa3b6.png","t":"cleanveganbirthdaycake511baf4c795443d99e8a68d0d35fa3b6png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanveganprotein-blueberrycrumble_1_6504b950-a686-4a02-8da5-b08999d91833.png","t":"cleanveganproteinblueberrycrumble16504b950a6864a028da5b08999d91833png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -582,21 +583,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -618,7 +623,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"40763404189832","key":"Shortbread Cookie","title":"Shortbread Cookie","sku":null,"optionValues":["Shortbread Cookie"],"option_values":[{"position":1,"name":"Flavor","value":"Shortbread Cookie"}],"selected_options":{"Flavor":"Shortbread Cookie"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-shortbreadcookie-1_a1bc29ea-d518-474a-9aee-33b9a806788b.png"},{"variant_id":"40763404222600","key":"Fruity Cereal","title":"Fruity Cereal","sku":null,"optionValues":["Fruity Cereal"],"option_values":[{"position":1,"name":"Flavor","value":"Fruity Cereal"}],"selected_options":{"Flavor":"Fruity Cereal"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-fruitycereal_1a1ae547-03e0-484c-af2d-d8a41d147fd9.png"},{"variant_id":"40763404255368","key":"Blueberry Crumble","title":"Blueberry Crumble","sku":null,"optionValues":["Blueberry Crumble"],"option_values":[{"position":1,"name":"Flavor","value":"Blueberry Crumble"}],"selected_options":{"Flavor":"Blueberry Crumble"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanveganprotein-blueberrycrumble_1_6504b950-a686-4a02-8da5-b08999d91833.png"},{"variant_id":"40763404288136","key":"Vanilla Birthday Cake","title":"Vanilla Birthday Cake","sku":null,"optionValues":["Vanilla Birthday Cake"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Birthday Cake"}],"selected_options":{"Flavor":"Vanilla Birthday Cake"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-birthdaycake_511baf4c-7954-43d9-9e8a-68d0d35fa3b6.png"},{"variant_id":"40763404320904","key":"Strawberry Shortcake","title":"Strawberry Shortcake","sku":null,"optionValues":["Strawberry Shortcake"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Shortcake"}],"selected_options":{"Flavor":"Strawberry Shortcake"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVP-Shortbread-Instagram-Feed-02-copy_a4873391-6c7e-422d-97a4-a19211e2a31d.jpg"},{"variant_id":"40763404353672","key":"Cinnamon French Toast","title":"Cinnamon French Toast","sku":null,"optionValues":["Cinnamon French Toast"],"option_values":[{"position":1,"name":"Flavor","value":"Cinnamon French Toast"}],"selected_options":{"Flavor":"Cinnamon French Toast"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-cinnamonfrenchtoast_80fabff9-4084-446b-9787-ae41067c4720.png"},{"variant_id":"40763404386440","key":"Maple Waffle","title":"Maple Waffle","sku":null,"optionValues":["Maple Waffle"],"option_values":[{"position":1,"name":"Flavor","value":"Maple Waffle"}],"selected_options":{"Flavor":"Maple Waffle"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-maplewaffle2_07c0aa36-1e59-4ab8-af28-3d8e1f41774d.png"},{"variant_id":"40763404419208","key":"Chocolate Brownie","title":"Chocolate Brownie","sku":null,"optionValues":["Chocolate Brownie"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Brownie"}],"selected_options":{"Flavor":"Chocolate Brownie"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-chocolatebrownie_a86ff0b4-bc77-4a0b-a5ff-47023b0d37bf.png"}];
+        var variantPricing = [{"variant_id":"40763404189832","key":"Shortbread Cookie","title":"Shortbread Cookie","sku":null,"optionValues":["Shortbread Cookie"],"option_values":[{"position":1,"name":"Flavor","value":"Shortbread Cookie"}],"selected_options":{"Flavor":"Shortbread Cookie"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-shortbreadcookie-1_a1bc29ea-d518-474a-9aee-33b9a806788b.png"},{"variant_id":"40763404222600","key":"Fruity Cereal","title":"Fruity Cereal","sku":null,"optionValues":["Fruity Cereal"],"option_values":[{"position":1,"name":"Flavor","value":"Fruity Cereal"}],"selected_options":{"Flavor":"Fruity Cereal"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-fruitycereal_1a1ae547-03e0-484c-af2d-d8a41d147fd9.png"},{"variant_id":"40763404255368","key":"Blueberry Crumble","title":"Blueberry Crumble","sku":null,"optionValues":["Blueberry Crumble"],"option_values":[{"position":1,"name":"Flavor","value":"Blueberry Crumble"}],"selected_options":{"Flavor":"Blueberry Crumble"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanveganprotein-blueberrycrumble_1_6504b950-a686-4a02-8da5-b08999d91833.png"},{"variant_id":"40763404288136","key":"Vanilla Birthday Cake","title":"Vanilla Birthday Cake","sku":null,"optionValues":["Vanilla Birthday Cake"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Birthday Cake"}],"selected_options":{"Flavor":"Vanilla Birthday Cake"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-birthdaycake_511baf4c-7954-43d9-9e8a-68d0d35fa3b6.png"},{"variant_id":"40763404320904","key":"Strawberry Shortcake","title":"Strawberry Shortcake","sku":null,"optionValues":["Strawberry Shortcake"],"option_values":[{"position":1,"name":"Flavor","value":"Strawberry Shortcake"}],"selected_options":{"Flavor":"Strawberry Shortcake"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":null},{"variant_id":"40763404353672","key":"Cinnamon French Toast","title":"Cinnamon French Toast","sku":null,"optionValues":["Cinnamon French Toast"],"option_values":[{"position":1,"name":"Flavor","value":"Cinnamon French Toast"}],"selected_options":{"Flavor":"Cinnamon French Toast"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-cinnamonfrenchtoast_80fabff9-4084-446b-9787-ae41067c4720.png"},{"variant_id":"40763404386440","key":"Maple Waffle","title":"Maple Waffle","sku":null,"optionValues":["Maple Waffle"],"option_values":[{"position":1,"name":"Flavor","value":"Maple Waffle"}],"selected_options":{"Flavor":"Maple Waffle"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-maplewaffle2_07c0aa36-1e59-4ab8-af28-3d8e1f41774d.png"},{"variant_id":"40763404419208","key":"Chocolate Brownie","title":"Chocolate Brownie","sku":null,"optionValues":["Chocolate Brownie"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Brownie"}],"selected_options":{"Flavor":"Chocolate Brownie"},"price_cents":6874,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-chocolatebrownie_a86ff0b4-bc77-4a0b-a5ff-47023b0d37bf.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

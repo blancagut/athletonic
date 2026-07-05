@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -618,17 +618,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-WOODLAND_BLACKMESHSNAPBACK_1.jpg","t":"prayhardliftheavywoodlandblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-WOODLAND_BLACKMESHSNAPBACK_3.jpg","t":"prayhardliftheavywoodlandblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-WOODLAND_BLACKMESHSNAPBACK_5.jpg","t":"prayhardliftheavywoodlandblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-WOODLAND_BLACKMESHSNAPBACK_2.jpg","t":"prayhardliftheavywoodlandblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-WOODLAND_BLACKMESHSNAPBACK_4.jpg","t":"prayhardliftheavywoodlandblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-BLACKDUCKCAMO_BLACKMESHSNAPBACK_1.jpg","t":"prayhardliftheavyblackduckcamoblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-MULTICAMBLACK_BLACKMESHSNAPBACK_1.jpg","t":"prayhardliftheavymulticamblackblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-BLACKDUCKCAMO_BLACKMESHSNAPBACK_4.jpg","t":"prayhardliftheavyblackduckcamoblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-MULTICAMBLACK_BLACKMESHSNAPBACK_4.jpg","t":"prayhardliftheavymulticamblackblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-MULTICAMBLACK_BLACKMESHSNAPBACK_2.jpg","t":"prayhardliftheavymulticamblackblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-BLACKDUCKCAMO_BLACKMESHSNAPBACK_2.jpg","t":"prayhardliftheavyblackduckcamoblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-BLACKDUCKCAMO_BLACKMESHSNAPBACK_5.jpg","t":"prayhardliftheavyblackduckcamoblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-MULTICAMBLACK_BLACKMESHSNAPBACK_5.jpg","t":"prayhardliftheavymulticamblackblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-MULTICAMBLACK_BLACKMESHSNAPBACK_3.jpg","t":"prayhardliftheavymulticamblackblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-BLACKDUCKCAMO_BLACKMESHSNAPBACK_3.jpg","t":"prayhardliftheavyblackduckcamoblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-ALLBLACK_BLACKMESHSNAPBACK_1.jpg","t":"prayhardliftheavyallblackblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-ALLBLACK_BLACKMESHSNAPBACK_4.jpg","t":"prayhardliftheavyallblackblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-ALLBLACK_BLACKMESHSNAPBACK_2.jpg","t":"prayhardliftheavyallblackblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-ALLBLACK_BLACKMESHSNAPBACK_5.jpg","t":"prayhardliftheavyallblackblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-ALLBLACK_BLACKMESHSNAPBACK_3.jpg","t":"prayhardliftheavyallblackblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY_STAYDEADLY-GREY_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_1.jpg","t":"prayhardliftheavystaydeadlygreywoodlandbdubrimblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY_STAYDEADLY-GREY_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_3.jpg","t":"prayhardliftheavystaydeadlygreywoodlandbdubrimblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY_STAYDEADLY-GREY_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_5.jpg","t":"prayhardliftheavystaydeadlygreywoodlandbdubrimblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY_STAYDEADLY-GREY_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_4.jpg","t":"prayhardliftheavystaydeadlygreywoodlandbdubrimblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY_STAYDEADLY-GREY_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_6.jpg","t":"prayhardliftheavystaydeadlygreywoodlandbdubrimblackmeshsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY_STAYDEADLY-GREY_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_2.jpg","t":"prayhardliftheavystaydeadlygreywoodlandbdubrimblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD.LIFTHEAVY.STAYDEADLY-WOODLAND_GRAY_WHITEMESHSNAPBACK_1.jpg","t":"prayhardliftheavystaydeadlywoodlandgraywhitemeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD.LIFTHEAVY.STAYDEADLY-WOODLAND_GRAY_WHITEMESHSNAPBACK_3.jpg","t":"prayhardliftheavystaydeadlywoodlandgraywhitemeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD.LIFTHEAVY.STAYDEADLY-WOODLAND_GRAY_WHITEMESHSNAPBACK_2.jpg","t":"prayhardliftheavystaydeadlywoodlandgraywhitemeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD.LIFTHEAVY.STAYDEADLY-WOODLAND_GRAY_WHITEMESHSNAPBACK_4.jpg","t":"prayhardliftheavystaydeadlywoodlandgraywhitemeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD.LIFTHEAVY.STAYDEADLY-WOODLAND_GRAY_WHITEMESHSNAPBACK_5.jpg","t":"prayhardliftheavystaydeadlywoodlandgraywhitemeshsnapback5jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -644,21 +645,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -680,7 +685,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813960900978","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-MULTICAMBLACK_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813960933746","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-WOODLAND_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813960966514","key":"BLACK DUCK CAMO","title":"BLACK DUCK CAMO","sku":null,"optionValues":["BLACK DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK DUCK CAMO"}],"selected_options":{"COLOR":"BLACK DUCK CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-BLACKDUCKCAMO_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813960999282","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-WOODLAND_BLACKMESHSNAPBACK_1.jpg"}];
+        var variantPricing = [{"variant_id":"61813960900978","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-MULTICAMBLACK_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813960933746","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-MULTICAMBLACK_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813960966514","key":"BLACK DUCK CAMO","title":"BLACK DUCK CAMO","sku":null,"optionValues":["BLACK DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK DUCK CAMO"}],"selected_options":{"COLOR":"BLACK DUCK CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY-BLACKDUCKCAMO_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813960999282","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/PRAYHARD_LIFTHEAVY_STAYDEADLY-GREY_WOODLANDBDUBRIM_BLACKMESHSNAPBACK_1.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

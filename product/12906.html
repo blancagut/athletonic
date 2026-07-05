@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -557,17 +557,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-hero.jpg","t":"1500herojpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-sleeves.jpg","t":"1500sleevesjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-long.jpg","t":"1500longjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-front-squat.jpg","t":"1500frontsquatjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Barbell-Standard-1500-Olympic-Barbell-wide_6709d3e6-a7a7-48c1-8dec-b1159c8a2100.jpg","t":"barbellstandard1500olympicbarbellwide6709d3e6a7a748c18decb1159c8a2100jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-endcap-lifestyle_0911cf18-3062-4a61-9e7c-803cc309cf02.jpg","t":"1500endcaplifestyle0911cf1830624a619e7c803cc309cf02jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-deadlift.jpg","t":"1500deadliftjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-bench.jpg","t":"1500benchjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-deadlift-2.jpg","t":"1500deadlift2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-overhead-squat.jpg","t":"1500overheadsquatjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1500-squat.jpg","t":"1500squatjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/squat-banner-square-f_9f531be5-4974-461a-9a7f-8ef3c72a3a8c.jpg","t":"squatbannersquaref9f531be54974461a9a7f8ef3c72a3a8cjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -583,21 +584,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

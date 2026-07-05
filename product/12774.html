@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -579,17 +579,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-treadmill-black-front-view_526f9f45-6831-4f13-a436-e0d418adb7a7.webp","t":"productdeniseaustintreadmillblackfrontview526f9f4568314f13a436e0d418adb7a7webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-treadmill-black-main-view.webp","t":"productdeniseaustintreadmillblackmainviewwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-running-on-treadmill_7e3966c1-3b6f-4d84-9b31-68a40b1ae5bf.webp","t":"productdeniseaustinrunningontreadmill7e3966c13b6f4d849b3168a40b1ae5bfwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-treadmill-black-flat-view_3ed0e3ba-5f5e-4a21-bb55-401c54fe65a9.webp","t":"productdeniseaustintreadmillblackflatview3ed0e3ba5f5e4a21bb55401c54fe65a9webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-treadmill-black-angled-view_d29ac86c-15cc-4e80-a1de-211ba1ae8585.webp","t":"productdeniseaustintreadmillblackangledviewd29ac86c15cc4e80a1de211ba1ae8585webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-foldable-treadmill_acc4adb9-eb4e-4d42-9245-34d4c260ff76.webp","t":"productdeniseaustinfoldabletreadmillacc4adb9eb4e4d42924534d4c260ff76webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-Unfold-view-treadmill_e88de6a3-9d40-44ba-9234-311b26b26fe7.webp","t":"productdeniseaustinunfoldviewtreadmille88de6a39d4044ba9234311b26b26fe7webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-folding-treadmill.webp","t":"productdeniseaustinfoldingtreadmillwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-moving-treadmill.webp","t":"productdeniseaustinmovingtreadmillwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-walking-on-treadmill.webp","t":"scenedeniseaustinwalkingontreadmillwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-treadmill-stored-under-bed_52fa3f20-ac77-4562-a3d7-e3c13a0ea591.webp","t":"scenedeniseaustintreadmillstoredunderbed52fa3f20ac774562a3d7e3c13a0ea591webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-treadmill-in-living-room-setup_58281d8e-7d32-4336-acdf-db7961efb164.webp","t":"scenedeniseaustintreadmillinlivingroomsetup58281d8e7d324336acdfdb7961efb164webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-treadmill-console-with-phone_af23b125-eba4-45d1-b43c-16ba648b4c10.webp","t":"scenedeniseaustintreadmillconsolewithphoneaf23b125eba445d1b43c16ba648b4c10webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-woman-adjusting-treadmill-handrail_bcdd2b1a-8162-4374-a95f-efff8f900664.webp","t":"scenedeniseaustinwomanadjustingtreadmillhandrailbcdd2b1a81624374a95fefff8f900664webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-treadmill-control-panel-closeup_6adf884f-b0ef-4564-934d-02e3094d03be.webp","t":"scenedeniseaustintreadmillcontrolpanelcloseup6adf884fb0ef4564934d02e3094d03bewebp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -605,21 +606,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

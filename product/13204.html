@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -553,17 +553,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/01_Legacy_Pullover_Hoodie_Black_Front_e64e6168-b483-40f8-986d-c3fc80e4df4a.jpg","t":"01legacypulloverhoodieblackfronte64e6168b48340f8986dc3fc80e4df4ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/03_Legacy_Pullover_Hoodie_Black_Front_Model_a169e1b8-cefc-44cf-b6ad-a248b84b1171.jpg","t":"03legacypulloverhoodieblackfrontmodela169e1b8cefc44cfb6ada248b84b1171jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/05_Legacy_Pullover_Hoodie_Black_Front_Model_f6a630d7-d110-4f50-bbd6-804c4c823b4b.jpg","t":"05legacypulloverhoodieblackfrontmodelf6a630d7d1104f50bbd6804c4c823b4bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/01_Legacy_Pullover_Hoodie_Slate_Front_067a99a9-2eab-459c-891e-5cd3173075b7.jpg","t":"01legacypulloverhoodieslatefront067a99a92eab459c891e5cd3173075b7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/03_Legacy_Pullover_Hoodie_Slate_Front_Detail_be09b949-bfee-4f2c-acb4-3a186af09361.jpg","t":"03legacypulloverhoodieslatefrontdetailbe09b949bfee4f2cacb43a186af09361jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/06_Legacy_Pullover_Hoodie_Black_Angle_Model_36e29d10-0487-47a3-bbf2-1a297bb486e1.jpg","t":"06legacypulloverhoodieblackanglemodel36e29d10048747a3bbf21a297bb486e1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/05_Legacy_Pullover_Hoodie_Slate_Front_Model_96bbd21e-a579-44d0-87cd-c60bb16bdcb2.jpg","t":"05legacypulloverhoodieslatefrontmodel96bbd21ea57944d087cdc60bb16bdcb2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/08_Legacy_Pullover_Hoodie_Slate_Front_Model.jpg","t":"08legacypulloverhoodieslatefrontmodeljpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/06_Legacy_Pullover_Hoodie_Slate_Angle_Model_3dc7bd63-9ceb-497d-9183-dbf28ffd25d7.jpg","t":"06legacypulloverhoodieslateanglemodel3dc7bd639ceb497d9183dbf28ffd25d7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/09_Legacy_Pullover_Hoodie_Slate_Angle_Model.jpg","t":"09legacypulloverhoodieslateanglemodeljpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/02_Legacy_Pullover_Hoodie_Black_Back_70ed8a6d-be56-4649-b03d-6f38e41335e2.jpg","t":"02legacypulloverhoodieblackback70ed8a6dbe564649b03d6f38e41335e2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/04_Legacy_Pullover_Hoodie_Black_Back_Model_e55c06ae-584d-46d6-8eca-6622146ce350.jpg","t":"04legacypulloverhoodieblackbackmodele55c06ae584d46d68eca6622146ce350jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/07_Legacy_Pullover_Hoodie_Black_BackModel_2e701204-6cfb-4ff1-a12e-566d600d8a8f.jpg","t":"07legacypulloverhoodieblackbackmodel2e7012046cfb4ff1a12e566d600d8a8fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/02_Legacy_Pullover_Hoodie_Slate_Back_8e3827b7-4dbc-48f8-8c24-99bbb5bfd820.jpg","t":"02legacypulloverhoodieslateback8e3827b74dbc48f88c2499bbb5bfd820jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/04_Legacy_Pullover_Hoodie_Slate_Back_Detail_00902ff9-4556-4ff7-941f-b7ed70811871.jpg","t":"04legacypulloverhoodieslatebackdetail00902ff945564ff7941fb7ed70811871jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/07_Legacy_Pullover_Hoodie_Slate_Back_Model_V2_1f610121-5338-46b8-a00a-85e5ca01f6a4.jpg","t":"07legacypulloverhoodieslatebackmodelv21f610121533846b8a00a85e5ca01f6a4jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -579,21 +580,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

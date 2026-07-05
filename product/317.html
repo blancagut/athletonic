@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -584,17 +584,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/CELL_0350_P4_Digital_PDPimage_PopsiclePWO_Launch_August2024_Image_SportRipped-C4_SportRipped_Panel.png","t":"cell0350p4digitalpdpimagepopsiclepwolaunchaugust2024imagesportrippedc4sportrippedpanelpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/CELL_0350_P4_Digital_PDPimage_PopsiclePWO_Launch_August2024_Image_SportRipped-Image1_CollabTagline.png","t":"cell0350p4digitalpdpimagepopsiclepwolaunchaugust2024imagesportrippedimage1collabtaglinepng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/CELL_0350_P4_Digital_PDPimage_PopsiclePWO_Launch_August2024_Image_SportRipped-C4_SportRipped-Image3_Lifestyle_1_c5fa0912-066d-4416-89ae-6e7bb9821efe.png","t":"cell0350p4digitalpdpimagepopsiclepwolaunchaugust2024imagesportrippedc4sportrippedimage3lifestyle1c5fa0912066d441689ae6e7bb9821efepng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/c4-sport-ripped-pineapple.png","t":"c4sportrippedpineapplepng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/CELL_0350_P4_Digital_PDPimage_PopsiclePWO_Launch_August2024_Image_SportRipped-C4_SportRipped-Image4_Lifestyle_2_31f0661c-50a7-4a63-8dc7-d99dc70fc279.png","t":"cell0350p4digitalpdpimagepopsiclepwolaunchaugust2024imagesportrippedc4sportrippedimage4lifestyle231f0661c50a74a638dc7d99dc70fc279png"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/CELL_0350_P4_Digital_PDPimage_PopsiclePWO_Launch_August2024_Image_SportRipped-C4_SportRipped-Image5_Lifestyle_3_0ea5fd9e-0a1e-4397-ac0f-e37897951538.png","t":"cell0350p4digitalpdpimagepopsiclepwolaunchaugust2024imagesportrippedc4sportrippedimage5lifestyle30ea5fd9e0a1e4397ac0fe37897951538png"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/CELL_0350_P4_Digital_PDPimage_PopsiclePWO_Launch_August2024_Image_SportRipped-C4_SportRipped_ProductBenefits_7e389ff6-f129-4067-be95-ea6d710ec63a.png","t":"cell0350p4digitalpdpimagepopsiclepwolaunchaugust2024imagesportrippedc4sportrippedproductbenefits7e389ff6f1294067be95ea6d710ec63apng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -610,21 +611,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

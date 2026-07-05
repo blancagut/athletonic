@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -579,17 +579,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/PDP1_34.jpg","t":"pdp134jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/Vitamin-D_Pill-US-UPDATED.png","t":"vitamindpillusupdatedpng"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/Vegan-Vitamin-D-USA.jpg","t":"veganvitamindusajpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/AE7DE8B9-4CDE-438E-B828-711FB9B755B9_d5b98668-351d-42b9-b416-1764be78789d.jpg","t":"ae7de8b94cde438eb828711fb9b755b9d5b98668351d42b9b4161764be78789djpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/Twin-Pack-Vitamin-D-US_2204557d-9718-4f62-9752-d646e06ba4a1.png","t":"twinpackvitamindus2204557d97184f629752d646e06ba4a1png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -605,21 +606,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -641,7 +646,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"41548640452690","key":"Vegan Vitamin D Formula - 2 Months Supply","title":"Vegan Vitamin D Formula - 2 Months Supply","sku":null,"optionValues":["Vegan Vitamin D Formula - 2 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"Vegan Vitamin D Formula - 2 Months Supply"}],"selected_options":{"Size":"Vegan Vitamin D Formula - 2 Months Supply"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/Vitamin-D_Pill-US-UPDATED.png"},{"variant_id":"41548640485458","key":"Vegan Vitamin D Twin Pack - 4 Months Supply","title":"Vegan Vitamin D Twin Pack - 4 Months Supply","sku":null,"optionValues":["Vegan Vitamin D Twin Pack - 4 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"Vegan Vitamin D Twin Pack - 4 Months Supply"}],"selected_options":{"Size":"Vegan Vitamin D Twin Pack - 4 Months Supply"},"price_cents":3699,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/Vitamin-D_Pill-US-UPDATED.png"},{"variant_id":"41548640518226","key":"2 Months Supply","title":"2 Months Supply","sku":null,"optionValues":["2 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"2 Months Supply"}],"selected_options":{"Size":"2 Months Supply"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41548640550994","key":"4 Months Supply","title":"4 Months Supply","sku":null,"optionValues":["4 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"4 Months Supply"}],"selected_options":{"Size":"4 Months Supply"},"price_cents":3998,"regular_price_cents":3998,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41548640583762","key":"6 Months Supply","title":"6 Months Supply","sku":null,"optionValues":["6 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"6 Months Supply"}],"selected_options":{"Size":"6 Months Supply"},"price_cents":5997,"regular_price_cents":5997,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"41548640452690","key":"Vegan Vitamin D Formula - 2 Months Supply","title":"Vegan Vitamin D Formula - 2 Months Supply","sku":null,"optionValues":["Vegan Vitamin D Formula - 2 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"Vegan Vitamin D Formula - 2 Months Supply"}],"selected_options":{"Size":"Vegan Vitamin D Formula - 2 Months Supply"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41548640485458","key":"Vegan Vitamin D Twin Pack - 4 Months Supply","title":"Vegan Vitamin D Twin Pack - 4 Months Supply","sku":null,"optionValues":["Vegan Vitamin D Twin Pack - 4 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"Vegan Vitamin D Twin Pack - 4 Months Supply"}],"selected_options":{"Size":"Vegan Vitamin D Twin Pack - 4 Months Supply"},"price_cents":3699,"regular_price_cents":3999,"compare_at_cents":3999,"compare_at_price_cents":3999,"source_available":true,"available":true,"image_url":null},{"variant_id":"41548640518226","key":"2 Months Supply","title":"2 Months Supply","sku":null,"optionValues":["2 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"2 Months Supply"}],"selected_options":{"Size":"2 Months Supply"},"price_cents":1999,"regular_price_cents":1999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41548640550994","key":"4 Months Supply","title":"4 Months Supply","sku":null,"optionValues":["4 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"4 Months Supply"}],"selected_options":{"Size":"4 Months Supply"},"price_cents":3998,"regular_price_cents":3998,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41548640583762","key":"6 Months Supply","title":"6 Months Supply","sku":null,"optionValues":["6 Months Supply"],"option_values":[{"position":1,"name":"Size","value":"6 Months Supply"}],"selected_options":{"Size":"6 Months Supply"},"price_cents":5997,"regular_price_cents":5997,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

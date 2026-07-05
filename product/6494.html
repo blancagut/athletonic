@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -576,17 +576,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPFlavorProfile-FruitPunch-Static-SFEnergy-2880x2880.jpg","t":"webpdpflavorprofilefruitpunchstaticsfenergy2880x2880jpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Amazon-PDPFlavorProfile-StrawberryKiwi-Static-SFEnergy-1600x1600.png","t":"amazonpdpflavorprofilestrawberrykiwistaticsfenergy1600x1600png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Sugar-FreeEnergyFruityBundle.jpg","t":"sugarfreeenergyfruitybundlejpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Amazon-PDPFlavorProfile-BlackberryLemonade-Static-SFEnergy-1600x1600.png","t":"amazonpdpflavorprofileblackberrylemonadestaticsfenergy1600x1600png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImages-SFEnergy-FruitPunch-StylizedPouch_Stick-2880x2880.jpg","t":"webpdpimagessfenergyfruitpunchstylizedpouchstick2880x2880jpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImages-SFEnergy-StrawberryKiwi-Image3-2880x2880_e8e7bb6c-23dd-499b-8f1b-25676e81608f.png","t":"webpdpimagessfenergystrawberrykiwiimage32880x2880e8e7bb6c23dd499b8f1b25676e81608fpng"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImages-SFEnergy-BlackberryLemonade-Image3-2880x2880.png","t":"webpdpimagessfenergyblackberrylemonadeimage32880x2880png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImages-SFEnergy-FruitPunch-PourShot-2880x2880.jpg","t":"webpdpimagessfenergyfruitpunchpourshot2880x2880jpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImages-SFEnergy-StrawberryKiwi-Image2-2880x2880.png","t":"webpdpimagessfenergystrawberrykiwiimage22880x2880png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImages-SFEnergy-StrawberryKiwi-Image4-2880x2880.png","t":"webpdpimagessfenergystrawberrykiwiimage42880x2880png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImages-SFEnergy-BlackberryLemonade-Image4-2880x2880.png","t":"webpdpimagessfenergyblackberrylemonadeimage42880x2880png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImage-EnergySFPG-FlavorProfile-1600x16003.png","t":"webpdpimageenergysfpgflavorprofile1600x16003png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImage-EnergySFPG-FlavorNotes-1600x1600_2x_81e6a3c2-751d-44b1-b920-bc41e1a3a17f.png","t":"webpdpimageenergysfpgflavornotes1600x16002x81e6a3c2751d44b1b920bc41e1a3a17fpng"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImages-SFEnergy-FruitPunch-NutritionLabel-2880x2880.jpg","t":"webpdpimagessfenergyfruitpunchnutritionlabel2880x2880jpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImage-EnergySFPG-Nutrition-1600x1600_2x_b3867b7f-f06a-430b-b4f2-3186ea8b8f87.png","t":"webpdpimageenergysfpgnutrition1600x16002xb3867b7ff06a430bb4f23186ea8b8f87png"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/Web-PDPImage-EnergySFPG-Ingredients-1600x1600_2x_e4fa88c2-31a4-4dd9-b37d-3ff7516daf34.png","t":"webpdpimageenergysfpgingredients1600x16002xe4fa88c231a44dd9b37d3ff7516daf34png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -602,21 +603,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -638,7 +643,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"43575734665252","key":"56ct Bundle","title":"56ct Bundle","sku":null,"optionValues":["56ct Bundle"],"option_values":[{"position":1,"name":"Size","value":"56ct Bundle"}],"selected_options":{"Size":"56ct Bundle"},"price_cents":7398,"regular_price_cents":9996,"compare_at_cents":9996,"compare_at_price_cents":9996,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1338/1013/files/Sugar-FreeEnergyFruityBundle.jpg"}];
+        var variantPricing = [{"variant_id":"43575734665252","key":"56ct Bundle","title":"56ct Bundle","sku":null,"optionValues":["56ct Bundle"],"option_values":[{"position":1,"name":"Size","value":"56ct Bundle"}],"selected_options":{"Size":"56ct Bundle"},"price_cents":7398,"regular_price_cents":9996,"compare_at_cents":9996,"compare_at_price_cents":9996,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

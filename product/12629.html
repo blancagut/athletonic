@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -563,17 +563,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Red1-3.jpg","t":"red13jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7911.jpg","t":"dscf7911jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7915.jpg","t":"dscf7915jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7913.jpg","t":"dscf7913jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSCF7920-2_46002769-9533-492a-bc58-99d69b79a6e3.jpg","t":"dscf79202460027699533492abc5899d69b79a6e3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362177777.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43958362177777jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362145009.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43958362145009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43070283743473.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43070283743473jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362112241.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43958362112241jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43958362079473.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43958362079473jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43070283776241.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43070283776241jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43070283677937.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43070283677937jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43070283874545.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43070283874545jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43070283809009.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43070283809009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43070443716849.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43070443716849jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43070283710705.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43070283710705jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-43070283907313.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra43070283907313jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-42146730868977.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra42146730868977jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-42146731032817.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra42146731032817jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-42146731000049.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra42146731000049jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-42146730901745.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra42146730901745jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-42146730836209.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra42146730836209jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-42146730934513.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra42146730934513jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/wild-south-apparel-pale-yellow-xs-envy-sports-bra-42146730967281.jpg","t":"wildsouthapparelpaleyellowxsenvysportsbra42146730967281jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Red2-3.jpg","t":"red23jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Red3-3.jpg","t":"red33jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/red4-3.jpg","t":"red43jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -589,21 +590,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

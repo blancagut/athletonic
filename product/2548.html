@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -552,17 +552,18 @@ Fuel your body with the power of real food. MRE LITE is a high-quality, low-carb
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/FUDGE_1.png","t":"fudge1png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/CC_7.png","t":"cc7png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/CC_3.png","t":"cc3png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/OAT_4.png","t":"oat4png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/VANILLA_5.png","t":"vanilla5png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/FUDGE_2.png","t":"fudge2png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/VANILLA_1_7c55a594-3927-4da8-8868-4230ede4e8a3.png","t":"vanilla17c55a59439274da888684230ede4e8a3png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/VANILLA_2.png","t":"vanilla2png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/CC_1.png","t":"cc1png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/CC_2.png","t":"cc2png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/OAT_1.png","t":"oat1png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/OAT_2.png","t":"oat2png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/BNB_1.png","t":"bnb1png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/BNB_2.png","t":"bnb2png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/BLUEBERRYCOBBLER_FLAVOR.png","t":"blueberrycobblerflavorpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/BlueberryCobbler_4f8860ae-d9e9-41a5-9bf0-8b581ab1cb7e.jpg","t":"blueberrycobbler4f8860aed9e941a59bf08b581ab1cb7ejpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/PBC_FLAVOR.png","t":"pbcflavorpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/PeanutButterCookie_17e8820d-4c14-4d37-8e83-14c47e2be675.jpg","t":"peanutbuttercookie17e8820d4c144d378e8314c47e2be675jpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_LITE_2LB_Cupcakes_430x_ada157cc-bbe7-4e7a-a501-ec7f0cdb19e8.webp","t":"mrelite2lbcupcakes430xada157ccbbe74e7aa501ec7f0cdb19e8webp"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_LITE_2LB_Twinkies_430x_57e33495-8d62-402a-8820-1b2f09d97760.webp","t":"mrelite2lbtwinkies430x57e334958d62402a88201b2f09d97760webp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -578,21 +579,25 @@ Fuel your body with the power of real food. MRE LITE is a high-quality, low-carb
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -614,7 +619,7 @@ Fuel your body with the power of real food. MRE LITE is a high-quality, low-carb
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"42784547930160","key":"Hostess™ Cupcakes","title":"Hostess™ Cupcakes","sku":null,"optionValues":["Hostess™ Cupcakes"],"option_values":[{"position":1,"name":"Flavor","value":"Hostess™ Cupcakes"}],"selected_options":{"Flavor":"Hostess™ Cupcakes"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_LITE_2LB_Cupcakes_430x_ada157cc-bbe7-4e7a-a501-ec7f0cdb19e8.webp"},{"variant_id":"42784548290608","key":"Hostess Twinkies™","title":"Hostess Twinkies™","sku":null,"optionValues":["Hostess Twinkies™"],"option_values":[{"position":1,"name":"Flavor","value":"Hostess Twinkies™"}],"selected_options":{"Flavor":"Hostess Twinkies™"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_LITE_2LB_Twinkies_430x_57e33495-8d62-402a-8820-1b2f09d97760.webp"},{"variant_id":"41720274223152","key":"Oatmeal Chocolate Chip","title":"Oatmeal Chocolate Chip","sku":null,"optionValues":["Oatmeal Chocolate Chip"],"option_values":[{"position":1,"name":"Flavor","value":"Oatmeal Chocolate Chip"}],"selected_options":{"Flavor":"Oatmeal Chocolate Chip"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"41720274386992","key":"Cookies & Cream","title":"Cookies & Cream","sku":null,"optionValues":["Cookies & Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Cookies & Cream"}],"selected_options":{"Flavor":"Cookies & Cream"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/PeanutButterCookie_17e8820d-4c14-4d37-8e83-14c47e2be675.jpg"},{"variant_id":"41720274157616","key":"Fudge Brownie","title":"Fudge Brownie","sku":null,"optionValues":["Fudge Brownie"],"option_values":[{"position":1,"name":"Flavor","value":"Fudge Brownie"}],"selected_options":{"Flavor":"Fudge Brownie"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/FUDGE_1.png"},{"variant_id":"41720274255920","key":"Vanilla Milkshake","title":"Vanilla Milkshake","sku":null,"optionValues":["Vanilla Milkshake"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Milkshake"}],"selected_options":{"Flavor":"Vanilla Milkshake"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/VANILLA_5.png"},{"variant_id":"41720274288688","key":"Peanut Butter Cookie","title":"Peanut Butter Cookie","sku":null,"optionValues":["Peanut Butter Cookie"],"option_values":[{"position":1,"name":"Flavor","value":"Peanut Butter Cookie"}],"selected_options":{"Flavor":"Peanut Butter Cookie"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/PeanutButterCookie_17e8820d-4c14-4d37-8e83-14c47e2be675.jpg"},{"variant_id":"41720274190384","key":"Banana Nut Bread","title":"Banana Nut Bread","sku":null,"optionValues":["Banana Nut Bread"],"option_values":[{"position":1,"name":"Flavor","value":"Banana Nut Bread"}],"selected_options":{"Flavor":"Banana Nut Bread"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/PeanutButterCookie_17e8820d-4c14-4d37-8e83-14c47e2be675.jpg"},{"variant_id":"41720274321456","key":"Blueberry Cobbler","title":"Blueberry Cobbler","sku":null,"optionValues":["Blueberry Cobbler"],"option_values":[{"position":1,"name":"Flavor","value":"Blueberry Cobbler"}],"selected_options":{"Flavor":"Blueberry Cobbler"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/BLUEBERRYCOBBLER_FLAVOR.png"}];
+        var variantPricing = [{"variant_id":"42784547930160","key":"Hostess™ Cupcakes","title":"Hostess™ Cupcakes","sku":null,"optionValues":["Hostess™ Cupcakes"],"option_values":[{"position":1,"name":"Flavor","value":"Hostess™ Cupcakes"}],"selected_options":{"Flavor":"Hostess™ Cupcakes"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_LITE_2LB_Cupcakes_430x_ada157cc-bbe7-4e7a-a501-ec7f0cdb19e8.webp"},{"variant_id":"42784548290608","key":"Hostess Twinkies™","title":"Hostess Twinkies™","sku":null,"optionValues":["Hostess Twinkies™"],"option_values":[{"position":1,"name":"Flavor","value":"Hostess Twinkies™"}],"selected_options":{"Flavor":"Hostess Twinkies™"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_LITE_2LB_Twinkies_430x_57e33495-8d62-402a-8820-1b2f09d97760.webp"},{"variant_id":"41720274223152","key":"Oatmeal Chocolate Chip","title":"Oatmeal Chocolate Chip","sku":null,"optionValues":["Oatmeal Chocolate Chip"],"option_values":[{"position":1,"name":"Flavor","value":"Oatmeal Chocolate Chip"}],"selected_options":{"Flavor":"Oatmeal Chocolate Chip"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"41720274386992","key":"Cookies & Cream","title":"Cookies & Cream","sku":null,"optionValues":["Cookies & Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Cookies & Cream"}],"selected_options":{"Flavor":"Cookies & Cream"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"41720274157616","key":"Fudge Brownie","title":"Fudge Brownie","sku":null,"optionValues":["Fudge Brownie"],"option_values":[{"position":1,"name":"Flavor","value":"Fudge Brownie"}],"selected_options":{"Flavor":"Fudge Brownie"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/FUDGE_1.png"},{"variant_id":"41720274255920","key":"Vanilla Milkshake","title":"Vanilla Milkshake","sku":null,"optionValues":["Vanilla Milkshake"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Milkshake"}],"selected_options":{"Flavor":"Vanilla Milkshake"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/VANILLA_5.png"},{"variant_id":"41720274288688","key":"Peanut Butter Cookie","title":"Peanut Butter Cookie","sku":null,"optionValues":["Peanut Butter Cookie"],"option_values":[{"position":1,"name":"Flavor","value":"Peanut Butter Cookie"}],"selected_options":{"Flavor":"Peanut Butter Cookie"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/PeanutButterCookie_17e8820d-4c14-4d37-8e83-14c47e2be675.jpg"},{"variant_id":"41720274190384","key":"Banana Nut Bread","title":"Banana Nut Bread","sku":null,"optionValues":["Banana Nut Bread"],"option_values":[{"position":1,"name":"Flavor","value":"Banana Nut Bread"}],"selected_options":{"Flavor":"Banana Nut Bread"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/PeanutButterCookie_17e8820d-4c14-4d37-8e83-14c47e2be675.jpg"},{"variant_id":"41720274321456","key":"Blueberry Cobbler","title":"Blueberry Cobbler","sku":null,"optionValues":["Blueberry Cobbler"],"option_values":[{"position":1,"name":"Flavor","value":"Blueberry Cobbler"}],"selected_options":{"Flavor":"Blueberry Cobbler"},"price_cents":4699,"regular_price_cents":4699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1304/0433/files/BLUEBERRYCOBBLER_FLAVOR.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

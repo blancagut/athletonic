@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -563,17 +563,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-1kg-SV-v07.png","t":"nuzest2025cleanleanproteinus1kgsvv07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Clean-Lean-Protein-Slide-02.jpg","t":"nuzestcleanleanproteinslide02jpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Clean-Lean-Protein-Slide-03-US.jpg","t":"nuzestcleanleanproteinslide03usjpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Clean-Lean-Protein-Slide-04.jpg","t":"nuzestcleanleanproteinslide04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Clean-Lean-Protein-Slide-05.jpg","t":"nuzestcleanleanproteinslide05jpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-Clean-Lean-Protein-Slide-06-US.jpg","t":"nuzestcleanleanproteinslide06usjpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-CLP-sider3-1500x1500.png","t":"nuzest2025clpsider31500x1500png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-1kg-JN-v07.png","t":"nuzest2025cleanleanproteinus1kgjnv07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-1kg-RC-v07.png","t":"nuzest2025cleanleanproteinus1kgrcv07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-1kg-RE-v07.png","t":"nuzest2025cleanleanproteinus1kgrev07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-1kg-WS-v07.png","t":"nuzest2025cleanleanproteinus1kgwsv07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-500-CP-V01-R4.png","t":"nuzest2025cleanleanproteinus500cpv01r4png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-500g-JN-v07.png","t":"nuzest2025cleanleanproteinus500gjnv07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-500g-RC-v07.png","t":"nuzest2025cleanleanproteinus500grcv07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-500g-RE-v07.png","t":"nuzest2025cleanleanproteinus500grev07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-500g-SV-v07.png","t":"nuzest2025cleanleanproteinus500gsvv07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-500g-WS-v07.png","t":"nuzest2025cleanleanproteinus500gwsv07png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-500g-SC-v01-R1.jpg","t":"nuzest2025cleanleanproteinus500gscv01r1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-2.5kg-RC-v05.04.png","t":"nuzest2025cleanleanproteinus25kgrcv0504png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/US-CLP-250P-MC-v01_Transparent-Front_5482d768-4329-45a3-962d-4ddb6c7fc2ce.jpg","t":"usclp250pmcv01transparentfront5482d768432945a3962d4ddb6c7fc2cejpg"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-2.5kg-SV-v05.04.png","t":"nuzest2025cleanleanproteinus25kgsvv0504png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-_clean-lean-protein-US-250g-pouch_SC_v02.png","t":"nuzest2025cleanleanproteinus250gpouchscv02png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-250g-pouch-RC-v01.png","t":"nuzest2025cleanleanproteinus250gpouchrcv01png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-250g-pouch-SV-v01.png","t":"nuzest2025cleanleanproteinus250gpouchsvv01png"},{"src":"https://cdn.shopify.com/s/files/1/0089/7633/4884/files/Nuzest-2025-clean-lean-protein-US-250g-pouch-WS-v01.png","t":"nuzest2025cleanleanproteinus250gpouchwsv01png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -589,21 +590,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

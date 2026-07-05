@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -557,17 +557,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-shorts-hero.png","t":"aurorashortsheropng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-5front_f62e1e15-27f1-48a5-bede-cb4d4bbdb194.jpg","t":"aurora5frontf62e1e1527f148a5bedecb4d4bbdb194jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-7front_8fbcf9ff-4e4e-4e01-a4ae-cc129c31ab57.jpg","t":"aurora7front8fbcf9ff4e4e4e01a4aecc129c31ab57jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-phone_9ff6c7af-1c8d-4252-9942-f0ffda59be12.jpg","t":"auroraphone9ff6c7af1c8d42529942f0ffda59be12jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-length_354f7839-b4bb-48a3-8094-d9c8c7697276.jpg","t":"auroralength354f7839b4bb48a38094d9c8c7697276jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-silicone_526fb537-4270-4313-a12c-0247af059328.jpg","t":"aurorasilicone526fb53742704313a12c0247af059328jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-2.5back_16a6a241-a392-43bf-88c5-5610295e87f2.jpg","t":"aurora25back16a6a241a39243bf88c55610295e87f2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CVG-Northern-Lights-Shorts-2.5-No-Background-Front-500_f29b4153-22c7-4982-89df-5da5f216c19b.jpg","t":"cvgnorthernlightsshorts25nobackgroundfront500f29b415322c7498289df5da5f216c19bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-5back_b85974cb-6c97-4b4b-9930-a49220da12f1.jpg","t":"aurora5backb85974cb6c974b4b9930a49220da12f1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/aurora-7back.jpg","t":"aurora7backjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -583,21 +584,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

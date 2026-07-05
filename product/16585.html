@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -584,17 +584,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-1_add51e0d-4d5d-465e-b333-37480c680cb2.png","t":"nightshred1add51e0d4d5d465eb33337480c680cb2png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/All_assets-53_1_80e69261-3c86-4423-84ba-8d23cdef6438.png","t":"allassets53180e692613c86442384ba8d23cdef6438png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/All_assets-51_cd5b30a0-f19e-423b-992e-799342d4df80.png","t":"allassets51cd5b30a0f19e423b992e799342d4df80png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-2_ea70c329-3017-400c-aa8d-592c6e592f83.png","t":"nightshred2ea70c3293017400caa8d592c6e592f83png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/nightshred-3_71d3b771-afef-4067-b3f9-31f4725726ec.png","t":"nightshred371d3b771afef4067b3f931f4725726ecpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/doublenight_7dd28abf-1d48-496e-8a70-27c803557bc0.png","t":"doublenight7dd28abf1d48496e8a7027c803557bc0png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/6xnightshred_3b776c22-7b0a-42e0-aeae-f665e856b188.png","t":"6xnightshred3b776c227b0a42e0aeaef665e856b188png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/3xnightshred_87a9d59c-411f-4334-a3c0-c0b41abdb00a.png","t":"3xnightshred87a9d59c411f4334a3c0c0b41abdb00apng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -610,21 +611,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -646,7 +651,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"39532798345352","key":"90 Day","title":"90 Day","sku":null,"optionValues":["90 Day"],"option_values":[{"position":1,"name":"Supply","value":"90 Day"}],"selected_options":{"Supply":"90 Day"},"price_cents":12499,"regular_price_cents":19497,"compare_at_cents":19497,"compare_at_price_cents":19497,"source_available":true,"available":true,"image_url":null},{"variant_id":"39532798378120","key":"30 Day","title":"30 Day","sku":null,"optionValues":["30 Day"],"option_values":[{"position":1,"name":"Supply","value":"30 Day"}],"selected_options":{"Supply":"30 Day"},"price_cents":4499,"regular_price_cents":6499,"compare_at_cents":6499,"compare_at_price_cents":6499,"source_available":true,"available":true,"image_url":null},{"variant_id":"39532798410888","key":"180 Day","title":"180 Day","sku":null,"optionValues":["180 Day"],"option_values":[{"position":1,"name":"Supply","value":"180 Day"}],"selected_options":{"Supply":"180 Day"},"price_cents":23497,"regular_price_cents":38994,"compare_at_cents":38994,"compare_at_price_cents":38994,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/All_assets-53_1_80e69261-3c86-4423-84ba-8d23cdef6438.png"},{"variant_id":"39532798443656","key":"60 Day","title":"60 Day","sku":null,"optionValues":["60 Day"],"option_values":[{"position":1,"name":"Supply","value":"60 Day"}],"selected_options":{"Supply":"60 Day"},"price_cents":9597,"regular_price_cents":19497,"compare_at_cents":19497,"compare_at_price_cents":19497,"source_available":true,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"39532798345352","key":"90 Day","title":"90 Day","sku":null,"optionValues":["90 Day"],"option_values":[{"position":1,"name":"Supply","value":"90 Day"}],"selected_options":{"Supply":"90 Day"},"price_cents":12499,"regular_price_cents":19497,"compare_at_cents":19497,"compare_at_price_cents":19497,"source_available":true,"available":true,"image_url":null},{"variant_id":"39532798378120","key":"30 Day","title":"30 Day","sku":null,"optionValues":["30 Day"],"option_values":[{"position":1,"name":"Supply","value":"30 Day"}],"selected_options":{"Supply":"30 Day"},"price_cents":4499,"regular_price_cents":6499,"compare_at_cents":6499,"compare_at_price_cents":6499,"source_available":true,"available":true,"image_url":null},{"variant_id":"39532798410888","key":"180 Day","title":"180 Day","sku":null,"optionValues":["180 Day"],"option_values":[{"position":1,"name":"Supply","value":"180 Day"}],"selected_options":{"Supply":"180 Day"},"price_cents":23497,"regular_price_cents":38994,"compare_at_cents":38994,"compare_at_price_cents":38994,"source_available":true,"available":true,"image_url":null},{"variant_id":"39532798443656","key":"60 Day","title":"60 Day","sku":null,"optionValues":["60 Day"],"option_values":[{"position":1,"name":"Supply","value":"60 Day"}],"selected_options":{"Supply":"60 Day"},"price_cents":9597,"regular_price_cents":19497,"compare_at_cents":19497,"compare_at_price_cents":19497,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

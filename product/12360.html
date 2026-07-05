@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -630,17 +630,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_1_e47e3bca-8ca3-4520-bc22-0f1eef1924f3.jpg","t":"dyingiseasyjunglecamoripstop1e47e3bca8ca34520bc220f1eef1924f3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09907_89b9c9d3-fe2a-40ec-b6e5-a142c5868da6.jpg","t":"dsc0990789b9c9d3fe2a40ecb6e5a142c5868da6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09910_ce00c3fd-7cf9-44ac-917d-ba354fa028ad.jpg","t":"dsc09910ce00c3fd7cf944ac917dba354fa028adjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dyingiseasyrearmeshjj_efd97ad9-0897-469b-a8d8-7cbfa7bb624f.jpg","t":"dyingiseasyrearmeshjjefd97ad90897469ba8d87cbfa7bb624fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC07066_07d654a5-8905-4be8-835d-9a50b8ca53d7.jpg","t":"dsc0706607d654a589054be8835d9a50b8ca53d7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_4_fb783057-53de-471e-986e-1f69aa275211.jpg","t":"dyingiseasyjunglecamoripstop4fb78305753de471e986e1f69aa275211jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_1.jpg","t":"dyingiseasylivingishardwoodlandripstopblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_2_83c1a575-b946-4455-8ec9-60b852899b17.jpg","t":"dyingiseasyjunglecamoripstop283c1a575b94644558ec960b852899b17jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_5_67bbb786-36d5-4617-a82f-a33b8624e0e9.jpg","t":"dyingiseasyjunglecamoripstop567bbb78636d54617a82fa33b8624e0e9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_6.jpg","t":"dyingiseasylivingishardwoodlandripstopblackmeshsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_3_daf9feed-6541-419e-9364-9ee54dad22ee.jpg","t":"dyingiseasyjunglecamoripstop3daf9feed6541419e93649ee54dad22eejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_2.jpg","t":"dyingiseasylivingishardwoodlandripstopblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-MIDNIGHTTIGERSTRIPERIPSTOP_1_2929069b-4dad-404d-a3fe-94f835e88009.jpg","t":"dyingiseasylivingishardmidnighttigerstriperipstop12929069b4dad404da3fe94f835e88009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_5.jpg","t":"dyingiseasylivingishardwoodlandripstopblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-MIDNIGHTTIGERSTRIPERIPSTOP_2_3ce2fb09-126e-4931-8327-0672b325c883.jpg","t":"dyingiseasylivingishardmidnighttigerstriperipstop23ce2fb09126e493183270672b325c883jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_4.jpg","t":"dyingiseasylivingishardwoodlandripstopblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-MIDNIGHTTIGERSTRIPERIPSTOP_7_8141c599-9b91-4164-98d6-e8e822686e89.jpg","t":"dyingiseasylivingishardmidnighttigerstriperipstop78141c5999b91416498d6e8e822686e89jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_7.jpg","t":"dyingiseasylivingishardwoodlandripstopblackmeshsnapback7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-MIDNIGHTTIGERSTRIPERIPSTOP_3_99b22115-db08-4ad8-bb52-0590386da047.jpg","t":"dyingiseasylivingishardmidnighttigerstriperipstop399b22115db084ad8bb520590386da047jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_3.jpg","t":"dyingiseasylivingishardwoodlandripstopblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-MIDNIGHTTIGERSTRIPERIPSTOP_6_fdad7aec-e2bd-4067-b98e-29468b1e61bf.jpg","t":"dyingiseasylivingishardmidnighttigerstriperipstop6fdad7aece2bd4067b98e29468b1e61bfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_1.jpg","t":"dyingiseasylivingishardnightfalltigerstriperipstopblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-MIDNIGHTTIGERSTRIPERIPSTOP_4_b275f3a9-7b71-4379-8746-3776387ba435.jpg","t":"dyingiseasylivingishardmidnighttigerstriperipstop4b275f3a97b71437987463776387ba435jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_4.jpg","t":"dyingiseasylivingishardnightfalltigerstriperipstopblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-MIDNIGHTTIGERSTRIPERIPSTOP_5_ff33c580-86e1-480f-9ab2-20cfb6d185ab.jpg","t":"dyingiseasylivingishardmidnighttigerstriperipstop5ff33c58086e1480f9ab220cfb6d185abjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_2.jpg","t":"dyingiseasylivingishardnightfalltigerstriperipstopblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_5.jpg","t":"dyingiseasylivingishardnightfalltigerstriperipstopblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_3.jpg","t":"dyingiseasylivingishardnightfalltigerstriperipstopblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_6.jpg","t":"dyingiseasylivingishardnightfalltigerstriperipstopblackmeshsnapback6jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -656,21 +657,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -692,7 +697,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813879406962","key":"WOODLAND BDU CAMO","title":"WOODLAND BDU CAMO","sku":null,"optionValues":["WOODLAND BDU CAMO"],"option_values":[{"position":1,"name":"Color","value":"WOODLAND BDU CAMO"}],"selected_options":{"Color":"WOODLAND BDU CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_1_e47e3bca-8ca3-4520-bc22-0f1eef1924f3.jpg"},{"variant_id":"61813879439730","key":"NIGHTFALL TIGER STRIPE CAMO","title":"NIGHTFALL TIGER STRIPE CAMO","sku":null,"optionValues":["NIGHTFALL TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"Color","value":"NIGHTFALL TIGER STRIPE CAMO"}],"selected_options":{"Color":"NIGHTFALL TIGER STRIPE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_1_e47e3bca-8ca3-4520-bc22-0f1eef1924f3.jpg"},{"variant_id":"61813879472498","key":"MIDNIGHT TIGER STRIPE CAMO","title":"MIDNIGHT TIGER STRIPE CAMO","sku":null,"optionValues":["MIDNIGHT TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"Color","value":"MIDNIGHT TIGER STRIPE CAMO"}],"selected_options":{"Color":"MIDNIGHT TIGER STRIPE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_1_e47e3bca-8ca3-4520-bc22-0f1eef1924f3.jpg"},{"variant_id":"61813879505266","key":"JUNGLE CAMO","title":"JUNGLE CAMO","sku":null,"optionValues":["JUNGLE CAMO"],"option_values":[{"position":1,"name":"Color","value":"JUNGLE CAMO"}],"selected_options":{"Color":"JUNGLE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_1_e47e3bca-8ca3-4520-bc22-0f1eef1924f3.jpg"}];
+        var variantPricing = [{"variant_id":"61813879406962","key":"WOODLAND BDU CAMO","title":"WOODLAND BDU CAMO","sku":null,"optionValues":["WOODLAND BDU CAMO"],"option_values":[{"position":1,"name":"Color","value":"WOODLAND BDU CAMO"}],"selected_options":{"Color":"WOODLAND BDU CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_1_e47e3bca-8ca3-4520-bc22-0f1eef1924f3.jpg"},{"variant_id":"61813879439730","key":"NIGHTFALL TIGER STRIPE CAMO","title":"NIGHTFALL TIGER STRIPE CAMO","sku":null,"optionValues":["NIGHTFALL TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"Color","value":"NIGHTFALL TIGER STRIPE CAMO"}],"selected_options":{"Color":"NIGHTFALL TIGER STRIPE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813879472498","key":"MIDNIGHT TIGER STRIPE CAMO","title":"MIDNIGHT TIGER STRIPE CAMO","sku":null,"optionValues":["MIDNIGHT TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"Color","value":"MIDNIGHT TIGER STRIPE CAMO"}],"selected_options":{"Color":"MIDNIGHT TIGER STRIPE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY_LIVINGISHARD-MIDNIGHTTIGERSTRIPERIPSTOP_1_2929069b-4dad-404d-a3fe-94f835e88009.jpg"},{"variant_id":"61813879505266","key":"JUNGLE CAMO","title":"JUNGLE CAMO","sku":null,"optionValues":["JUNGLE CAMO"],"option_values":[{"position":1,"name":"Color","value":"JUNGLE CAMO"}],"selected_options":{"Color":"JUNGLE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-JUNGLECAMORIPSTOP_1_e47e3bca-8ca3-4520-bc22-0f1eef1924f3.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

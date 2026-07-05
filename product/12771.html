@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -585,17 +585,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-denise-austin-2-0-treadmill-main-view.webp","t":"productdeniseaustin20treadmillmainviewwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad_Denise_Austin_2.0_Foldable_Treadmill-G1-Gray-1_8e47e0dd-4d8a-4a8a-aa25-2badd3999385.jpg","t":"productwalkingpaddeniseaustin20foldabletreadmillg1gray18e47e0dd4d8a4a8aaa252badd3999385jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad_Denise_Austin_2.0_Foldable_Treadmill-PowderBlue--4_896bb821-aeb5-44ad-905d-e5292b32ac68.jpg","t":"productwalkingpaddeniseaustin20foldabletreadmillpowderblue4896bb821aeb544ad905de5292b32ac68jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad_Denise_Austin_2.0_Foldable_Treadmill-G1-PowderBlue-1_56a407b7-5118-4c37-93ae-e2ed0d6b4241.jpg","t":"productwalkingpaddeniseaustin20foldabletreadmillg1powderblue156a407b751184c3793aee2ed0d6b4241jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad_Denise_Austin_2.0_Foldable_Treadmill-Taupe-3_a3838c8d-3094-408c-8689-72bc294c8799.jpg","t":"productwalkingpaddeniseaustin20foldabletreadmilltaupe3a3838c8d3094408c868972bc294c8799jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad_Denise_Austin_2.0_Foldable_Treadmill-Taupe-2_6ca8a286-e657-4aac-bdcb-10fef72db0c7.jpg","t":"productwalkingpaddeniseaustin20foldabletreadmilltaupe26ca8a286e6574aacbdcb10fef72db0c7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_1000-1000-G1-plus-purple-1_d74295a7-a45a-4171-bda0-c5193639522e.jpg","t":"product10001000g1pluspurple1d74295a7a45a4171bda0c5193639522ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_1000-1000-G1-plus-Green_0fc7ba9f-30d8-4e6b-a816-b8bb4f2c3d85.jpg","t":"product10001000g1plusgreen0fc7ba9f30d84e6ba816b8bb4f2c3d85jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_1000-1000-G1-plus-Green-1_0b9b0f62-0c55-400d-adee-a56e3838a61d.jpg","t":"product10001000g1plusgreen10b9b0f620c55400dadeea56e3838a61djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_1000-1000-G1-plus-purple-2_fd8ae517-5915-4013-82b8-ca384468a927.jpg","t":"product10001000g1pluspurple2fd8ae5175915401382b8ca384468a927jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_1000-1000-G1-plus-pink-2_b950d1e6-2cb0-4c6e-9495-9d81eaa5ed7e.jpg","t":"product10001000g1pluspink2b950d1e62cb04c6e94959d81eaa5ed7ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_1000-1000-G1-plus-pink-1_27cc1df6-9c87-487e-90bc-1a8dd2132128.jpg","t":"product10001000g1pluspink127cc1df69c87487e90bc1a8dd2132128jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-2-0-using-treadmill.webp","t":"scenedeniseaustin20usingtreadmillwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-2-0-woman-adjusting-treadmill-settings.webp","t":"scenedeniseaustin20womanadjustingtreadmillsettingswebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-2-0-treadmill-in-home-office.webp","t":"scenedeniseaustin20treadmillinhomeofficewebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-2-0-treadmill-stored-under-sofa.webp","t":"scenedeniseaustin20treadmillstoredundersofawebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-2-0-treadmill-with-tablet-view.webp","t":"scenedeniseaustin20treadmillwithtabletviewwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-denise-austin-2-0-treadmill-control-panel-closeup.webp","t":"scenedeniseaustin20treadmillcontrolpanelcloseupwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/video-gif-walkingpad-denise-austin-2.0-treadmill.gif","t":"videogifwalkingpaddeniseaustin20treadmillgif"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -611,21 +612,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

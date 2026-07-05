@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -581,17 +581,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-HULK-JUICE_1_17895425-11ef-418d-9893-6dcf0dcdd62e.png","t":"shprehulkjuice11789542511ef418d98936dcf0dcdd62epng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/products/SuperhumanPRELionsblood1bottle_1ba75f05-9183-44a0-bb48-2e79aeac0cf2.png","t":"superhumanprelionsblood1bottle1ba75f05918344a0bb482e79aeac0cf2png"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-UNICORN-JUICE_1_e56f1a7f-00be-4f69-8bab-ecd57da55dcd.png","t":"shpreunicornjuice1e56f1a7f00be4f698babecd57da55dcdpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-ORANGE-GAINSICLE_1_6234a7af-1f85-49c0-9f9f-2c7842835b7f.png","t":"shpreorangegainsicle16234a7af1f8549c09f9f2c7842835b7fpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-MIAMI-VICE_1_ab66fda9-45ea-4e45-9351-bc3bbfd5eba3.png","t":"shpremiamivice1ab66fda945ea4e459351bc3bbfd5eba3png"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-GRAPEZILLA_1_783dc548-0c08-4ace-afeb-ddfb57a4f787.png","t":"shpregrapezilla1783dc5480c084aceafebddfb57a4f787png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -607,21 +608,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -643,7 +648,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"39720683864126","key":"MIAMI VICE (Piña Colada Strawberry Daiquiri)","title":"MIAMI VICE (Piña Colada Strawberry Daiquiri)","sku":null,"optionValues":["MIAMI VICE (Piña Colada Strawberry Daiquiri)"],"option_values":[{"position":1,"name":"Select Flavor","value":"MIAMI VICE (Piña Colada Strawberry Daiquiri)"}],"selected_options":{"Select Flavor":"MIAMI VICE (Piña Colada Strawberry Daiquiri)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-MIAMI-VICE_1_ab66fda9-45ea-4e45-9351-bc3bbfd5eba3.png"},{"variant_id":"39771443920958","key":"GRAPEZILLA (Grape Bubblegum)","title":"GRAPEZILLA (Grape Bubblegum)","sku":null,"optionValues":["GRAPEZILLA (Grape Bubblegum)"],"option_values":[{"position":1,"name":"Select Flavor","value":"GRAPEZILLA (Grape Bubblegum)"}],"selected_options":{"Select Flavor":"GRAPEZILLA (Grape Bubblegum)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-GRAPEZILLA_1_783dc548-0c08-4ace-afeb-ddfb57a4f787.png"},{"variant_id":"39720683831358","key":"ORANGE GAINSICLE (Orange Creamsicle)","title":"ORANGE GAINSICLE (Orange Creamsicle)","sku":null,"optionValues":["ORANGE GAINSICLE (Orange Creamsicle)"],"option_values":[{"position":1,"name":"Select Flavor","value":"ORANGE GAINSICLE (Orange Creamsicle)"}],"selected_options":{"Select Flavor":"ORANGE GAINSICLE (Orange Creamsicle)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-ORANGE-GAINSICLE_1_6234a7af-1f85-49c0-9f9f-2c7842835b7f.png"},{"variant_id":"39720683798590","key":"HULK JUICE (Sour Gummy Bear)","title":"HULK JUICE (Sour Gummy Bear)","sku":null,"optionValues":["HULK JUICE (Sour Gummy Bear)"],"option_values":[{"position":1,"name":"Select Flavor","value":"HULK JUICE (Sour Gummy Bear)"}],"selected_options":{"Select Flavor":"HULK JUICE (Sour Gummy Bear)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-HULK-JUICE_1_17895425-11ef-418d-9893-6dcf0dcdd62e.png"},{"variant_id":"39720683896894","key":"UNICORN JUICE (Rainbow Sherbet)","title":"UNICORN JUICE (Rainbow Sherbet)","sku":null,"optionValues":["UNICORN JUICE (Rainbow Sherbet)"],"option_values":[{"position":1,"name":"Select Flavor","value":"UNICORN JUICE (Rainbow Sherbet)"}],"selected_options":{"Select Flavor":"UNICORN JUICE (Rainbow Sherbet)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-HULK-JUICE_1_17895425-11ef-418d-9893-6dcf0dcdd62e.png"},{"variant_id":"39954402312254","key":"LION'S BLOOD (Red Gummy Bear)","title":"LION'S BLOOD (Red Gummy Bear)","sku":null,"optionValues":["LION'S BLOOD (Red Gummy Bear)"],"option_values":[{"position":1,"name":"Select Flavor","value":"LION'S BLOOD (Red Gummy Bear)"}],"selected_options":{"Select Flavor":"LION'S BLOOD (Red Gummy Bear)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SuperhumanPRELionsblood1bottle_1ba75f05-9183-44a0-bb48-2e79aeac0cf2.png"}];
+        var variantPricing = [{"variant_id":"39720683864126","key":"MIAMI VICE (Piña Colada Strawberry Daiquiri)","title":"MIAMI VICE (Piña Colada Strawberry Daiquiri)","sku":null,"optionValues":["MIAMI VICE (Piña Colada Strawberry Daiquiri)"],"option_values":[{"position":1,"name":"Select Flavor","value":"MIAMI VICE (Piña Colada Strawberry Daiquiri)"}],"selected_options":{"Select Flavor":"MIAMI VICE (Piña Colada Strawberry Daiquiri)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-MIAMI-VICE_1_ab66fda9-45ea-4e45-9351-bc3bbfd5eba3.png"},{"variant_id":"39771443920958","key":"GRAPEZILLA (Grape Bubblegum)","title":"GRAPEZILLA (Grape Bubblegum)","sku":null,"optionValues":["GRAPEZILLA (Grape Bubblegum)"],"option_values":[{"position":1,"name":"Select Flavor","value":"GRAPEZILLA (Grape Bubblegum)"}],"selected_options":{"Select Flavor":"GRAPEZILLA (Grape Bubblegum)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-GRAPEZILLA_1_783dc548-0c08-4ace-afeb-ddfb57a4f787.png"},{"variant_id":"39720683831358","key":"ORANGE GAINSICLE (Orange Creamsicle)","title":"ORANGE GAINSICLE (Orange Creamsicle)","sku":null,"optionValues":["ORANGE GAINSICLE (Orange Creamsicle)"],"option_values":[{"position":1,"name":"Select Flavor","value":"ORANGE GAINSICLE (Orange Creamsicle)"}],"selected_options":{"Select Flavor":"ORANGE GAINSICLE (Orange Creamsicle)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-ORANGE-GAINSICLE_1_6234a7af-1f85-49c0-9f9f-2c7842835b7f.png"},{"variant_id":"39720683798590","key":"HULK JUICE (Sour Gummy Bear)","title":"HULK JUICE (Sour Gummy Bear)","sku":null,"optionValues":["HULK JUICE (Sour Gummy Bear)"],"option_values":[{"position":1,"name":"Select Flavor","value":"HULK JUICE (Sour Gummy Bear)"}],"selected_options":{"Select Flavor":"HULK JUICE (Sour Gummy Bear)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-HULK-JUICE_1_17895425-11ef-418d-9893-6dcf0dcdd62e.png"},{"variant_id":"39720683896894","key":"UNICORN JUICE (Rainbow Sherbet)","title":"UNICORN JUICE (Rainbow Sherbet)","sku":null,"optionValues":["UNICORN JUICE (Rainbow Sherbet)"],"option_values":[{"position":1,"name":"Select Flavor","value":"UNICORN JUICE (Rainbow Sherbet)"}],"selected_options":{"Select Flavor":"UNICORN JUICE (Rainbow Sherbet)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SH-PRE-UNICORN-JUICE_1_e56f1a7f-00be-4f69-8bab-ecd57da55dcd.png"},{"variant_id":"39954402312254","key":"LION'S BLOOD (Red Gummy Bear)","title":"LION'S BLOOD (Red Gummy Bear)","sku":null,"optionValues":["LION'S BLOOD (Red Gummy Bear)"],"option_values":[{"position":1,"name":"Select Flavor","value":"LION'S BLOOD (Red Gummy Bear)"}],"selected_options":{"Select Flavor":"LION'S BLOOD (Red Gummy Bear)"},"price_cents":4999,"regular_price_cents":4999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/products/SuperhumanPRELionsblood1bottle_1ba75f05-9183-44a0-bb48-2e79aeac0cf2.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

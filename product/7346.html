@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -573,17 +573,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-Mango-Hero_7aee9603-d5bd-4991-89ae-4bc6419c30d1.png","t":"fuel10travelpacksmangohero7aee9603d5bd499189ae4bc6419c30d1png"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-StrawberryLime-Hero.png","t":"fuel10travelpacksstrawberrylimeheropng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel-Mango-POG-Maui-Nui_2000x2000_03102025-CC.png","t":"fuelmangopogmauinui2000x200003102025ccpng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Updated_Fuel_Carton-Cherry_BerryFEB252025_CC.png","t":"updatedfuelcartoncherryberryfeb252025ccpng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-Momentous_Standard_0eb78bd2-16ca-4282-ad65-9536d68aa342.png","t":"fuel10travelpacksmomentousstandard0eb78bd216ca4282ad659536d68aa342png"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-HowToUse_8c1a5108-dbb8-44ed-98ee-91acd00e185f.png","t":"fuel10travelpackshowtouse8c1a5108dbb844ed98ee91acd00e185fpng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-SocialProof.png","t":"fuel10travelpackssocialproofpng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-POG-TravelPacks-FuelYourPurpose.jpg","t":"fuel10pogtravelpacksfuelyourpurposejpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-Palatinose.png","t":"fuel10travelpackspalatinosepng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-POG-Mango-TravelPacks-MomentousStandard.jpg","t":"fuel10pogmangotravelpacksmomentousstandardjpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-Stats_383561be-236a-4347-9c4f-3999cadfdd32.png","t":"fuel10travelpacksstats383561be236a43479c4f3999cadfdd32png"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-POG-TravelPacks-Supps.png","t":"fuel10pogtravelpackssuppspng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-Supps-Mango_9da5c395-6bf8-4861-a43d-926833bb8507.png","t":"fuel10travelpackssuppsmango9da5c3956bf84861a43d926833bb8507png"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-Supps-StrawberryLime.png","t":"fuel10travelpackssuppsstrawberrylimepng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/V3_Supp-Facts_Cherry-Fuel-Carton_2000x2000_11082024_854ed359-0001-4999-99dd-fdb6f1bc07e9.png","t":"v3suppfactscherryfuelcarton2000x200011082024854ed3590001499999ddfdb6f1bc07e9png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -599,21 +600,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

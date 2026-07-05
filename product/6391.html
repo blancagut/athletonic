@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -564,17 +564,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-1.png","t":"wnmprobb1png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-2_5b897efc-5c71-4383-988c-93624fb15fe2.jpg","t":"wnmprobb25b897efc5c714383988c93624fb15fe2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-3_533fc890-99eb-4032-8404-1c219fcde244.jpg","t":"wnmprobb3533fc89099eb403284041c219fcde244jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-4_fcbc3935-005b-4734-8746-9a0ab47cf05f.jpg","t":"wnmprobb4fcbc3935005b473487469a0ab47cf05fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-3-v2.png","t":"wnmbb3v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-5-v2.png","t":"wnmbb5v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-6-V2.png","t":"wnmbb6v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-7-V2.png","t":"wnmbb7v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-8-v2.png","t":"wnmbb8v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-9-V2.png","t":"wnmbb9v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-10-V2.png","t":"wnmbb10v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-11-V2.png","t":"wnmbb11v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-12-V2.png","t":"wnmbb12v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-13-V2.png","t":"wnmbb13v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM-BB-4-V2.png","t":"wnmbb4v2png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-5_71cdb160-9c3c-4d33-b9af-cdb0c5cdbe0d.jpg","t":"wnmprobb571cdb1609c3c4d33b9afcdb0c5cdbe0djpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-7_080c1a99-5f7b-46dd-b03b-1b7057fc363d.jpg","t":"wnmprobb7080c1a995f7b46ddb03b1b7057fc363djpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-6_e2470658-a0b2-45df-bdd7-87f8faec034d.jpg","t":"wnmprobb6e2470658a0b245dfbdd787f8faec034djpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-8_05e3f1b4-d44b-4ed2-b908-840074127c34.jpg","t":"wnmprobb805e3f1b4d44b4ed2b908840074127c34jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/WNM_PRO-BB-9_365bc008-6d27-43c5-ba9e-d54f239cf9ed.jpg","t":"wnmprobb9365bc0086d2743c5ba9ed54f239cf9edjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -590,21 +591,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

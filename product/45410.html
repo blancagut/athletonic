@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -581,17 +581,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Black_149_Front.jpg","t":"versatilelsshirtblack149frontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Medium-Gray_165_Front.jpg","t":"versatilelsshirtmediumgray165frontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Black_151_Detail1-002.jpg","t":"versatilelsshirtblack151detail1002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Black_158_Detail2_6f82046e-04ae-40ea-9dc4-22091c9d97f1.jpg","t":"versatilelsshirtblack158detail26f82046e04ae40ea9dc422091c9d97f1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Black_161_Detail3.jpg","t":"versatilelsshirtblack161detail3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Iron_149_Front.jpg","t":"versatilelsshirtiron149frontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Medium-Gray_166_Detail1.jpg","t":"versatilelsshirtmediumgray166detail1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Medium-Gray_177_Detail2.jpg","t":"versatilelsshirtmediumgray177detail2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Medium-Gray_184_Detail3.jpg","t":"versatilelsshirtmediumgray184detail3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Navy_149_Front.jpg","t":"versatilelsshirtnavy149frontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Iron_151_Detail1-002.jpg","t":"versatilelsshirtiron151detail1002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Iron_158_Detail2_d463c4c2-2c69-415f-9201-4c549597e43e.jpg","t":"versatilelsshirtiron158detail2d463c4c22c69415f92014c549597e43ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Iron_161_Detail3.jpg","t":"versatilelsshirtiron161detail3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Blue-Blizzard_149_Front.jpg","t":"versatilelsshirtblueblizzard149frontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Navy_151_Detail1-002.jpg","t":"versatilelsshirtnavy151detail1002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Navy_158_Detail2.jpg","t":"versatilelsshirtnavy158detail2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Navy_161_Detail3.jpg","t":"versatilelsshirtnavy161detail3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Clay-Gray_165_Front_4bbbf249-f9df-4a75-8930-0e1e64a62ac9.jpg","t":"versatilelsshirtclaygray165front4bbbf249f9df4a7589300e1e64a62ac9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Black_156_Back_2be93491-fd4a-4572-b938-66b5f1d36b6d.jpg","t":"versatilelsshirtblack156back2be93491fd4a4572b93866b5f1d36b6djpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Blue-Blizzard_151_Detail1-002.jpg","t":"versatilelsshirtblueblizzard151detail1002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Blue-Blizzard_158_Detail2.jpg","t":"versatilelsshirtblueblizzard158detail2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Blue-Blizzard_161_Detail3.jpg","t":"versatilelsshirtblueblizzard161detail3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_OD-Green_149_Front_f52a3351-c022-4927-81fd-8443e698f6d8.jpg","t":"versatilelsshirtodgreen149frontf52a3351c022492781fd8443e698f6d8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Medium-Gray_175_Back.jpg","t":"versatilelsshirtmediumgray175backjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Clay-Gray_166_Detail1_5defd834-bf24-4c4d-a18d-c36175c575d3.jpg","t":"versatilelsshirtclaygray166detail15defd834bf244c4da18dc36175c575d3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Clay-Gray_177_Detail2_aea08d9d-523e-41ff-9bd9-0127efb4aae8.jpg","t":"versatilelsshirtclaygray177detail2aea08d9d523e41ff9bd90127efb4aae8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Clay-Gray_184_Detail3_c4641e35-bf3d-4c2c-9484-71a7da3b5df7.jpg","t":"versatilelsshirtclaygray184detail3c4641e35bf3d4c2c948471a7da3b5df7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Off-White_165_Front.jpg","t":"versatilelsshirtoffwhite165frontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Iron_156_Back_c04c4431-3436-4e7f-8563-7a0b0456e2d5.jpg","t":"versatilelsshirtiron156backc04c443134364e7f85637a0b0456e2d5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_OD-Green_151_Detail1-002_154dd9ad-0945-45e3-a84d-666090e5ae78.jpg","t":"versatilelsshirtodgreen151detail1002154dd9ad094545e3a84d666090e5ae78jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_OD-Green_158_Detail2_e41b7588-7376-4aca-b3e1-fd8f2922ee79.jpg","t":"versatilelsshirtodgreen158detail2e41b758873764acab3e1fd8f2922ee79jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_OD-Green_161_Detail3_8a997da6-8fc8-4b36-baa1-fd6c8a90529d.jpg","t":"versatilelsshirtodgreen161detail38a997da68fc84b36baa1fd6c8a90529djpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Navy_156_Back.jpg","t":"versatilelsshirtnavy156backjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Off-White_166_Detail1.jpg","t":"versatilelsshirtoffwhite166detail1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Off-White_177_Detail2.jpg","t":"versatilelsshirtoffwhite177detail2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Off-White_184_Detail3.jpg","t":"versatilelsshirtoffwhite184detail3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Blue-Blizzard_156_Back.jpg","t":"versatilelsshirtblueblizzard156backjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Clay-Gray_175_Back_72ca5437-8332-489f-a457-8c5c8856d2b0.jpg","t":"versatilelsshirtclaygray175back72ca54378332489fa4578c5c8856d2b0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_OD-Green_156_Back_4f4c0739-1993-4f82-b6e3-dc4b00bf5dfb.jpg","t":"versatilelsshirtodgreen156back4f4c073919934f82b6e3dc4b00bf5dfbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Versatile-LS-Shirt_Off-White_175_Back.jpg","t":"versatilelsshirtoffwhite175backjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -607,21 +608,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

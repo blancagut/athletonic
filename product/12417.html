@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -612,17 +612,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitcamfrontjj.jpg","t":"takenoshitcamfrontjjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09750_1.jpg","t":"cia097501jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblkfrontsidie_2f9ff705-88b1-4c60-842e-6810be3027cc.jpg","t":"takenoshitblkfrontsidiejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09755_1.jpg","t":"cia097551jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09743_1_0f9f1af3-617e-4b44-848c-011e46eb1b93.jpg","t":"cia0974317d5d5cd3cd2a4641955cc20204bbb380jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg","t":"takenoshitblackblkjjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tkaenobwfront.jpg","t":"tkaenobwfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitusaflag.jpg","t":"takenoshitusaflagjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenousashitblkbdu.jpg","t":"takenousashitblkbdujpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00584_3476ddd6-6306-4698-8b2c-7385a2fbc0b6.jpg","t":"cia005843476ddd6630646988b2c7385a2fbc0b6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitusaflaggrygry_545ddc76-29d8-488b-93fd-bdbe7ce4ef55.jpg","t":"takenoshitusaflaggrygry545ddc7629d8488b93fdbdbe7ce4ef55jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/graytakeshitnoflag_6dc20c6f-4c79-4625-937e-70f96e32af9a.jpg","t":"graytakeshitnoflagjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitgrayblakfronj_1e90753f-9191-424f-888a-4dd181820b31.jpg","t":"takenoshitgrayblakfronjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblkwhteshide_ca0900ca-6928-4a86-a71e-a391d8540b70.jpg","t":"takenoshitblkwhteshidedc5468c9307d45629f9004c58cac44c1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00594-4_c7442e5a-e53b-472a-8c47-2c2c42a32745.jpg","t":"cia005944jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00582-2.jpg","t":"cia005822jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/bbdublkbk.jpg","t":"bbdublkbkjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblk4.jpg","t":"takenoshitblk4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitmcultiside.jpg","t":"takenoshitmcultisidejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenosnhitmulticam_185dce0b-85c8-4dea-9a9a-cdb773aa9ce8.jpg","t":"takenosnhitmulticamc1900bd868924ad884a88f7671a491a5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitflagusakk.jpg","t":"takenoshitflagusakkjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitusasidelk.jpg","t":"takenoshitusasidelkjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09756_1_6d163a3a-e0d7-4e9f-b240-000c91d22c87.jpg","t":"cia0975616d163a3ae0d74e9fb240000c91d22c87jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -638,21 +639,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -674,7 +679,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813867348338","key":"BLACK DUCK CAMO / BLACK","title":"BLACK DUCK CAMO / BLACK","sku":null,"optionValues":["BLACK DUCK CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK DUCK CAMO / BLACK"}],"selected_options":{"COLOR":"BLACK DUCK CAMO / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867381106","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867413874","key":"BLACK / WHITE","title":"BLACK / WHITE","sku":null,"optionValues":["BLACK / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / WHITE"}],"selected_options":{"COLOR":"BLACK / WHITE"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867446642","key":"BLACK MULTICAM / BLACK","title":"BLACK MULTICAM / BLACK","sku":null,"optionValues":["BLACK MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM / BLACK"}],"selected_options":{"COLOR":"BLACK MULTICAM / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867479410","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867512178","key":"GRAY / DARK GRAY / BLACK","title":"GRAY / DARK GRAY / BLACK","sku":null,"optionValues":["GRAY / DARK GRAY / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / DARK GRAY / BLACK"}],"selected_options":{"COLOR":"GRAY / DARK GRAY / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867544946","key":"BDU CAMO / GRAY / BLACK","title":"BDU CAMO / GRAY / BLACK","sku":null,"optionValues":["BDU CAMO / GRAY / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / GRAY / BLACK"}],"selected_options":{"COLOR":"BDU CAMO / GRAY / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"}];
+        var variantPricing = [{"variant_id":"61813867348338","key":"BLACK DUCK CAMO / BLACK","title":"BLACK DUCK CAMO / BLACK","sku":null,"optionValues":["BLACK DUCK CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK DUCK CAMO / BLACK"}],"selected_options":{"COLOR":"BLACK DUCK CAMO / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867381106","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867413874","key":"BLACK / WHITE","title":"BLACK / WHITE","sku":null,"optionValues":["BLACK / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / WHITE"}],"selected_options":{"COLOR":"BLACK / WHITE"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867446642","key":"BLACK MULTICAM / BLACK","title":"BLACK MULTICAM / BLACK","sku":null,"optionValues":["BLACK MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM / BLACK"}],"selected_options":{"COLOR":"BLACK MULTICAM / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867479410","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/takenoshitblackblkjj.jpg"},{"variant_id":"61813867512178","key":"GRAY / DARK GRAY / BLACK","title":"GRAY / DARK GRAY / BLACK","sku":null,"optionValues":["GRAY / DARK GRAY / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / DARK GRAY / BLACK"}],"selected_options":{"COLOR":"GRAY / DARK GRAY / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/graytakeshitnoflag_6dc20c6f-4c79-4625-937e-70f96e32af9a.jpg"},{"variant_id":"61813867544946","key":"BDU CAMO / GRAY / BLACK","title":"BDU CAMO / GRAY / BLACK","sku":null,"optionValues":["BDU CAMO / GRAY / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / GRAY / BLACK"}],"selected_options":{"COLOR":"BDU CAMO / GRAY / BLACK"},"price_cents":2399,"regular_price_cents":3500,"compare_at_cents":3500,"compare_at_price_cents":3500,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

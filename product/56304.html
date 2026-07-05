@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -170,10 +170,10 @@
         <div class="pdp-info">
           <p class="pdp-brand">twins_special</p>
           <h1 class="pdp-title" data-pdp-title>TWINS Boxing Gloves- Dual Bold Colors- Premium Leather w/ Laceup- White Fist- Black, White, Gold, Silver and Grey</h1>
-          <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="9500" data-base-compare-cents="12990" data-currency="USD">
-            <strong class="pdp-price" data-pdp-price>$95.00</strong>
-            <span class="pdp-compare" data-pdp-compare >$129.90</span>
-            <span class="pdp-discount" data-pdp-discount >−27%</span>
+          <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="9900" data-base-compare-cents="" data-currency="USD">
+            <strong class="pdp-price" data-pdp-price>$99.00</strong>
+            <span class="pdp-compare" data-pdp-compare hidden></span>
+            <span class="pdp-discount" data-pdp-discount hidden>Limited offer</span>
           </div>
           <p class="pdp-availability">In stock · Sold by Athletonic</p>
 
@@ -202,7 +202,7 @@
               data-cart-id="56304"
               data-cart-brand="twins_special"
               data-cart-name="TWINS Boxing Gloves- Dual Bold Colors- Premium Leather w/ Laceup- White Fist- Black, White, Gold, Silver and Grey"
-              data-cart-price="95"
+              data-cart-price="99"
               data-cart-currency="USD"
               data-cart-image="https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12416/7782/TW38-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-17.png__92414.1774543006.jpg"
               data-cart-variant-id="TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-BLACK-WHITE-GOLD-SILVER-AND-GREY-12-WH"
@@ -568,17 +568,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12416/7782/TW38-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-17.png__92414.1774543006.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistblackwhitegoldsilverandgreytw38dualcolorlaceupcoloredpalmwhitebodyandthumbview117png924141774543006jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12416/7778/TW38-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-18_0.png__07952.1774543006.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistblackwhitegoldsilverandgreytw38dualcolorlaceupcoloredpalmwhitebodyandthumbview1180png079521774543006jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12416/7780/TW38-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-19_0.png__79031.1774537612.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistblackwhitegoldsilverandgreytw38dualcolorlaceupcoloredpalmwhitebodyandthumbview1190png790311774537612jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12416/7779/TW38-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-20_0.png__26051.1774537613.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistblackwhitegoldsilverandgreytw38dualcolorlaceupcoloredpalmwhitebodyandthumbview1200png260511774537613jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12416/7781/TW38-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-21_0.png__33799.1774537613.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistblackwhitegoldsilverandgreytw38dualcolorlaceupcoloredpalmwhitebodyandthumbview1210png337991774537613jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -594,21 +595,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -630,7 +635,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-BLACK-WHITE-GOLD-SILVER-AND-GREY-12-WH","key":"TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-BLACK-WHITE-GOLD-SILVER-AND-GREY-12-WH","title":"","sku":null,"optionValues":[],"option_values":[],"selected_options":{},"price_cents":9999,"regular_price_cents":9999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-BLACK-WHITE-GOLD-SILVER-AND-GREY-12-WH","key":"TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-BLACK-WHITE-GOLD-SILVER-AND-GREY-12-WH","title":"","sku":null,"optionValues":[],"option_values":[],"selected_options":{},"price_cents":9999,"regular_price_cents":19998,"compare_at_cents":19998,"compare_at_price_cents":19998,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

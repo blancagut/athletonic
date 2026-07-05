@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -569,17 +569,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/TropFront_sticker_4dfaae6c-16a2-49d1-9c46-5574d7b4d1ae.webp","t":"tropfrontsticker4dfaae6c16a249d19c465574d7b4d1aewebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/UnflFront_Sticker_56413609-ee77-4281-b623-e22f602dc24e.webp","t":"unflfrontsticker56413609ee774281b623e22f602dc24ewebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/WatermelonFront_sticker_89328edd-8f37-44d0-a0bc-d2407685ed39.webp","t":"watermelonfrontsticker89328edd8f3744d0a0bcd2407685ed39webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/6x_freefrother_1.webp","t":"6xfreefrother1webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/UnflInfo_6396613c-14cf-4f28-9fde-1cee0b6374bd.webp","t":"unflinfo6396613c14cf4f289fde1cee0b6374bdwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/TropicalPunch_SFP_8feb96bf-263e-4a49-b398-ef97fe7cea33.webp","t":"tropicalpunchsfp8feb96bf263e4a49b398ef97fe7cea33webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/Unflavored_SFP_d5ce50a3-4ad0-4f4d-9e81-1bd6ebcf1fb5.webp","t":"unflavoredsfpd5ce50a34ad04f4d9e811bd6ebcf1fb5webp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/Watermelon_SFP_247b2108-9270-4bc3-bbb7-cd1b318d2919.webp","t":"watermelonsfp247b210892704bc3bbb7cd1b318d2919webp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -595,21 +596,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

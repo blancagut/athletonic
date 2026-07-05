@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -569,17 +569,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/242300_Bites_Bundle_main_eee4da28-9430-447d-8778-7bd3d1d38d72.png","t":"242300bitesbundlemaine56489313b954ab5b29e2e006d7bad5dpng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/1-Navitas-BITES_BluHemp-8oz-FOP_7b5c5552-c1ca-475e-9c5e-1b04ce8c663a.png","t":"1navitasbitesbluhemp8ozfop7b5c5552c1ca475e9c5e1b04ce8c663apng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/2-Navitas-BITES_BluHemp-8oz-BOP_8cee8059-e16c-402a-968f-805845a2d810.png","t":"2navitasbitesbluhemp8ozbop8cee8059e16c402a968f805845a2d810png"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/1-Navitas-BITES_StrwbryChia-8oz-FOP_73c9e8a9-0305-48e1-8571-2d171c06b95d.png","t":"1navitasbitesstrwbrychia8ozfop73c9e8a9030548e185712d171c06b95dpng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/2-Navitas-BITES_StrwbryChia-8oz-BOP_5b3015fd-f304-4599-bb71-44da6b56b164.png","t":"2navitasbitesstrwbrychia8ozbop5b3015fdf3044599bb7144da6b56b164png"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/1-Navitas-BITES-ChocBrownie-8oz-FOP_1891bee1-5c4a-4e59-82b9-629d030e101b.png","t":"1navitasbiteschocbrownie8ozfop1891bee15c4a4e5982b9629d030e101bpng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/2-Navitas-BITES-ChocBrownie-8oz-BOP_38bb0b5e-088a-44eb-a024-a79e0bfb0f65.png","t":"2navitasbiteschocbrownie8ozbop38bb0b5e088a44eba024a79e0bfb0f65png"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/1-Navitas-BITES-CacaoGoji-8oz-FOP_b6e5aaf3-8802-4b2a-9ee5-38677347783b.png","t":"1navitasbitescacaogoji8ozfopb6e5aaf388024b2a9ee538677347783bpng"},{"src":"https://cdn.shopify.com/s/files/1/0012/0605/9079/files/2-Navitas-BITES-CacaoGoji-8oz-BOP_19030d95-3e52-465e-806a-fb1321f69c83.png","t":"2navitasbitescacaogoji8ozbop19030d953e52465e806afb1321f69c83png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -595,21 +596,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

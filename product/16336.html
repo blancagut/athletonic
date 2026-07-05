@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -539,17 +539,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/CVPLemonSugarCookie6x.webp","t":"cvplemonsugarcookie6xwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/cvp-birthdaycake-6bag.png","t":"cvpbirthdaycake6bagpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cvp-ssc-black-side1_9d5f6f75-f7d8-4c03-9876-314c73e49728.png","t":"cvpsscblackside19d5f6f75f7d84c039876314c73e49728png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-maplewaffle2_6f0f7e05-dc69-4749-9bbf-4ba6cd13e846.png","t":"cleanveganmaplewaffle26f0f7e05dc6947499bbf4ba6cd13e846png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-fruitycereal_a8f391e9-2db3-46ae-8ebb-d360fc7b0e9e.png","t":"cleanveganfruitycereala8f391e92db346ae8ebbd360fc7b0e9epng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-chocolatebrownie_38343bd0-25c8-472d-b910-e9f45a04129b.png","t":"cleanveganchocolatebrownie38343bd025c8472db910e9f45a04129bpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-cinnamonfrenchtoast_97d98072-2143-4bbc-a75b-d50ca60be4c3.png","t":"cleanvegancinnamonfrenchtoast97d9807221434bbca75bd50ca60be4c3png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanvegan-birthdaycake_92e87bf8-4c00-4ca8-be5e-169ba49c9b52.png","t":"cleanveganbirthdaycake92e87bf84c004ca8be5e169ba49c9b52png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanveganprotein-blueberrycrumble_1_4ee38f7d-738c-4327-a550-390dd4a41579.png","t":"cleanveganproteinblueberrycrumble14ee38f7d738c4327a550390dd4a41579png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -565,21 +566,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

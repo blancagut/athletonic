@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -596,17 +596,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__lavender_0007.jpg","t":"1stphormapparelwomensshortsadaptshort4lavender0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__lavender_0001.jpg","t":"1stphormapparelwomensshortsadaptshort4lavender0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__lavender_0010.jpg","t":"1stphormapparelwomensshortsadaptshort4lavender0010jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__lavender_0009.jpg","t":"1stphormapparelwomensshortsadaptshort4lavender0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__stormgrey_0001.jpg","t":"1stphormapparelwomensshortsadaptshort4stormgrey0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__lavender_0008.jpg","t":"1stphormapparelwomensshortsadaptshort4lavender0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__lavender_0006.jpg","t":"1stphormapparelwomensshortsadaptshort4lavender0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__lavender_0003.jpg","t":"1stphormapparelwomensshortsadaptshort4lavender0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__stormgrey_0002.jpg","t":"1stphormapparelwomensshortsadaptshort4stormgrey0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__stormgrey_0003.jpg","t":"1stphormapparelwomensshortsadaptshort4stormgrey0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__stormgrey_0004.jpg","t":"1stphormapparelwomensshortsadaptshort4stormgrey0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__watermelon_0001.jpg","t":"1stphormapparelwomensshortsadaptshort4watermelon0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__watermelon_0007.jpg","t":"1stphormapparelwomensshortsadaptshort4watermelon0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__watermelon_0008.jpg","t":"1stphormapparelwomensshortsadaptshort4watermelon0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__watermelon_0004.jpg","t":"1stphormapparelwomensshortsadaptshort4watermelon0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__watermelon_0005.jpg","t":"1stphormapparelwomensshortsadaptshort4watermelon0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__watermelon_0003.jpg","t":"1stphormapparelwomensshortsadaptshort4watermelon0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__watermelon_0002.jpg","t":"1stphormapparelwomensshortsadaptshort4watermelon0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__black_0001_646279cd-30a1-436e-ac84-b52ab4cb5744.jpg","t":"1stphormapparelwomenshortsadaptshort4black0001646279cd30a1436eac84b52ab4cb5744jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__black_0002_96cdba1c-9832-4468-986a-697fd2ff2b63.jpg","t":"1stphormapparelwomenshortsadaptshort4black000296cdba1c98324468986a697fd2ff2b63jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__black_0009_74bc09d4-102c-4c28-978a-69db7c0f319d.jpg","t":"1stphormapparelwomenshortsadaptshort4black000974bc09d4102c4c28978a69db7c0f319djpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__black_0008_b057daff-21b5-44cd-8946-3d5a916dea47.jpg","t":"1stphormapparelwomenshortsadaptshort4black0008b057daff21b544cd89463d5a916dea47jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__black_0004_de00cf40-3077-443d-9e39-534395ae2168.jpg","t":"1stphormapparelwomenshortsadaptshort4black0004de00cf403077443d9e39534395ae2168jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__black_0006_53d5dd73-2215-4bb9-805f-5a9615f8c72d.jpg","t":"1stphormapparelwomenshortsadaptshort4black000653d5dd7322154bb9805f5a9615f8c72djpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__deserttaupe_0002_290aa16c-4168-4629-b89a-9c53423806cc.jpg","t":"1stphormapparelwomenshortsadaptshort4deserttaupe0002290aa16c41684629b89a9c53423806ccjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__deserttaupe_0003_5472f4bd-42f3-4a90-9994-ec78cbffa99a.jpg","t":"1stphormapparelwomenshortsadaptshort4deserttaupe00035472f4bd42f34a909994ec78cbffa99ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__deserttaupe_0004_231cbc3c-14a5-4532-b526-b78dab34b304.jpg","t":"1stphormapparelwomenshortsadaptshort4deserttaupe0004231cbc3c14a54532b526b78dab34b304jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__deserttaupe_0005_4ca01e65-41c0-4fbf-b3a9-d4038bb6e16a.jpg","t":"1stphormapparelwomenshortsadaptshort4deserttaupe00054ca01e6541c04fbfb3a9d4038bb6e16ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__deserttaupe_0006_6a47c8b2-ddab-4dfa-b577-f6cc5e1d41ad.jpg","t":"1stphormapparelwomenshortsadaptshort4deserttaupe00066a47c8b2ddab4dfab577f6cc5e1d41adjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_adaptshort_4__deserttaupe_0001_18969b9c-a3b2-4bb7-9753-670535cf432a.jpg","t":"1stphormapparelwomenshortsadaptshort4deserttaupe000118969b9ca3b24bb79753670535cf432ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__navy_0004.jpg","t":"1stphormapparelwomensshortsadaptshort4navy0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__navy_0003_1.jpg","t":"1stphormapparelwomensshortsadaptshort4navy00031jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__navy_0005.jpg","t":"1stphormapparelwomensshortsadaptshort4navy0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__navy_0006.jpg","t":"1stphormapparelwomensshortsadaptshort4navy0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__navy_0007.jpg","t":"1stphormapparelwomensshortsadaptshort4navy0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__navy_0003.jpg","t":"1stphormapparelwomensshortsadaptshort4navy0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_adaptshort4__navy_0001_1.jpg","t":"1stphormapparelwomensshortsadaptshort4navy00011jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -622,21 +623,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -539,17 +539,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12264_26Q1_Tree-Runner-NZ-Ochre-Natural-White_PDP_LEFT_7f903d77-0350-4bfc-8c71-58d7c8f97840.png","t":"a1226426q1treerunnernzochrenaturalwhitepdpleft7f903d7703504bfc8c7158d7c8f97840png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12264_26Q1_Tree-Runner-NZ-Ochre-Natural-White_PDP_TD_097b40f7-e221-41fc-9d73-b2a43dc496db.png","t":"a1226426q1treerunnernzochrenaturalwhitepdptd097b40f7e22141fc9d73b2a43dc496dbpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12264_26Q1_Tree-Runner-NZ-Ochre-Natural-White_PDP_SOLE_0ef83e0a-be56-4d1a-9347-8079a7f2c865.png","t":"a1226426q1treerunnernzochrenaturalwhitepdpsole0ef83e0abe564d1a93478079a7f2c865png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12264_26Q1_Tree-Runner-NZ-Ochre-Natural-White_PDP_PAIR_3Q_36e79fb6-2701-40cc-ac9b-3dcd4f92ac62.png","t":"a1226426q1treerunnernzochrenaturalwhitepdppair3q36e79fb6270140ccac9b3dcd4f92ac62png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12264_26Q1_Tree-Runner-NZ-Ochre-Natural-White_PDP_BACK_e36f23c7-9022-4c58-a634-d94890063c15.png","t":"a1226426q1treerunnernzochrenaturalwhitepdpbacke36f23c790224c58a634d94890063c15png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -565,21 +566,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -568,17 +568,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/files/krista-horton.png","t":"kristahortonpng"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/reviews_D_D_1_1_449e3e26-e6d9-41c8-bc3c-73204fd6bd5c.jpg","t":"reviewsdd11449e3e26e6d941c8bc3c73204fd6bd5cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/reviews_fish-oil_1_1e9d0422-af6c-47af-887a-dc02b2cfda39.jpg","t":"reviewsfishoil11e9d0422af6c47af887adc02b2cfda39jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/reviews_magnesium_1_1.jpg","t":"reviewsmagnesium11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/5_4efdd6c8-a16e-4968-9da4-edd3e8e7e1e6.png","t":"54efdd6c8a16e49689da4edd3e8e7e1e6png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/16_2_be32d0f1-be59-4f27-a0ad-a17ea2107117.png","t":"162be32d0f1be594f27a0ada17ea2107117png"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/2_562433f7-bb48-411d-8a5e-71cdda8daf4a.png","t":"2562433f7bb48411d8a5e71cdda8daf4apng"},{"src":"https://cdn.shopify.com/s/files/1/0255/9302/0498/products/4_47cbc8de-ccf9-4c72-a176-124b00b60d22.png","t":"447cbc8deccf94c72a176124b00b60d22png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -594,21 +595,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -586,17 +586,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-x25-running-lifestyle.webp","t":"productwalkingpadx25runninglifestylewebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-x25-side-profile_f9f960c1-bff4-41cb-b238-63eb11461f3e.webp","t":"productwalkingpadx25sideprofilef9f960c1bff441cbb23863eb11461f3ewebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-x25-unfolded.webp","t":"productwalkingpadx25unfoldedwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-x25-fold-configurations.webp","t":"productwalkingpadx25foldconfigurationswebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-x25-fold-demo.webp","t":"productwalkingpadx25folddemowebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-x25-storage-use_b18d5765-c1ab-4034-8477-19fe481c3654.webp","t":"productwalkingpadx25storageuseb18d5765c1ab4034847719fe481c3654webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-x25-running-workout.webp","t":"scenewalkingpadx25runningworkoutwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-x25-upright-storage.webp","t":"scenewalkingpadx25uprightstoragewebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-x25-cushioned-deck_6ea05c29-1f25-4466-be6e-35085499302c.webp","t":"scenewalkingpadx25cushioneddeck6ea05c291f254466be6e35085499302cwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-x25-speed-controls.webp","t":"scenewalkingpadx25speedcontrolswebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-x25-media-viewing.webp","t":"scenewalkingpadx25mediaviewingwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-X25-folding-treadmill-black-1_edd6d9db-0323-4fb3-aedb-36c23c711e27.jpg","t":"productwalkingpadx25foldingtreadmillblack1edd6d9db03234fb3aedb36c23c711e27jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad_X25_treadmill_2_5330cfbc-4bf6-496a-83cf-93f6c074d64b.jpg","t":"productwalkingpadx25treadmill25330cfbc4bf6496a83cf93f6c074d64bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_2_673941c5-7249-4481-a6d2-e631a1a4b808.jpg","t":"product2673941c572494481a6d2e631a1a4b808jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-X25-folding-treadmill-black_cf1377ea-1f82-4e07-a6e8-ed928acd65e1.jpg","t":"productwalkingpadx25foldingtreadmillblackcf1377ea1f824e07a6e8ed928acd65e1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-x25-plus-front-view.webp","t":"productwalkingpadx25plusfrontviewwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-X25-folding-treadmill-blue-2_0e8ed4f6-6ead-4339-85e0-c0f416b5ec3c.jpg","t":"productwalkingpadx25foldingtreadmillblue20e8ed4f66ead433985e0c0f416b5ec3cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-X25-folding-treadmill-blue-3_7cbff71b-fea1-43bd-93b1-3907af6baa7f.jpg","t":"productwalkingpadx25foldingtreadmillblue37cbff71bfea143bd93b13907af6baa7fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-X25-folding-treadmill-blue-1_5d2a542d-81bb-4271-ae72-68fda3eaacb6.jpg","t":"productwalkingpadx25foldingtreadmillblue15d2a542d81bb4271ae7268fda3eaacb6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-x25-back-view.webp","t":"productwalkingpadx25backviewwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-X25-folding-treadmill-blue_9d253759-b00f-48fc-9b1c-38b52e5ceeef.jpg","t":"productwalkingpadx25foldingtreadmillblue9d253759b00f48fc9b1c38b52e5ceeefjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/video_WalkingPad_X25_Double-Fold_Running_Treadmill_gif.gif","t":"videowalkingpadx25doublefoldrunningtreadmillgifgif"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -612,21 +613,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

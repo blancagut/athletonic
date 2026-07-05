@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -601,17 +601,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-hero_6280ced5-e5a4-416d-bab5-17a2f92976ad.jpg","t":"hexhero6280ced5e5a4416dbab517a2f92976adjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-270.jpg","t":"hex270jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-close_15765e33-9619-4e35-8e75-d38f03cf1c72.jpg","t":"hexclose15765e3396194e358e75d38f03cf1c72jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-long_d0235a5d-cd0f-465c-8eb5-1d4ae2c7708d.jpg","t":"hexlongd0235a5dcd0f465c8eb51d4ae2c7708djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg","t":"trapendcap8e0e6e8ba6aa4698ad5877f0084f1644jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-specs-sq_3c023f24-6125-470b-8f83-9c42f922e403.jpg","t":"hexspecssq3c023f246125470b8f839c42f922e403jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-floor_0e1e1aab-6862-4fc1-ac14-ad380ee18b1c.jpg","t":"hexfloor0e1e1aab68624fc1ac14ad380ee18b1cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-deadlift_aa603ffa-0b7f-4ae9-b9e4-7723b034abc3.jpg","t":"hexdeadliftaa603ffa0b7f4ae9b9e47723b034abc3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-row_412d60ef-e1d5-48b0-9dcf-15757f81aa74.jpg","t":"hexrow412d60efe1d548b09dcf15757f81aa74jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-shrug_4ff5c01e-12df-46d2-bb8e-ac299e79cc29.jpg","t":"hexshrug4ff5c01e12df46d2bb8eac299e79cc29jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-hex_d3766f85-617a-4024-b426-d65da5410b52.jpg","t":"hexhexd3766f85617a4024b426d65da5410b52jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-bar-banner-bg-square.jpg","t":"trapbarbannerbgsquarejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-160-b.jpg","t":"hex160bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-180.jpg","t":"hex180jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-250-b.jpg","t":"hex250bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hex-250.jpg","t":"hex250jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -627,21 +628,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -663,7 +668,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"60659634700658","key":"Trap Bar + 180lbs","title":"Trap Bar + 180lbs","sku":null,"optionValues":["Trap Bar + 180lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 180lbs"}],"selected_options":{"Style":"Trap Bar + 180lbs"},"price_cents":42500,"regular_price_cents":59500,"compare_at_cents":59500,"compare_at_price_cents":59500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"},{"variant_id":"60659634733426","key":"Trap Bar + 250lbs","title":"Trap Bar + 250lbs","sku":null,"optionValues":["Trap Bar + 250lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 250lbs"}],"selected_options":{"Style":"Trap Bar + 250lbs"},"price_cents":51500,"regular_price_cents":72000,"compare_at_cents":72000,"compare_at_price_cents":72000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"},{"variant_id":"60659634766194","key":"Trap Bar + 270lbs","title":"Trap Bar + 270lbs","sku":null,"optionValues":["Trap Bar + 270lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 270lbs"}],"selected_options":{"Style":"Trap Bar + 270lbs"},"price_cents":53500,"regular_price_cents":76500,"compare_at_cents":76500,"compare_at_price_cents":76500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"},{"variant_id":"60659634798962","key":"Trap Bar + 160lbs Bumper","title":"Trap Bar + 160lbs Bumper","sku":null,"optionValues":["Trap Bar + 160lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 160lbs Bumper"}],"selected_options":{"Style":"Trap Bar + 160lbs Bumper"},"price_cents":39500,"regular_price_cents":54500,"compare_at_cents":54500,"compare_at_price_cents":54500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"},{"variant_id":"60659634831730","key":"Trap Bar + 250lbs Bumper","title":"Trap Bar + 250lbs Bumper","sku":null,"optionValues":["Trap Bar + 250lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 250lbs Bumper"}],"selected_options":{"Style":"Trap Bar + 250lbs Bumper"},"price_cents":51000,"regular_price_cents":71500,"compare_at_cents":71500,"compare_at_price_cents":71500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-endcap_8e0e6e8b-a6aa-4698-ad58-77f0084f1644.jpg"}];
+        var variantPricing = [{"variant_id":"60659634700658","key":"Trap Bar + 180lbs","title":"Trap Bar + 180lbs","sku":null,"optionValues":["Trap Bar + 180lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 180lbs"}],"selected_options":{"Style":"Trap Bar + 180lbs"},"price_cents":42500,"regular_price_cents":59500,"compare_at_cents":59500,"compare_at_price_cents":59500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-bar-banner-bg-square.jpg"},{"variant_id":"60659634733426","key":"Trap Bar + 250lbs","title":"Trap Bar + 250lbs","sku":null,"optionValues":["Trap Bar + 250lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 250lbs"}],"selected_options":{"Style":"Trap Bar + 250lbs"},"price_cents":51500,"regular_price_cents":72000,"compare_at_cents":72000,"compare_at_price_cents":72000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-bar-banner-bg-square.jpg"},{"variant_id":"60659634766194","key":"Trap Bar + 270lbs","title":"Trap Bar + 270lbs","sku":null,"optionValues":["Trap Bar + 270lbs"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 270lbs"}],"selected_options":{"Style":"Trap Bar + 270lbs"},"price_cents":53500,"regular_price_cents":76500,"compare_at_cents":76500,"compare_at_price_cents":76500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/trap-bar-banner-bg-square.jpg"},{"variant_id":"60659634798962","key":"Trap Bar + 160lbs Bumper","title":"Trap Bar + 160lbs Bumper","sku":null,"optionValues":["Trap Bar + 160lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 160lbs Bumper"}],"selected_options":{"Style":"Trap Bar + 160lbs Bumper"},"price_cents":39500,"regular_price_cents":54500,"compare_at_cents":54500,"compare_at_price_cents":54500,"source_available":true,"available":true,"image_url":null},{"variant_id":"60659634831730","key":"Trap Bar + 250lbs Bumper","title":"Trap Bar + 250lbs Bumper","sku":null,"optionValues":["Trap Bar + 250lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Trap Bar + 250lbs Bumper"}],"selected_options":{"Style":"Trap Bar + 250lbs Bumper"},"price_cents":51000,"regular_price_cents":71500,"compare_at_cents":71500,"compare_at_price_cents":71500,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

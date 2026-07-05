@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -565,17 +565,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/tdrive-magnum-6x_235d37cb-fa8f-4b17-be9a-3b4ad9ce1f7d.webp","t":"tdrivemagnum6x235d37cbfa8f4b17be9a3b4ad9ce1f7dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/tdrive-magnum-side1_1_38b0aab0-1597-48b1-bfa6-6c14e1bc6a60.png","t":"tdrivemagnumside1138b0aab0159748b1bfa66c14e1bc6a60png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/tdrive-magnum-side2_1_e18f4dea-8c43-4673-bc8f-df2122c8ec1c.png","t":"tdrivemagnumside21e18f4dea8c434673bc8fdf2122c8ec1cpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/tdrive-magnum-side3_1_fffd41bb-c1e7-40e3-8c20-4deacfae0c1f.png","t":"tdrivemagnumside31fffd41bbc1e740e38c204deacfae0c1fpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/T-DriveMangumCompliant_9455d51f-80c9-4602-83a3-b8c68041dd51.webp","t":"tdrivemangumcompliant9455d51f80c9460283a3b8c68041dd51webp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -591,21 +592,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

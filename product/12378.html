@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -610,17 +610,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-JUNGLECAMORIPSTOP_1_0e4f144e-1810-4537-b64d-656fd56a8549.jpg","t":"refusetosurrenderjunglecamoripstop10e4f144e18104537b64d656fd56a8549jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-JUNGLECAMORIPSTOP_7_e8939804-8950-4d19-b343-fff3f432fbe7.jpg","t":"refusetosurrenderjunglecamoripstop7e893980489504d19b343fff3f432fbe7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-JUNGLECAMORIPSTOP_5_603ec594-6158-4de8-b82e-c61b9a322bd8.jpg","t":"refusetosurrenderjunglecamoripstop5603ec59461584de8b82ec61b9a322bd8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-JUNGLECAMORIPSTOP_6_7154f214-ce1d-4d0f-86bc-f6d5a1d937b3.jpg","t":"refusetosurrenderjunglecamoripstop67154f214ce1d4d0f86bcf6d5a1d937b3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-JUNGLECAMORIPSTOP_4_69edaaf8-e3d1-4567-acf8-3433591225a4.jpg","t":"refusetosurrenderjunglecamoripstop469edaaf8e3d14567acf83433591225a4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-JUNGLECAMORIPSTOP_3_3b8bf9ed-3503-48f5-a58c-68cbc67ebb42.jpg","t":"refusetosurrenderjunglecamoripstop33b8bf9ed350348f5a58c68cbc67ebb42jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-JUNGLECAMORIPSTOP_2_49b52c83-dc41-477c-ab33-d38353209ede.jpg","t":"refusetosurrenderjunglecamoripstop249b52c83dc41477cab33d38353209edejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_14.jpg","t":"refusetosurrendernightfalltigerstriperipstopblackmeshsnapback14jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-SWAMPDUCKCAMO_MESHSNAPBACK_2.jpg","t":"refusetosurrenderswampduckcamomeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-SWAMPDUCKCAMO_MESHSNAPBACK_4.jpg","t":"refusetosurrenderswampduckcamomeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-SWAMPDUCKCAMO_MESHSNAPBACK_3.jpg","t":"refusetosurrenderswampduckcamomeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-SWAMPDUCKCAMO_MESHSNAPBACK_6.jpg","t":"refusetosurrenderswampduckcamomeshsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-SWAMPDUCKCAMO_MESHSNAPBACK_5.jpg","t":"refusetosurrenderswampduckcamomeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_13.jpg","t":"refusetosurrendernightfalltigerstriperipstopblackmeshsnapback13jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_10.jpg","t":"refusetosurrendernightfalltigerstriperipstopblackmeshsnapback10jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_8.jpg","t":"refusetosurrendernightfalltigerstriperipstopblackmeshsnapback8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_12.jpg","t":"refusetosurrendernightfalltigerstriperipstopblackmeshsnapback12jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_11.jpg","t":"refusetosurrendernightfalltigerstriperipstopblackmeshsnapback11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_9.jpg","t":"refusetosurrendernightfalltigerstriperipstopblackmeshsnapback9jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -636,21 +637,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -672,7 +677,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813877637490","key":"NIGHTFALL TIGER STRIPE CAMO","title":"NIGHTFALL TIGER STRIPE CAMO","sku":null,"optionValues":["NIGHTFALL TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"Color","value":"NIGHTFALL TIGER STRIPE CAMO"}],"selected_options":{"Color":"NIGHTFALL TIGER STRIPE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-JUNGLECAMORIPSTOP_1_0e4f144e-1810-4537-b64d-656fd56a8549.jpg"}];
+        var variantPricing = [{"variant_id":"61813877637490","key":"NIGHTFALL TIGER STRIPE CAMO","title":"NIGHTFALL TIGER STRIPE CAMO","sku":null,"optionValues":["NIGHTFALL TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"Color","value":"NIGHTFALL TIGER STRIPE CAMO"}],"selected_options":{"Color":"NIGHTFALL TIGER STRIPE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/REFUSETOSURRENDER-NIGHTFALLTIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_14.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

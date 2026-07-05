@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -569,17 +569,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/US_SuperGreens_7.4OZ_SweetBerry_6076242.png","t":"ussupergreens74ozsweetberry6076242png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/02_AG_SuperGreens-SweetBerry30srv_B__01_4000x4000_19815185-0a65-457b-ad44-c22506f6ee3a.png","t":"02agsupergreenssweetberry30srvb014000x4000198151850a65457bad44c22506f6ee3apng"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/US_SuperGreens_7.4OZ_SweetBerry_6076242-Left_1.png","t":"ussupergreens74ozsweetberry6076242left1png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/US_SuperGreens_7.4OZ_SweetBerry_6076242-Right_1.png","t":"ussupergreens74ozsweetberry6076242right1png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Antioxidant_-_SweetBerry_-_15_srv_-_B_06_AG_SuperGreens-SweetBerry15srv_B__01_4000x4000_4b8f8317-0136-49ea-8583-5022b8649002.png","t":"supergreensantioxidantsweetberry15srvb06agsupergreenssweetberry15srvb014000x40004b8f8317013649ea85835022b8649002png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/US_SuperGreens_14.8OZ_SweetBerry_6076243.png","t":"ussupergreens148ozsweetberry6076243png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/US_SuperGreens_1.54LB_SweetBerry_6076244.png","t":"ussupergreens154lbsweetberry6076244png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Antioxidant_-_SweetBerry_-_15_srv_-_B_01_AG_SuperGreens-SweetBerry15srv_B__01_4000x4000_c0eca0d7-687b-4201-a076-bb6693fd300b.png","t":"supergreensantioxidantsweetberry15srvb01agsupergreenssweetberry15srvb014000x4000c0eca0d7687b4201a076bb6693fd300bpng"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Antioxidant_-_SweetBerry_-_15_srv_-_B_07_AG_SuperGreens-SweetBerry_B__01_4000x4000_93044842-af2d-481d-9abb-1afe3236dc05.png","t":"supergreensantioxidantsweetberry15srvb07agsupergreenssweetberryb014000x400093044842af2d481d9abb1afe3236dc05png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Antioxidant_-_SweetBerry_-_15_srv_-_B_08_AG_SuperGreens-SweetBerry_B__01_4000x4000_6b6c84e3-e921-4311-8da5-4f01b503aa42.png","t":"supergreensantioxidantsweetberry15srvb08agsupergreenssweetberryb014000x40006b6c84e3e92143118da54f01b503aa42png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Antioxidant_-_SweetBerry_-_15_srv_-_B_09_AG_SuperGreens-SweetBerry_B__01_4000x4000_8f100088-0c77-4715-9c09-4880a53f6791.png","t":"supergreensantioxidantsweetberry15srvb09agsupergreenssweetberryb014000x40008f1000880c7747159c094880a53f6791png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Antioxidant_-_SweetBerry_-_15_srv_-_B_10_AG_SuperGreens-SweetBerry_B__01_4000x4000_172e133d-6124-4bd9-a582-f3b96fdab8be.png","t":"supergreensantioxidantsweetberry15srvb10agsupergreenssweetberryb014000x4000172e133d61244bd9a582f3b96fdab8bepng"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Antioxidant_-_SweetBerry_-_15_srv_-_B_11_AG_SuperGreens-SweetBerry_B__01_4000x4000_bd32ec66-00bb-44a3-bef8-0f0df1ee059e.png","t":"supergreensantioxidantsweetberry15srvb11agsupergreenssweetberryb014000x4000bd32ec6600bb44a3bef80f0df1ee059epng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -595,21 +596,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -631,7 +636,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"12432361455690","key":"30 Servings","title":"30 Servings","sku":null,"optionValues":["30 Servings"],"option_values":[{"position":1,"name":"Size","value":"30 Servings"}],"selected_options":{"Size":"30 Servings"},"price_cents":2699,"regular_price_cents":2699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"12563966033994","key":"60 Servings","title":"60 Servings","sku":null,"optionValues":["60 Servings"],"option_values":[{"position":1,"name":"Size","value":"60 Servings"}],"selected_options":{"Size":"60 Servings"},"price_cents":6299,"regular_price_cents":6299,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"12563966066762","key":"100 Servings","title":"100 Servings","sku":null,"optionValues":["100 Servings"],"option_values":[{"position":1,"name":"Size","value":"100 Servings"}],"selected_options":{"Size":"100 Servings"},"price_cents":8799,"regular_price_cents":8799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Antioxidant_-_SweetBerry_-_15_srv_-_B_09_AG_SuperGreens-SweetBerry_B__01_4000x4000_8f100088-0c77-4715-9c09-4880a53f6791.png"},{"variant_id":"12563966099530","key":"Box of 15 Packets","title":"Box of 15 Packets","sku":null,"optionValues":["Box of 15 Packets"],"option_values":[{"position":1,"name":"Size","value":"Box of 15 Packets"}],"selected_options":{"Size":"Box of 15 Packets"},"price_cents":2399,"regular_price_cents":2399,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"12432361455690","key":"30 Servings","title":"30 Servings","sku":null,"optionValues":["30 Servings"],"option_values":[{"position":1,"name":"Size","value":"30 Servings"}],"selected_options":{"Size":"30 Servings"},"price_cents":2699,"regular_price_cents":2699,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"12563966033994","key":"60 Servings","title":"60 Servings","sku":null,"optionValues":["60 Servings"],"option_values":[{"position":1,"name":"Size","value":"60 Servings"}],"selected_options":{"Size":"60 Servings"},"price_cents":6299,"regular_price_cents":6299,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"12563966066762","key":"100 Servings","title":"100 Servings","sku":null,"optionValues":["100 Servings"],"option_values":[{"position":1,"name":"Size","value":"100 Servings"}],"selected_options":{"Size":"100 Servings"},"price_cents":8799,"regular_price_cents":8799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"12563966099530","key":"Box of 15 Packets","title":"Box of 15 Packets","sku":null,"optionValues":["Box of 15 Packets"],"option_values":[{"position":1,"name":"Size","value":"Box of 15 Packets"}],"selected_options":{"Size":"Box of 15 Packets"},"price_cents":2399,"regular_price_cents":2399,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

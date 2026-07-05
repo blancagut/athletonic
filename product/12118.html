@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -604,17 +604,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05972_1.jpg","t":"cia059721jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05978_1.jpg","t":"cia059781jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05980_1.jpg","t":"cia059801jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05984_1_62fbd88b-677b-4c0c-8808-436dc0b8e8c5.jpg","t":"cia05984162fbd88b677b4c0c8808436dc0b8e8c5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA06004_1_b40d7ec7-eae7-44bf-b26b-afe7f6b2dc07.jpg","t":"cia060041b40d7ec7eae744bfb26bafe7f6b2dc07jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA06009-2_1_4d1a665f-f0c9-4457-aa63-5a76dfd61fa2.jpg","t":"cia06009214d1a665ff0c94457aa635a76dfd61fa2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA06008-2_1_0d79c611-96f1-4c85-aef3-57b3587389cf.jpg","t":"cia06008210d79c61196f14c85aef357b3587389cfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05956-2_1_ae1621c8-168a-4adb-9ad6-5ffc4a59f96a.jpg","t":"cia0595621ae1621c8168a4adb9ad65ffc4a59f96ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05950_1_1a588c1f-e269-43d5-ae9a-217c28dbef1e.jpg","t":"cia0595011a588c1fe26943d5ae9a217c28dbef1ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05943_1_e34b59e3-60c6-46a8-880b-e3f8b1ef47b4.jpg","t":"cia059431e34b59e360c646a8880be3f8b1ef47b4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09822_1.jpg","t":"cia098221jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04009_bc4ad35d-a782-45a8-9c54-8cfc86ec92af.jpg","t":"cia04009bc4ad35da78245a89c548cfc86ec92afjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04013_4f3f5648-a131-4140-8f5d-6e878534eb98.jpg","t":"cia040134f3f5648a13141408f5d6e878534eb98jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04016_856c6363-ab0c-4190-9e3e-be3b160a18bb.jpg","t":"cia04016856c6363ab0c41909e3ebe3b160a18bbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04023_95b62096-d9d7-4762-8bc3-995e2e7a801a.jpg","t":"cia0402395b62096d9d747628bc3995e2e7a801ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04030_3a671482-eea7-4b66-858f-4d204818a403.jpg","t":"cia040303a671482eea74b66858f4d204818a403jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETROHOOCHIEDADDYARCHED-GREYFRONT_WHITEMESHSNAPBACK_1.jpg","t":"retrohoochiedaddyarchedgreyfrontwhitemeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETROHOOCHIEDADDYARCHED-GREYFRONT_WHITEMESHSNAPBACK_2.jpg","t":"retrohoochiedaddyarchedgreyfrontwhitemeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETROHOOCHIEDADDYARCHED-GREYFRONT_WHITEMESHSNAPBACK_3.jpg","t":"retrohoochiedaddyarchedgreyfrontwhitemeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETROHOOCHIEDADDYARCHED-GREYFRONT_WHITEMESHSNAPBACK_4.jpg","t":"retrohoochiedaddyarchedgreyfrontwhitemeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETROHOOCHIEDADDYARCHED-GREYFRONT_WHITEMESHSNAPBACK_5.jpg","t":"retrohoochiedaddyarchedgreyfrontwhitemeshsnapback5jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -630,21 +631,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -666,7 +671,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813955232114","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813955264882","key":"GRAY / BLACK","title":"GRAY / BLACK","sku":null,"optionValues":["GRAY / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / BLACK"}],"selected_options":{"COLOR":"GRAY / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61813955297650","key":"BDU CAMO / BLACK","title":"BDU CAMO / BLACK","sku":null,"optionValues":["BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / BLACK"}],"selected_options":{"COLOR":"BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61813955330418","key":"BDU CAMO / WHITE / GRAY","title":"BDU CAMO / WHITE / GRAY","sku":null,"optionValues":["BDU CAMO / WHITE / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / WHITE / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / WHITE / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETROHOOCHIEDADDYARCHED-GREYFRONT_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813955363186","key":"GRAY / WHITE","title":"GRAY / WHITE","sku":null,"optionValues":["GRAY / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / WHITE"}],"selected_options":{"COLOR":"GRAY / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETROHOOCHIEDADDYARCHED-GREYFRONT_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813955395954","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"61813955232114","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813955264882","key":"GRAY / BLACK","title":"GRAY / BLACK","sku":null,"optionValues":["GRAY / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / BLACK"}],"selected_options":{"COLOR":"GRAY / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61813955297650","key":"BDU CAMO / BLACK","title":"BDU CAMO / BLACK","sku":null,"optionValues":["BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / BLACK"}],"selected_options":{"COLOR":"BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61813955330418","key":"BDU CAMO / WHITE / GRAY","title":"BDU CAMO / WHITE / GRAY","sku":null,"optionValues":["BDU CAMO / WHITE / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / WHITE / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / WHITE / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"61813955363186","key":"GRAY / WHITE","title":"GRAY / WHITE","sku":null,"optionValues":["GRAY / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / WHITE"}],"selected_options":{"COLOR":"GRAY / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETROHOOCHIEDADDYARCHED-GREYFRONT_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813955395954","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

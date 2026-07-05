@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -603,17 +603,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__primalgreen_0005.jpg","t":"1stphormapparelwomensshortselementshort4primalgreen0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__primalgreen_0003.jpg","t":"1stphormapparelwomensshortselementshort4primalgreen0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__primalgreen_0006.jpg","t":"1stphormapparelwomensshortselementshort4primalgreen0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__primalgreen_0002.jpg","t":"1stphormapparelwomensshortselementshort4primalgreen0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__primalgreen_0004.jpg","t":"1stphormapparelwomensshortselementshort4primalgreen0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_elementshort_4__black_0005_1.jpg","t":"1stphormapparelwomenshortselementshort4black00051jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_elementshort_4__black_0007.jpg","t":"1stphormapparelwomenshortselementshort4black0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_elementshort_4__black_0009.jpg","t":"1stphormapparelwomenshortselementshort4black0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_elementshort_4__black_0008.jpg","t":"1stphormapparelwomenshortselementshort4black0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_elementshort_4__black_0002.jpg","t":"1stphormapparelwomenshortselementshort4black0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_element_short_4__midnightgrey_0003.jpg","t":"1stphormapparelwomenshortselementshort4midnightgrey0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_element_short_4__midnightgrey_0001.jpg","t":"1stphormapparelwomenshortselementshort4midnightgrey0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_element_short_4__midnightgrey_0005.jpg","t":"1stphormapparelwomenshortselementshort4midnightgrey0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_element_short_4__midnightgrey_0008.jpg","t":"1stphormapparelwomenshortselementshort4midnightgrey0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_shorts_element_short_4__midnightgrey_0006.jpg","t":"1stphormapparelwomenshortselementshort4midnightgrey0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__hotcherry_0001.jpg","t":"1stphormapparelwomensshortselementshort4hotcherry0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__hotcherry_0002.jpg","t":"1stphormapparelwomensshortselementshort4hotcherry0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__hotcherry_0003.jpg","t":"1stphormapparelwomensshortselementshort4hotcherry0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__hotcherry_0005.jpg","t":"1stphormapparelwomensshortselementshort4hotcherry0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__hotcherry_0008.jpg","t":"1stphormapparelwomensshortselementshort4hotcherry0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshorts4__navy_0006_eac22fee-5d95-4b8c-8e29-ef9942e50c4f.jpg","t":"1stphormapparelwomensshortselementshorts4navy0006eac22fee5d954b8c8e29ef9942e50c4fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshorts4__navy_0001_4c0b7268-4d07-4e97-ba0f-c677f854b030.jpg","t":"1stphormapparelwomensshortselementshorts4navy00014c0b72684d074e97ba0fc677f854b030jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshorts4__navy_0004_c75267f6-0897-4ce0-8f43-962585c6c811.jpg","t":"1stphormapparelwomensshortselementshorts4navy0004c75267f608974ce08f43962585c6c811jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshorts4__navy_0005_4eba6176-14b8-4ac0-9a93-bf0e0a719402.jpg","t":"1stphormapparelwomensshortselementshorts4navy00054eba617614b84ac09a93bf0e0a719402jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshorts4__navy_0002_3d4df758-823a-4752-a7f5-0ebc1ca5c00f.jpg","t":"1stphormapparelwomensshortselementshorts4navy00023d4df758823a4752a7f50ebc1ca5c00fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/element-short-4-inseam-mahogany-002.jpg","t":"elementshort4inseammahogany002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/element-short-4-inseam-mahogany-001.jpg","t":"elementshort4inseammahogany001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/element-short-4-inseam-mahogany-003.jpg","t":"elementshort4inseammahogany003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/element-short-4-inseam-mahogany-004.jpg","t":"elementshort4inseammahogany004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/element-short-4-inseam-mahogany-006.jpg","t":"elementshort4inseammahogany006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__bluejay_0005.jpg","t":"1stphormapparelwomensshortselementshort4bluejay0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__bluejay_0003.jpg","t":"1stphormapparelwomensshortselementshort4bluejay0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__bluejay_0001.jpg","t":"1stphormapparelwomensshortselementshort4bluejay0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__bluejay_0006.jpg","t":"1stphormapparelwomensshortselementshort4bluejay0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__bluejay_0004.jpg","t":"1stphormapparelwomensshortselementshort4bluejay0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__bluejay_0002.jpg","t":"1stphormapparelwomensshortselementshort4bluejay0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__magenta_0003.jpg","t":"1stphormapparelwomensshortselementshort4magenta0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__magenta_0001.jpg","t":"1stphormapparelwomensshortselementshort4magenta0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__magenta_0007.jpg","t":"1stphormapparelwomensshortselementshort4magenta0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__magenta_0005.jpg","t":"1stphormapparelwomensshortselementshort4magenta0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__magenta_0002.jpg","t":"1stphormapparelwomensshortselementshort4magenta0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_shorts_elementshort4__magenta_0004.jpg","t":"1stphormapparelwomensshortselementshort4magenta0004jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -629,21 +630,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

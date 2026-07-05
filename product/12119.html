@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -612,17 +612,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/cmbtpatchjjjje.jpg","t":"cmbtpatchjjjjejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/sidepatchcmbtjjjjfloraj-463031.jpg","t":"sidepatchcmbtjjjjfloraj463031jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/sidefloralkja_lflda_klasdfkj_l-595945_9501d5a2-b2f9-4f46-aeea-c8c61ad83199.jpg","t":"sidefloralkjalfldaklasdfkjl5959459501d5a2b2f94f46aeeac8c61ad83199jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/cmbtwoennn_1_b7a27157-6090-4f4e-9b59-6dee6f95766d.jpg","t":"cmbtwoennn1b7a2715760904f4e9b596dee6f95766djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09889-191458_5f132c58-ad7a-4ffe-849e-4163ac5c3877.jpg","t":"cia098891914585f132c58ad7a4ffe849e4163ac5c3877jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09891-108112_07c9a6aa-449b-4660-b23d-d6006a5ab950.jpg","t":"cia0989110811207c9a6aa449b4660b23dd6006a5ab950jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09890-146989.jpg","t":"cia09890146989jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09938-3-257728_f8ae1d9e-d529-4f5d-95ca-71e56aa8f9a9-840060.jpg","t":"cia099383257728f8ae1d9ed5294f5d95ca71e56aa8f9a9840060jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09941-2-384087_c0d52431-d340-4a85-8ca7-d929e7c292d7.jpg","t":"cia099412384087c0d52431d3404a858ca7d929e7c292d7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09903-2-366236.jpg","t":"cia099032366236jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09939-451250_f65b1318-3db9-4c10-bcc3-8a3c3b91e637-847856.jpg","t":"cia09939451250f65b13183db94c10bcc38a3c3b91e637847856jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09910-154689.jpg","t":"cia09910154689jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09909-2-491044.jpg","t":"cia099092491044jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09933-2-695447.jpg","t":"cia099332695447jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09894-533106_91a6b27b-0ea8-430e-ad99-f8d7b9a7b523.jpg","t":"cia09894533106jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA09896-461839_9f349b98-299d-4a3c-b012-995ca132ae4f-173289.jpg","t":"cia098964618399f349b98299d4a3cb012995ca132ae4f173289jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01253.jpg","t":"cia01253jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01257.jpg","t":"cia01257jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01258_b591f80d-e7a8-4d81-8b57-7ec8d875987b.jpg","t":"cia01258b591f80de7a84d818b577ec8d875987bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg","t":"cmbtsubduedblackpatchgreywhitemeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_5.jpg","t":"cmbtsubduedblackpatchgreywhitemeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_4.jpg","t":"cmbtsubduedblackpatchgreywhitemeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_2.jpg","t":"cmbtsubduedblackpatchgreywhitemeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_3.jpg","t":"cmbtsubduedblackpatchgreywhitemeshsnapback3jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -638,21 +639,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -674,7 +679,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813954675058","key":"FLORAL HAWAIIAN","title":"FLORAL HAWAIIAN","sku":null,"optionValues":["FLORAL HAWAIIAN"],"option_values":[{"position":1,"name":"COLOR","value":"FLORAL HAWAIIAN"}],"selected_options":{"COLOR":"FLORAL HAWAIIAN"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/sidepatchcmbtjjjjfloraj-463031.jpg"},{"variant_id":"61813954707826","key":"MARSH DUCK CAMO / GREEN","title":"MARSH DUCK CAMO / GREEN","sku":null,"optionValues":["MARSH DUCK CAMO / GREEN"],"option_values":[{"position":1,"name":"COLOR","value":"MARSH DUCK CAMO / GREEN"}],"selected_options":{"COLOR":"MARSH DUCK CAMO / GREEN"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813954740594","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813954773362","key":"BDU CAMO / WHITE","title":"BDU CAMO / WHITE","sku":null,"optionValues":["BDU CAMO / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / WHITE"}],"selected_options":{"COLOR":"BDU CAMO / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813954806130","key":"RED / WHITE","title":"RED / WHITE","sku":null,"optionValues":["RED / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"RED / WHITE"}],"selected_options":{"COLOR":"RED / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813954838898","key":"GRAY / WHITE","title":"GRAY / WHITE","sku":null,"optionValues":["GRAY / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / WHITE"}],"selected_options":{"COLOR":"GRAY / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg"}];
+        var variantPricing = [{"variant_id":"61813954675058","key":"FLORAL HAWAIIAN","title":"FLORAL HAWAIIAN","sku":null,"optionValues":["FLORAL HAWAIIAN"],"option_values":[{"position":1,"name":"COLOR","value":"FLORAL HAWAIIAN"}],"selected_options":{"COLOR":"FLORAL HAWAIIAN"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/sidefloralkja_lflda_klasdfkj_l-595945_9501d5a2-b2f9-4f46-aeea-c8c61ad83199.jpg"},{"variant_id":"61813954707826","key":"MARSH DUCK CAMO / GREEN","title":"MARSH DUCK CAMO / GREEN","sku":null,"optionValues":["MARSH DUCK CAMO / GREEN"],"option_values":[{"position":1,"name":"COLOR","value":"MARSH DUCK CAMO / GREEN"}],"selected_options":{"COLOR":"MARSH DUCK CAMO / GREEN"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813954740594","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813954773362","key":"BDU CAMO / WHITE","title":"BDU CAMO / WHITE","sku":null,"optionValues":["BDU CAMO / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / WHITE"}],"selected_options":{"COLOR":"BDU CAMO / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813954806130","key":"RED / WHITE","title":"RED / WHITE","sku":null,"optionValues":["RED / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"RED / WHITE"}],"selected_options":{"COLOR":"RED / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg"},{"variant_id":"61813954838898","key":"GRAY / WHITE","title":"GRAY / WHITE","sku":null,"optionValues":["GRAY / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / WHITE"}],"selected_options":{"COLOR":"GRAY / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTSUBDUED_BLACKPATCH_-GREY_WHITEMESHSNAPBACK_1.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

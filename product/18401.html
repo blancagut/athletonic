@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -579,17 +579,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_01_1_4c6eda75-91d9-4396-ae9e-e429a78f51f5.jpg","t":"adjustablehandgriplowtension0114c6eda7591d94396ae9ee429a78f51f5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_04_1_14d0df29-5d40-4fbd-a20c-51964a6da65c.jpg","t":"adjustablehandgriphightension04114d0df295d404fbda20c51964a6da65cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_03_1_49d2bd77-c707-41cf-8a0e-848d4dcc98f6.jpg","t":"adjustablehandgriphightension03149d2bd77c70741cf8a0e848d4dcc98f6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_02_1_454636e3-1756-435b-b483-f6e50006c43f.jpg","t":"adjustablehandgriplowtension021454636e31756435bb483f6e50006c43fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_01_1_b53a3adb-9ae5-4966-aa30-04837064cf19.jpg","t":"adjustablehandgriphightension011b53a3adb9ae54966aa3004837064cf19jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_04_1_7a8b87f4-b393-45ab-a9f6-22ac81892a69.jpg","t":"adjustablehandgriplowtension0417a8b87f4b39345aba9f622ac81892a69jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_02_1_1_e5f0438b-cc17-4f1e-8b4c-dac409a5f922.jpg","t":"adjustablehandgriphightension0211e5f0438bcc174f1e8b4cdac409a5f922jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_05_1_48114a0f-c09a-44a4-8df4-8fdcd6b54769.jpg","t":"adjustablehandgriplowtension05148114a0fc09a44a48df48fdcd6b54769jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_05_1_9e9f53c9-14f5-416c-aa04-f56fbedbad70.jpg","t":"adjustablehandgriphightension0519e9f53c914f5416caa04f56fbedbad70jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_03_1_ead008ff-e0ca-41a1-bc17-1943c417829b.jpg","t":"adjustablehandgriplowtension031ead008ffe0ca41a1bc171943c417829bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_01_7f5285da-9229-4ac7-aa5c-c43c51097201.jpg","t":"adjustablehandgriplowtension017f5285da92294ac7aa5cc43c51097201jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_02_9e035ec8-08df-478c-901c-50b220ba6183.jpg","t":"adjustablehandgriplowtension029e035ec808df478c901c50b220ba6183jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_03_868d6082-29e5-47d3-aa0c-373b8de018c6.jpg","t":"adjustablehandgriplowtension03868d608229e547d3aa0c373b8de018c6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_04_7d55b828-29fe-4d71-8b83-bff958949c19.jpg","t":"adjustablehandgriplowtension047d55b82829fe4d718b83bff958949c19jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_05_0f87eca9-6acc-478c-94ff-fdca6dc26b22.jpg","t":"adjustablehandgriplowtension050f87eca96acc478c94fffdca6dc26b22jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_low_tension_06_62e89b70-0659-4a39-902a-ab141528cd0e.jpg","t":"adjustablehandgriplowtension0662e89b7006594a39902aab141528cd0ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_04_ea303262-624b-4160-a33f-2e9766b10496.jpg","t":"adjustablehandgriphightension04ea303262624b4160a33f2e9766b10496jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_03_1ea5ce7a-e261-4f5e-974f-cda10fb58a19.jpg","t":"adjustablehandgriphightension031ea5ce7ae2614f5e974fcda10fb58a19jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_01_86ec35e6-ccd2-4428-981a-739b53905e59.jpg","t":"adjustablehandgriphightension0186ec35e6ccd24428981a739b53905e59jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_02_1_d6cbe3a4-9e26-4ea4-8ead-52ce8d036ed8.jpg","t":"adjustablehandgriphightension021d6cbe3a49e264ea48ead52ce8d036ed8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0809/0206/2384/files/adjustable_hand_grip_high_tension_05_c2fb8a96-018e-4efd-a4da-6073675fb549.jpg","t":"adjustablehandgriphightension05c2fb8a96018e4efda4da6073675fb549jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -605,21 +606,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

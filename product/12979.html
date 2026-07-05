@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -582,17 +582,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/NoahBelthero_1.png","t":"noahbelthero1png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/NoahBeltBuckle_53a5bd41-838a-4c15-92d9-45358a009610.png","t":"noahbeltbuckle53a5bd41838a4c1592d945358a009610png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/NoahBeltFlat_6654a923-71db-426b-aac9-3cad26f0256d.png","t":"noahbeltflat6654a92371db426baac93cad26f0256dpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/DSA02037-Edit_97dc3032-46d2-4295-9898-47f9319f8864.jpg","t":"dsa02037edit97dc303246d24295989847f9319f8864jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/DSC01602_91dfba5d-005e-482f-8074-7db4fe959935.jpg","t":"dsc0160291dfba5d005e482f80747db4fe959935jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/DSC01807_090e1092-5336-4d43-9431-2a7f53a10de3.jpg","t":"dsc01807090e109253364d4394312a7f53a10de3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/DSA03565_56f685cf-cf2e-45e2-81bc-87124fc77162.jpg","t":"dsa0356556f685cfcf2e45e281bc87124fc77162jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/Noah_belt_4_1024x1024_10535799-7871-479a-95b1-6f019e37ab81.jpg","t":"noahbelt41024x1024105357997871479a95b16f019e37ab81jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/products/belt_chart_2048x2048_3756eb46-5a2a-41b2-a7fe-00c35915077d.png","t":"beltchart2048x20483756eb465a2a41b2a7fe00c35915077dpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -608,21 +609,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

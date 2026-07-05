@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -564,17 +564,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-2lb.png","t":"mtisowheychocolate2lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-amazing-taste.jpg","t":"mtisowheychocolateamazingtastejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-purest-protein.jpg","t":"mtisowheypurestproteinjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-vanilla-amazing-taste.jpg","t":"mtisowheyvanillaamazingtastejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-chocolate-5lb.png","t":"mtisowheychocolate5lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-vanilla-2lb.png","t":"mtisowheyvanilla2lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-vanilla-5lb.png","t":"mtisowheyvanilla5lbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-support-recovery.jpg","t":"mtisowheysupportrecoveryjpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-choc-2lb_fc6bfa41-88f6-496b-9245-af8379842922.png","t":"muscletechisowheychoc2lbfc6bfa4188f6496b9245af8379842922png"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-vanilla-2lb_53af327c-4d2c-43ba-b8b8-b5a84dd51ed5.png","t":"muscletechisowheyvanilla2lb53af327c4d2c43bab8b8b5a84dd51ed5png"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-choc-5lb_43a9f0fe-30d9-448c-b381-fc25e14399cb.png","t":"muscletechisowheychoc5lb43a9f0fe30d9448cb381fc25e14399cbpng"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-isowhey-vanilla-5lb_19cedc90-c959-44d3-b410-fa298c8fd394.png","t":"muscletechisowheyvanilla5lb19cedc90c95944d3b410fa298c8fd394png"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-ch-2000x2000-06_e5be5daf-b5de-4c97-84a4-a4c14b9dc7aa.jpg","t":"19465muscletechisowheych2000x200006e5be5dafb5de4c9784a4a4c14b9dc7aajpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19466-muscletech-isowhey-vn-2000x2000-06_c0560d44-863a-4624-9cb9-9f4a4c6122c3.jpg","t":"19466muscletechisowheyvn2000x200006c0560d44863a46249cb99f4a4c6122c3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-ch-2000x2000-05_4b82dcfc-7922-4288-b584-fabaab4d0b50.jpg","t":"19465muscletechisowheych2000x2000054b82dcfc79224288b584fabaab4d0b50jpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-vn-2000x2000-05_10b1169c-6aa3-4afb-ab22-7b326d768b5d.jpg","t":"19465muscletechisowheyvn2000x20000510b1169c6aa34afbab227b326d768b5djpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-ch-2000x2000-04_5f23f0eb-e68b-4a49-82aa-a0a23dbfa1ca.jpg","t":"19465muscletechisowheych2000x2000045f23f0ebe68b4a4982aaa0a23dbfa1cajpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-vn-2000x2000-04_ac23d7c7-51c6-4945-9d77-3d35b1f1a4ee.jpg","t":"19465muscletechisowheyvn2000x200004ac23d7c751c649459d773d35b1f1a4eejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/19465-muscletech-isowhey-ch-2000x2000-03_738a26a1-5427-456d-b773-8d9c3f8f8bbe.jpg","t":"19465muscletechisowheych2000x200003738a26a15427456db7738d9c3f8f8bbejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-callouts-lifestyle.jpg","t":"mtisowheycalloutslifestylejpg"},{"src":"https://cdn.shopify.com/s/files/1/1214/7132/files/mt-isowhey-callouts-gym.jpg","t":"mtisowheycalloutsgymjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -590,21 +591,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

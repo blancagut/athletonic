@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -607,17 +607,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_5_309ed1f6-dbc9-44cb-a723-cf3465fb5340.jpg","t":"fckwhattheythinkmulticamblackmeshsnapback5309ed1f6dbc944cba723cf3465fb5340jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_1_cef6d668-f845-438f-b40f-5a138014902b.jpg","t":"fckwhattheythinkmulticamblackmeshsnapback1cef6d668f845438fb40f5a138014902bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_3_2ad67f36-4988-40ad-8827-96661a6c784c.jpg","t":"fckwhattheythinkmulticamblackmeshsnapback32ad67f36498840ad882796661a6c784cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_2_1a0ddadc-7531-4600-b65c-d3e4c59782b2.jpg","t":"fckwhattheythinkmulticamblackmeshsnapback21a0ddadc75314600b65cd3e4c59782b2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_4_b2cad261-65b6-4689-817a-935abedd8141.jpg","t":"fckwhattheythinkmulticamblackmeshsnapback4b2cad26165b64689817a935abedd8141jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-ALLBLACKSNAPBACK_1_d0aa279b-4cce-4a79-9fa1-5389d86d4565.jpg","t":"fckwhattheythinkallblacksnapback1d0aa279b4cce4a799fa15389d86d4565jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-ALLBLACKSNAPBACK_3_0d2cd9d2-bac6-41ca-bc73-43b5c7a65862.jpg","t":"fckwhattheythinkallblacksnapback30d2cd9d2bac641cabc7343b5c7a65862jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-ALLBLACKSNAPBACK_4_fc369d1b-caff-4fe7-9599-5a6ac585e617.jpg","t":"fckwhattheythinkallblacksnapback4fc369d1bcaff4fe795995a6ac585e617jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-ALLBLACKSNAPBACK_2_21747d9f-bb38-4c21-b58b-50e26eb3e338.jpg","t":"fckwhattheythinkallblacksnapback221747d9fbb384c21b58b50e26eb3e338jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-ALLBLACKSNAPBACK_5_ecb34294-d701-44f2-802e-257869766b14.jpg","t":"fckwhattheythinkallblacksnapback5ecb34294d70144f2802e257869766b14jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-BLACKMULTICAMSNAPBACK_1_ddd3dc57-31a7-4623-a3fb-2e85e390484e.jpg","t":"fckwhattheythinkblackmulticamsnapback1ddd3dc5731a74623a3fb2e85e390484ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-BLACKMULTICAMSNAPBACK_3_be122256-60fe-4e16-9014-d04b1500b4cd.jpg","t":"fckwhattheythinkblackmulticamsnapback3be12225660fe4e169014d04b1500b4cdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-BLACKMULTICAMSNAPBACK_5_364c32bf-8299-4ad0-8b04-efef73d87ef3.jpg","t":"fckwhattheythinkblackmulticamsnapback5364c32bf82994ad08b04efef73d87ef3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-BLACKMULTICAMSNAPBACK_4_f50a504f-5ec6-48d1-94da-dbde3d00f00a.jpg","t":"fckwhattheythinkblackmulticamsnapback4f50a504f5ec648d194dadbde3d00f00ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-BLACKMULTICAMSNAPBACK_2_a882bdd4-b44e-4978-b69b-cd6708ea36e2.jpg","t":"fckwhattheythinkblackmulticamsnapback2a882bdd4b44e4978b69bcd6708ea36e2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-WOODLANDBDU_BLACKMESHSNAPBACK_1_b44a3fa3-5fe9-4d67-bb8f-3748c0632c93.jpg","t":"fckwhattheythinkwoodlandbdublackmeshsnapback1b44a3fa35fe94d67bb8f3748c0632c93jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-WOODLANDBDU_BLACKMESHSNAPBACK_3_5fc7d87e-c87b-4396-9b48-a8c15388c34e.jpg","t":"fckwhattheythinkwoodlandbdublackmeshsnapback35fc7d87ec87b43969b48a8c15388c34ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-WOODLANDBDU_BLACKMESHSNAPBACK_4_1bdfc2a1-5e5b-4922-93cb-e1bc56983fdc.jpg","t":"fckwhattheythinkwoodlandbdublackmeshsnapback41bdfc2a15e5b492293cbe1bc56983fdcjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-WOODLANDBDU_BLACKMESHSNAPBACK_2_739225d6-3d38-4267-858f-9b0b967a41c9.jpg","t":"fckwhattheythinkwoodlandbdublackmeshsnapback2739225d63d384267858f9b0b967a41c9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-WOODLANDBDU_BLACKMESHSNAPBACK_5_646f28e1-e002-4d1b-a3a4-fcd42b7d8ed3.jpg","t":"fckwhattheythinkwoodlandbdublackmeshsnapback5646f28e1e0024d1ba3a4fcd42b7d8ed3jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -633,21 +634,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -669,7 +674,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813959852402","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_5_309ed1f6-dbc9-44cb-a723-cf3465fb5340.jpg"},{"variant_id":"61813959885170","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_5_309ed1f6-dbc9-44cb-a723-cf3465fb5340.jpg"},{"variant_id":"61813959917938","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_5_309ed1f6-dbc9-44cb-a723-cf3465fb5340.jpg"},{"variant_id":"61813959950706","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-BLACKMULTICAMSNAPBACK_1_ddd3dc57-31a7-4623-a3fb-2e85e390484e.jpg"}];
+        var variantPricing = [{"variant_id":"61813959852402","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-WOODLANDBDU_BLACKMESHSNAPBACK_1_b44a3fa3-5fe9-4d67-bb8f-3748c0632c93.jpg"},{"variant_id":"61813959885170","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_5_309ed1f6-dbc9-44cb-a723-cf3465fb5340.jpg"},{"variant_id":"61813959917938","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-MULTICAM_BLACKMESHSNAPBACK_5_309ed1f6-dbc9-44cb-a723-cf3465fb5340.jpg"},{"variant_id":"61813959950706","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/FCKWHATTHEYTHINK-BLACKMULTICAMSNAPBACK_1_ddd3dc57-31a7-4623-a3fb-2e85e390484e.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

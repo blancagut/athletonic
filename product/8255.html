@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -570,17 +570,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_CombatKhaki_0001.jpg","t":"1stphormapparelmenspantsactiveperformancejoggercombatkhaki0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_CombatKhaki_0008.jpg","t":"1stphormapparelmenspantsactiveperformancejoggercombatkhaki0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_CombatKhaki_0009.jpg","t":"1stphormapparelmenspantsactiveperformancejoggercombatkhaki0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_CombatKhaki_0007.jpg","t":"1stphormapparelmenspantsactiveperformancejoggercombatkhaki0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_CombatKhaki_0010.jpg","t":"1stphormapparelmenspantsactiveperformancejoggercombatkhaki0010jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_CombatKhaki_0003.jpg","t":"1stphormapparelmenspantsactiveperformancejoggercombatkhaki0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_pants_active_performance_jogger_black_0006_c2a04044-8360-48d6-8216-edfa67b05711.jpg","t":"1stphormapparelmenspantsactiveperformancejoggerblack0006c2a04044836048d68216edfa67b05711jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_pants_active_performance_jogger_black_0008_a898c36a-6ccd-4de7-be88-1c64d2a9e185.jpg","t":"1stphormapparelmenspantsactiveperformancejoggerblack0008a898c36a6ccd4de7be881c64d2a9e185jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_pants_active_performance_jogger_black_0010_5057f477-f8a3-4d00-91c7-21c5af084f26.jpg","t":"1stphormapparelmenspantsactiveperformancejoggerblack00105057f477f8a34d0091c721c5af084f26jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_pants_active_performance_jogger_black_0011_17c1570c-bd28-44f6-bd62-cb00215fbb10.jpg","t":"1stphormapparelmenspantsactiveperformancejoggerblack001117c1570cbd2844f6bd62cb00215fbb10jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_pants_active_performance_jogger_black_0013_d0c4e86c-779e-46c4-ab50-0d025aba8cde.jpg","t":"1stphormapparelmenspantsactiveperformancejoggerblack0013d0c4e86c779e46c4ab500d025aba8cdejpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_pants_active_performance_jogger_black_0014_17a4bba5-f12d-49ec-92ca-32667ae92a91.jpg","t":"1stphormapparelmenspantsactiveperformancejoggerblack001417a4bba5f12d49ec92ca32667ae92a91jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_MidnightGrey_0004.jpg","t":"1stphormapparelmenspantsactiveperformancejoggermidnightgrey0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_MidnightGrey_0006.jpg","t":"1stphormapparelmenspantsactiveperformancejoggermidnightgrey0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_MidnightGrey_0007.jpg","t":"1stphormapparelmenspantsactiveperformancejoggermidnightgrey0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_MidnightGrey_0009.jpg","t":"1stphormapparelmenspantsactiveperformancejoggermidnightgrey0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_MidnightGrey_0008.jpg","t":"1stphormapparelmenspantsactiveperformancejoggermidnightgrey0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Pants_ActivePerformanceJogger_MidnightGrey_0002.jpg","t":"1stphormapparelmenspantsactiveperformancejoggermidnightgrey0002jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -596,21 +597,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

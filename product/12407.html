@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -614,17 +614,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC00595_6147cb5f-ac6c-4643-a84f-cedae2effc8e.jpg","t":"dsc005956147cb5fac6c4643a84fcedae2effc8ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC00603_47f975a8-0ad7-4f6a-bd1f-94a9d70f35ea.jpg","t":"dsc0060347f975a80ad74f6abd1f94a9d70f35eajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC00601_95a01896-e51b-492c-bc92-585aac60fc50.jpg","t":"dsc0060195a01896e51b492cbc92585aac60fc50jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC00587_1249d520-b427-468c-b57d-662f1b5e5bbf.jpg","t":"dsc005871249d520b427468cb57d662f1b5e5bbfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_1.jpg","t":"nobodyiscomingtosaveyoucatwithcrossedlighteningboltsallmulticamblackflatbrimsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_2.jpg","t":"nobodyiscomingtosaveyoucatwithcrossedlighteningboltsallmulticamblackflatbrimsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_3.jpg","t":"nobodyiscomingtosaveyoucatwithcrossedlighteningboltsallmulticamblackflatbrimsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_4.jpg","t":"nobodyiscomingtosaveyoucatwithcrossedlighteningboltsallmulticamblackflatbrimsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_5.jpg","t":"nobodyiscomingtosaveyoucatwithcrossedlighteningboltsallmulticamblackflatbrimsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_FLATCORKBRIMSNAPBACK_1.jpg","t":"nobodyiscomingtosaveyoublackflatcorkbrimsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_FLATCORKBRIMSNAPBACK_4.jpg","t":"nobodyiscomingtosaveyoublackflatcorkbrimsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_FLATCORKBRIMSNAPBACK_3.jpg","t":"nobodyiscomingtosaveyoublackflatcorkbrimsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_FLATCORKBRIMSNAPBACK_5.jpg","t":"nobodyiscomingtosaveyoublackflatcorkbrimsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_FLATCORKBRIMSNAPBACK_2.jpg","t":"nobodyiscomingtosaveyoublackflatcorkbrimsnapback2jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -640,21 +641,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -676,7 +681,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813867774322","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_1.jpg"},{"variant_id":"61813867807090","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_1.jpg"},{"variant_id":"61813867839858","key":"CORK / BLACK","title":"CORK / BLACK","sku":null,"optionValues":["CORK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"CORK / BLACK"}],"selected_options":{"COLOR":"CORK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_1.jpg"}];
+        var variantPricing = [{"variant_id":"61813867774322","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_1.jpg"},{"variant_id":"61813867807090","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODY_IS_COMING_TO_SAVE_YOU_-_CAT_WITH_CROSSED_LIGHTENING_BOLTS_-_ALL_MULTICAM_BLACK_FLAT_BRIM_SNAPBACK_1.jpg"},{"variant_id":"61813867839858","key":"CORK / BLACK","title":"CORK / BLACK","sku":null,"optionValues":["CORK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"CORK / BLACK"}],"selected_options":{"COLOR":"CORK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_FLATCORKBRIMSNAPBACK_1.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

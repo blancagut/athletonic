@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -579,17 +579,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-w1b-bike-front-view-studio.webp","t":"productw1bbikefrontviewstudiowebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-w1b-bike-bottom-view-structure_88aef3aa-0bdb-47f0-a203-f1e1048379ff.webp","t":"productw1bbikebottomviewstructure88aef3aa0bdb47f0a203f1e1048379ffwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-w1b-bike-top-down-view_3270bfa9-bbe5-4475-bfb3-5c2ff20e774a.webp","t":"productw1bbiketopdownview3270bfa9bbe54475bfb35c2ff20e774awebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-woman-using-laptop_ca33e809-3baf-4d3c-b733-b60ce1e7ed69.webp","t":"scenew1bbikewomanusinglaptopca33e8093baf4d3cb733b60ce1e7ed69webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-standing-desk-scene-2_c2b51428-51d3-4cc8-869d-ff9ef11cc20b.webp","t":"scenew1bbikestandingdeskscene2c2b5142851d34cc8869dff9ef11cc20bwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-woman-sitting-resting_428bac35-0339-48be-863f-7a8d771d445d.webp","t":"scenew1bbikewomansittingresting428bac35033948be863f7a8d771d445dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-folded-moving-handle_a5b95afb-77dc-4886-9aed-16bf9cef9cd9.webp","t":"scenew1bbikefoldedmovinghandlea5b95afb77dc48869aed16bf9cef9cd9webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-w1b-bage-view-product-shot.webp","t":"productw1bbageviewproductshotwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-w1b-bike-angle-view-studio_25422007-671e-4983-bb14-ff578124f900.webp","t":"productw1bbikeangleviewstudio25422007671e4983bb14ff578124f900webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-w1b-bage-view-product-shot_1_312f7ca0-cc47-4048-8f3d-640418344e3d.webp","t":"productw1bbageviewproductshot1312f7ca0cc4740488f3d640418344e3dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-w1b-bage-view-product-shot_2_deec62e3-6d6f-4b37-a587-3a7231d7e65f.webp","t":"productw1bbageviewproductshot2deec62e36d6f4b37a5873a7231d7e65fwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_-w1b-bage-view-product-shot_3_732c17cf-8cea-4c44-9c71-b3e9d8a702da.webp","t":"productw1bbageviewproductshot3732c17cf8cea4c449c71b3e9d8a702dawebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-main-living-room-scene_e65a4a72-dedd-486b-933a-6b03050d32a6.webp","t":"scenew1bbikemainlivingroomscenee65a4a72dedd486b933a6b03050d32a6webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-folded-home-storage_4e712f2e-7e76-4512-b722-7149ce2f7343.webp","t":"scenew1bbikefoldedhomestorage4e712f2e7e764512b7227149ce2f7343webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-near-window-view.webp","t":"scenew1bbikenearwindowviewwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-standing-desk-workout.webp","t":"scenew1bbikestandingdeskworkoutwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-bike-pedal-closeup-action.webp","t":"scenew1bbikepedalcloseupactionwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_-w1b-treadmill-in-home-office.webp","t":"scenew1btreadmillinhomeofficewebp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -605,21 +606,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -607,17 +607,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKJOGGERFRONTSIDEHALFJ_1_60b2640b-f0f8-40e3-b92a-035ab917978a.jpg","t":"blackjoggerfrontsidehalfj160b2640bf0f840e3b92a035ab917978ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04543.jpg","t":"cia04543jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tealcmbtfrontnew_5ea2f45b-8531-4c1e-a7aa-e17bfd994555.jpg","t":"tealcmbtfrontnew5ea2f45b85314c1ea7aae17bfd994555jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tealsea_8c88a04a-a195-4176-b9c0-a1d181466072.jpg","t":"tealsea8c88a04aa1954176b9c0a1d181466072jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04527_d9e70cf4-8800-4cd9-8b5c-59ebb9b7d234.jpg","t":"cia045273d064f9d281d423191b954904578a1a9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tealjoggers2_92a0cf54-b1bb-4c75-bca5-b72ed0570c2f.jpg","t":"tealjoggers292a0cf54b1bb4c75bca5b72ed0570c2fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/reartealnewjog1_3dae4144-5a81-427c-a9a0-5de9b143793c.jpg","t":"reartealnewjog13dae41445a81427ca9a05de9b143793cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tealjogger4new_f27e485e-1fcc-4072-b338-19f6ab790b18.jpg","t":"tealjogger4newf27e485e1fcc4072b33819f6ab790b18jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04550.jpg","t":"cia04550jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04248_1.jpg","t":"cia042481bbbd64557be540c48b4fd9e2887b7f69jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04235-2_1.jpg","t":"cia0423521jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04238_1.jpg","t":"cia042381jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04281_1-662129_80a0e370-8804-4aee-9bf6-a04f356044f3.jpg","t":"cia042811662129jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04344_1.jpg","t":"cia043441jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04369.jpg","t":"cia043692eceed4001374bfab6ca90fd3118c747jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/image_97d5970c-b150-46b2-8297-0b9cc63e4d69-470818.jpg","t":"image97d5970cb15046b282970b9cc63e4d69470818jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04364.jpg","t":"cia0436444afdb02cccb4f26920d42043e610afdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04434-3.jpg","t":"cia044343876cd839173d46e0b740308b1e886c54jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04319_1.jpg","t":"cia043191jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04378.jpg","t":"cia04378jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04344-2.jpg","t":"cia043442jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04392_4e328b6c-b615-4129-bc17-26b28de24ba2.jpg","t":"cia043923f8d1747a49d4f9fa5bedb0d2d4e083cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/image_dfa5e708-276c-41a8-8161-9cea1bb4be56-455594.jpg","t":"imagedfa5e708276c41a881619cea1bb4be56455594jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04429_4c3680ba-3628-4d43-b7ca-5221fc897088.jpg","t":"cia044294c3680ba36284d43b7ca5221fc897088jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04437.jpg","t":"cia04437jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04404_805ddfdd-c482-41ea-adb9-6917804dc77f.jpg","t":"cia04404jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04485_9799c4f2-ed07-4fa3-a7d3-908efc92f4fb.jpg","t":"cia044859799c4f2ed074fa3a7d3908efc92f4fbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04362.jpg","t":"cia04362jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/image-965805_47649038-d226-4515-83c4-60c27b7abbf4.jpg","t":"image965805c824810cd8be4bb2b34b2f9fe1f4cd30jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04407.jpg","t":"cia04407jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04445.jpg","t":"cia04445jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04471.jpg","t":"cia044713de823e067254402a39164dd9c4b6fe7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/image-343881_fe1fcc1f-4b7d-4b02-8d7f-dd0b2c26e972.jpg","t":"image343881fe1fcc1f4b7d4b028d7fdd0b2c26e972jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04445-2.jpg","t":"cia044452jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04528_e75aae00-85ea-4cee-8474-cbd8161d62ed.jpg","t":"cia04528e75aae0085ea4cee8474cbd8161d62edjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04465_f779bf0d-9ed9-45df-9fbe-c30df6170ebf.jpg","t":"cia04465f779bf0d9ed945df9fbec30df6170ebfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04486.jpg","t":"cia04486jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04542_891c6bad-db01-4df4-a23b-5a8aa64aae66.jpg","t":"cia04542891c6baddb014df4a23b5a8aa64aae66jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04480.jpg","t":"cia04480jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04490-2.jpg","t":"cia044902jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04546_3572bd4a-30ab-4ae1-b4a2-e5fc216ca76b.jpg","t":"cia04546cb10e8ddb83d4c60a1e337ab550bdc6djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKJOGGERFRONT2J_1_bb504265-95c6-4fb5-90ca-ec07365c7a4e.jpg","t":"blackjoggerfront2j1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04494.jpg","t":"cia04494jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKJOGGERSFRONTDYNAMIC_1_3914fa57-9e83-489b-ba32-49735b699c5f.jpg","t":"blackjoggersfrontdynamic13914fa579e83489bba3249735b699c5fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04523.jpg","t":"cia04523jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04531-2_04c18031-ce31-46d6-92b3-24feb5c5f888.jpg","t":"cia04531204c18031ce3146d692b324feb5c5f888jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLUEFRONTJOGGERS_1_a18c8f52-370b-41e6-8a44-7d40f6abc06e.jpg","t":"bluefrontjoggers1a18c8f52370b41e68a447d40f6abc06ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLACKREARJOGGDYN_1.jpg","t":"blackrearjoggdyn1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/STONEEMPIREGREENFRONTJOGGERS_1_dba48b03-a927-4209-979e-bb64f6058e3d.jpg","t":"stoneempiregreenfrontjoggers1a83765896e0741af8e552e41b453c675jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLUEREARJOGGERS_1_9ebc2ab0-30e6-4edd-b493-c7c9088b1ca1.jpg","t":"bluerearjoggers19ebc2ab030e64eddb493c7c9088b1ca1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD07531_6f015d4a-8a03-4382-909f-76caec48debf.jpg","t":"ybd075316f015d4a8a034382909f76caec48debfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/BLUESIDEJOGGERS_1_d7006604-8966-4fef-8607-17d006129021.jpg","t":"bluesidejoggers1d700660489664fef860717d006129021jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD07525_3fa3cfa6-82fb-450b-a1c4-dcb48ba36159.jpg","t":"ybd075253fa3cfa682fb450ba1c4dcb48ba36159jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD07523_019f0d65-dc82-4a4f-b24a-419ae28e76ff.jpg","t":"ybd07523af18aa452fe74175ae30b39f90b4d134jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD07544_49133781-66d9-4160-8020-c81c9e4cf957.jpg","t":"ybd075444913378166d941608020c81c9e4cf957jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD07446_7daf92ca-2824-4651-8be4-d5fb9629ac45.jpg","t":"ybd074467daf92ca282446518be4d5fb9629ac45jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -633,21 +634,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

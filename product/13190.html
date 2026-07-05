@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -639,17 +639,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30BL300_26180_121025_V1.1i_BBL_Front-2000px.png","t":"pre30bl30026180121025v11ibblfront2000pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PE30025152031725V1.2-Front-1200px.png","t":"pre30pe30025152031725v12front1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30BP300_25954_091724_V1.1-Front-1200px.png","t":"pre30bp30025954091724v11front1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30BL300_26180_121025_V1.1i_BBL_Right-2000px.png","t":"pre30bl30026180121025v11ibblright2000pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30RL30022496031725V1.4-Front-1200px.png","t":"pre30rl30022496031725v14front1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PE30025152031725V1.2-Right-1200px.png","t":"pre30pe30025152031725v12right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PE30025152031725V1.2-Left-1200px.png","t":"pre30pe30025152031725v12left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30GC30022380031725V1.4-Front-1200px_5e79b9d1-f022-4176-9184-8494d4d4486a.png","t":"pre30gc30022380031725v14front1200px5e79b9d1f022417691848494d4d4486apng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30BP300_25954_091724_V1.1-Right-1200px.png","t":"pre30bp30025954091724v11right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PL30022403031725V1.4-Front-1200px_f2389fa0-9538-488b-b077-caeff5936dfa.png","t":"pre30pl30022403031725v14front1200pxf2389fa09538488bb077caeff5936dfapng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30RL30022496031725V1.4-Right-1200px.png","t":"pre30rl30022496031725v14right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30RL30022496031725V1.4-Left-1200px.png","t":"pre30rl30022496031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30RS30022410031725V1.4-Front-1200px_072f8e9c-8bd5-417f-ad92-9970c14ab64f.png","t":"pre30rs30022410031725v14front1200px072f8e9c8bd5417fad929970c14ab64fpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30GC30022380031725V1.4-Right-1200px.png","t":"pre30gc30022380031725v14right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30GC30022380031725V1.4-Left-1200px.png","t":"pre30gc30022380031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30SK30022434031725V1.4-Front-1200px_edf65492-4fdd-4b87-bef2-7029d6a8de79.png","t":"pre30sk30022434031725v14front1200pxedf654924fdd4b87bef27029d6a8de79png"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PL30022403031725V1.4-Right-1200px.png","t":"pre30pl30022403031725v14right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PL30022403031725V1.4-Left-1200px.png","t":"pre30pl30022403031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30BC30022373031725V1.4-Front-1200px_2fe40721-4c18-4c2e-9509-dea7d3abc754.png","t":"pre30bc30022373031725v14front1200px2fe407214c184c2e9509dea7d3abc754png"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30RS30022410031725V1.4-Right-1200px.png","t":"pre30rs30022410031725v14right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30RS30022410031725V1.4-Left-1200px.png","t":"pre30rs30022410031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PS30022397031725V1.4-Front-1200px_4c26b0d5-8065-40ab-9683-2273053a1e80.png","t":"pre30ps30022397031725v14front1200px4c26b0d5806540ab96832273053a1e80png"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30SK30022434031725V1.4-Right-1200px.png","t":"pre30sk30022434031725v14right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30SK30022434031725V1.4-Left-1200px.png","t":"pre30sk30022434031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30CL30022458031725V1.4-Front-1200px.png","t":"pre30cl30022458031725v14front1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30BC30022373031725V1.4-Right-1200px.png","t":"pre30bc30022373031725v14right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30BC30022373031725V1.4-Left-1200px.png","t":"pre30bc30022373031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30OM30022472031725V1.4-Front-1200px_a7f5a044-8e5b-4a95-94ca-a0ce4f2d981e.png","t":"pre30om30022472031725v14front1200pxa7f5a0448e5b4a9594caa0ce4f2d981epng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PS30022397031725V1.4-Right-1200px.png","t":"pre30ps30022397031725v14right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30PS30022397031725V1.4-Left-1200px.png","t":"pre30ps30022397031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30CL30022458031725V1.4-Left-1200px.png","t":"pre30cl30022458031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30CL30022458031725V1.4-Right-1200px.png","t":"pre30cl30022458031725v14right1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30OM30022472031725V1.4-Left-1200px.png","t":"pre30om30022472031725v14left1200pxpng"},{"src":"https://cdn.shopify.com/s/files/1/0564/2439/9023/files/PRE30OM30022472031725V1.4-Right-1200px.png","t":"pre30om30022472031725v14right1200pxpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -665,21 +666,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -567,17 +567,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FP_FRONT_OW.jpg","t":"fpfrontowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/KeyBenefit-min_43ff478e-cd98-4a27-8c95-888d7f87d62d.jpg","t":"keybenefitminf586ce4c8fdd4f1398e02d603a65c868jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BR_FRONT_OW.jpg","t":"brfrontowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/CompleteHydrationGreen-min_ebb85ce2-c980-434c-9c07-d88c9204f2c9.jpg","t":"completehydrationgreenmince7a9711678c4fc496ff509b1b5f93f5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/PrecisionFormulated-min_66920ce3-1f39-44b8-b79f-304dc2e6b552.jpg","t":"precisionformulatedminb906d0da62cd42c3b5e19640b366dd6fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/CompleteHydration-min_3949f541-d6da-4edc-8d42-9f65ec01121f.jpg","t":"completehydrationmin8de090caa64848cc83532f434a1f9c10jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/No_Sugar_or_Sweeteners_Fruit_Punch.jpg","t":"nosugarorsweetenersfruitpunchjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FP_12_1.jpg","t":"fp121jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/LL_FRONT_OW.jpg","t":"llfrontowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/No_Sugar_or_Sweeteners_BR.jpg","t":"nosugarorsweetenersbrjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BR_12_1.jpg","t":"br121jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BR_SIDE_OW.jpg","t":"brsideowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FP_SIDE_OW.jpg","t":"fpsideowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FP_NFP_OW.jpg","t":"fpnfpowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FP_NFP.jpg","t":"fpnfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/ORG_FRONT_OW.jpg","t":"orgfrontowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/No_Sugar_or_Sweeteners_LL.jpg","t":"nosugarorsweetenerslljpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/LL_12_1.jpg","t":"ll121jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BR_NFP_OW.jpg","t":"brnfpowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/LL_SIDE_OW.jpg","t":"llsideowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BR_NFP.jpg","t":"brnfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/No_Sugar_or_Sweeteners_Orange.jpg","t":"nosugarorsweetenersorangejpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/ORANGE_12_1.jpg","t":"orange121jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/ORG_SIDE_OW.jpg","t":"orgsideowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/LL_NFP_OW.jpg","t":"llnfpowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/LL_NFP.jpg","t":"llnfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/ORG_NFP_OW.jpg","t":"orgnfpowjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/ORG_NFP.jpg","t":"orgnfpjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -593,21 +594,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -565,17 +565,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BlackoutStickersDuo.png","t":"blackoutstickersduopng"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/10bs_57b0557b-8a19-4b31-b7bf-84669614664f.jpg","t":"10bs57b0557b8a194b31b7bf84669614664fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/26_20PM_9486d412-36b5-44d8-8ed1-e64114f52efb.jpg","t":"2620pm9486d41236b544d88ed1e64114f52efbjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/5bs_dbccb075-275c-4b5a-a0f6-b731911cedca.jpg","t":"5bsdbccb075275c4b5aa0f6b731911cedcajpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/7bs_d7ee8b48-0fa9-458b-9c04-ea2a79767f96.jpg","t":"7bsd7ee8b480fa9458b9c04ea2a79767f96jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BlackoutStickers2_1635a7c8-9c21-4904-b721-947bf956962b.jpg","t":"blackoutstickers21635a7c89c214904b721947bf956962bjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -591,21 +592,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

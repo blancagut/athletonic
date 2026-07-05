@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -554,17 +554,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3e6263dc-f122-4e58-9f00-69b14619c455/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/66835a94-845e-4190-a929-f94d9bbe3bbc/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/64244570-4993-49cf-b9f2-f60851294b0f/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5b3a3e28-7e3f-4def-8931-c6f88aa6623c/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/29dcdb9f-241b-429c-aa7b-4b4b8d8e3b8c/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f1825ad0-24ff-4c13-8564-43f8f666a4a2/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/dd412bfb-cea7-46a9-b9e2-95ae13ff5a99/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/769f0151-25fe-4f34-8550-70bd8a9dfa49/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/80711c71-bd2b-462a-bada-1f13e76df9ec/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/afa8a36a-0c1a-4e70-8737-2b12448e1cc4/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f152e7db-1789-4fa6-9341-11e0431f3a79/moon-shoe-og-womens-shoes-Zt8cajKG.png","t":"nikemoonshoeogwomensshoesmoonshoeogwomensshoeszt8cajkgpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -580,21 +581,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

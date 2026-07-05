@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -574,17 +574,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WalkingPad_workout_benches_1_397a3cb6-a690-414c-8e64-daf5bfd377ee.jpg","t":"walkingpadworkoutbenches1397a3cb6a690414c8e64daf5bfd377eejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Tone_Up_Workout_Station_1_bc4a9a0f-f0bc-483b-8940-764648afec29.jpg","t":"toneupworkoutstation1bc4a9a0ff0bc483b8940764648afec29jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Tone_Up_Workout_Station_2_1e529dc2-d9b2-4256-b4d5-7aba43ee0618.jpg","t":"toneupworkoutstation21e529dc2d9b24256b4d57aba43ee0618jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/workout_bench_Tone_Up_Workout_Station_64cbab5d-09d2-467d-86f0-1e92c1404014.jpg","t":"workoutbenchtoneupworkoutstation64cbab5d09d2467d86f01e92c1404014jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/adjustable_workout_benches_46ff2e38-100f-4ab7-88ae-7273561ef3dd.jpg","t":"adjustableworkoutbenches46ff2e38100f4ab788ae7273561ef3ddjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/KingSmith_Multiple_Functions_Workout_Bench-basic.jpg","t":"kingsmithmultiplefunctionsworkoutbenchbasicjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/workout_bench_basic_a21c86fb-75a0-4408-92cd-2e0542b876bf.jpg","t":"workoutbenchbasica21c86fb75a0440892cd2e0542b876bfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Tone_Up_Workout_Station_4_3e196437-c430-4cf2-99ef-3f23bc4deefb.jpg","t":"toneupworkoutstation43e196437c4304cf299ef3f23bc4deefbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/workout_bench_premium_52134228-d2d6-4e25-97f1-b648a483144f.jpg","t":"workoutbenchpremium52134228d2d64e2597f1b648a483144fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/foldable_home_workout_bench_b9524428-18e4-48ec-9dad-56f86330442a.jpg","t":"foldablehomeworkoutbenchb952442818e448ec9dad56f86330442ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Tone_Up_Workout_Station_accessories_0ebc80f9-91be-438b-9b8f-1431673302f8.jpg","t":"toneupworkoutstationaccessories0ebc80f991be438b9b8f1431673302f8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/KingSmith_Multiple_Functions_Workout_Bench-basic-Premium.jpg","t":"kingsmithmultiplefunctionsworkoutbenchbasicpremiumjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Tone_Up_Workout_Station_for_home_c5425492-2969-4291-a7b6-09949c93f8d1.jpg","t":"toneupworkoutstationforhomec542549229694291a7b609949c93f8d1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WalkingPad_foldable_workout_bench_f83d349c-b63a-41fc-8e94-5205dfec5e1b.jpg","t":"walkingpadfoldableworkoutbenchf83d349cb63a41fc8e945205dfec5e1bjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -600,21 +601,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

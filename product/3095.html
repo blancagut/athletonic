@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -611,17 +611,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/NS_Watermelon_Front_1_5453598f-8e8c-4d91-b972-a846cb7cdf5d.png","t":"nswatermelonfront15453598f8e8c4d91b972a846cb7cdf5dpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/71251cVdjSL._AC_SL1200.jpg","t":"71251cvdjslacsl1200jpg"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/71iMCKwMJaL._AC_SL1200.jpg","t":"71imckwmjalacsl1200jpg"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/CL_-_Front_1.png","t":"clfront1png"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/Nitrosurge_Optimized_ProductImage_4_HowtoUse.png","t":"nitrosurgeoptimizedproductimage4howtousepng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/JF_Nitrosurge_60_CL_Front.png","t":"jfnitrosurge60clfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/JF_Nitrosurge_60_BR_Front.png","t":"jfnitrosurge60brfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/leftWATERMELON_1_62ba1dc6-3909-4736-a776-96eae026e571.png","t":"leftwatermelon162ba1dc639094736a77696eae026e571png"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/JF_Nitrosurge_US_ArcticWhite_60_1-3_Front.png","t":"jfnitrosurgeusarcticwhite6013frontpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/rightWATERMELON_1_cc499e23-6a72-4870-9ae3-4f9a0bc5e406.png","t":"rightwatermelon1cc499e236a7248709ae34f9a0bc5e406png"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/JF-140_Nitrosurge_US_GreenApple_30_1.3_Front.png","t":"jf140nitrosurgeusgreenapple3013frontpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/Nitrosurge_30_BlueRaz_1_2_1_fe0cfd94-89b9-4af9-906f-fb8047877325.png","t":"nitrosurge30blueraz121fe0cfd9489b94af9906ffb8047877325png"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/Arctic_White_-_FRONT.png","t":"arcticwhitefrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/Pineapple_-_FRONT.png","t":"pineapplefrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/NS_SourPeachRings_Front.png","t":"nssourpeachringsfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/JF-161_US_Nitrosurge_BC_30_1.3_Front.png","t":"jf161usnitrosurgebc3013frontpng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/JF_NitroSurge_10-BlueRaz-Front.jpg","t":"jfnitrosurge10bluerazfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/JF_NitroSurge_10_Cherry_Limeade-Front_9e80a3e1-d160-4f30-8e0b-6cd36c3529dc.jpg","t":"jfnitrosurge10cherrylimeadefront9e80a3e1d1604f308e0b6cd36c3529dcjpg"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/JF_Nitrosurge_Grape_1.png","t":"jfnitrosurgegrape1png"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/Nitrosurge_Optimized_ProductImage_2_Benefits.png","t":"nitrosurgeoptimizedproductimage2benefitspng"},{"src":"https://cdn.shopify.com/s/files/1/2704/4962/files/Nitrosurge_Optimized_ProductImage_5_SFP_CL.png","t":"nitrosurgeoptimizedproductimage5sfpclpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -637,21 +638,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

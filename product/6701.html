@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -613,17 +613,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/1_HERO_CP10_Paper.jpg","t":"1herocp10paperjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/3_NewLook_CP10_Paper.jpg","t":"3newlookcp10paperjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/5_SPF_CP10_Paper_7192cd35-7ff8-44b1-b137-4648367c3602.jpg","t":"5spfcp10paper7192cd357ff844b1b1374648367c3602jpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/1_HERO_CP05_1f2ebabe-ce0a-4ab4-ae7d-e388661a5803.png","t":"1herocp051f2ebabece0a4ab4ae7de388661a5803png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/7_Quantity_CP10_Paper.jpg","t":"7quantitycp10paperjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/2_CP10_Lifestyle.jpg","t":"2cp10lifestylejpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/8_ColdDrinks_CP_9.33oz.jpg","t":"8colddrinkscp933ozjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/9_BRAND_CP10oz.jpg","t":"9brandcp10ozjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/2_Lifestyle_CP05_41590828-34bd-4e5f-949f-7f76863f4130.png","t":"2lifestylecp05png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/3_NewLook_CP05.png","t":"3newlookcp05png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/5_SPF_CP05.png","t":"5spfcp05png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/7_BRAND_CP05.png","t":"7brandcp05png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/1_POG_CP_SP.jpg","t":"1pogcpspjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/1_HERO_CPHoliday.jpg","t":"1herocpholidayjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/2_LIFESTYLE_CP_SP_8da74e10-c105-42e1-86bc-c1ece408a94e.jpg","t":"2lifestylecpspce935f0befdf432f81726bc7b6c8968ajpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/3_SPF_CP-SP.jpg","t":"3spfcpsp6c8c3f4ffeb648e6bacfbcc0f2e74fa0jpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/6_Quantity_CPSP.jpg","t":"6quantitycpspjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/4_USAGE_CP10_Paper.jpg","t":"4usagecp10paperjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/2022.10-Holiday-Products-1168-5oz-CP_1.jpg","t":"202210holidayproducts11685ozcp1jpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/6_BENEFITS_CP10_Paper.jpg","t":"6benefitscp10paperjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/3_SPF_CP05.png","t":"3spfcp05png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/6_BRAND_CP05.png","t":"6brandcp05png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/1_POG_CP_SP-8ct.jpg","t":"1pogcpsp8ctjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/1_HERO_CP20_Paper_1.jpg","t":"1herocp20paper1jpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/4_USAGE_CP05_cf089fa6-0c3d-4675-98c5-99fe3db328d2.png","t":"4usagecp05cf089fa60c3d467598c599fe3db328d2png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/6_BRAND_CP.jpg","t":"6brandcpjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/6_BENEFITS_CP05.png","t":"6benefitscp05png"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/4_SPF_CP-Papercanister.jpg","t":"4spfcppapercanisterjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/4_USAGE_CPSP.jpg","t":"4usagecpspd9aee09e9b8d48f682bdb56bb4eb360ajpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/B__Paperboard_Info.jpg","t":"bpaperboardinfojpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/5_BENEFITS_SP_4a458fa4-d616-4c98-9424-663647cd2bad.jpg","t":"5benefitsspc1469c128d99481b870d85915cb34555jpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/5_BENEFITS_CP-5oz_ca0e317f-ffc9-433d-8a6b-24aa6df10a8a.jpg","t":"5benefitscp5ozca0e317fffc9433d8a6b24aa6df10a8ajpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/B__Benefits.jpg","t":"bbenefitsjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/B__How_to_Enjoy.jpg","t":"bhowtoenjoyjpg"},{"src":"https://cdn.shopify.com/s/files/1/2074/9385/files/B__How_to_Open.jpg","t":"bhowtoopenjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -639,21 +640,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

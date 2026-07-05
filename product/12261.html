@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -644,17 +644,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC02946_3b42a314-5513-4a86-bbec-8d0d1478b252.jpg","t":"dsc029463b42a31455134a86bbec8d0d1478b252jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC02856.jpg","t":"dsc02856jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC02909.jpg","t":"dsc02909jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC02919.jpg","t":"dsc02919jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-BLACK_WOODLANDBDUFLATBILLSNAPBACK_1.jpg","t":"feralblackwoodlandbduflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-BLACK_WOODLANDBDUFLATBILLSNAPBACK_3.jpg","t":"feralblackwoodlandbduflatbillsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-BLACK_WOODLANDBDUFLATBILLSNAPBACK_2.jpg","t":"feralblackwoodlandbduflatbillsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-BLACK_WOODLANDBDUFLATBILLSNAPBACK_4.jpg","t":"feralblackwoodlandbduflatbillsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-BLACK_WOODLANDBDUFLATBILLSNAPBACK_5.jpg","t":"feralblackwoodlandbduflatbillsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-ALLBLACKFLATBILLSNAPBACK_1.jpg","t":"feralallblackflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-ALLBLACKFLATBILLSNAPBACK_5.jpg","t":"feralallblackflatbillsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-ALLBLACKFLATBILLSNAPBACK_3.jpg","t":"feralallblackflatbillsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-ALLBLACKFLATBILLSNAPBACK_4.jpg","t":"feralallblackflatbillsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-ALLBLACKFLATBILLSNAPBACK_2.jpg","t":"feralallblackflatbillsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MOSSYOAKFLATBILLSNAPBACK_1.jpg","t":"feralmossyoakflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MOSSYOAKFLATBILLSNAPBACK_5.jpg","t":"feralmossyoakflatbillsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MOSSYOAKFLATBILLSNAPBACK_3.jpg","t":"feralmossyoakflatbillsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MOSSYOAKFLATBILLSNAPBACK_2.jpg","t":"feralmossyoakflatbillsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MOSSYOAKFLATBILLSNAPBACK_4.jpg","t":"feralmossyoakflatbillsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-REALTREEFLATBILLSNAPBACK_1.jpg","t":"feralrealtreeflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-REALTREEFLATBILLSNAPBACK_4.jpg","t":"feralrealtreeflatbillsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-REALTREEFLATBILLSNAPBACK_3.jpg","t":"feralrealtreeflatbillsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-REALTREEFLATBILLSNAPBACK_5.jpg","t":"feralrealtreeflatbillsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-REALTREEFLATBILLSNAPBACK_2.jpg","t":"feralrealtreeflatbillsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-TAN_BLACKMESHFLATBILLSNAPBACK_1.jpg","t":"feraltanblackmeshflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-TAN_BLACKMESHFLATBILLSNAPBACK_3.jpg","t":"feraltanblackmeshflatbillsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-TAN_BLACKMESHFLATBILLSNAPBACK_2.jpg","t":"feraltanblackmeshflatbillsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-TAN_BLACKMESHFLATBILLSNAPBACK_5.jpg","t":"feraltanblackmeshflatbillsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-TAN_BLACKMESHFLATBILLSNAPBACK_4.jpg","t":"feraltanblackmeshflatbillsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_1.jpg","t":"feralmilitarygreenblackmeshflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_2.jpg","t":"feralmilitarygreenblackmeshflatbillsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_4.jpg","t":"feralmilitarygreenblackmeshflatbillsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_3.jpg","t":"feralmilitarygreenblackmeshflatbillsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_5.jpg","t":"feralmilitarygreenblackmeshflatbillsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-WINTERDUCKCAMOFLATBILLSNAPBACK_1.jpg","t":"feralwinterduckcamoflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-WINTERDUCKCAMOFLATBILLSNAPBACK_2.jpg","t":"feralwinterduckcamoflatbillsnapback2333990967e6b406181848bb5a11aabf4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-WINTERDUCKCAMOFLATBILLSNAPBACK_5.jpg","t":"feralwinterduckcamoflatbillsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-WINTERDUCKCAMOFLATBILLSNAPBACK.jpg","t":"feralwinterduckcamoflatbillsnapbackjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-WINTERDUCKCAMOFLATBILLSNAPBACK_4.jpg","t":"feralwinterduckcamoflatbillsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/FERAL-WINTERDUCKCAMOFLATBILLSNAPBACK_3.jpg","t":"feralwinterduckcamoflatbillsnapback3jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -670,21 +671,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

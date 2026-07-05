@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -565,17 +565,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-watermeloncandy-1_cbb70609-b8a0-400f-be7c-f250e5d588f7.jpg","t":"maxstrengthhciwatermeloncandy1cbb70609b8a0400fbe7cf250e5d588f7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-watermeloncandy-3_c18c8701-945b-4ab7-b0db-3c8ac63c0d6f.jpg","t":"maxstrengthhciwatermeloncandy3c18c8701945b4ab7b0db3c8ac63c0d6fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-watermeloncandy-2_b0b7fa19-6894-4d24-ae77-a6dd98a245e1.jpg","t":"maxstrengthhciwatermeloncandy2b0b7fa1968944d24ae77a6dd98a245e1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-blueberrylemonade-1_e74776d6-db51-4a44-9f0d-8565d68b6e3e.jpg","t":"maxstrengthhciblueberrylemonade1e74776d6db514a449f0d8565d68b6e3ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-blueberrylemonade-3_8e08b772-888a-4b4a-aa2d-7ccd59a7089d.jpg","t":"maxstrengthhciblueberrylemonade38e08b772888a4b4aaa2d7ccd59a7089djpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/files/maxstrength-HCI-blueberrylemonade-2_fe6e8889-cba7-4751-83f1-f14694c1f14e.jpg","t":"maxstrengthhciblueberrylemonade2fe6e8889cba7475183f1f14694c1f14ejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -591,21 +592,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

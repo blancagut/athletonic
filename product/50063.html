@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -553,17 +553,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d317631a-bb0e-4a04-9e93-eef0133d8f09/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f2b11d29-9aea-4578-a5f6-deca2cde856a/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8bf9fa79-aded-483a-966a-9044608685be/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e7b0150c-5b57-4e76-9e39-25d378f136f3/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c4d2a715-34f6-465e-9e72-d2e906b3abf2/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/037d64aa-d20f-4e43-9b61-ed409b7c144d/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/146e3f0a-c11f-4d83-a92d-6fea8e4da02c/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3074be2c-b14d-4d79-a56b-d668131f2ce8/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e1d72676-98d5-4b9f-9636-78c213129748/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/adf71330-0808-45c4-a853-d59640a40b3d/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"},{"src":"https://static.nike.com/a/images/t_default/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4763c616-1413-4052-a38c-a9e2c72ad2df/air-jordan-4-retro-pearl-pink-and-iced-carmine-womens-shoe-5TiAC75P.png","t":"airjordan4retropearlpinkandicedcarminewomensshoeairjordan4retropearlpinkandicedcarminewomensshoe5tiac75ppng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -579,21 +580,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

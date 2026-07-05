@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -579,17 +579,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-hero-hq.jpg","t":"1000herohqjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180-curl.jpg","t":"barbell1000180curljpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-shaft_dcadbdbb-9c1b-4774-b99c-c96c9c198771.jpg","t":"1000shaftdcadbdbb9c1b4774b99cc96c9c198771jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-long_8c741204-27d0-4e13-b3fc-286b72ae0911.jpg","t":"1000long8c74120427d04e13b3fc286b72ae0911jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Barbell-Standard-1000-Compact-Barbell-sq_4d042c2e-720e-4f5e-891a-2510b63777d5.jpg","t":"barbellstandard1000compactbarbellsq4d042c2e720e4f5e891a2510b63777d5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-endcap-lifestyle_b0f693b1-6801-4917-99a4-2f17c2f41ede.jpg","t":"1000endcaplifestyleb0f693b16801491799a42f17c2f41edejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-bushings_52a81e84-7a15-455b-804a-fa5a30b97526.jpg","t":"1000bushings52a81e847a15455b804afa5a30b97526jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-squat_24debecf-04b7-4a7b-9903-6f0176cf36b1.jpg","t":"1000squat24debecf04b74a7b99036f0176cf36b1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-bench_a502c24e-f4f1-4d63-b9ab-1df7d7534183.jpg","t":"1000bencha502c24ef4f14d63b9ab1df7d7534183jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-deadlift_4ba0ca2f-c446-4416-aacb-4286ee178f03.jpg","t":"1000deadlift4ba0ca2fc4464416aacb4286ee178f03jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/1000-hip-thrust_ebfbcd89-7eea-4a3f-96e3-a24985ecec28.jpg","t":"1000hipthrustebfbcd897eea4a3f96e3a24985ecec28jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-250.jpg","t":"barbell1000250jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180.jpg","t":"barbell1000180jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-130.jpg","t":"barbell1000130jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-90.jpg","t":"barbell100090jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-160-b.jpg","t":"barbell1000160bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-250-b.jpg","t":"barbell1000250bjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -605,21 +606,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -641,7 +646,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"60659634864498","key":"Bar +  90lbs","title":"Bar +  90lbs","sku":null,"optionValues":["Bar +  90lbs"],"option_values":[{"position":1,"name":"Style","value":"Bar +  90lbs"}],"selected_options":{"Style":"Bar +  90lbs"},"price_cents":27500,"regular_price_cents":39000,"compare_at_cents":39000,"compare_at_price_cents":39000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180-curl.jpg"},{"variant_id":"60659634897266","key":"Bar + 130lbs","title":"Bar + 130lbs","sku":null,"optionValues":["Bar + 130lbs"],"option_values":[{"position":1,"name":"Style","value":"Bar + 130lbs"}],"selected_options":{"Style":"Bar + 130lbs"},"price_cents":33000,"regular_price_cents":47000,"compare_at_cents":47000,"compare_at_price_cents":47000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180-curl.jpg"},{"variant_id":"60659634930034","key":"Bar + 180lbs","title":"Bar + 180lbs","sku":null,"optionValues":["Bar + 180lbs"],"option_values":[{"position":1,"name":"Style","value":"Bar + 180lbs"}],"selected_options":{"Style":"Bar + 180lbs"},"price_cents":38500,"regular_price_cents":57000,"compare_at_cents":57000,"compare_at_price_cents":57000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180-curl.jpg"},{"variant_id":"60659634962802","key":"Bar + 180lbs + Curl Bar","title":"Bar + 180lbs + Curl Bar","sku":null,"optionValues":["Bar + 180lbs + Curl Bar"],"option_values":[{"position":1,"name":"Style","value":"Bar + 180lbs + Curl Bar"}],"selected_options":{"Style":"Bar + 180lbs + Curl Bar"},"price_cents":47500,"regular_price_cents":69500,"compare_at_cents":69500,"compare_at_price_cents":69500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180-curl.jpg"},{"variant_id":"60659634995570","key":"Bar + 160lbs Bumper","title":"Bar + 160lbs Bumper","sku":null,"optionValues":["Bar + 160lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Bar + 160lbs Bumper"}],"selected_options":{"Style":"Bar + 160lbs Bumper"},"price_cents":36000,"regular_price_cents":52000,"compare_at_cents":52000,"compare_at_price_cents":52000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180-curl.jpg"},{"variant_id":"60659635028338","key":"Bar + 250lbs Bumper","title":"Bar + 250lbs Bumper","sku":null,"optionValues":["Bar + 250lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Bar + 250lbs Bumper"}],"selected_options":{"Style":"Bar + 250lbs Bumper"},"price_cents":47500,"regular_price_cents":69000,"compare_at_cents":69000,"compare_at_price_cents":69000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180-curl.jpg"}];
+        var variantPricing = [{"variant_id":"60659634864498","key":"Bar +  90lbs","title":"Bar +  90lbs","sku":null,"optionValues":["Bar +  90lbs"],"option_values":[{"position":1,"name":"Style","value":"Bar +  90lbs"}],"selected_options":{"Style":"Bar +  90lbs"},"price_cents":27500,"regular_price_cents":39000,"compare_at_cents":39000,"compare_at_price_cents":39000,"source_available":true,"available":true,"image_url":null},{"variant_id":"60659634897266","key":"Bar + 130lbs","title":"Bar + 130lbs","sku":null,"optionValues":["Bar + 130lbs"],"option_values":[{"position":1,"name":"Style","value":"Bar + 130lbs"}],"selected_options":{"Style":"Bar + 130lbs"},"price_cents":33000,"regular_price_cents":47000,"compare_at_cents":47000,"compare_at_price_cents":47000,"source_available":true,"available":true,"image_url":null},{"variant_id":"60659634930034","key":"Bar + 180lbs","title":"Bar + 180lbs","sku":null,"optionValues":["Bar + 180lbs"],"option_values":[{"position":1,"name":"Style","value":"Bar + 180lbs"}],"selected_options":{"Style":"Bar + 180lbs"},"price_cents":38500,"regular_price_cents":57000,"compare_at_cents":57000,"compare_at_price_cents":57000,"source_available":true,"available":true,"image_url":null},{"variant_id":"60659634962802","key":"Bar + 180lbs + Curl Bar","title":"Bar + 180lbs + Curl Bar","sku":null,"optionValues":["Bar + 180lbs + Curl Bar"],"option_values":[{"position":1,"name":"Style","value":"Bar + 180lbs + Curl Bar"}],"selected_options":{"Style":"Bar + 180lbs + Curl Bar"},"price_cents":47500,"regular_price_cents":69500,"compare_at_cents":69500,"compare_at_price_cents":69500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/barbell-1000-180-curl.jpg"},{"variant_id":"60659634995570","key":"Bar + 160lbs Bumper","title":"Bar + 160lbs Bumper","sku":null,"optionValues":["Bar + 160lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Bar + 160lbs Bumper"}],"selected_options":{"Style":"Bar + 160lbs Bumper"},"price_cents":36000,"regular_price_cents":52000,"compare_at_cents":52000,"compare_at_price_cents":52000,"source_available":true,"available":true,"image_url":null},{"variant_id":"60659635028338","key":"Bar + 250lbs Bumper","title":"Bar + 250lbs Bumper","sku":null,"optionValues":["Bar + 250lbs Bumper"],"option_values":[{"position":1,"name":"Style","value":"Bar + 250lbs Bumper"}],"selected_options":{"Style":"Bar + 250lbs Bumper"},"price_cents":47500,"regular_price_cents":69000,"compare_at_cents":69000,"compare_at_price_cents":69000,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

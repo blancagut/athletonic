@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -621,17 +621,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-BLACKMULTICAM_BLACKMESHFLATBILLSNAPBACK_1_d25c0074-b052-4222-b8c2-303d9c186dea.jpg","t":"justsaywhenblackmulticamblackmeshflatbillsnapback1d25c0074b0524222b8c2303d9c186deajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-BLACKMULTICAM_BLACKMESHFLATBILLSNAPBACK_4_166ba709-454c-403b-923f-9c7096555784.jpg","t":"justsaywhenblackmulticamblackmeshflatbillsnapback4166ba709454c403b923f9c7096555784jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-BLACKMULTICAM_BLACKMESHFLATBILLSNAPBACK_3_363d10b4-f9a0-4c0a-93b9-5f205b7a1da5.jpg","t":"justsaywhenblackmulticamblackmeshflatbillsnapback3363d10b4f9a04c0a93b95f205b7a1da5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-BLACKMULTICAM_BLACKMESHFLATBILLSNAPBACK_5_900bc7fd-670b-4233-b37f-724c03280cb1.jpg","t":"justsaywhenblackmulticamblackmeshflatbillsnapback5900bc7fd670b4233b37f724c03280cb1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-BLACKMULTICAM_BLACKMESHFLATBILLSNAPBACK_2_024983f4-ee28-4040-9198-a50a6f03461f.jpg","t":"justsaywhenblackmulticamblackmeshflatbillsnapback2024983f4ee2840409198a50a6f03461fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MULTICAM_BLACKMESHFLATBILLSNAPBACK_1.jpg","t":"justsaywhenmulticamblackmeshflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MULTICAM_BLACKMESHFLATBILLSNAPBACK_4_243b2dc9-499e-434e-a4e5-7f095d25ef1e.jpg","t":"justsaywhenmulticamblackmeshflatbillsnapback4243b2dc9499e434ea4e57f095d25ef1ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MULTICAM_BLACKMESHFLATBILLSNAPBACK_5_846a2ba4-5e1d-4d20-aecf-5522e7c0128b.jpg","t":"justsaywhenmulticamblackmeshflatbillsnapback5846a2ba45e1d4d20aecf5522e7c0128bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MULTICAM_BLACKMESHFLATBILLSNAPBACK_3_ef1b8911-3b94-4bb2-895f-861f3fbbe04b.jpg","t":"justsaywhenmulticamblackmeshflatbillsnapback3ef1b89113b944bb2895f861f3fbbe04bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MULTICAM_BLACKMESHFLATBILLSNAPBACK_2_b8b87fc7-1b49-4e6a-a1db-606f90e85908.jpg","t":"justsaywhenmulticamblackmeshflatbillsnapback2b8b87fc71b494e6aa1db606f90e85908jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-DUCKHUNTERCAMOFLATBILLSNAPBACK_1.jpg","t":"justsaywhenduckhuntercamoflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-DUCKHUNTERCAMOFLATBILLSNAPBACK_5_14c43380-3dc0-4f5e-8f6d-466e7d70bbcd.jpg","t":"justsaywhenduckhuntercamoflatbillsnapback514c433803dc04f5e8f6d466e7d70bbcdjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-DUCKHUNTERCAMOFLATBILLSNAPBACK_3_8dd9143f-73e2-4215-8c46-60c8e402ec5c.jpg","t":"justsaywhenduckhuntercamoflatbillsnapback38dd9143f73e242158c4660c8e402ec5cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-DUCKHUNTERCAMOFLATBILLSNAPBACK_4_e96a9870-5b7a-45e4-bf9f-612c7eae70f1.jpg","t":"justsaywhenduckhuntercamoflatbillsnapback4e96a98705b7a45e4bf9f612c7eae70f1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-DUCKHUNTERCAMOFLATBILLSNAPBACK_2_1b87a0cb-8c35-4f23-84bf-b4034de219db.jpg","t":"justsaywhenduckhuntercamoflatbillsnapback21b87a0cb8c354f2384bfb4034de219dbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_1.jpg","t":"justsaywhenmilitarygreenblackmeshflatbillsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_3.jpg","t":"justsaywhenmilitarygreenblackmeshflatbillsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_5.jpg","t":"justsaywhenmilitarygreenblackmeshflatbillsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_2.jpg","t":"justsaywhenmilitarygreenblackmeshflatbillsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/JUSTSAYWHEN-MILITARYGREEN_BLACKMESHFLATBILLSNAPBACK_4.jpg","t":"justsaywhenmilitarygreenblackmeshflatbillsnapback4jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -647,21 +648,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -629,17 +629,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dyingiseasy999_0156e0f9-e8d4-4377-8de4-f2bd91655987.jpg","t":"dyingiseasy9990156e0f9e8d443778de4f2bd91655987jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/dyingiseasyhathjj_07ab07c8-2ee5-4848-8068-355c7bc9a481.jpg","t":"dyingiseasyhathjj07ab07c82ee548488068355c7bc9a481jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/eyingjj.jpg","t":"eyingjjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-TACTICALHAWAIIANRIPSTOPSNAPBACK_1.jpg","t":"dyingiseasytacticalhawaiianripstopsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-TACTICALHAWAIIANRIPSTOPSNAPBACK_4.jpg","t":"dyingiseasytacticalhawaiianripstopsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-ELECTRICBOLTRIPSTOP_1_1c7850a7-0025-45a8-b7e9-ac9f2990e8a3.jpg","t":"dyingiseasyelectricboltripstop11c7850a7002545a8b7e9ac9f2990e8a3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-TACTICALHAWAIIANRIPSTOPSNAPBACK_2.jpg","t":"dyingiseasytacticalhawaiianripstopsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-ELECTRICBOLTRIPSTOP_2_43b2dbee-f4ca-4e05-85d6-99a3d8473410.jpg","t":"dyingiseasyelectricboltripstop243b2dbeef4ca4e0585d699a3d8473410jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-TACTICALHAWAIIANRIPSTOPSNAPBACK_5.jpg","t":"dyingiseasytacticalhawaiianripstopsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-ELECTRICBOLTRIPSTOP_3_95f19820-a3e1-4ba6-b03b-83c889dff025.jpg","t":"dyingiseasyelectricboltripstop395f19820a3e14ba6b03b83c889dff025jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-TACTICALHAWAIIANRIPSTOPSNAPBACK_3.jpg","t":"dyingiseasytacticalhawaiianripstopsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-ELECTRICBOLTRIPSTOP_5_d1c26236-1543-4922-88ec-46e0b610e2fa.jpg","t":"dyingiseasyelectricboltripstop5d1c262361543492288ec46e0b610e2fajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_4.jpg","t":"dyingiseasywoodlandripstopblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-ELECTRICBOLTRIPSTOP_4_d894eba6-0f9c-47ac-aa79-64133feacb07.jpg","t":"dyingiseasyelectricboltripstop4d894eba60f9c47acaa7964133feacb07jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_3.jpg","t":"dyingiseasywoodlandripstopblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-ELECTRICBOLTRIPSTOP_6_bc802c6c-2a1e-44ae-b15f-d15f4dcd987b.jpg","t":"dyingiseasyelectricboltripstop6bc802c6c2a1e44aeb15fd15f4dcd987bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_1.jpg","t":"dyingiseasywoodlandripstopblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-ELECTRICBOLTRIPSTOP_7_199fc163-dddc-46a8-92a0-fad2be752c58.jpg","t":"dyingiseasyelectricboltripstop7199fc163dddc46a892a0fad2be752c58jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_2.jpg","t":"dyingiseasywoodlandripstopblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_5.jpg","t":"dyingiseasywoodlandripstopblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_6.jpg","t":"dyingiseasywoodlandripstopblackmeshsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-PINEAPPLEEXPRESSRIPSTOPSNAPBACK_1.jpg","t":"dyingiseasypineappleexpressripstopsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-PINEAPPLEEXPRESSRIPSTOPSNAPBACK_4.jpg","t":"dyingiseasypineappleexpressripstopsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-PINEAPPLEEXPRESSRIPSTOPSNAPBACK_2.jpg","t":"dyingiseasypineappleexpressripstopsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-PINEAPPLEEXPRESSRIPSTOPSNAPBACK_5.jpg","t":"dyingiseasypineappleexpressripstopsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-PINEAPPLEEXPRESSRIPSTOPSNAPBACK_3.jpg","t":"dyingiseasypineappleexpressripstopsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-PINEAPPLEEXPRESSRIPSTOPSNAPBACK_7.jpg","t":"dyingiseasypineappleexpressripstopsnapback7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-PINEAPPLEEXPRESSRIPSTOPSNAPBACK_6.jpg","t":"dyingiseasypineappleexpressripstopsnapback6jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -655,21 +656,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

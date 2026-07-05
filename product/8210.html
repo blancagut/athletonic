@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -606,17 +606,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_voltage_0001_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanvoltage00011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_voltage_0003_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanvoltage00031jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_voltage_0005_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanvoltage00051jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_voltage_0006_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanvoltage00061jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_voltage_0004_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanvoltage00041jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_voltage_0002_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanvoltage00021jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Men_Shirts_GenesisShortSleeve_PrimalGreen_0001.jpg","t":"1stphormapparelmenshirtsgenesisshortsleeveprimalgreen0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Men_Shirts_GenesisShortSleeve_PrimalGreen_0006.jpg","t":"1stphormapparelmenshirtsgenesisshortsleeveprimalgreen0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Men_Shirts_GenesisShortSleeve_PrimalGreen_0005.jpg","t":"1stphormapparelmenshirtsgenesisshortsleeveprimalgreen0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Men_Shirts_GenesisShortSleeve_PrimalGreen_0002.jpg","t":"1stphormapparelmenshirtsgenesisshortsleeveprimalgreen0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_genesisventedraglan_olivenight_0008_770b5fec-1b4a-40d4-aa45-b1646796da98.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanolivenight0008770b5fec1b4a40d4aa45b1646796da98jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_genesisventedraglan_olivenight_0006_940de559-fc96-4a54-ae52-2daed2e04e87.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanolivenight0006940de559fc964a54ae522daed2e04e87jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_genesisventedraglan_olivenight_0007_5900986c-7e55-4d7b-99c5-26d83c8994c9.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanolivenight00075900986c7e554d7b99c526d83c8994c9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_genesisventedraglan_olivenight_0005_607a5efb-dc38-41d4-9e98-eef5919987ff.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanolivenight0005607a5efbdc3841d49e98eef5919987ffjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-shirts_GenesisVentedRaglan_Arctic_0001_1.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanarctic00011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-shirts_GenesisVentedRaglan_Arctic_0002_1.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanarctic00021jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-shirts_GenesisVentedRaglan_Arctic_0003.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanarctic0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-shirts_GenesisVentedRaglan_Arctic_0005.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanarctic0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_genesisventedraglan_saltwater_0001.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglansaltwater0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_genesisventedraglan_saltwater_0007.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglansaltwater0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_genesisventedraglan_saltwater_0010.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglansaltwater0010jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_genesisventedraglan_saltwater_0008.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglansaltwater0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_genesis_vented_raglan_navy_0001.jpg","t":"1stphormapparelmentshirtsgenesisventedraglannavy0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_genesis_vented_raglan_navy_0005.jpg","t":"1stphormapparelmentshirtsgenesisventedraglannavy0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_genesis_vented_raglan_navy_0011.jpg","t":"1stphormapparelmentshirtsgenesisventedraglannavy0011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_tshirts_genesis_vented_raglan_navy_0007.jpg","t":"1stphormapparelmentshirtsgenesisventedraglannavy0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shirts_genesisventedraglan_black_0003.jpg","t":"1stphormapparelmensshirtsgenesisventedraglanblack0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shirts_genesisventedraglan_black_0009.jpg","t":"1stphormapparelmensshirtsgenesisventedraglanblack0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shirts_genesisventedraglan_black_0007.jpg","t":"1stphormapparelmensshirtsgenesisventedraglanblack0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shirts_genesisventedraglan_black_0006.jpg","t":"1stphormapparelmensshirtsgenesisventedraglanblack0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shirts_genesisventedraglan_charcoal_0003.jpg","t":"1stphormapparelmensshirtsgenesisventedraglancharcoal0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shirts_genesisventedraglan_charcoal_0008.jpg","t":"1stphormapparelmensshirtsgenesisventedraglancharcoal0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shirts_genesisventedraglan_charcoal_0006.jpg","t":"1stphormapparelmensshirtsgenesisventedraglancharcoal0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shirts_genesisventedraglan_charcoal_0005.jpg","t":"1stphormapparelmensshirtsgenesisventedraglancharcoal0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_stormgrey_0001_1_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanstormgrey000111jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_stormgrey_0003_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanstormgrey00031jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_stormgrey_0005_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanstormgrey00051jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_stormgrey_0006_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanstormgrey00061jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_stormgrey_0004_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanstormgrey00041jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shirts_genesisventedraglan_stormgrey_0002_1_1.jpg","t":"1stphormapparelmenshirtsgenesisventedraglanstormgrey000211jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_GenesisVentedRaglan_Hydro_0001_1.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanhydro00011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_GenesisVentedRaglan_Hydro_0003_1.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanhydro00031jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_GenesisVentedRaglan_Hydro_0006_1.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanhydro00061jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_GenesisVentedRaglan_Hydro_0005_1.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanhydro00051jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_GenesisVentedRaglan_Hydro_0002_1.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanhydro00021jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_GenesisVentedRaglan_Hydro_0004_1.jpg","t":"1stphormapparelmenstshirtsgenesisventedraglanhydro00041jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -632,21 +633,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

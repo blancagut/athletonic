@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -576,17 +576,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_7.jpg","t":"militarygreentopographycankoozy7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_11.jpg","t":"militarygreentopographycankoozy11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-TACTICALCANKOOZIE-LIFESTYLE_1.jpg","t":"militarygreentopographytacticalcankoozielifestyle1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-TACTICALCANKOOZIE-LIFESTYLE_2.jpg","t":"militarygreentopographytacticalcankoozielifestyle2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_2.jpg","t":"militarygreentopographycankoozy2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_3.jpg","t":"militarygreentopographycankoozy3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_4.jpg","t":"militarygreentopographycankoozy4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_5.jpg","t":"militarygreentopographycankoozy5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_6.jpg","t":"militarygreentopographycankoozy6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_8.jpg","t":"militarygreentopographycankoozy8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_9.jpg","t":"militarygreentopographycankoozy9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/MILITARYGREENTOPOGRAPHY-CANKOOZY_10.jpg","t":"militarygreentopographycankoozy10jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01112_610c28f7-84d7-4e09-808c-5fe95228badd.jpg","t":"dsc01112e52c91bc61f741a1b37128edbc29b040jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01134_e50e7983-055e-4ee2-8dd5-f8df50a2d921.jpg","t":"dsc01134e50e7983055e4ee28dd5f8df50a2d921jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_5.jpg","t":"tacticalhawaiiancankoozy5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_6.jpg","t":"tacticalhawaiiancankoozy6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANTACTICALCANKOOZIE-LIFESTYLE_1.jpg","t":"tacticalhawaiiantacticalcankoozielifestyle1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANTACTICALCANKOOZIE-LIFESTYLE_2.jpg","t":"tacticalhawaiiantacticalcankoozielifestyle2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_4.jpg","t":"tacticalhawaiiancankoozy4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_1.jpg","t":"tacticalhawaiiancankoozy1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_10.jpg","t":"tacticalhawaiiancankoozy10jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_2.jpg","t":"tacticalhawaiiancankoozy2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_3.jpg","t":"tacticalhawaiiancankoozy3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_7.jpg","t":"tacticalhawaiiancankoozy7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_8.jpg","t":"tacticalhawaiiancankoozy8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_9.jpg","t":"tacticalhawaiiancankoozy9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TACTICALHAWAIIANCANKOOZY_11.jpg","t":"tacticalhawaiiancankoozy11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01131.jpg","t":"dsc01131jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01140.jpg","t":"dsc01140jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_9.jpg","t":"woodlandbducankoozy9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_8.jpg","t":"woodlandbducankoozy8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-TACTICALCANKOOZIE-LIFESTYLE_1.jpg","t":"woodlandbdutacticalcankoozielifestyle1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-TACTICALCANKOOZIE-LIFESTYLE_2.jpg","t":"woodlandbdutacticalcankoozielifestyle2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_5.jpg","t":"woodlandbducankoozy5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_2.jpg","t":"woodlandbducankoozy2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_4.jpg","t":"woodlandbducankoozy4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_3.jpg","t":"woodlandbducankoozy3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_6.jpg","t":"woodlandbducankoozy6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_10.jpg","t":"woodlandbducankoozy10jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_11.jpg","t":"woodlandbducankoozy11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_7.jpg","t":"woodlandbducankoozy7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WOODLANDBDU-CANKOOZY_1.jpg","t":"woodlandbducankoozy1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01122_215726d7-15de-4043-a82a-b096a7725460.jpg","t":"dsc01122215726d715de4043a82ab096a7725460jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -602,21 +603,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

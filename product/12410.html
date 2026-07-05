@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -600,17 +600,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTYBLKCAMO_a97628fa-f763-4465-9104-9dd23c8419ac.jpg","t":"ittyblkcamoa97628faf763446591049dd23c8419acjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTYBLKCAMO1_77bd16d3-a7ec-48e4-92d7-569e2d25e614.jpg","t":"ittyblkcamo177bd16d3a7ec48e492d7569e2d25e614jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTYBLKCAMO112.jpg","t":"ittyblkcamo112jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/HATBLACKREARMADE_b4d1a345-0438-484b-87a7-3ad2fbf46356.jpg","t":"hatblackrearmadeb4d1a3450438484b87a73ad2fbf46356jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02672_a323f03e-7dc2-4d6e-b4c8-973b0bd8565f.jpg","t":"cia02672a323f03e7dc24d6eb4c8973b0bd8565fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02670_c1541df6-dd66-415c-a5c4-353f74e34670.jpg","t":"cia02670c1541df6dd66415ca5c4353f74e34670jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA02678_e6597c1a-7be1-42f6-86e4-37affb1cfd66.jpg","t":"cia02678e6597c1a7be142f686e437affb1cfd66jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00010_1_36b18ad7-4777-44f6-9a7b-3a61531652ba.jpg","t":"cia00010136b18ad7477744f69a7b3a61531652bajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00008_1_1df34da7-7881-476e-93c6-b9142a311876.jpg","t":"cia0000811df34da77881476e93c6b9142a311876jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00002_1_2883b93c-0f21-494e-a4e2-b48a152fe838.jpg","t":"cia0000212883b93c0f21494ea4e2b48a152fe838jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTY_BITTY_PITTYCOMMITTEE-ALLBLACKSNAPBACK_1.jpg","t":"ittybittypittycommitteeallblacksnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTY_BITTY_PITTYCOMMITTEE-ALLBLACKSNAPBACK_5.jpg","t":"ittybittypittycommitteeallblacksnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTY_BITTY_PITTYCOMMITTEE-ALLBLACKSNAPBACK_4.jpg","t":"ittybittypittycommitteeallblacksnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTY_BITTY_PITTYCOMMITTEE-ALLBLACKSNAPBACK_2.jpg","t":"ittybittypittycommitteeallblacksnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTY_BITTY_PITTYCOMMITTEE-ALLBLACKSNAPBACK_3.jpg","t":"ittybittypittycommitteeallblacksnapback3jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -626,21 +627,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -662,7 +667,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813868036466","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HATBLACKREARMADE_b4d1a345-0438-484b-87a7-3ad2fbf46356.jpg"},{"variant_id":"61813868069234","key":"BDU CAMO / WHITE / GRAY","title":"BDU CAMO / WHITE / GRAY","sku":null,"optionValues":["BDU CAMO / WHITE / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / WHITE / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / WHITE / GRAY"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTYBLKCAMO_a97628fa-f763-4465-9104-9dd23c8419ac.jpg"},{"variant_id":"61813868102002","key":"GRAY / WHITE","title":"GRAY / WHITE","sku":null,"optionValues":["GRAY / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / WHITE"}],"selected_options":{"COLOR":"GRAY / WHITE"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":true,"available":true,"image_url":null},{"variant_id":"61813868134770","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HATBLACKREARMADE_b4d1a345-0438-484b-87a7-3ad2fbf46356.jpg"}];
+        var variantPricing = [{"variant_id":"61813868036466","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HATBLACKREARMADE_b4d1a345-0438-484b-87a7-3ad2fbf46356.jpg"},{"variant_id":"61813868069234","key":"BDU CAMO / WHITE / GRAY","title":"BDU CAMO / WHITE / GRAY","sku":null,"optionValues":["BDU CAMO / WHITE / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / WHITE / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / WHITE / GRAY"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813868102002","key":"GRAY / WHITE","title":"GRAY / WHITE","sku":null,"optionValues":["GRAY / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"GRAY / WHITE"}],"selected_options":{"COLOR":"GRAY / WHITE"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":true,"available":true,"image_url":null},{"variant_id":"61813868134770","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HATBLACKREARMADE_b4d1a345-0438-484b-87a7-3ad2fbf46356.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

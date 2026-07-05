@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -570,17 +570,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg","t":"250poundironweightset0c7c49108c6246248a7e06be1ceceec0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/270-pound-iron-weight-set_5762e0ed-1ff8-4969-a26c-26657bc763cf.jpg","t":"270poundironweightset5762e0ed1ff84969a26c26657bc763cfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/180-pound-iron-weight-set_62716022-0806-4f61-83a3-985c7d93fd6c.jpg","t":"180poundironweightset6271602208064f6183a3985c7d93fd6cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/130-pound-iron-weight-set_13a01437-58d8-4e6b-834e-320f7b42835f.jpg","t":"130poundironweightset13a0143758d84e6b834e320f7b42835fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/90-pound-iron-weight-set_c6f12a0a-7b5a-4cf3-b396-322b1e76b124.jpg","t":"90poundironweightsetc6f12a0a7b5a4cf3b396322b1e76b124jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/40-pound-iron-weight-set_cac9cff5-d3d9-4a2e-a612-f8b02cdf67e7.jpg","t":"40poundironweightsetcac9cff5d3d94a2ea612f8b02cdf67e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/45-pound-iron-plate-3.jpg","t":"45poundironplate3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-set-ls_11672cc4-ddb7-480c-8884-8bac7ddca894.jpg","t":"250setls11672cc4ddb7480c88848bac7ddca894jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/25-pound-iron-plate-3_26405490-6c39-4d4f-bab7-1297e1309d68.jpg","t":"25poundironplate3264054906c394d4fbab71297e1309d68jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/45-pound-iron-plate-4_cd87e2a2-0b28-4a7c-8057-db04b3719baa.jpg","t":"45poundironplate4cd87e2a20b284a7c8057db04b3719baajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/35-pound-iron-plate-2_61e33347-8f34-42c7-94d8-16c7378e8231.jpg","t":"35poundironplate261e333478f3442c794d816c7378e8231jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/10-pound-iron-plate-3_59eb700c-9c2f-4acb-a5c2-93b093269174.jpg","t":"10poundironplate359eb700c9c2f4acba5c293b093269174jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -596,21 +597,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -632,7 +637,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"60659633258866","key":"180 lb set","title":"180 lb set","sku":null,"optionValues":["180 lb set"],"option_values":[{"position":1,"name":"Size","value":"180 lb set"}],"selected_options":{"Size":"180 lb set"},"price_cents":27000,"regular_price_cents":37000,"compare_at_cents":37000,"compare_at_price_cents":37000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"},{"variant_id":"60659633291634","key":"250 lb set","title":"250 lb set","sku":null,"optionValues":["250 lb set"],"option_values":[{"position":1,"name":"Size","value":"250 lb set"}],"selected_options":{"Size":"250 lb set"},"price_cents":37000,"regular_price_cents":49500,"compare_at_cents":49500,"compare_at_price_cents":49500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"},{"variant_id":"60659633324402","key":"270 lb set","title":"270 lb set","sku":null,"optionValues":["270 lb set"],"option_values":[{"position":1,"name":"Size","value":"270 lb set"}],"selected_options":{"Size":"270 lb set"},"price_cents":39500,"regular_price_cents":54000,"compare_at_cents":54000,"compare_at_price_cents":54000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"},{"variant_id":"60659633357170","key":"40 lb set","title":"40 lb set","sku":null,"optionValues":["40 lb set"],"option_values":[{"position":1,"name":"Size","value":"40 lb set"}],"selected_options":{"Size":"40 lb set"},"price_cents":7000,"regular_price_cents":9000,"compare_at_cents":9000,"compare_at_price_cents":9000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"},{"variant_id":"60659633389938","key":"90 lb set","title":"90 lb set","sku":null,"optionValues":["90 lb set"],"option_values":[{"position":1,"name":"Size","value":"90 lb set"}],"selected_options":{"Size":"90 lb set"},"price_cents":14500,"regular_price_cents":19000,"compare_at_cents":19000,"compare_at_price_cents":19000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"},{"variant_id":"60659633422706","key":"130 lb set","title":"130 lb set","sku":null,"optionValues":["130 lb set"],"option_values":[{"position":1,"name":"Size","value":"130 lb set"}],"selected_options":{"Size":"130 lb set"},"price_cents":20500,"regular_price_cents":27000,"compare_at_cents":27000,"compare_at_price_cents":27000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"}];
+        var variantPricing = [{"variant_id":"60659633258866","key":"180 lb set","title":"180 lb set","sku":null,"optionValues":["180 lb set"],"option_values":[{"position":1,"name":"Size","value":"180 lb set"}],"selected_options":{"Size":"180 lb set"},"price_cents":27000,"regular_price_cents":37000,"compare_at_cents":37000,"compare_at_price_cents":37000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/180-pound-iron-weight-set_62716022-0806-4f61-83a3-985c7d93fd6c.jpg"},{"variant_id":"60659633291634","key":"250 lb set","title":"250 lb set","sku":null,"optionValues":["250 lb set"],"option_values":[{"position":1,"name":"Size","value":"250 lb set"}],"selected_options":{"Size":"250 lb set"},"price_cents":37000,"regular_price_cents":49500,"compare_at_cents":49500,"compare_at_price_cents":49500,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"},{"variant_id":"60659633324402","key":"270 lb set","title":"270 lb set","sku":null,"optionValues":["270 lb set"],"option_values":[{"position":1,"name":"Size","value":"270 lb set"}],"selected_options":{"Size":"270 lb set"},"price_cents":39500,"regular_price_cents":54000,"compare_at_cents":54000,"compare_at_price_cents":54000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/270-pound-iron-weight-set_5762e0ed-1ff8-4969-a26c-26657bc763cf.jpg"},{"variant_id":"60659633357170","key":"40 lb set","title":"40 lb set","sku":null,"optionValues":["40 lb set"],"option_values":[{"position":1,"name":"Size","value":"40 lb set"}],"selected_options":{"Size":"40 lb set"},"price_cents":7000,"regular_price_cents":9000,"compare_at_cents":9000,"compare_at_price_cents":9000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"},{"variant_id":"60659633389938","key":"90 lb set","title":"90 lb set","sku":null,"optionValues":["90 lb set"],"option_values":[{"position":1,"name":"Size","value":"90 lb set"}],"selected_options":{"Size":"90 lb set"},"price_cents":14500,"regular_price_cents":19000,"compare_at_cents":19000,"compare_at_price_cents":19000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/250-pound-iron-weight-set_0c7c4910-8c62-4624-8a7e-06be1ceceec0.jpg"},{"variant_id":"60659633422706","key":"130 lb set","title":"130 lb set","sku":null,"optionValues":["130 lb set"],"option_values":[{"position":1,"name":"Size","value":"130 lb set"}],"selected_options":{"Size":"130 lb set"},"price_cents":20500,"regular_price_cents":27000,"compare_at_cents":27000,"compare_at_price_cents":27000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/130-pound-iron-weight-set_13a01437-58d8-4e6b-834e-320f7b42835f.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

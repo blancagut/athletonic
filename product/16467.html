@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -554,17 +554,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/butterpancake1_12278365-d0fe-4d7c-8796-64a0da2e3c3f.png","t":"butterpancake112278365d0fe4d7c879664a0da2e3c3fpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/caramelcoconut1_5cba7ee1-0b5b-4959-97d8-23b383141e42.png","t":"caramelcoconut15cba7ee10b5b495997d823b383141e42png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/fruitycerealdonut1_4c175858-c1c2-46d7-a348-376cbe4df65f.png","t":"fruitycerealdonut14c175858c1c246d7a348376cbe4df65fpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/hotcoco1_dd7b9724-894e-4247-beea-7f3f7a433538.png","t":"hotcoco1dd7b9724894e4247beea7f3f7a433538png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/vanilla1_e8ba2315-50af-466a-bdb6-ac5f71dfecd5.png","t":"vanilla1e8ba231550af466abdb6ac5f71dfecd5png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/aip-germanchocolate-1.png","t":"aipgermanchocolate1png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -580,21 +581,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -616,7 +621,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"39996922888328","key":"Buttery Pancakes","title":"Buttery Pancakes","sku":null,"optionValues":["Buttery Pancakes"],"option_values":[{"position":1,"name":"Flavor","value":"Buttery Pancakes"}],"selected_options":{"Flavor":"Buttery Pancakes"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/butterpancake1_12278365-d0fe-4d7c-8796-64a0da2e3c3f.png"},{"variant_id":"39996922724488","key":"Caramel Coconut Cookie","title":"Caramel Coconut Cookie","sku":null,"optionValues":["Caramel Coconut Cookie"],"option_values":[{"position":1,"name":"Flavor","value":"Caramel Coconut Cookie"}],"selected_options":{"Flavor":"Caramel Coconut Cookie"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/caramelcoconut1_5cba7ee1-0b5b-4959-97d8-23b383141e42.png"},{"variant_id":"39996922757256","key":"Fruity Cereal Donut","title":"Fruity Cereal Donut","sku":null,"optionValues":["Fruity Cereal Donut"],"option_values":[{"position":1,"name":"Flavor","value":"Fruity Cereal Donut"}],"selected_options":{"Flavor":"Fruity Cereal Donut"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/fruitycerealdonut1_4c175858-c1c2-46d7-a348-376cbe4df65f.png"},{"variant_id":"39996922790024","key":"Hot Cocoa Crunch","title":"Hot Cocoa Crunch","sku":null,"optionValues":["Hot Cocoa Crunch"],"option_values":[{"position":1,"name":"Flavor","value":"Hot Cocoa Crunch"}],"selected_options":{"Flavor":"Hot Cocoa Crunch"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/hotcoco1_dd7b9724-894e-4247-beea-7f3f7a433538.png"},{"variant_id":"39996922822792","key":"Vanilla Ice Cream","title":"Vanilla Ice Cream","sku":null,"optionValues":["Vanilla Ice Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Ice Cream"}],"selected_options":{"Flavor":"Vanilla Ice Cream"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/vanilla1_e8ba2315-50af-466a-bdb6-ac5f71dfecd5.png"},{"variant_id":"39996922691720","key":"German Chocolate Cake","title":"German Chocolate Cake","sku":null,"optionValues":["German Chocolate Cake"],"option_values":[{"position":1,"name":"Flavor","value":"German Chocolate Cake"}],"selected_options":{"Flavor":"German Chocolate Cake"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/butterpancake1_12278365-d0fe-4d7c-8796-64a0da2e3c3f.png"}];
+        var variantPricing = [{"variant_id":"39996922888328","key":"Buttery Pancakes","title":"Buttery Pancakes","sku":null,"optionValues":["Buttery Pancakes"],"option_values":[{"position":1,"name":"Flavor","value":"Buttery Pancakes"}],"selected_options":{"Flavor":"Buttery Pancakes"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":null},{"variant_id":"39996922724488","key":"Caramel Coconut Cookie","title":"Caramel Coconut Cookie","sku":null,"optionValues":["Caramel Coconut Cookie"],"option_values":[{"position":1,"name":"Flavor","value":"Caramel Coconut Cookie"}],"selected_options":{"Flavor":"Caramel Coconut Cookie"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/caramelcoconut1_5cba7ee1-0b5b-4959-97d8-23b383141e42.png"},{"variant_id":"39996922757256","key":"Fruity Cereal Donut","title":"Fruity Cereal Donut","sku":null,"optionValues":["Fruity Cereal Donut"],"option_values":[{"position":1,"name":"Flavor","value":"Fruity Cereal Donut"}],"selected_options":{"Flavor":"Fruity Cereal Donut"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/fruitycerealdonut1_4c175858-c1c2-46d7-a348-376cbe4df65f.png"},{"variant_id":"39996922790024","key":"Hot Cocoa Crunch","title":"Hot Cocoa Crunch","sku":null,"optionValues":["Hot Cocoa Crunch"],"option_values":[{"position":1,"name":"Flavor","value":"Hot Cocoa Crunch"}],"selected_options":{"Flavor":"Hot Cocoa Crunch"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/hotcoco1_dd7b9724-894e-4247-beea-7f3f7a433538.png"},{"variant_id":"39996922822792","key":"Vanilla Ice Cream","title":"Vanilla Ice Cream","sku":null,"optionValues":["Vanilla Ice Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Ice Cream"}],"selected_options":{"Flavor":"Vanilla Ice Cream"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/vanilla1_e8ba2315-50af-466a-bdb6-ac5f71dfecd5.png"},{"variant_id":"39996922691720","key":"German Chocolate Cake","title":"German Chocolate Cake","sku":null,"optionValues":["German Chocolate Cake"],"option_values":[{"position":1,"name":"Flavor","value":"German Chocolate Cake"}],"selected_options":{"Flavor":"German Chocolate Cake"},"price_cents":5999,"regular_price_cents":6999,"compare_at_cents":6999,"compare_at_price_cents":6999,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/aip-germanchocolate-1.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

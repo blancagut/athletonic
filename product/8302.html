@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -577,17 +577,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_FoundedOnFreedomTee_ODGreen_0007.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteeodgreen0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/Founded-on-Freedom_Front_1.jpg","t":"foundedonfreedomfront1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_FoundedOnFreedomTee_ODGreen_0010.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteeodgreen0010jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_FoundedOnFreedomTee_ODGreen_0009.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteeodgreen0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_mens_t-shirts_FoundedOnFreedomTee_ODGreen_0001.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteeodgreen0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/founded-on-freedom-tee-black-0001.jpg","t":"foundedonfreedomteeblack0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_BlueSteel_0009_7055d502-815b-4d3a-87bb-a41c1fe41c52.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteebluesteel00097055d502815b4d3a87bba41c1fe41c52jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_BlueSteel_0002.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteebluesteel0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_BlueSteel_0006.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteebluesteel0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_BlueSteel_0007.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteebluesteel0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_Navy_0004.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteenavy0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_Navy_0003.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteenavy0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_Navy_0005_e2507363-359f-45cf-a21c-cedee60effaf.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteenavy0005e2507363359f45cfa21ccedee60effafjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_Navy_0007.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteenavy0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_T-Shirts_FoundedOnFreedomTee_Navy_0006.jpg","t":"1stphormapparelmenstshirtsfoundedonfreedomteenavy0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/FOFTee2_charcoal.jpg","t":"foftee2charcoaljpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/FOFTee3_charcoal.jpg","t":"foftee3charcoaljpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/FOFTee5_charcoal.jpg","t":"foftee5charcoaljpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/FOFTee6_charcoal.jpg","t":"foftee6charcoaljpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/FOFTee2_white.jpg","t":"foftee2whitejpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/FOFTee5_white.jpg","t":"foftee5whitejpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/FOFTee6_white.jpg","t":"foftee6whitejpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/FOFTee3_white.jpg","t":"foftee3whitejpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/Founded-on-Freedom_Back_1.jpg","t":"foundedonfreedomback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_tshirt_founded_on_freedom_tee_black_0004.jpg","t":"1stphormapparelmenstshirtfoundedonfreedomteeblack0004jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -603,21 +604,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

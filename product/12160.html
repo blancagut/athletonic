@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -553,17 +553,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTYBITTYWHITEMOCKFRONT.jpg","t":"ittybittywhitemockfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTYBITTYPITTYREARMOCKWHITE_ea244b8a-8b54-48da-8cc2-a7742407fe25.jpg","t":"ittybittypittyrearmockwhiteea244b8a8b5448da8cc2a7742407fe25jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ittyfrontnew_fc2546e5-7700-46ab-ade1-51b839d6361e.jpg","t":"ittyfrontnewfc2546e5770046abade151b839d6361ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ITTYBITTYTEEREARBLACK_d19f7242-1ed3-4510-951b-290ad5316032.jpg","t":"ittybittyteerearblackd19f72421ed34510951b290ad5316032jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ittybittyblackkdouble.jpg","t":"ittybittyblackkdoublejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ittybittyfrontnew2.jpg","t":"ittybittyfrontnew2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ittybittybest_8d70b550-d38e-4d14-808c-ca261ed517c9.jpg","t":"ittybittybest8d70b550d38e4d14808cca261ed517c9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ibpc1j_ba58de16-9d8c-4c2d-b8c3-b8c45d310b85.jpg","t":"ibpc1jba58de169d8c4c2db8c3b8c45d310b85jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ittybitty1_88acabd8-d7f0-4b5d-998c-f4e5caa960dc.jpg","t":"ittybitty188acabd8d7f04b5d998cf4e5caa960dcjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ittybittynewrear_c7369892-3b03-45b5-86f2-7cc8b8b2a8e5.jpg","t":"ittybittynewrearc73698923b0345b586f27cc8b8b2a8e5jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -579,21 +580,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

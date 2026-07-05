@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -539,17 +539,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12442_26Q1_Cruiser-Canvas-Blizzard-Blizzard_PDP_LEFT_63dcfa20-f495-4c2c-8ebf-60cb0141a849.png","t":"a1244226q1cruisercanvasblizzardblizzardpdpleft63dcfa20f4954c2c8ebf60cb0141a849png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12442_26Q1_Cruiser-Canvas-Blizzard-Blizzard_PDP_TD_aa21b464-5aef-4202-ab6c-7c215acefe47.png","t":"a1244226q1cruisercanvasblizzardblizzardpdptdaa21b4645aef4202ab6c7c215acefe47png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12442_26Q1_Cruiser-Canvas-Blizzard-Blizzard_PDP_SOLE_661bbd0d-ee9e-469a-9d75-e46c642b1865.png","t":"a1244226q1cruisercanvasblizzardblizzardpdpsole661bbd0dee9e469a9d75e46c642b1865png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12442_26Q1_Cruiser-Canvas-Blizzard-Blizzard_PDP_PAIR_3Q_31ee936e-0477-44b3-8cc2-422299af4e34.png","t":"a1244226q1cruisercanvasblizzardblizzardpdppair3q31ee936e047744b38cc2422299af4e34png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12442_26Q1_Cruiser-Canvas-Blizzard-Blizzard_PDP_BACK_25035b54-945b-4509-91f0-abf7718ba132.png","t":"a1244226q1cruisercanvasblizzardblizzardpdpback25035b54945b450991f0abf7718ba132png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -565,21 +566,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

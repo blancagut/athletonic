@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -576,17 +576,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Smooth_1500x1500_001ed04d-1f69-4d1e-934e-8d8e3e3de812.png","t":"gmherosmooth1500x1500001ed04d1f694d1e934e8d8e3e3de812png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Smooth_HowToUse_1500x1500_d5c010ae-166c-4f9c-9f1e-2d6335268fd3.jpg","t":"gmthumbssmoothhowtouse1500x1500d5c010ae166c4f9c9f1e2d6335268fd3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_SFP_Smooth_1500x1500_1b224c17-4421-4ab4-8184-2c0b8e88e8bd.png","t":"gmsfpsmooth1500x15001b224c1744214ab481842c0b8e88e8bdpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Smooth_IngredientBenefits_1500x1500_97ef5c8a-7eb4-4b4e-9054-d2f5cd20de0a.jpg","t":"gmthumbssmoothingredientbenefits1500x150097ef5c8a7eb44b4e9054d2f5cd20de0ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Smooth_KeyCallouts_1500x1500_9f34e6d7-dca5-4964-9c35-8be483830385.jpg","t":"gmthumbssmoothkeycallouts1500x15009f34e6d7dca549649c358be483830385jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -602,21 +603,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

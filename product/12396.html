@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -628,17 +628,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/HDDUCK_c0591d74-69ec-4b9f-bdcd-832dc740da20.jpg","t":"hdduckjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/HOOCHIEDADDYDUCKCAMOSIDEJJ.jpg","t":"hoochiedaddyduckcamosidejjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/HOOCHIEDADDYJJ.jpg","t":"hoochiedaddyjjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/HOOCHEIECAMOCM.jpg","t":"hoocheiecamocmjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03471_1.jpg","t":"cia034711jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03474_1_eda92767-3283-40c8-b1a8-b55a18473a11.jpg","t":"cia034741eda92767328340c8b1a8b55a18473a11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00131-2_2a7503f1-b692-4428-b263-6b46b846ea23.jpg","t":"cia001312jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00176_1.jpg","t":"cia001761jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00181-3_1.jpg","t":"cia0018131jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00184_1.jpg","t":"cia001841jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00148.jpg","t":"cia00148jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03901-4.jpg","t":"cia039014jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00191_1.jpg","t":"cia001911jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00130-2.jpg","t":"cia001302jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00146.jpg","t":"cia00146jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03924-3_b3a3c57b-394d-4728-a489-dacfa482c558.jpg","t":"cia039243jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03897-2.jpg","t":"cia038972jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoochiedaddyorangefont.jpg","t":"hoochiedaddyorangefontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoochieorangeside2.jpg","t":"hoochieorangeside23957c30645ea45418f4eb61db5bd8dccjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00127.jpg","t":"cia00127jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoochiedaddyorangemix.jpg","t":"hoochiedaddyorangemixjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03899-2.jpg","t":"cia038992jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03922-2.jpg","t":"cia039222jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoochieblueorangeside-714197.jpg","t":"hoochieblueorangeside714197jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03895.jpg","t":"cia03895jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04478_1-814273_695dae4e-680e-4bc0-a4c2-e92fd4f624ea.jpg","t":"cia044781814273695dae4e680e4bc0a4c2e92fd4f624eajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA06021_1_d9602575-7a39-4b47-9805-8d7c14da8893.jpg","t":"cia060211d96025757a394b4798058d7c14da8893jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA06013_1_bbe6a3ca-33f5-4bf7-9aac-6c2d98ffb04c.jpg","t":"cia060131bbe6a3ca33f54bf79aac6c2d98ffb04cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04483-2_1-563885.jpg","t":"cia0448321563885jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04471_1-906762_41160b01-df1d-4090-afeb-5e00924dfc5a.jpg","t":"cia04471190676241160b01df1d4090afeb5e00924dfc5ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA04475_1-947350.jpg","t":"cia044751947350jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA06011_1.jpg","t":"cia060111jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA06019_1.jpg","t":"cia060191jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05855_1.jpg","t":"cia058551jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05846_1_8d86b1ae-23d5-4aa2-a545-c0ab98b77ba0.jpg","t":"cia0584618d86b1ae23d54aa2a545c0ab98b77ba0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05858_1.jpg","t":"cia058581jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA05852_1_d68be4c2-8ad6-41e1-bb90-d49330bfc55a.jpg","t":"cia058521d68be4c28ad641e1bb90d49330bfc55ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/blkhoochietan.jpg","t":"blkhoochietanjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/hoochidaddytanhat.jpg","t":"hoochidaddytanhatjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -654,21 +655,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -690,7 +695,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813869445490","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813869478258","key":"SALTWATER DUCK CAMO / GRAY","title":"SALTWATER DUCK CAMO / GRAY","sku":null,"optionValues":["SALTWATER DUCK CAMO / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"SALTWATER DUCK CAMO / GRAY"}],"selected_options":{"COLOR":"SALTWATER DUCK CAMO / GRAY"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HDDUCK_c0591d74-69ec-4b9f-bdcd-832dc740da20.jpg"},{"variant_id":"61813869511026","key":"BLACK / WHITE","title":"BLACK / WHITE","sku":null,"optionValues":["BLACK / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / WHITE"}],"selected_options":{"COLOR":"BLACK / WHITE"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813869543794","key":"ORANGE DUCK CAMO / ORANGE","title":"ORANGE DUCK CAMO / ORANGE","sku":null,"optionValues":["ORANGE DUCK CAMO / ORANGE"],"option_values":[{"position":1,"name":"COLOR","value":"ORANGE DUCK CAMO / ORANGE"}],"selected_options":{"COLOR":"ORANGE DUCK CAMO / ORANGE"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HDDUCK_c0591d74-69ec-4b9f-bdcd-832dc740da20.jpg"},{"variant_id":"61813869576562","key":"HERITAGE DUCK CAMO / BROWN","title":"HERITAGE DUCK CAMO / BROWN","sku":null,"optionValues":["HERITAGE DUCK CAMO / BROWN"],"option_values":[{"position":1,"name":"COLOR","value":"HERITAGE DUCK CAMO / BROWN"}],"selected_options":{"COLOR":"HERITAGE DUCK CAMO / BROWN"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HDDUCK_c0591d74-69ec-4b9f-bdcd-832dc740da20.jpg"},{"variant_id":"61813869609330","key":"BLACK /TAN","title":"BLACK /TAN","sku":null,"optionValues":["BLACK /TAN"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK /TAN"}],"selected_options":{"COLOR":"BLACK /TAN"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/blkhoochietan.jpg"}];
+        var variantPricing = [{"variant_id":"61813869445490","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813869478258","key":"SALTWATER DUCK CAMO / GRAY","title":"SALTWATER DUCK CAMO / GRAY","sku":null,"optionValues":["SALTWATER DUCK CAMO / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"SALTWATER DUCK CAMO / GRAY"}],"selected_options":{"COLOR":"SALTWATER DUCK CAMO / GRAY"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HOOCHIEDADDYDUCKCAMOSIDEJJ.jpg"},{"variant_id":"61813869511026","key":"BLACK / WHITE","title":"BLACK / WHITE","sku":null,"optionValues":["BLACK / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / WHITE"}],"selected_options":{"COLOR":"BLACK / WHITE"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":null},{"variant_id":"61813869543794","key":"ORANGE DUCK CAMO / ORANGE","title":"ORANGE DUCK CAMO / ORANGE","sku":null,"optionValues":["ORANGE DUCK CAMO / ORANGE"],"option_values":[{"position":1,"name":"COLOR","value":"ORANGE DUCK CAMO / ORANGE"}],"selected_options":{"COLOR":"ORANGE DUCK CAMO / ORANGE"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HOOCHIEDADDYDUCKCAMOSIDEJJ.jpg"},{"variant_id":"61813869576562","key":"HERITAGE DUCK CAMO / BROWN","title":"HERITAGE DUCK CAMO / BROWN","sku":null,"optionValues":["HERITAGE DUCK CAMO / BROWN"],"option_values":[{"position":1,"name":"COLOR","value":"HERITAGE DUCK CAMO / BROWN"}],"selected_options":{"COLOR":"HERITAGE DUCK CAMO / BROWN"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/HOOCHIEDADDYDUCKCAMOSIDEJJ.jpg"},{"variant_id":"61813869609330","key":"BLACK /TAN","title":"BLACK /TAN","sku":null,"optionValues":["BLACK /TAN"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK /TAN"}],"selected_options":{"COLOR":"BLACK /TAN"},"price_cents":2299,"regular_price_cents":3099,"compare_at_cents":3099,"compare_at_price_cents":3099,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/blkhoochietan.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

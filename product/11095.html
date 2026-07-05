@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -582,17 +582,18 @@ TRX App with 30-Day Free Trial to support every level, every goal</li>
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-medium.png","t":"ripcordmediumpng"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/DSC_3402.jpg","t":"dsc3402jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/trx_mpp_rip_macro_4_1.jpg","t":"trxmppripmacro41jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/SoloEx_D3_14_x6294_1fec461b-c113-46ba-9ee6-32b21049c98c.jpg","t":"soloexd314x62941fec461bc11346ba9ee632b21049c98cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/products/2021-03-26_TRX_SR_Running_0175.jpg","t":"20210326trxsrrunning0175jpg"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-light.png","t":"ripcordlightpng"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-heavy.png","t":"ripcordheavypng"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-x-heavy.png","t":"ripcordxheavypng"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-xx-heavy.png","t":"ripcordxxheavypng"},{"src":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/RIP_Cord_4GANG-UP.png","t":"ripcord4ganguppng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -608,21 +609,25 @@ TRX App with 30-Day Free Trial to support every level, every goal</li>
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -644,7 +649,7 @@ TRX App with 30-Day Free Trial to support every level, every goal</li>
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"39835998421132","key":"Lite","title":"Lite","sku":null,"optionValues":["Lite"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"Lite"}],"selected_options":{"Rip Training Cord":"Lite"},"price_cents":2495,"regular_price_cents":2495,"compare_at_cents":2495,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"39835998486668","key":"Medium","title":"Medium","sku":null,"optionValues":["Medium"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"Medium"}],"selected_options":{"Rip Training Cord":"Medium"},"price_cents":2995,"regular_price_cents":2995,"compare_at_cents":2995,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-medium.png"},{"variant_id":"39835998519436","key":"Heavy","title":"Heavy","sku":null,"optionValues":["Heavy"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"Heavy"}],"selected_options":{"Rip Training Cord":"Heavy"},"price_cents":3495,"regular_price_cents":3495,"compare_at_cents":3495,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-heavy.png"},{"variant_id":"39835998584972","key":"X-Heavy","title":"X-Heavy","sku":null,"optionValues":["X-Heavy"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"X-Heavy"}],"selected_options":{"Rip Training Cord":"X-Heavy"},"price_cents":3995,"regular_price_cents":3995,"compare_at_cents":3995,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-x-heavy.png"},{"variant_id":"39835998650508","key":"XX-Heavy","title":"XX-Heavy","sku":null,"optionValues":["XX-Heavy"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"XX-Heavy"}],"selected_options":{"Rip Training Cord":"XX-Heavy"},"price_cents":4995,"regular_price_cents":4995,"compare_at_cents":4995,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-xx-heavy.png"},{"variant_id":"41544571977868","key":"Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)","title":"Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)","sku":null,"optionValues":["Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)"}],"selected_options":{"Rip Training Cord":"Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)"},"price_cents":12134,"regular_price_cents":13482,"compare_at_cents":13482,"compare_at_price_cents":13482,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-heavy.png"}];
+        var variantPricing = [{"variant_id":"39835998421132","key":"Lite","title":"Lite","sku":null,"optionValues":["Lite"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"Lite"}],"selected_options":{"Rip Training Cord":"Lite"},"price_cents":2495,"regular_price_cents":2495,"compare_at_cents":2495,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"39835998486668","key":"Medium","title":"Medium","sku":null,"optionValues":["Medium"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"Medium"}],"selected_options":{"Rip Training Cord":"Medium"},"price_cents":2995,"regular_price_cents":2995,"compare_at_cents":2995,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-medium.png"},{"variant_id":"39835998519436","key":"Heavy","title":"Heavy","sku":null,"optionValues":["Heavy"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"Heavy"}],"selected_options":{"Rip Training Cord":"Heavy"},"price_cents":3495,"regular_price_cents":3495,"compare_at_cents":3495,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-heavy.png"},{"variant_id":"39835998584972","key":"X-Heavy","title":"X-Heavy","sku":null,"optionValues":["X-Heavy"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"X-Heavy"}],"selected_options":{"Rip Training Cord":"X-Heavy"},"price_cents":3995,"regular_price_cents":3995,"compare_at_cents":3995,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-x-heavy.png"},{"variant_id":"39835998650508","key":"XX-Heavy","title":"XX-Heavy","sku":null,"optionValues":["XX-Heavy"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"XX-Heavy"}],"selected_options":{"Rip Training Cord":"XX-Heavy"},"price_cents":4995,"regular_price_cents":4995,"compare_at_cents":4995,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0554/1704/5132/files/rip-cord-xx-heavy.png"},{"variant_id":"41544571977868","key":"Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)","title":"Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)","sku":null,"optionValues":["Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)"],"option_values":[{"position":1,"name":"Rip Training Cord","value":"Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)"}],"selected_options":{"Rip Training Cord":"Set of 4 (Lite, Heavy, X-Heavy, XX-Heavy)"},"price_cents":12134,"regular_price_cents":13482,"compare_at_cents":13482,"compare_at_price_cents":13482,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

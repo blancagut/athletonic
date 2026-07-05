@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -620,17 +620,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tigerwaxed.jpg","t":"tigerwaxedjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DUFTIGORG.jpg","t":"duftigorgjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRPP.jpg","t":"tigerstrppjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSIDEDUF.jpg","t":"tigersidedufjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERINSIDEDUF_c94b2ff5-e21b-4fcb-b272-3d33403d83da.jpg","t":"tigerinsidedufc94b2ff5e21b4fcbb2723d33403d83dajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRIPESIDEDUFNEW.jpg","t":"tigerstripesidedufnewjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/swedbag_21031cb0-c36e-4a31-989e-90ec9f022db5.jpg","t":"swedbag21031cb0c36e4a31989e90ec9f022db5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERDUFTALLSTRAPSTRAP.jpg","t":"tigerduftallstrapstrapjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SWEDCMTALLSTACKJ_1201711c-7b54-4ccc-bd1a-cc9130673fc6.jpg","t":"swedcmtallstackj1201711c7b544cccbd1acc9130673fc6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SWEDDUFTALL.jpg","t":"swedduftalljpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/WEDSIDEDUJ.jpg","t":"wedsidedujjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DUFFLESWEDCAMOSIDE2_a531ea16-a685-467b-86cc-e3403b7b3659.jpg","t":"duffleswedcamoside2a531ea16a685467b86cce3403b7b3659jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DUFLESWED4.jpg","t":"dufleswed4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SWEDDYFFRJ.jpg","t":"sweddyffrjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD02230_1432dfcf-730e-455f-852f-deb155a0aad2.jpg","t":"ybd022301432dfcf730e455f852fdeb155a0aad2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD02206-2_20e71813-1a02-498d-8a6b-81665e19535c.jpg","t":"ybd022062jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD02218.jpg","t":"ybd02218jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/YBD02214.jpg","t":"ybd02214jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/INSIDESWEDAMODUF.jpg","t":"insideswedamodufjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DUFPOCKETOPEN.jpg","t":"dufpocketopenjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SWEDSTRAPCAMO.jpg","t":"swedstrapcamojpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/ALKJFKL_A_LKJ-193947.jpg","t":"alkjfklalkj193947jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/INSIDEAZTECDUF-166785_b76356b7-2157-46d3-bb56-a877f0f4c70f.jpg","t":"insideaztecduf166785b76356b7215746d3bb56a877f0f4c70fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DUFFLEAZ-775484.jpg","t":"duffleaz775484jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/AZJ-373083.jpg","t":"azj373083jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DUFFLEAZSIDEJJJJJJ-633699.jpg","t":"duffleazsidejjjjjj633699jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/AZTECSTRAPJJJJ.jpg","t":"aztecstrapjjjjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/AZTECSTRAPPPPJ-535419.jpg","t":"aztecstrappppj535419jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/AZSTRAP.jpg","t":"azstrapjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/AZTECDUFJ-976143_d13d217d-aff4-4200-ab17-10ccf4a29c39.jpg","t":"aztecdufj976143d13d217daff44200ab1710ccf4a29c39jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/AZTECSIDEDU-220906.jpg","t":"aztecsidedu220906jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/jklaklsd_fkl_jajkj_ddab8106-44bd-4fc5-8c5a-10a17f50ac48.jpg","t":"jklaklsdfkljajkjddab810644bd4fc58c5a10a17f50ac48jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/156.jpg","t":"156jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/camoduckwax2_e29ebec9-cc84-4624-9681-7070007c9c28.jpg","t":"camoduckwax2e29ebec9cc84462496817070007c9c28jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/duckstrap.jpg","t":"duckstrapjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09994_965642d0-cc5b-4ac3-98b7-d1d29a4b5e28.jpg","t":"dsc09994965642d0cc5b4ac398b7d1d29a4b5e28jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/tigerstripeinsidejj.jpg","t":"tigerstripeinsidejjjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09999-2.jpg","t":"dsc099992jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09907-2.jpg","t":"dsc099072jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09979-2_c7b9472b-c03e-4a76-85ce-139a9364c19e.jpg","t":"dsc099792jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09929_bb1ff988-b218-4692-9e87-0bc547d7d0c2.jpg","t":"dsc09929bb1ff988b21846929e870bc547d7d0c2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09947_5bc5cedf-6ba8-4753-888b-b0ad3643a311.jpg","t":"dsc099475bc5cedf6ba84753888bb0ad3643a311jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09920_17170bdd-3e8f-4329-9f63-c6c5c80ba0c2.jpg","t":"dsc0992017170bdd3e8f43299f63c6c5c80ba0c2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09958-2.jpg","t":"dsc099582jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09924.jpg","t":"dsc09924jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -646,21 +647,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -682,7 +687,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61814048129394","key":"COWBOY AZTEC","title":"COWBOY AZTEC","sku":null,"optionValues":["COWBOY AZTEC"],"option_values":[{"position":1,"name":"COLOR","value":"COWBOY AZTEC"}],"selected_options":{"COLOR":"COWBOY AZTEC"},"price_cents":8999,"regular_price_cents":12499,"compare_at_cents":12499,"compare_at_price_cents":12499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/INSIDEAZTECDUF-166785_b76356b7-2157-46d3-bb56-a877f0f4c70f.jpg"},{"variant_id":"61814048162162","key":"M90 SWEDISH CAMO","title":"M90 SWEDISH CAMO","sku":null,"optionValues":["M90 SWEDISH CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"M90 SWEDISH CAMO"}],"selected_options":{"COLOR":"M90 SWEDISH CAMO"},"price_cents":8999,"regular_price_cents":12499,"compare_at_cents":12499,"compare_at_price_cents":12499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DUFFLESWEDCAMOSIDE2_a531ea16-a685-467b-86cc-e3403b7b3659.jpg"},{"variant_id":"61814048194930","key":"ORIGINAL TIGER STRIPE CAMO","title":"ORIGINAL TIGER STRIPE CAMO","sku":null,"optionValues":["ORIGINAL TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"ORIGINAL TIGER STRIPE CAMO"}],"selected_options":{"COLOR":"ORIGINAL TIGER STRIPE CAMO"},"price_cents":8999,"regular_price_cents":12499,"compare_at_cents":12499,"compare_at_price_cents":12499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/tigerwaxed.jpg"},{"variant_id":"61814048227698","key":"DUCK CAMO","title":"DUCK CAMO","sku":null,"optionValues":["DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"DUCK CAMO"}],"selected_options":{"COLOR":"DUCK CAMO"},"price_cents":8999,"regular_price_cents":12499,"compare_at_cents":12499,"compare_at_price_cents":12499,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DUFFLESWEDCAMOSIDE2_a531ea16-a685-467b-86cc-e3403b7b3659.jpg"}];
+        var variantPricing = [{"variant_id":"61814048129394","key":"COWBOY AZTEC","title":"COWBOY AZTEC","sku":null,"optionValues":["COWBOY AZTEC"],"option_values":[{"position":1,"name":"COLOR","value":"COWBOY AZTEC"}],"selected_options":{"COLOR":"COWBOY AZTEC"},"price_cents":8999,"regular_price_cents":12499,"compare_at_cents":12499,"compare_at_price_cents":12499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/INSIDEAZTECDUF-166785_b76356b7-2157-46d3-bb56-a877f0f4c70f.jpg"},{"variant_id":"61814048162162","key":"M90 SWEDISH CAMO","title":"M90 SWEDISH CAMO","sku":null,"optionValues":["M90 SWEDISH CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"M90 SWEDISH CAMO"}],"selected_options":{"COLOR":"M90 SWEDISH CAMO"},"price_cents":8999,"regular_price_cents":12499,"compare_at_cents":12499,"compare_at_price_cents":12499,"source_available":true,"available":true,"image_url":null},{"variant_id":"61814048194930","key":"ORIGINAL TIGER STRIPE CAMO","title":"ORIGINAL TIGER STRIPE CAMO","sku":null,"optionValues":["ORIGINAL TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"ORIGINAL TIGER STRIPE CAMO"}],"selected_options":{"COLOR":"ORIGINAL TIGER STRIPE CAMO"},"price_cents":8999,"regular_price_cents":12499,"compare_at_cents":12499,"compare_at_price_cents":12499,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/TIGERSTRIPESIDEDUFNEW.jpg"},{"variant_id":"61814048227698","key":"DUCK CAMO","title":"DUCK CAMO","sku":null,"optionValues":["DUCK CAMO"],"option_values":[{"position":1,"name":"COLOR","value":"DUCK CAMO"}],"selected_options":{"COLOR":"DUCK CAMO"},"price_cents":8999,"regular_price_cents":12499,"compare_at_cents":12499,"compare_at_price_cents":12499,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/camoduckwax2_e29ebec9-cc84-4624-9681-7070007c9c28.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

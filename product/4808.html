@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -543,17 +543,18 @@ Just scoop, stir into 8-12 fl oz or more water, juice, or smoothie and enjoy! <b
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/on-1149995_Image_01.png","t":"on1149995image01png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Digest_Pineapple_Guava_30_srv_05_AG_SuperGreens-PineGuava_AmazonB__01_4000x4000_468a1ac6-20ea-41c1-ae4c-c85fb4119b8d.png","t":"supergreensdigestpineappleguava30srv05agsupergreenspineguavaamazonb014000x4000468a1ac620ea41c1ae4cc85fb4119b8dpng"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Digest_Pineapple_Guava_30_srv_04_AG_SuperGreens-PineGuava_AmazonB__01_4000x4000_0684041f-e0a0-4267-a680-ff98da7d6185.png","t":"supergreensdigestpineappleguava30srv04agsupergreenspineguavaamazonb014000x40000684041fe0a04267a680ff98da7d6185png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Digest_Pineapple_Guava_30_srv_03_AG_SuperGreens-PineGuava_AmazonB__01_4000x4000_eb8a8cb1-c8b2-4593-903b-da17cf58c47e.png","t":"supergreensdigestpineappleguava30srv03agsupergreenspineguavaamazonb014000x4000eb8a8cb1c8b24593903bda17cf58c47epng"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Digest_Pineapple_Guava_30_srv_07_AG_SuperGreens-PineGuava_AmazonB__01_4000x4000_57d26a23-bfd8-4efc-9832-61d414775d54.png","t":"supergreensdigestpineappleguava30srv07agsupergreenspineguavaamazonb014000x400057d26a23bfd84efc983261d414775d54png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Digest_Pineapple_Guava_30_srv_10_AG_SuperGreens-PineGuava_AmazonB__01_4000x4000_1f246cde-8bb4-4d41-8e45-5f2adea585ca.png","t":"supergreensdigestpineappleguava30srv10agsupergreenspineguavaamazonb014000x40001f246cde8bb44d418e455f2adea585capng"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Digest_Pineapple_Guava_30_srv_12_AG_SuperGreens-PineGuava_AmazonB__01_4000x4000_828a5c36-bf59-4b75-a961-3f503b00b423.png","t":"supergreensdigestpineappleguava30srv12agsupergreenspineguavaamazonb014000x4000828a5c36bf594b75a9613f503b00b423png"},{"src":"https://cdn.shopify.com/s/files/1/0013/4594/5674/files/Super_Greens_-_Digest_Pineapple_Guava_30_srv_06_AG_SuperGreens-PineGuava_AmazonB__01_4000x4000_16293aa8-e411-4829-96fa-bbc805ac4317.png","t":"supergreensdigestpineappleguava30srv06agsupergreenspineguavaamazonb014000x400016293aa8e411482996fabbc805ac4317png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -569,21 +570,25 @@ Just scoop, stir into 8-12 fl oz or more water, juice, or smoothie and enjoy! <b
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

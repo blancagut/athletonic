@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -603,17 +603,18 @@ Pre-Workout Sport is our most versatile pre-workout, perfect for the gym, cardio
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PWS-Front-PL.png","t":"pwsfrontplpng"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PWS-Front-W_b742adee-503e-4374-b62f-5a960340f9d1.png","t":"pwsfrontwb742adee503e4374b62f5a960340f9d1png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSFlavors4.jpg","t":"preworkoutsportd2cpwsflavors4jpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_D2CPWSUsvThem5.jpg","t":"preworkoutsportd2cd2cpwsusvthem5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PWS-Front-FP_348a87ea-db84-408b-a01c-12c63160cf8c.png","t":"pwsfrontfp348a87eadb84408ba01c12c63160cf8cpng"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSScience3.jpg","t":"preworkoutsportd2cpwsscience3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSHowtoUse6.jpg","t":"preworkoutsportd2cpwshowtouse6jpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PWS-Front-BR_7d7af09d-a842-4f33-87fc-5bb93365ed79.png","t":"pwsfrontbr7d7af09da8424f3387fc5bb93365ed79png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PWS-Front-GG_345111fc-4f18-443b-9a0b-d5daff3d9ad7.png","t":"pwsfrontgg345111fc4f18443b9a0bd5daff3d9ad7png"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PWS-Front-ML_fc8f6f2d-f3b8-4058-b109-382ff7acb15a.png","t":"pwsfrontmlfc8f6f2df3b84058b109382ff7acb15apng"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSBenefits2.jpg","t":"preworkoutsportd2cpwsbenefits2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSIngredients1.jpg","t":"preworkoutsportd2cpwsingredients1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/Pre_Workout_Sport_AMZ_PWS_SFP_PL.jpg","t":"preworkoutsportamzpwssfppljpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSSFPWM.jpg","t":"preworkoutsportd2cpwssfpwmjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSSFPFP.jpg","t":"preworkoutsportd2cpwssfpfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSSFPBR.jpg","t":"preworkoutsportd2cpwssfpbrjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSSFPGG.jpg","t":"preworkoutsportd2cpwssfpggjpg"},{"src":"https://cdn.shopify.com/s/files/1/1110/3248/files/PreWorkoutSportD2C_PWSSFPML.jpg","t":"preworkoutsportd2cpwssfpmljpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -629,21 +630,25 @@ Pre-Workout Sport is our most versatile pre-workout, perfect for the gym, cardio
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

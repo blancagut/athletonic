@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -583,17 +583,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Carbon3HF_81645ca1-b799-4dea-8d27-a3959fce8da1.png","t":"carbon3hf81645ca1b7994dea8d27a3959fce8da1png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Carbon3HB.png","t":"carbon3hbpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/Carbon3HS.png","t":"carbon3hspng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/image_1_57181729-9075-43cd-8679-3018fe0400f9.jpg","t":"image1ea7868418b714345a58f40613c51f2ecjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/image_71952086-c25b-4d0c-9336-0b183af6bbf7.jpg","t":"image71952086c25b4d0c93360b183af6bbf7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/IMG_7668_1_14c80d08-f553-476c-be94-1501a2dbc814.png","t":"img7668114c80d08f553476cbe941501a2dbc814png"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/IMG_7531_344d27e2-d448-4131-aa26-01ae227ec53d.jpg","t":"img7531344d27e2d4484131aa2601ae227ec53djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/IMG_7491_23df9d27-caa5-4f38-ba5b-0e144f491777.jpg","t":"img749123df9d27caa54f38ba5b0e144f491777jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/IMG_7541_c4227f47-f3cb-4294-b9a8-3123db1b226d.jpg","t":"img7541c4227f47f3cb4294b9a83123db1b226djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_3_1_e5dfd3ce-8fcf-4b81-b5ce-ace13df3454b.png","t":"unnamed31e5dfd3ce8fcf4b81b5ceace13df3454bpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_5_1_7d719fe6-0f52-4ea5-850a-27ac67879b7b.png","t":"unnamed517d719fe60f524ea5850a27ac67879b7bpng"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/No_Hole_Speed_Grips_-_Black_Diamond.png","t":"noholespeedgripsblackdiamondpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -609,21 +610,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

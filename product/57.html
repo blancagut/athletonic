@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -637,17 +637,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/large-U_-_Front.png","t":"largeufrontpng"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL_Collagen_30_Chocolate_1_5_22e3a3bd-951d-465e-804f-c4025fb370b0.png","t":"tlcollagen30chocolate1522e3a3bd951d465e804fc4025fb370b0png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL-318_Collagen_30_Vanilla_1_0.png","t":"tl318collagen30vanilla10png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL-320_Collagen_30_Strawberry_1_0.png","t":"tl320collagen30strawberry10png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/TL-317_Collagen_30_Caramel_1_0.png","t":"tl317collagen30caramel10png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Collagen-Hero2.jpg","t":"collagenhero2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Chocolate_af4e000a-c4b2-4625-bc74-6aa419bf6933.jpg","t":"chocolateaf4e000ac4b24625bc746aa419bf6933jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Unflavored_75b41b15-59b5-47b6-8f82-691b5618d70e.jpg","t":"unflavored75b41b1559b547b68f82691b5618d70ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Caramel_84133d12-6728-41a5-908c-4e16a27db8d9.jpg","t":"caramel84133d12672841a5908c4e16a27db8d9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Strawberry_29aa2530-c583-4031-9cca-4281ce17d2a4.jpg","t":"strawberry29aa2530c58340319cca4281ce17d2a4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Vanilla_9d3f4de0-3adb-428a-bfa1-e9669d846f34.jpg","t":"vanilla9d3f4de03adb428abfa1e9669d846f34jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Collagen-HowToUse.jpg","t":"collagenhowtousejpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Collagen-0vs90.jpg","t":"collagen0vs90jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Collagen-Quote2.jpg","t":"collagenquote2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Collagen-Quote1.jpg","t":"collagenquote1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/SFP-Unlfavored.jpg","t":"sfpunlfavoredjpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/SFP-Chocolate.jpg","t":"sfpchocolatejpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/SFP-Vanilla.jpg","t":"sfpvanillajpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/SFP-Strawberry.jpg","t":"sfpstrawberryjpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/SFP-Caramel.jpg","t":"sfpcarameljpg"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/UnflavoredSFP_1200x1200_2.png","t":"unflavoredsfp1200x12002png"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Collagen_-_Chocolate_SFP.png","t":"collagenchocolatesfppng"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Caramel_SFP.png","t":"caramelsfppng"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Vanilla_SFP.png","t":"vanillasfppng"},{"src":"https://cdn.shopify.com/s/files/1/0866/7664/files/Strawberry_SFP_c1ac572c-2b98-4849-a219-83d5dee0ad5b.png","t":"strawberrysfpc1ac572c2b984849a21983d5dee0ad5bpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -663,21 +664,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

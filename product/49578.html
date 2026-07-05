@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -556,17 +556,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d4032a69-781f-4d21-80a6-f1604b6bea91/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/174a528a-bfb9-49ec-a7c4-dd9d68020dd3/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/00d12442-36c8-4e11-abce-5e7e76e40bb4/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9e2ed67d-237d-422f-bf87-cdba68088ea9/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/60d39d21-d182-461c-afe4-b3abd8fe5578/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/61bec49c-8df3-4ab4-badb-1c6af27ed2bc/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/983f3cb0-35a6-4e8f-b050-ce79508a1748/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a3181803-f96b-4950-9690-edb93c613f3a/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/5d67ae13-fb86-4f68-b4f4-de01fb3143f2/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/81fdb517-92ad-465f-9a00-d753f8da8ccd/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/2b518e0d-9e30-4f95-9a22-aec542872e10/air-max-sndr-camo-womens-shoes-v5lEWO8h.png","t":"nikeairmaxsndrcamowomensshoesairmaxsndrcamowomensshoesv5lewo8hpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -582,21 +583,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -618,17 +618,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01322-2.jpg","t":"cia013222jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01325-2.jpg","t":"cia013252jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA01332_465c48df-f136-4d83-9cdd-efce0779494b.jpg","t":"cia01332465c48dff1364d839cddefce0779494bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03260.jpg","t":"cia03260jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03256.jpg","t":"cia03256jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03274.jpg","t":"cia03274jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03271.jpg","t":"cia03271jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_1.jpg","t":"supportyourlocalfirefightermullticamblacksnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_4.jpg","t":"supportyourlocalfirefightermullticamblacksnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_2.jpg","t":"supportyourlocalfirefightermullticamblacksnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFD-ODGBLACKMESHSNAPBACK_1.jpg","t":"supportyourlocalfdodgblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFD-WOODLAND_WHITEMESHSNAPBACK_3.jpg","t":"supportyourlocalfdwoodlandwhitemeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFD-WOODLAND_WHITEMESHSNAPBACK_4.jpg","t":"supportyourlocalfdwoodlandwhitemeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFD-WOODLAND_WHITEMESHSNAPBACK_5.jpg","t":"supportyourlocalfdwoodlandwhitemeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-MULTICAM_BLACKMESHSNAPBACK_1.jpg","t":"supportyourlocalfiredeptmulticamblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-MULTICAM_BLACKMESHSNAPBACK_2.jpg","t":"supportyourlocalfiredeptmulticamblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-MULTICAM_BLACKMESHSNAPBACK_3.jpg","t":"supportyourlocalfiredeptmulticamblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-MULTICAM_BLACKMESHSNAPBACK_4.jpg","t":"supportyourlocalfiredeptmulticamblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-MULTICAM_BLACKMESHSNAPBACK_5.jpg","t":"supportyourlocalfiredeptmulticamblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-WOODLAND_BLACKMESHSNAPBACK_1.jpg","t":"supportyourlocalfiredeptwoodlandblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-WOODLAND_BLACKMESHSNAPBACK_2.jpg","t":"supportyourlocalfiredeptwoodlandblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-WOODLAND_BLACKMESHSNAPBACK_3.jpg","t":"supportyourlocalfiredeptwoodlandblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-WOODLAND_BLACKMESHSNAPBACK_4.jpg","t":"supportyourlocalfiredeptwoodlandblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-WOODLAND_BLACKMESHSNAPBACK_5.jpg","t":"supportyourlocalfiredeptwoodlandblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFD-WOODLAND_WHITEMESHSNAPBACK_1.jpg","t":"supportyourlocalfdwoodlandwhitemeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFD-WOODLAND_WHITEMESHSNAPBACK_2.jpg","t":"supportyourlocalfdwoodlandwhitemeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-ALLBLACKSNAPBACK_1.jpg","t":"supportyourlocalfiredeptallblacksnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-ALLBLACKSNAPBACK_3.jpg","t":"supportyourlocalfiredeptallblacksnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-ALLBLACKSNAPBACK_4.jpg","t":"supportyourlocalfiredeptallblacksnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-ALLBLACKSNAPBACK_2.jpg","t":"supportyourlocalfiredeptallblacksnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-ALLBLACKSNAPBACK_5.jpg","t":"supportyourlocalfiredeptallblacksnapback5jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -644,21 +645,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -680,7 +685,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813956936050","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_1.jpg"},{"variant_id":"61813956968818","key":"MILITARY GREEN / BLACK","title":"MILITARY GREEN / BLACK","sku":null,"optionValues":["MILITARY GREEN / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MILITARY GREEN / BLACK"}],"selected_options":{"COLOR":"MILITARY GREEN / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_1.jpg"},{"variant_id":"61813957001586","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_1.jpg"},{"variant_id":"61813957034354","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_1.jpg"},{"variant_id":"61813957067122","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-MULTICAM_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813957099890","key":"WOODLAND BDU CAMO / WHITE","title":"WOODLAND BDU CAMO / WHITE","sku":null,"optionValues":["WOODLAND BDU CAMO / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / WHITE"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFD-WOODLAND_WHITEMESHSNAPBACK_3.jpg"}];
+        var variantPricing = [{"variant_id":"61813956936050","key":"BLACK MULTICAM","title":"BLACK MULTICAM","sku":null,"optionValues":["BLACK MULTICAM"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK MULTICAM"}],"selected_options":{"COLOR":"BLACK MULTICAM"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-MULTICAM_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813956968818","key":"MILITARY GREEN / BLACK","title":"MILITARY GREEN / BLACK","sku":null,"optionValues":["MILITARY GREEN / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MILITARY GREEN / BLACK"}],"selected_options":{"COLOR":"MILITARY GREEN / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_1.jpg"},{"variant_id":"61813957001586","key":"BLACK / BLACK","title":"BLACK / BLACK","sku":null,"optionValues":["BLACK / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / BLACK"}],"selected_options":{"COLOR":"BLACK / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREFIGHTER-MULLTICAMBLACKSNAPBACK_1.jpg"},{"variant_id":"61813957034354","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-WOODLAND_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813957067122","key":"MULTICAM / BLACK","title":"MULTICAM / BLACK","sku":null,"optionValues":["MULTICAM / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"MULTICAM / BLACK"}],"selected_options":{"COLOR":"MULTICAM / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFIREDEPT-MULTICAM_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813957099890","key":"WOODLAND BDU CAMO / WHITE","title":"WOODLAND BDU CAMO / WHITE","sku":null,"optionValues":["WOODLAND BDU CAMO / WHITE"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / WHITE"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / WHITE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SUPPORTYOURLOCALFD-WOODLAND_WHITEMESHSNAPBACK_3.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

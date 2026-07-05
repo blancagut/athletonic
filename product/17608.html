@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -566,17 +566,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiPurpleBlue_52ba8d4f-3c81-46c7-8fa5-5ea8dd241353.jpg","t":"eastereggscrambledwomensbjjgipurpleblue52ba8d4f3c8146c78fa55ea8dd241353jpg"},{"src":"https://cdn.shopify.com/s/files/1/0562/8913/products/easter-egg-scrambled-womens-bjj-gi-sanabul-jiu-jitsu-gi-ees-gi-blue-grn-pur-w1-245848.jpg","t":"eastereggscrambledwomensbjjgisanabuljiujitsugieesgibluegrnpurw1245848jpg"},{"src":"https://cdn.shopify.com/s/files/1/0562/8913/products/easter-egg-scrambled-womens-bjj-gi-sanabul-jiu-jitsu-gi-ees-gi-blue-grn-pur-w1-347590.jpg","t":"eastereggscrambledwomensbjjgisanabuljiujitsugieesgibluegrnpurw1347590jpg"},{"src":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiBlueWhite.jpg","t":"eastereggscrambledwomensbjjgibluewhitejpg"},{"src":"https://cdn.shopify.com/s/files/1/0562/8913/products/easter-egg-scrambled-womens-bjj-gi-sanabul-jiu-jitsu-gi-ees-gi-bblu-wht-w1-778067.jpg","t":"eastereggscrambledwomensbjjgisanabuljiujitsugieesgibbluwhtw1778067jpg"},{"src":"https://cdn.shopify.com/s/files/1/0562/8913/products/easter-egg-scrambled-womens-bjj-gi-sanabul-jiu-jitsu-gi-ees-gi-bblu-wht-w1-784150.jpg","t":"eastereggscrambledwomensbjjgisanabuljiujitsugieesgibbluwhtw1784150jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -592,21 +593,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -628,7 +633,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"42843899101338","key":"BabyBlue/White / W1","title":"BabyBlue/White / W1","sku":null,"optionValues":["BabyBlue/White","W1"],"option_values":[{"position":1,"name":"Color","value":"BabyBlue/White"},{"position":2,"name":"Size","value":"W1"}],"selected_options":{"Color":"BabyBlue/White","Size":"W1"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/products/easter-egg-scrambled-womens-bjj-gi-sanabul-jiu-jitsu-gi-ees-gi-blue-grn-pur-w1-245848.jpg"},{"variant_id":"42843899134106","key":"BabyBlue/White / W2","title":"BabyBlue/White / W2","sku":null,"optionValues":["BabyBlue/White","W2"],"option_values":[{"position":1,"name":"Color","value":"BabyBlue/White"},{"position":2,"name":"Size","value":"W2"}],"selected_options":{"Color":"BabyBlue/White","Size":"W2"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiBlueWhite.jpg"},{"variant_id":"42843899166874","key":"BabyBlue/White / W3","title":"BabyBlue/White / W3","sku":null,"optionValues":["BabyBlue/White","W3"],"option_values":[{"position":1,"name":"Color","value":"BabyBlue/White"},{"position":2,"name":"Size","value":"W3"}],"selected_options":{"Color":"BabyBlue/White","Size":"W3"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiBlueWhite.jpg"},{"variant_id":"42843899199642","key":"BabyBlue/White / W4","title":"BabyBlue/White / W4","sku":null,"optionValues":["BabyBlue/White","W4"],"option_values":[{"position":1,"name":"Color","value":"BabyBlue/White"},{"position":2,"name":"Size","value":"W4"}],"selected_options":{"Color":"BabyBlue/White","Size":"W4"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiBlueWhite.jpg"},{"variant_id":"42843899265178","key":"Blue/Green/Purple / W1","title":"Blue/Green/Purple / W1","sku":null,"optionValues":["Blue/Green/Purple","W1"],"option_values":[{"position":1,"name":"Color","value":"Blue/Green/Purple"},{"position":2,"name":"Size","value":"W1"}],"selected_options":{"Color":"Blue/Green/Purple","Size":"W1"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/products/easter-egg-scrambled-womens-bjj-gi-sanabul-jiu-jitsu-gi-ees-gi-blue-grn-pur-w1-245848.jpg"},{"variant_id":"42843899297946","key":"Blue/Green/Purple / W2","title":"Blue/Green/Purple / W2","sku":null,"optionValues":["Blue/Green/Purple","W2"],"option_values":[{"position":1,"name":"Color","value":"Blue/Green/Purple"},{"position":2,"name":"Size","value":"W2"}],"selected_options":{"Color":"Blue/Green/Purple","Size":"W2"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiPurpleBlue_52ba8d4f-3c81-46c7-8fa5-5ea8dd241353.jpg"},{"variant_id":"42843899330714","key":"Blue/Green/Purple / W3","title":"Blue/Green/Purple / W3","sku":null,"optionValues":["Blue/Green/Purple","W3"],"option_values":[{"position":1,"name":"Color","value":"Blue/Green/Purple"},{"position":2,"name":"Size","value":"W3"}],"selected_options":{"Color":"Blue/Green/Purple","Size":"W3"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiPurpleBlue_52ba8d4f-3c81-46c7-8fa5-5ea8dd241353.jpg"},{"variant_id":"42843899396250","key":"Blue/Green/Purple / W4","title":"Blue/Green/Purple / W4","sku":null,"optionValues":["Blue/Green/Purple","W4"],"option_values":[{"position":1,"name":"Color","value":"Blue/Green/Purple"},{"position":2,"name":"Size","value":"W4"}],"selected_options":{"Color":"Blue/Green/Purple","Size":"W4"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiPurpleBlue_52ba8d4f-3c81-46c7-8fa5-5ea8dd241353.jpg"}];
+        var variantPricing = [{"variant_id":"42843899101338","key":"BabyBlue/White / W1","title":"BabyBlue/White / W1","sku":null,"optionValues":["BabyBlue/White","W1"],"option_values":[{"position":1,"name":"Color","value":"BabyBlue/White"},{"position":2,"name":"Size","value":"W1"}],"selected_options":{"Color":"BabyBlue/White","Size":"W1"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiBlueWhite.jpg"},{"variant_id":"42843899134106","key":"BabyBlue/White / W2","title":"BabyBlue/White / W2","sku":null,"optionValues":["BabyBlue/White","W2"],"option_values":[{"position":1,"name":"Color","value":"BabyBlue/White"},{"position":2,"name":"Size","value":"W2"}],"selected_options":{"Color":"BabyBlue/White","Size":"W2"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiBlueWhite.jpg"},{"variant_id":"42843899166874","key":"BabyBlue/White / W3","title":"BabyBlue/White / W3","sku":null,"optionValues":["BabyBlue/White","W3"],"option_values":[{"position":1,"name":"Color","value":"BabyBlue/White"},{"position":2,"name":"Size","value":"W3"}],"selected_options":{"Color":"BabyBlue/White","Size":"W3"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiBlueWhite.jpg"},{"variant_id":"42843899199642","key":"BabyBlue/White / W4","title":"BabyBlue/White / W4","sku":null,"optionValues":["BabyBlue/White","W4"],"option_values":[{"position":1,"name":"Color","value":"BabyBlue/White"},{"position":2,"name":"Size","value":"W4"}],"selected_options":{"Color":"BabyBlue/White","Size":"W4"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiBlueWhite.jpg"},{"variant_id":"42843899265178","key":"Blue/Green/Purple / W1","title":"Blue/Green/Purple / W1","sku":null,"optionValues":["Blue/Green/Purple","W1"],"option_values":[{"position":1,"name":"Color","value":"Blue/Green/Purple"},{"position":2,"name":"Size","value":"W1"}],"selected_options":{"Color":"Blue/Green/Purple","Size":"W1"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiPurpleBlue_52ba8d4f-3c81-46c7-8fa5-5ea8dd241353.jpg"},{"variant_id":"42843899297946","key":"Blue/Green/Purple / W2","title":"Blue/Green/Purple / W2","sku":null,"optionValues":["Blue/Green/Purple","W2"],"option_values":[{"position":1,"name":"Color","value":"Blue/Green/Purple"},{"position":2,"name":"Size","value":"W2"}],"selected_options":{"Color":"Blue/Green/Purple","Size":"W2"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiPurpleBlue_52ba8d4f-3c81-46c7-8fa5-5ea8dd241353.jpg"},{"variant_id":"42843899330714","key":"Blue/Green/Purple / W3","title":"Blue/Green/Purple / W3","sku":null,"optionValues":["Blue/Green/Purple","W3"],"option_values":[{"position":1,"name":"Color","value":"Blue/Green/Purple"},{"position":2,"name":"Size","value":"W3"}],"selected_options":{"Color":"Blue/Green/Purple","Size":"W3"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiPurpleBlue_52ba8d4f-3c81-46c7-8fa5-5ea8dd241353.jpg"},{"variant_id":"42843899396250","key":"Blue/Green/Purple / W4","title":"Blue/Green/Purple / W4","sku":null,"optionValues":["Blue/Green/Purple","W4"],"option_values":[{"position":1,"name":"Color","value":"Blue/Green/Purple"},{"position":2,"name":"Size","value":"W4"}],"selected_options":{"Color":"Blue/Green/Purple","Size":"W4"},"price_cents":12999,"regular_price_cents":12999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0562/8913/files/EasterEggScrambledWomensBJJGiPurpleBlue_52ba8d4f-3c81-46c7-8fa5-5ea8dd241353.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

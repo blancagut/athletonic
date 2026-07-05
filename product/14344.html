@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -651,17 +651,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_MIXEDBERRY_FRONT.png","t":"protronmixedberryfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_MILKCHOCOLATE_FRONT_30b02866-955a-41ad-983a-a47789a9d9af.png","t":"protronmilkchocolatefront30b02866955a41ad983aa47789a9d9afpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_PBCOOKIES_FRONT.png","t":"protronpbcookiesfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_VANILLAH_FRONT.png","t":"protronvanillahfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/collectibles_9e68dce4-747f-4f11-a102-c7e69715ed25.jpg","t":"collectibles9e68dce4747f4f11a102c7e69715ed25jpg"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/about_6aa5588c-d537-486a-9e59-521aaca73b51.jpg","t":"about6aa5588cd537486a9e59521aaca73b51jpg"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/Protron-MBC-sfp.jpg","t":"protronmbcsfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/Protron-VHG-sfp.jpg","t":"protronvhgsfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/Protron-PBCC-sfp.jpg","t":"protronpbccsfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/Protron-PBCC-benefits.jpg","t":"protronpbccbenefitsjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -677,21 +678,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -713,7 +718,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"44752232906928","key":"Mixed Berry Cheesecake (Optimus Prime)","title":"Mixed Berry Cheesecake (Optimus Prime)","sku":null,"optionValues":["Mixed Berry Cheesecake (Optimus Prime)"],"option_values":[{"position":1,"name":"Flavor","value":"Mixed Berry Cheesecake (Optimus Prime)"}],"selected_options":{"Flavor":"Mixed Berry Cheesecake (Optimus Prime)"},"price_cents":5499,"regular_price_cents":5499,"compare_at_cents":5499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_MIXEDBERRY_FRONT.png"},{"variant_id":"44752232939696","key":"PB Cookies 'N Cream (Megatron)","title":"PB Cookies 'N Cream (Megatron)","sku":null,"optionValues":["PB Cookies 'N Cream (Megatron)"],"option_values":[{"position":1,"name":"Flavor","value":"PB Cookies 'N Cream (Megatron)"}],"selected_options":{"Flavor":"PB Cookies 'N Cream (Megatron)"},"price_cents":5499,"regular_price_cents":5499,"compare_at_cents":5499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_PBCOOKIES_FRONT.png"},{"variant_id":"44752232972464","key":"Vanilla Honey Graham (Bumblebee)","title":"Vanilla Honey Graham (Bumblebee)","sku":null,"optionValues":["Vanilla Honey Graham (Bumblebee)"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Honey Graham (Bumblebee)"}],"selected_options":{"Flavor":"Vanilla Honey Graham (Bumblebee)"},"price_cents":5499,"regular_price_cents":5499,"compare_at_cents":5499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_VANILLAH_FRONT.png"},{"variant_id":"44779907776688","key":"Milk Chocolate Cookies 'n Cream (Starscream)","title":"Milk Chocolate Cookies 'n Cream (Starscream)","sku":null,"optionValues":["Milk Chocolate Cookies 'n Cream (Starscream)"],"option_values":[{"position":1,"name":"Flavor","value":"Milk Chocolate Cookies 'n Cream (Starscream)"}],"selected_options":{"Flavor":"Milk Chocolate Cookies 'n Cream (Starscream)"},"price_cents":5499,"regular_price_cents":5499,"compare_at_cents":5499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_MILKCHOCOLATE_FRONT_30b02866-955a-41ad-983a-a47789a9d9af.png"}];
+        var variantPricing = [{"variant_id":"44752232906928","key":"Mixed Berry Cheesecake (Optimus Prime)","title":"Mixed Berry Cheesecake (Optimus Prime)","sku":null,"optionValues":["Mixed Berry Cheesecake (Optimus Prime)"],"option_values":[{"position":1,"name":"Flavor","value":"Mixed Berry Cheesecake (Optimus Prime)"}],"selected_options":{"Flavor":"Mixed Berry Cheesecake (Optimus Prime)"},"price_cents":5499,"regular_price_cents":5499,"compare_at_cents":5499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_MIXEDBERRY_FRONT.png"},{"variant_id":"44752232939696","key":"PB Cookies 'N Cream (Megatron)","title":"PB Cookies 'N Cream (Megatron)","sku":null,"optionValues":["PB Cookies 'N Cream (Megatron)"],"option_values":[{"position":1,"name":"Flavor","value":"PB Cookies 'N Cream (Megatron)"}],"selected_options":{"Flavor":"PB Cookies 'N Cream (Megatron)"},"price_cents":5499,"regular_price_cents":5499,"compare_at_cents":5499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_PBCOOKIES_FRONT.png"},{"variant_id":"44752232972464","key":"Vanilla Honey Graham (Bumblebee)","title":"Vanilla Honey Graham (Bumblebee)","sku":null,"optionValues":["Vanilla Honey Graham (Bumblebee)"],"option_values":[{"position":1,"name":"Flavor","value":"Vanilla Honey Graham (Bumblebee)"}],"selected_options":{"Flavor":"Vanilla Honey Graham (Bumblebee)"},"price_cents":5499,"regular_price_cents":5499,"compare_at_cents":5499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44779907776688","key":"Milk Chocolate Cookies 'n Cream (Starscream)","title":"Milk Chocolate Cookies 'n Cream (Starscream)","sku":null,"optionValues":["Milk Chocolate Cookies 'n Cream (Starscream)"],"option_values":[{"position":1,"name":"Flavor","value":"Milk Chocolate Cookies 'n Cream (Starscream)"}],"selected_options":{"Flavor":"Milk Chocolate Cookies 'n Cream (Starscream)"},"price_cents":5499,"regular_price_cents":5499,"compare_at_cents":5499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/PROTRON_MILKCHOCOLATE_FRONT_30b02866-955a-41ad-983a-a47789a9d9af.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

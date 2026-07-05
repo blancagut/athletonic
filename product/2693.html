@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -542,17 +542,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-hulk-milk-icon.png","t":"superhumanproteinhulkmilkiconpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/products/SuperhumanProteinWeightvsVolume.png","t":"superhumanproteinweightvsvolumepng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Protein_AddedFlavor.webp","t":"shproteinaddedflavorwebp"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Protein_AccelerateMuscle.webp","t":"shproteinacceleratemusclewebp"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Protein_DigeZyme.webp","t":"shproteindigezymewebp"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Protein_SupplementFacts_1.png","t":"shproteinsupplementfacts1png"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-pb-gains-icon.png","t":"superhumanproteinpbgainsiconpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-cinnamon-cereal-icon.png","t":"superhumanproteincinnamoncerealiconpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-cookie-collision-icon.png","t":"superhumanproteincookiecollisioniconpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-anabolic-cereal-icon.png","t":"superhumanproteinanaboliccerealiconpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-orange-gainsicle-icon.png","t":"superhumanproteinorangegainsicleiconpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-cocoa-gains-icon.png","t":"superhumanproteincocoagainsiconpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SHPROTEINHULKMILKBACK_EDIT.png","t":"shproteinhulkmilkbackeditpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Protein_Benefits.webp","t":"shproteinbenefitswebp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -568,21 +569,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -604,7 +609,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"40290378121278","key":"CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)","title":"CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)","sku":null,"optionValues":["CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)"],"option_values":[{"position":1,"name":"Flavor","value":"CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)"}],"selected_options":{"Flavor":"CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Protein_AddedFlavor.webp"},{"variant_id":"32642623832126","key":"ORANGE GAINSICLE (Orange Creamsicle)","title":"ORANGE GAINSICLE (Orange Creamsicle)","sku":null,"optionValues":["ORANGE GAINSICLE (Orange Creamsicle)"],"option_values":[{"position":1,"name":"Flavor","value":"ORANGE GAINSICLE (Orange Creamsicle)"}],"selected_options":{"Flavor":"ORANGE GAINSICLE (Orange Creamsicle)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-pb-gains-icon.png"},{"variant_id":"39739059011646","key":"ANABOLIC CEREAL (Rainbow Cereal Flavor)","title":"ANABOLIC CEREAL (Rainbow Cereal Flavor)","sku":null,"optionValues":["ANABOLIC CEREAL (Rainbow Cereal Flavor)"],"option_values":[{"position":1,"name":"Flavor","value":"ANABOLIC CEREAL (Rainbow Cereal Flavor)"}],"selected_options":{"Flavor":"ANABOLIC CEREAL (Rainbow Cereal Flavor)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Protein_AddedFlavor.webp"},{"variant_id":"32642623766590","key":"PB & GAINS (Peanut Butter Candy)","title":"PB & GAINS (Peanut Butter Candy)","sku":null,"optionValues":["PB & GAINS (Peanut Butter Candy)"],"option_values":[{"position":1,"name":"Flavor","value":"PB & GAINS (Peanut Butter Candy)"}],"selected_options":{"Flavor":"PB & GAINS (Peanut Butter Candy)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-pb-gains-icon.png"},{"variant_id":"32642623799358","key":"HULK MILK (Vanilla Ice Cream)","title":"HULK MILK (Vanilla Ice Cream)","sku":null,"optionValues":["HULK MILK (Vanilla Ice Cream)"],"option_values":[{"position":1,"name":"Flavor","value":"HULK MILK (Vanilla Ice Cream)"}],"selected_options":{"Flavor":"HULK MILK (Vanilla Ice Cream)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-hulk-milk-icon.png"},{"variant_id":"39380607533118","key":"COCOA GAINS (Chocolate Cereal Flavor)","title":"COCOA GAINS (Chocolate Cereal Flavor)","sku":null,"optionValues":["COCOA GAINS (Chocolate Cereal Flavor)"],"option_values":[{"position":1,"name":"Flavor","value":"COCOA GAINS (Chocolate Cereal Flavor)"}],"selected_options":{"Flavor":"COCOA GAINS (Chocolate Cereal Flavor)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Protein_AddedFlavor.webp"},{"variant_id":"39863164043326","key":"ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)","title":"ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)","sku":null,"optionValues":["ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)"],"option_values":[{"position":1,"name":"Flavor","value":"ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)"}],"selected_options":{"Flavor":"ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-cookie-collision-icon.png"}];
+        var variantPricing = [{"variant_id":"40290378121278","key":"CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)","title":"CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)","sku":null,"optionValues":["CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)"],"option_values":[{"position":1,"name":"Flavor","value":"CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)"}],"selected_options":{"Flavor":"CINNAMON SWOLE CEREAL (Cinnamon Cereal Flavor)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-cinnamon-cereal-icon.png"},{"variant_id":"32642623832126","key":"ORANGE GAINSICLE (Orange Creamsicle)","title":"ORANGE GAINSICLE (Orange Creamsicle)","sku":null,"optionValues":["ORANGE GAINSICLE (Orange Creamsicle)"],"option_values":[{"position":1,"name":"Flavor","value":"ORANGE GAINSICLE (Orange Creamsicle)"}],"selected_options":{"Flavor":"ORANGE GAINSICLE (Orange Creamsicle)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-orange-gainsicle-icon.png"},{"variant_id":"39739059011646","key":"ANABOLIC CEREAL (Rainbow Cereal Flavor)","title":"ANABOLIC CEREAL (Rainbow Cereal Flavor)","sku":null,"optionValues":["ANABOLIC CEREAL (Rainbow Cereal Flavor)"],"option_values":[{"position":1,"name":"Flavor","value":"ANABOLIC CEREAL (Rainbow Cereal Flavor)"}],"selected_options":{"Flavor":"ANABOLIC CEREAL (Rainbow Cereal Flavor)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-anabolic-cereal-icon.png"},{"variant_id":"32642623766590","key":"PB & GAINS (Peanut Butter Candy)","title":"PB & GAINS (Peanut Butter Candy)","sku":null,"optionValues":["PB & GAINS (Peanut Butter Candy)"],"option_values":[{"position":1,"name":"Flavor","value":"PB & GAINS (Peanut Butter Candy)"}],"selected_options":{"Flavor":"PB & GAINS (Peanut Butter Candy)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"32642623799358","key":"HULK MILK (Vanilla Ice Cream)","title":"HULK MILK (Vanilla Ice Cream)","sku":null,"optionValues":["HULK MILK (Vanilla Ice Cream)"],"option_values":[{"position":1,"name":"Flavor","value":"HULK MILK (Vanilla Ice Cream)"}],"selected_options":{"Flavor":"HULK MILK (Vanilla Ice Cream)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-hulk-milk-icon.png"},{"variant_id":"39380607533118","key":"COCOA GAINS (Chocolate Cereal Flavor)","title":"COCOA GAINS (Chocolate Cereal Flavor)","sku":null,"optionValues":["COCOA GAINS (Chocolate Cereal Flavor)"],"option_values":[{"position":1,"name":"Flavor","value":"COCOA GAINS (Chocolate Cereal Flavor)"}],"selected_options":{"Flavor":"COCOA GAINS (Chocolate Cereal Flavor)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-cocoa-gains-icon.png"},{"variant_id":"39863164043326","key":"ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)","title":"ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)","sku":null,"optionValues":["ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)"],"option_values":[{"position":1,"name":"Flavor","value":"ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)"}],"selected_options":{"Flavor":"ANABOLIC COOKIE COLLISION (Coconut Caramel Cookie)"},"price_cents":5999,"regular_price_cents":5999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-protein-cookie-collision-icon.png"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

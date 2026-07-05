@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -614,17 +614,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/full-af-beachblast_FRONT-SPLASH.png","t":"fullafbeachblastfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/Full-AF-Fruit-Punch.jpg","t":"fullaffruitpunchjpg"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/full-af-BLUERAZZ_FRONT-SPLASH-1500.png","t":"fullafbluerazzfrontsplash1500png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/full-as-f-ck-nitric-oxide-booster-legendary-series-5percent-nutrition-10.jpg","t":"fullasfcknitricoxideboosterlegendaryseries5percentnutrition10jpg"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FULL-AF-PP_FRONT-splash.png","t":"fullafppfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_BeachBlast_WEB_ade33a4e-6447-4139-bb3f-1287e0cac6ab.png","t":"fullafbeachblastwebade33a4e64474139bb3f1287e0cac6abpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_BeachBlast_Tier_WEB_752ef0bd-b6fe-4cdb-9ae1-8fe48e0797ff.png","t":"fullafbeachblasttierweb752ef0bdb6fe4cdb9ae18fe48e0797ffpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/full-af-SST_FRONT-SPLASH.png","t":"fullafsstfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_BlueRaspberry_WEB_a4dc82cf-6a6f-4735-b284-7a56ebadee9d.png","t":"fullafblueraspberryweba4dc82cf6a6f4735b2847a56ebadee9dpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_BlueRaspberry_Tier_WEB_160af7a3-9486-43cf-ba8b-3ea3917ee907.png","t":"fullafblueraspberrytierweb160af7a3948643cfba8b3ea3917ee907png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/full-af-WILDBERRY_FRONT-SPLASH-1500.png","t":"fullafwildberryfrontsplash1500png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_PushPop_WEB_5e19dd43-47ba-4a67-9371-b714c04f2e8d.png","t":"fullafpushpopweb5e19dd4347ba4a679371b714c04f2e8dpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_PushPop_Tier_WEB_55853306-5974-4494-a9f8-047f7ec72115.png","t":"fullafpushpoptierweb5585330659744494a9f8047f7ec72115png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/full-af-FP_FRONT-splash-1500.png","t":"fullaffpfrontsplash1500png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_SouthernSweetTea_WEB_3eae482c-b43c-4c43-95ba-c77b5e878e77.png","t":"fullafsouthernsweetteaweb3eae482cb43c4c4395bac77b5e878e77png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_SouthernSweetTea_Tier_WEB_ea8c8d87-43d1-42d6-9cf2-0658d72b1877.png","t":"fullafsouthernsweetteatierwebea8c8d8743d142d69cf20658d72b1877png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_Wildberry_WEB_8fbff7cf-5fa3-4d79-8e12-3f51a5b627e4.png","t":"fullafwildberryweb8fbff7cf5fa34d798e123f51a5b627e4png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_Wildberry_Tier_WEB_94b06f9b-ddbf-4b08-ab34-374c6d758f71.png","t":"fullafwildberrytierweb94b06f9bddbf4b08ab34374c6d758f71png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_FruitPunch_WEB_c09b05d1-cd89-4ca7-8d7b-aba51cf5d1b7.png","t":"fullaffruitpunchwebc09b05d1cd894ca78d7baba51cf5d1b7png"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/FullAF_FruitPunch_Tier_WEB_69486528-d4d6-4307-b1a6-708e9addd4fd.png","t":"fullaffruitpunchtierweb69486528d4d64307b1a6708e9addd4fdpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/Full-AF-BENEFITS.jpg","t":"fullafbenefitsjpg"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/Full-AF-HOW-TO-USE.jpg","t":"fullafhowtousejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -640,21 +641,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

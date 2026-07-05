@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -623,17 +623,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/addictedpatchsaltsnapb.jpg","t":"addictedpatchsaltsnapbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01344-2_aba01f92-b162-4a0f-bc2f-169029dcf4c5.jpg","t":"dsc013442aba01f92b1624a0fbc2f169029dcf4c5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA08118-2.jpg","t":"cia081182jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA08151_c1f594bf-2580-4732-8c1c-71c0736fc818.jpg","t":"cia08151jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA08161.jpg","t":"cia08161jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA08125-2.jpg","t":"cia081252jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/addtoiron2.jpg","t":"addtoiron2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA08183.jpg","t":"cia08183a2a8b72dc1604091b75de8188888bf64jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/addtoiron1.jpg","t":"addtoiron1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA08128_6667cf01-3d08-4d43-9acf-9ce4f42311a0.jpg","t":"cia081286667cf013d084d439acf9ce4f42311a0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00836-352432_05ac37db-b6ff-49d3-a015-eab079139e2a-713045.jpg","t":"cia0083635243205ac37dbb6ff49d3a015eab079139e2a713045jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00805.jpg","t":"cia008056b4cbb9f78b447f78c9b25f791e0c983jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00836-352432_700e66e4-023f-4569-9fd7-852e01fa41f6.jpg","t":"cia00836352432700e66e4023f45699fd7852e01fa41f6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/side.jpg","t":"sidejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00809_19397b4f-c636-4de2-9166-555fe3fd2669.jpg","t":"cia00809jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00798-110198_4d7b7c9a-a4aa-442b-8a40-9cc4cf8611f2-760544.jpg","t":"cia007981101984d7b7c9aa4aa442b8a409cc4cf8611f2760544jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00802.jpg","t":"cia00802jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00798-110198.jpg","t":"cia00798110198jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00814.jpg","t":"cia00814jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00818.jpg","t":"cia00818jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00859.jpg","t":"cia00859jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00822.jpg","t":"cia00822jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00832.jpg","t":"cia00832jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00844-2.jpg","t":"cia008442jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01358_735d4121-2c3f-4eb2-8787-c3d361a5223a.jpg","t":"dsc01358735d41212c3f4eb28787c3d361a5223ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00860.jpg","t":"cia00860jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00270-3-PhotoRoom_7_07a23993-164e-4f76-8a71-c3c2fe58cde3.jpg","t":"cia002703photoroom707a23993164e4f768a71c3c2fe58cde3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA00848-2.jpg","t":"cia008482jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03459_1_36b663d7-59a3-4410-9016-35032d4716ab.jpg","t":"cia03459136b663d759a34410901635032d4716abjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CIA03462_1_5769d32a-88bd-4a04-b36f-00c9191fe06c.jpg","t":"cia0346215769d32a88bd4a04b36f00c9191fe06cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC01353_2f104a19-2e10-49d3-98ed-367ddf7e96f3.jpg","t":"dsc013532f104a192e1049d398ed367ddf7e96f3jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -649,21 +650,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

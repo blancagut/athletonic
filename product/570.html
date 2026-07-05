@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -602,17 +602,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Performance-Blue-Rathberry-front_54b144dc-fbcb-46d3-b972-87d6d96241a1.webp","t":"essentialperformancebluerathberryfront54b144dcfbcb46d3b97287d6d96241a1webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Performance-Citrus-Grapefruit-front_d1c97280-9b0f-4b7e-bb95-851e07c633da.webp","t":"essentialperformancecitrusgrapefruitfrontd1c972809b0f4b7ebb95851e07c633dawebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Performance-Sour-Watermelon-front_b57a4112-5363-401a-b629-ce9ac3961fc9.webp","t":"essentialperformancesourwatermelonfrontb57a41125363401ab629ce9ac3961fc9webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential_performance_-_champion_mentality.webp","t":"essentialperformancechampionmentalitywebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential_performance_-_strawberry_kiwi_-_front_5ed48aa6-f1a4-45bc-8446-770ccf906b3d.webp","t":"essentialperformancestrawberrykiwifront5ed48aa6f1a445bc8446770ccf906b3dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Performance-Blueberry-Lemonade-front.webp","t":"essentialperformanceblueberrylemonadefrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential-performance-icylemonslush.webp","t":"essentialperformanceicylemonslushwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialperformance-championmentality_84d82810-3132-4975-b1cd-111c4b1d25ec.webp","t":"essentialperformancechampionmentality84d8281031324975b1cd111c4b1d25ecwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialperformance-_icylemonslush_e59233f8-779a-42ed-ac04-5777465dc222.webp","t":"essentialperformanceicylemonslushe59233f8779a42edac045777465dc222webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential-Perf-StrawberryKiwi-SFP_7e2d5c68-3d72-481f-a623-8879878c213d.png","t":"essentialperfstrawberrykiwisfp7e2d5c683d72481fa6238879878c213dpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential-Perf-BlueRathpberry-SFP_64d83fba-0f37-42dd-829a-b7d015ad9d17.png","t":"essentialperfbluerathpberrysfp64d83fba0f3742dd829ab7d015ad9d17png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential-Perf-SourWatermelon-SFP_204b8680-8f06-49b5-8922-a7345600ba6e.png","t":"essentialperfsourwatermelonsfp204b86808f0649b58922a7345600ba6epng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential-Perf-CitrusGrapefruit-SFP_b5ff6b95-029a-4a41-9164-aede3b42e475.png","t":"essentialperfcitrusgrapefruitsfpb5ff6b95029a4a419164aede3b42e475png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential-Perf-BlueberryLemonade-SFP_6b032ad9-59a0-4b74-82f0-b2ba7e177221.png","t":"essentialperfblueberrylemonadesfp6b032ad959a04b7482f0b2ba7e177221png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -628,21 +629,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

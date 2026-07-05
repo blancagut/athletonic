@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -530,17 +530,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO_SW_16ct_PDP_ea2d58ae-5ca9-4664-8e56-392e57780695.jpg","t":"16pkhmosw16ctpdpea2d58ae5ca946648e56392e57780695jpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO_SW_STICK_From-To_3000x3000_99996456-c688-4e14-ac1c-0cfc3e0a004e.jpg","t":"hmoswstickfromto3000x300099996456c6884e14ac1c0cfc3e0a004ejpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO-SW-Alt-Image-1_1d4f7fa4-c2e8-4b98-9b93-6c778a77496d.jpg","t":"hmoswaltimage11d4f7fa4c2e84b989b936c778a77496djpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO-SW-Alt-Image-2_20c826e1-96e6-474d-9c35-27bd81efcbe2.jpg","t":"hmoswaltimage220c826e196e6474d9c3527bd81efcbe2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1338/1013/files/HMO-SW-Alt-Image-4_95833140-a194-4787-a9b4-1a4e0cafba6f.jpg","t":"hmoswaltimage495833140a1944787a9b41a4e0cafba6fjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -556,21 +557,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

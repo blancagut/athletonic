@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -585,17 +585,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/MRE_BANANA-NUT-BREAD_FLV.png","t":"mrebanananutbreadflvpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_BANANA_NUTBREAD.png","t":"mrebanananutbreadpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-VANILLA-MILKSHAKE-5LB-FLAVOR_copy_1.png","t":"mrevanillamilkshake5lbflavorcopy1png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_VANILLA-V.4.0-preview.webp","t":"mrevanillav40previewwebp"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-FUDGE-BROWNIE-5LB-FLAVOR.png","t":"mrefudgebrownie5lbflavorpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_FUDGE_BROWNIE-V.4.0-preview.webp","t":"mrefudgebrowniev40previewwebp"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-OATMEAL-CHOCOLATE-CHIP-5LB-FLAVOR.png","t":"mreoatmealchocolatechip5lbflavorpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_OCC-V.4.0_copy-preview.webp","t":"mreoccv40copypreviewwebp"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-BLUEBERRY-COBBLER-5LB-FLAVOR.png","t":"mreblueberrycobbler5lbflavorpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_BLUEBERRY_COBBLER-V.4.0-preview_1.webp","t":"mreblueberrycobblerv40preview1webp"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE-STRAWBERRY-SHORTCAKE-5LB-FLAVOR.png","t":"mrestrawberryshortcake5lbflavorpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_STRAWBERRY_SHORTCAKE-V.4.0-preview.webp","t":"mrestrawberryshortcakev40previewwebp"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRECOOKIES_CREAM7LBS.png","t":"mrecookiescream7lbspng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/MRE_COOKIES_AND_CREAM.png","t":"mrecookiesandcreampng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/3.FUELYOURDAY_1.5x.png","t":"3fuelyourday15xpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/4.MREWAFFLES_1.5x_1.png","t":"4mrewaffles15x1png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/5.INDULGE_1.5x.png","t":"5indulge15xpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/7.Multipleamino_1.5x.png","t":"7multipleamino15xpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/8.DELICOUSLYRICH_1.5x.png","t":"8delicouslyrich15xpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/9.REALWHOLEFOODDS_1.5x.png","t":"9realwholefoodds15xpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/10.NEWLOOK_1.5x.png","t":"10newlook15xpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -611,21 +612,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -582,17 +582,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/inno-cleanse_3f7328b1-7d18-4442-be23-f46174160ded.png","t":"innocleanse3f7328b17d184442be23f46174160dedpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanse-side_6c708078-7528-46df-a350-1aef4a258315.png","t":"cleanseside6c708078752846dfa3501aef4a258315png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/2-supplementfacts_4bfdacef-b0c3-4097-a3de-f36d169244e6.jpg","t":"2supplementfacts4bfdacefb0c34097a3def36d169244e6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/6b78da7e-08fb-4eaf-95bd-252de3eecb29_79fa1cd3-48a3-4962-a857-fe25be669078.png","t":"6b78da7e08fb4eaf95bd252de3eecb2979fa1cd348a34962a857fe25be669078png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/Allassets_6xCleanse_2freeNightshred_1_7ccadebf-5346-4bba-ad61-45acc65fb819.png","t":"allassets6xcleanse2freenightshred17ccadebf53464bbaad6145acc65fb819png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/inno-cleanse_900x900_0ef1b2ad-582e-4eb1-9c47-637ee257e39f.png","t":"innocleanse900x9000ef1b2ad582e4eb19c47637ee257e39fpng"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/Allassets_3xCleanse_1freeNightshred_1_f2b289de-1191-4173-ad51-a802821a3131.png","t":"allassets3xcleanse1freenightshred1f2b289de11914173ad51a802821a3131png"},{"src":"https://cdn.shopify.com/s/files/1/0301/5737/3576/products/cleanse-back2_99c5a5e4-e104-4a11-b2a0-858096ca61bc.png","t":"cleanseback299c5a5e4e1044a11b2a0858096ca61bcpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -608,21 +609,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

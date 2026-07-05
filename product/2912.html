@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -657,17 +657,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-SST-FRONT-SPLASH.png","t":"adymsstfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-MP-FRONT-SPLASH.png","t":"adymmpfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/all-day-you-may-bcaa-recovery-drink-legendary-series-5percent-nutrition-18.jpg","t":"alldayyoumaybcaarecoverydrinklegendaryseries5percentnutrition18jpg"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-WMLN-FRONT-SPLASH.png","t":"adymwmlnfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316580-alldayyoumay_southernsweettea.png","t":"795316580alldayyoumaysouthernsweetteapng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316576-alldayyoumay_southernsweettea_tier.png","t":"795316576alldayyoumaysouthernsweetteatierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795333565-alldayyoumay_mangopineapple.png","t":"795333565alldayyoumaymangopineapplepng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795317355-alldayyoumay_mangopineapple_tier.png","t":"795317355alldayyoumaymangopineappletierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-LL-FRONT-SPLASH.png","t":"adymllfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316594-alldayyoumay_watermelon.png","t":"795316594alldayyoumaywatermelonpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316583-alldayyoumay_watermelon_tier.png","t":"795316583alldayyoumaywatermelontierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-Flavor-Splash-Peach-Tea.png","t":"adymflavorsplashpeachteapng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-FP-FRONT-SPLASH.png","t":"adymfpfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/AllDayYouMay_PeachTea.png","t":"alldayyoumaypeachteapng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-Storefront-SFP-Blue-Raspberry_f83c8505-6611-4341-9d82-f1aecd62d6a7.jpg","t":"adymstorefrontsfpblueraspberryf83c8505661143419d82f1aecd62d6a7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/AllDayYouMay_PeachTea_Tier.png","t":"alldayyoumaypeachteatierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-Storefront-Images-BENEFITS.jpg","t":"adymstorefrontimagesbenefitsjpg"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-Storefront-Images-HOW-TO-USE.jpg","t":"adymstorefrontimageshowtousejpg"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316554-alldayyoumay_lemonlime.png","t":"795316554alldayyoumaylemonlimepng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316546-alldayyoumay_lemonlime_tier.png","t":"795316546alldayyoumaylemonlimetierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-PP-FRONT-SPLASH.png","t":"adymppfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316536-alldayyoumay_fruitpunch.png","t":"795316536alldayyoumayfruitpunchpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316527-alldayyoumay_fruitpunch_tier.png","t":"795316527alldayyoumayfruitpunchtierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-Flavor-Splash-Italian_Lemon_Ice.png","t":"adymflavorsplashitalianlemonicepng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-BR_FRONT-SPLASH.png","t":"adymbrfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795317351-alldayyoumay_italianlemonice.png","t":"795317351alldayyoumayitalianlemonicepng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795317347-alldayyoumay_italianlemonice_tier.png","t":"795317347alldayyoumayitalianlemonicetierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/ADYM-BL_FRONT-SPLASH.png","t":"adymblfrontsplashpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316573-alldayyoumay_pushpop.png","t":"795316573alldayyoumaypushpoppng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316567-alldayyoumay_pushpop_tier.png","t":"795316567alldayyoumaypushpoptierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316523-alldayyoumay_blueraspberry.png","t":"795316523alldayyoumayblueraspberrypng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316513-alldayyoumay_blueraspberry_tier.png","t":"795316513alldayyoumayblueraspberrytierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316506-alldayyoumay_blueberrylemonade.png","t":"795316506alldayyoumayblueberrylemonadepng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/795316496-alldayyoumay_blueberrylemonade_tier.png","t":"795316496alldayyoumayblueberrylemonadetierpng"},{"src":"https://cdn.shopify.com/s/files/1/0063/4218/0928/files/all-day-you-may-bcaa-recovery-drink-legendary-series-5percent-nutrition-17.jpg","t":"alldayyoumaybcaarecoverydrinklegendaryseries5percentnutrition17jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -683,21 +684,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

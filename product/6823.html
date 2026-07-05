@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -575,17 +575,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/calm-chai-latte-packets-plp-render.jpg","t":"calmchailattepacketsplprenderjpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897020829_Calm_Chai_Latte_Mix_Box_Front_072023_1d59dbec-2293-4969-814c-89b66998e241.jpg","t":"816897020829calmchailattemixboxfront0720231d59dbec22934969814c89b66998e241jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897020829_Calm_Chai_Latte_Mix_Box_1_Pack_072023.jpg","t":"816897020829calmchailattemixbox1pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897020829_Calm_Chai_Latte_Mix_Box_2_Pack_072023.jpg","t":"816897020829calmchailattemixbox2pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897020829_Calm_Chai_Latte_Mix_Box_4_Pack_072023.jpg","t":"816897020829calmchailattemixbox4pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897020829_Calm_Chai_Latte_Mix_Box_8_Pack_072023.jpg","t":"816897020829calmchailattemixbox8pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897020829_Calm_Chai_Latte_Mix_Box_6_Pack_072023.jpg","t":"816897020829calmchailattemixbox6pack072023jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/FS_Photoshoot_080123_Day4-2519_20edb72c-7d0d-42f8-a629-34103bd3c8a6.jpg","t":"fsphotoshoot080123day42519c91ea12cd5214bafb6c77a8437561d85jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897020829_Calm_Chai_Latte_Benefit_080123_6e00768b-b5c9-4cef-886f-77b5d36a1557.jpg","t":"816897020829calmchailattebenefit0801236e00768bb5c94cef886f77b5d36a1557jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/816897020829_Calm_Organic_Chai_Latte_Facts_Panel_ec035843-3b2c-414f-8e89-dd6a557c0740.jpg","t":"816897020829calmorganicchailattefactspanelec0358433b2c414f8e89dd6a557c0740jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/calm-chai-latte-packets-1-pack-variant_1d3ec368-dd31-4765-b9e3-31b40afa20cc.jpg","t":"calmchailattepackets1packvariant1d3ec368dd314765b9e331b40afa20ccjpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/calm-chai-latte-packets-2-pack-variant_dabfa33d-f158-4997-b58d-7c9c75bf0984.jpg","t":"calmchailattepackets2packvariantdabfa33df1584997b58d7c9c75bf0984jpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/calm-chai-latte-packets-4-pack-variant_e8f11e23-0b9a-48b9-a756-6e4aa4901e59.jpg","t":"calmchailattepackets4packvariante8f11e230b9a48b9a7566e4aa4901e59jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -601,21 +602,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

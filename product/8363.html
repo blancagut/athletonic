@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -582,17 +582,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort5__camo_0002.jpg","t":"1stphormapparelmenshortscoreperformanceshort5camo0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort5__camo_0004.jpg","t":"1stphormapparelmenshortscoreperformanceshort5camo0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort5__camo_0001.jpg","t":"1stphormapparelmenshortscoreperformanceshort5camo0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort5__camo_0006.jpg","t":"1stphormapparelmenshortscoreperformanceshort5camo0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort5__camo_0003.jpg","t":"1stphormapparelmenshortscoreperformanceshort5camo0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort5__camo_0005.jpg","t":"1stphormapparelmenshortscoreperformanceshort5camo0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort_5__blackcamo_0010.jpg","t":"1stphormapparelmenshortscoreperformanceshort5blackcamo0010jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort_5__blackcamo_0005.jpg","t":"1stphormapparelmenshortscoreperformanceshort5blackcamo0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort_5__blackcamo_0004.jpg","t":"1stphormapparelmenshortscoreperformanceshort5blackcamo0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort_5__blackcamo_0007.jpg","t":"1stphormapparelmenshortscoreperformanceshort5blackcamo0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort_5__blackcamo_0006.jpg","t":"1stphormapparelmenshortscoreperformanceshort5blackcamo0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort_5__blackcamo_0002.jpg","t":"1stphormapparelmenshortscoreperformanceshort5blackcamo0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort_5__blackcamo_0001.jpg","t":"1stphormapparelmenshortscoreperformanceshort5blackcamo0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_coreperformanceshort_5__blackcamo_0008.jpg","t":"1stphormapparelmenshortscoreperformanceshort5blackcamo0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_core_performance_short_5__black_0008.jpg","t":"1stphormapparelmenshortscoreperformanceshort5black0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_core_performance_short_5__black_0012.jpg","t":"1stphormapparelmenshortscoreperformanceshort5black0012jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_core_performance_short_5__black_0015.jpg","t":"1stphormapparelmenshortscoreperformanceshort5black0015jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_core_performance_short_5__black_0016.jpg","t":"1stphormapparelmenshortscoreperformanceshort5black0016jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_core_performance_short_5__black_0018.jpg","t":"1stphormapparelmenshortscoreperformanceshort5black0018jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_core_performance_short_5__black_0011.jpg","t":"1stphormapparelmenshortscoreperformanceshort5black0011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_core_performance_short_5__black_0003.jpg","t":"1stphormapparelmenshortscoreperformanceshort5black0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_core_performance_short_5__black_0005.jpg","t":"1stphormapparelmenshortscoreperformanceshort5black0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_coreperformanceshort5__navy_0008.jpg","t":"1stphormapparelmensshortscoreperformanceshort5navy0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_coreperformanceshort5__navy_0009.jpg","t":"1stphormapparelmensshortscoreperformanceshort5navy0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_coreperformanceshort5__navy_0011_410708f3-f39a-447b-9ca1-0cd436262e50.jpg","t":"1stphormapparelmensshortscoreperformanceshort5navy0011410708f3f39a447b9ca10cd436262e50jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_coreperformanceshort5__navy_0014_e8c009e8-a4c6-42b0-90a1-96d5ea2a2fb4.jpg","t":"1stphormapparelmensshortscoreperformanceshort5navy0014e8c009e8a4c642b090a196d5ea2a2fb4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_coreperformanceshort5__navy_0015_86ab438a-67fc-4ace-924c-af84a16b5e7f.jpg","t":"1stphormapparelmensshortscoreperformanceshort5navy001586ab438a67fc4ace924caf84a16b5e7fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_coreperformanceshort5__navy_0017_20da8236-6785-464d-8a4a-22c7b30bcb3a.jpg","t":"1stphormapparelmensshortscoreperformanceshort5navy001720da82366785464d8a4a22c7b30bcb3ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_coreperformanceshort5__navy_0002_157cb6c5-9ca9-4511-bddd-1b101e51a942.jpg","t":"1stphormapparelmensshortscoreperformanceshort5navy0002157cb6c59ca94511bddd1b101e51a942jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_coreperformanceshort5__navy_0005_369d0b0a-b879-4569-a30b-7f3b69387654.jpg","t":"1stphormapparelmensshortscoreperformanceshort5navy0005369d0b0ab8794569a30b7f3b69387654jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -608,21 +609,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -582,17 +582,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-p1-treadmill-jogging-lifestyle_bea1c7a2-c6b6-4ade-bc95-e28d3d7d535b.webp","t":"productwalkingpadp1treadmilljogginglifestylebea1c7a2c6b64adebc95e28d3d7d535bwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-p1-treadmill-side-view_a156a27b-2ce9-498c-9242-49f7aa9d8c4b.webp","t":"productwalkingpadp1treadmillsideviewa156a27b2ce9498c924249f7aa9d8c4bwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-p1-treadmill-unfolded-view_42a09c0f-ccc5-4467-b4ba-55594dc31554.webp","t":"productwalkingpadp1treadmillunfoldedview42a09c0fccc54467b4ba55594dc31554webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-p1-treadmill-top-view_40daa25a-70a6-4594-9ca1-91add9587139.webp","t":"productwalkingpadp1treadmilltopview40daa25a70a645949ca191add9587139webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-p1-treadmill-fold-demo_be808878-e147-43d6-b1c1-1c06d1412d91.webp","t":"productwalkingpadp1treadmillfolddemobe808878e14743d6b1c11c06d1412d91webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-p1-treadmill-remote-closeup.webp","t":"productwalkingpadp1treadmillremotecloseupwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-p1-treadmill-office-use_08c3c459-0311-4ead-b424-dedc236c8637.webp","t":"productwalkingpadp1treadmillofficeuse08c3c45903114eadb424dedc236c8637webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-p1-treadmill-jogging-at-home.webp","t":"scenewalkingpadp1treadmilljoggingathomewebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-p1-treadmill-stored-under-sofa.webp","t":"scenewalkingpadp1treadmillstoredundersofawebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-p1-treadmill-flat-mode.webp","t":"scenewalkingpadp1treadmillflatmodewebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-p1-treadmill-remote-control.webp","t":"scenewalkingpadp1treadmillremotecontrolwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-p1-treadmill-footstep-control.webp","t":"scenewalkingpadp1treadmillfootstepcontrolwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/scene_walkingpad-p1-treadmill-under-standing-desk.webp","t":"scenewalkingpadp1treadmillunderstandingdeskwebp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/video_WalkingPad_P1_Classic_Foldable_Walking_Treadmill-Gif_9ad7dd3f-7e70-47c1-8266-f4243aedc64a.gif","t":"videowalkingpadp1classicfoldablewalkingtreadmillgif9ad7dd3f7e7047c18266f4243aedc64agif"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_Walkingpad-P1-Pink-foldable-treadmill_3_0_5fa80887-33d8-4483-b758-74b9eb202758.jpg","t":"productwalkingpadp1pinkfoldabletreadmill305fa8088733d84483b75874b9eb202758jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_Walkingpad-P1-Pink-foldable-treadmill_2_1_876fd9e3-833a-49bd-9b8e-6b3ddefb469b.jpg","t":"productwalkingpadp1pinkfoldabletreadmill21876fd9e3833a49bd9b8e6b3ddefb469bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_Walkingpad-P1-Pink-foldable-treadmill_7_7_022840ce-554f-481b-97a5-22b1b32da6da.jpg","t":"productwalkingpadp1pinkfoldabletreadmill77022840ce554f481b97a522b1b32da6dajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_Walkingpad-P1-Pink-foldable-treadmill_6_12_cc86d35f-55ed-4ce4-aca9-5e191e50c52a.jpg","t":"productwalkingpadp1pinkfoldabletreadmill612cc86d35f55ed4ce4aca95e191e50c52ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_walkingpad-p1-treadmill-folded-white-background_e2d73821-0fb8-4d1f-9758-39a70abb7181.webp","t":"productwalkingpadp1treadmillfoldedwhitebackgrounde2d738210fb84d1f975839a70abb7181webp"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_Walkingpad-P1-Pink-foldable-treadmill_5_11_b06c4379-185d-4e29-9d6e-626e57da5b9b.jpg","t":"productwalkingpadp1pinkfoldabletreadmill511b06c4379185d4e299d6e626e57da5b9bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_Walkingpad-P1-Pink-foldable-treadmill_4_2_419e8b87-e099-4700-966c-2201f4a50bb6.jpg","t":"productwalkingpadp1pinkfoldabletreadmill42419e8b87e0994700966c2201f4a50bb6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad-P1-pink-treadmill_3_279fb61a-5803-4f19-9830-569a0c0b794a.jpg","t":"productwalkingpadp1pinktreadmill3279fb61a58034f199830569a0c0b794ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad-P1-pink-treadmill_2_9e510713-9506-4734-9e7b-d561cbe4f520.jpg","t":"productwalkingpadp1pinktreadmill29e510713950647349e7bd561cbe4f520jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/product_WalkingPad-P1-pink-treadmill_1_db0bfa74-f2c7-4b38-91c2-5790c50cec33.jpg","t":"productwalkingpadp1pinktreadmill1db0bfa74f2c74b3891c25790c50cec33jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -608,21 +609,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

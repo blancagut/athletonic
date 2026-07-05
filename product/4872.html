@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -595,17 +595,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/products/Cognitive-Coffee-Front.png","t":"cognitivecoffeefrontpng"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/files/51YHc6M52SL._SX679.jpg","t":"51yhc6m52slsx679jpg"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/products/Cognitive-Coffee-Side-1.png","t":"cognitivecoffeeside1png"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/products/Cognitive-Coffee-Side-2.png","t":"cognitivecoffeeside2png"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/products/Cogntive-Top-Recovered.png","t":"cogntivetoprecoveredpng"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/products/Cognitive-shot.jpg","t":"cognitiveshotjpg"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/products/carob_value_540x_0c229426-2169-4e99-87b8-7b39ef226943.jpg","t":"carobvalue540x4bb7efb721704c65b86a645f1293ec13jpg"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/files/cog.coffee.14oz.jpg","t":"cogcoffee14ozjpg"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/products/Cognitive-Coffee-Back.png","t":"cognitivecoffeebackpng"},{"src":"https://cdn.shopify.com/s/files/1/0023/9494/7643/files/Master_Bag_Amazon_Mockup_Back_cognitive-coffee_10-24-01.png","t":"masterbagamazonmockupbackcognitivecoffee102401png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -621,21 +622,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -657,7 +662,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"20659439894587","key":"10 Sachets","title":"10 Sachets","sku":null,"optionValues":["10 Sachets"],"option_values":[{"position":1,"name":"Size","value":"10 Sachets"}],"selected_options":{"Size":"10 Sachets"},"price_cents":1499,"regular_price_cents":1499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40453103616059","key":"2 Lb - Value Size","title":"2 Lb - Value Size","sku":null,"optionValues":["2 Lb - Value Size"],"option_values":[{"position":1,"name":"Size","value":"2 Lb - Value Size"}],"selected_options":{"Size":"2 Lb - Value Size"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0023/9494/7643/products/carob_value_540x_0c229426-2169-4e99-87b8-7b39ef226943.jpg"},{"variant_id":"41376107692091","key":"14.29 Oz","title":"14.29 Oz","sku":null,"optionValues":["14.29 Oz"],"option_values":[{"position":1,"name":"Size","value":"14.29 Oz"}],"selected_options":{"Size":"14.29 Oz"},"price_cents":3199,"regular_price_cents":3199,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43310398636091","key":"7 Oz","title":"7 Oz","sku":null,"optionValues":["7 Oz"],"option_values":[{"position":1,"name":"Size","value":"7 Oz"}],"selected_options":{"Size":"7 Oz"},"price_cents":1599,"regular_price_cents":1599,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"20659439894587","key":"10 Sachets","title":"10 Sachets","sku":null,"optionValues":["10 Sachets"],"option_values":[{"position":1,"name":"Size","value":"10 Sachets"}],"selected_options":{"Size":"10 Sachets"},"price_cents":1499,"regular_price_cents":1499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40453103616059","key":"2 Lb - Value Size","title":"2 Lb - Value Size","sku":null,"optionValues":["2 Lb - Value Size"],"option_values":[{"position":1,"name":"Size","value":"2 Lb - Value Size"}],"selected_options":{"Size":"2 Lb - Value Size"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41376107692091","key":"14.29 Oz","title":"14.29 Oz","sku":null,"optionValues":["14.29 Oz"],"option_values":[{"position":1,"name":"Size","value":"14.29 Oz"}],"selected_options":{"Size":"14.29 Oz"},"price_cents":3199,"regular_price_cents":3199,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"43310398636091","key":"7 Oz","title":"7 Oz","sku":null,"optionValues":["7 Oz"],"option_values":[{"position":1,"name":"Size","value":"7 Oz"}],"selected_options":{"Size":"7 Oz"},"price_cents":1599,"regular_price_cents":1599,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

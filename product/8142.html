@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -597,17 +597,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_elementshort7__lined_camo_0004_d7f14953-e02b-47c0-b5d6-7166d6f8354b.jpg","t":"1stphormapparelmenshortselementshort7linedcamo0004d7f14953e02b47c0b5d67166d6f8354bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_elementshort7__lined_camo_0003_37f09ea3-98c6-499b-b799-24e096044168.jpg","t":"1stphormapparelmenshortselementshort7linedcamo000337f09ea398c6499bb79924e096044168jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_elementshort7__lined_camo_0006_bd6b4911-90c5-4b49-a5cd-710396e9db55.jpg","t":"1stphormapparelmenshortselementshort7linedcamo0006bd6b491190c54b49a5cd710396e9db55jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_elementshort7__lined_camo_0007_8ba04c6e-730b-492f-915a-8c66716ccee0.jpg","t":"1stphormapparelmenshortselementshort7linedcamo00078ba04c6e730b492f915a8c66716ccee0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_elementshort5__lined_camo_0008_b27498b3-6e85-4940-987d-b5f1b3b089b2.jpg","t":"1stphormapparelmenshortselementshort5linedcamo0008b27498b36e854940987db5f1b3b089b2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_elementshort7__lined_camo_0002_a30cd2d1-f44e-4b66-ac24-48f8e08784b9.jpg","t":"1stphormapparelmenshortselementshort7linedcamo0002a30cd2d1f44e4b66ac2448f8e08784b9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Lined_Unlined_MidnightGrey_0005_1_75b5f52e-8643-42a7-883f-41bf35e906d7.jpg","t":"1stphormapparelmensshortselementshorts7linedunlinedmidnightgrey0005175b5f52e864342a7883f41bf35e906d7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Lined_Unlined_MidnightGrey_0009_1_cac273a5-0c79-4d28-8974-665c3514e597.jpg","t":"1stphormapparelmensshortselementshorts7linedunlinedmidnightgrey00091cac273a50c794d288974665c3514e597jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Lined_Unlined_MidnightGrey_0012_1_1246b632-12e2-42cf-9e80-d5dbbbee6ac4.jpg","t":"1stphormapparelmensshortselementshorts7linedunlinedmidnightgrey001211246b63212e242cf9e80d5dbbbee6ac4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Lined_Unlined_MidnightGrey_0011_1_509c9f4f-a636-4924-abbd-7df2d88e8fe5.jpg","t":"1stphormapparelmensshortselementshorts7linedunlinedmidnightgrey00111509c9f4fa6364924abbd7df2d88e8fe5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Lined_Unlined_MidnightGrey_0007_1_c6045f2c-f448-4148-933e-fefb948b66ad.jpg","t":"1stphormapparelmensshortselementshorts7linedunlinedmidnightgrey00071c6045f2cf4484148933efefb948b66adjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Lined_Unlined_MidnightGrey_0004_1_9979d268-6f39-45b8-a119-171aab70128f.jpg","t":"1stphormapparelmensshortselementshorts7linedunlinedmidnightgrey000419979d2686f3945b8a119171aab70128fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_element_short_7__blackcamo_0002.jpg","t":"1stphormapparelmenshortselementshort7blackcamo0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_element_short_7__blackcamo_0001_a2b13356-495e-4fcd-b898-13b2e2aed0d6.jpg","t":"1stphormapparelmenshortselementshort7blackcamo0001a2b13356495e4fcdb89813b2e2aed0d6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_element_short_7__blackcamo_0003_e1550cf6-f501-49a0-bac5-51c3adcc738e.jpg","t":"1stphormapparelmenshortselementshort7blackcamo0003e1550cf6f50149a0bac551c3adcc738ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_element_short_7__blackcamo_0005.jpg","t":"1stphormapparelmenshortselementshort7blackcamo0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_element_short_7__blackcamo_0007.jpg","t":"1stphormapparelmenshortselementshort7blackcamo0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_shorts_element_short_7__blackcamo_0011.jpg","t":"1stphormapparelmenshortselementshort7blackcamo0011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_short_element_short_7__unlined_combatkhaki_0001.jpg","t":"1stphormapparelmenshortelementshort7unlinedcombatkhaki0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_short_element_short_7__unlined_combatkhaki_0009.jpg","t":"1stphormapparelmenshortelementshort7unlinedcombatkhaki0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_short_element_short_7__unlined_combatkhaki_0010.jpg","t":"1stphormapparelmenshortelementshort7unlinedcombatkhaki0010jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_short_element_short_7__unlined_combatkhaki_0006.jpg","t":"1stphormapparelmenshortelementshort7unlinedcombatkhaki0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_short_element_short_7__unlined_combatkhaki_0007.jpg","t":"1stphormapparelmenshortelementshort7unlinedcombatkhaki0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_short_element_short_7__unlined_combatkhaki_0008.jpg","t":"1stphormapparelmenshortelementshort7unlinedcombatkhaki0008jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshort7__black_0001.jpg","t":"1stphormapparelmensshortselementshort7black0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshort7__black_0003.jpg","t":"1stphormapparelmensshortselementshort7black0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshort7__black_0005.jpg","t":"1stphormapparelmensshortselementshort7black0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshort7__black_0007.jpg","t":"1stphormapparelmensshortselementshort7black0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_element_short_7__unlined_black_0007.jpg","t":"1stphormapparelmenelementshort7unlinedblack0007jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_men_element_short_7__unlined_black_0011.jpg","t":"1stphormapparelmenelementshort7unlinedblack0011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshort7__navy_0009.jpg","t":"1stphormapparelmensshortselementshort7navy0009jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshorts7_unlined_navy_0012.jpg","t":"1stphormapparelmensshortselementshorts7unlinednavy0012jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshorts7_unlined_navy_0013.jpg","t":"1stphormapparelmensshortselementshorts7unlinednavy0013jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshort7__navy_0010.jpg","t":"1stphormapparelmensshortselementshort7navy0010jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshort7__navy_0011.jpg","t":"1stphormapparelmensshortselementshort7navy0011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_mens_shorts_elementshort7__navy_0004.jpg","t":"1stphormapparelmensshortselementshort7navy0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Inseam_BlueJay_0001_1_14dad10c-253a-470b-b59d-b03f975cd48e.jpg","t":"1stphormapparelmensshortselementshorts7inseambluejay0001114dad10c253a470bb59db03f975cd48ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Inseam_BlueJay_0003_1_82aec457-0344-48e7-9b36-d599f0971f2b.jpg","t":"1stphormapparelmensshortselementshorts7inseambluejay0003182aec457034448e79b36d599f0971f2bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Inseam_BlueJay_0002_1_57706c35-1e20-48bb-b8e4-ddcfd656b92a.jpg","t":"1stphormapparelmensshortselementshorts7inseambluejay0002157706c351e2048bbb8e4ddcfd656b92ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Inseam_BlueJay_0004_1_90ffdccf-64ba-4631-9ae4-eba3bf1967cc.jpg","t":"1stphormapparelmensshortselementshorts7inseambluejay0004190ffdccf64ba46319ae4eba3bf1967ccjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Mens_Shorts_ElementShorts7_Inseam_BlueJay_0006_1_f99568d2-838a-447a-981b-b7880769eeda.jpg","t":"1stphormapparelmensshortselementshorts7inseambluejay00061f99568d2838a447a981bb7880769eedajpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -623,21 +624,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

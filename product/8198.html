@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -579,17 +579,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_accessories_bags_limitlessfannypack2.jpg","t":"1stphormaccessoriesbagslimitlessfannypack2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_accessories_bags_limitlessfannypack2_1.jpg","t":"1stphormaccessoriesbagslimitlessfannypack21jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_accessories_bags_limitlessfannypack2_2.jpg","t":"1stphormaccessoriesbagslimitlessfannypack22jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_accessories_bags_limitlessfannypack2_3.jpg","t":"1stphormaccessoriesbagslimitlessfannypack23jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_Black0005.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2black0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_Black0002.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2black0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_Black0003.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2black0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_Black0004.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2black0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_accessories_bags_limitlessfannypack2_4.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack24jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_accessories_bags_limitlessfannypack2_1.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack21jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_accessories_bags_limitlessfannypack2_3.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack23jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_accessories_bags_limitlessfannypack2_2.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack22jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_Magenta0001.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2magenta0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_Magenta0003.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2magenta0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_Magenta0004.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2magenta0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_Magenta0005.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2magenta0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_NeonRoyal0001.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2neonroyal0001jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_NeonRoyal0003.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2neonroyal0003jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_NeonRoyal0004.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2neonroyal0004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_accessories_bags_LimitlessFannyPack2_NeonRoyal0005.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2neonroyal0005jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_accessories_bags_limitlessfannypack2_6.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack26jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_accessories_bags_limitlessfannypack2_8.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack28jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_accessories_bags_limitlessfannypack2_9.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack29jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_accessories_bags_limitlessfannypack2_11.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack211jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Accessories_Bags_LimitlessFannyPack2_Mist_0001_1.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2mist00011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Accessories_Bags_LimitlessFannyPack2_Mist_0002_1.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2mist00021jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Accessories_Bags_LimitlessFannyPack2_Mist_0003_1.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2mist00031jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Accessories_Bags_LimitlessFannyPack2_Mist_0004_1.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack2mist00041jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Accessories_Bags_LimitlessFannyPack2.0_Lilac_0001_1_4a33c12e-c534-44b5-8779-851c3c7df66b.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack20lilac000114a33c12ec53444b58779851c3c7df66bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Accessories_Bags_LimitlessFannyPack2.0_Lilac_0002_1_040cef08-60cc-4952-b2b7-1c1c7ed7a9b1.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack20lilac00021040cef0860cc4952b2b71c1c7ed7a9b1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Accessories_Bags_LimitlessFannyPack2.0_Lilac_0003_1_42caf4a1-6b2e-4aaa-9223-6c5027081af2.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack20lilac0003142caf4a16b2e4aaa92236c5027081af2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stPhorm_Apparel_Accessories_Bags_LimitlessFannyPack2.0_Lilac_0004_1_337b64f7-87a9-4459-9a90-05b85dfac23e.jpg","t":"1stphormapparelaccessoriesbagslimitlessfannypack20lilac00041337b64f787a944599a9005b85dfac23ejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -605,21 +606,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

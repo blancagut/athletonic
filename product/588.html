@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -644,17 +644,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Pre_-_Sour_Watermelon_-_Front.webp","t":"essentialpresourwatermelonfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialpre-cottoncandy_1.webp","t":"essentialprecottoncandy1webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Grape_Front.webp","t":"essentialgrapefrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential_pre_-_strawberry_kiwi_-_front_185df2af-6b89-4e50-b696-0495068c03be.webp","t":"essentialprestrawberrykiwifront185df2af6b894e50b6960495068c03bewebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialpresouraf_8cfaaae4-22f1-4fe9-9d5a-3f46d043efb6.webp","t":"essentialpresouraf9e6e38730d2e4d2f8afe7d94c38787b3webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Raspberry_Creamthickle_Front_9b900f2a-a2b5-46a6-bde9-1de725000ddc.png","t":"essentialraspberrycreamthicklefront9b900f2aa2b546a6bde91de725000ddcpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential_pre-_champion_mentality.webp","t":"essentialprechampionmentalitywebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Pre_-_Orange_-_Front.webp","t":"essentialpreorangefrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential-pre-redwhitenbum-from.webp","t":"essentialpreredwhitenbumfromwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Pre_-_Peach_Mango_-_Front.webp","t":"essentialprepeachmangofrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Pre_-_Blue_Raspberry_-_Front.webp","t":"essentialpreblueraspberryfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/ESSENTIAL_CITRUS_GRAPEFRUIT_FRONT.webp","t":"essentialcitrusgrapefruitfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential-pre-Blueberry-Lemonande-30serv-front.webp","t":"essentialpreblueberrylemonande30servfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential_pre_-_Watermelon_Grape_-_front.png","t":"essentialprewatermelongrapefrontpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential_pre_guava_passiont_fruit_-_front_c31ab6c4-7c04-408a-90b7-d76b83cd3e89.png","t":"essentialpreguavapassiontfruitfrontc31ab6c47c04408a90b7d76b83cd3e89png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/ESSENTIAL_WHITE_CHERRY.webp","t":"essentialwhitecherrywebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Essential_Pre_-_Fruit_Burst_-_Front_1.png","t":"essentialprefruitburstfront1png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/BELCAST-essentialpre.webp","t":"belcastessentialprewebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential-preworkout-icylemonslush.webp","t":"essentialpreworkouticylemonslushwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essential-sourcitrusfreeze_1.png","t":"essentialsourcitrusfreeze1png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialpre-championmentality_eee59f22-b862-4e96-bcf1-8939e45f7b14.webp","t":"essentialprechampionmentalityeee59f22b8624e96bcf18939e45f7b14webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialpre-_icylemonslush_d9de4af2-6e7c-47b6-bfa1-ce9f5bbc3b46.webp","t":"essentialpreicylemonslushd9de4af26e7c47b6bfa1ce9f5bbc3b46webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialpre-watermelongrape_88a7ea14-105a-413c-915e-6725ab060dd0.webp","t":"essentialprewatermelongrape88a7ea14105a413c915e6725ab060dd0webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialpre-cottoncandy_0245c5e6-178b-4f0a-906a-9179c3407476.webp","t":"essentialprecottoncandy0245c5e6178b4f0a906a9179c3407476webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/suppfactspanel2_fcfbb028-74d6-41d4-a332-c1324b82f2ac.webp","t":"suppfactspanel2fcfbb02874d641d4a332c1324b82f2acwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialpre-sourcitrusfreeze-flavor_2ae13b07-1a44-47bb-84f1-f830c4e2370e.webp","t":"essentialpresourcitrusfreezeflavor2ae13b071a4447bb84f1f830c4e2370ewebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/essentialpre-fruitburst_3bf780bf-6f98-457d-ad91-4261be9263f8.webp","t":"essentialprefruitburst3bf780bf6f98457dad914261be9263f8webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/ESSENTIALflavor5_0a1a307c-d57c-4c55-8be3-67aa5a9c2891.jpg","t":"essentialflavor50a1a307cd57c4c558be367aa5a9c2891jpg"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/ESSENTIALPRE2_09fb994d-ea11-467f-a5c1-5f2681ff411a.jpg","t":"essentialpre209fb994dea11467fa5c15f2681ff411ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/RAW-INFORMEDSPORT_677fe9fb-4449-4421-95f2-8ffc735bb5fc.jpg","t":"rawinformedsport677fe9fb4449442195f28ffc735bb5fcjpg"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-RedWhiteBum-SFP_12196dc4-4746-4375-8eb9-222a80529e09.png","t":"essentialpworedwhitebumsfp12196dc4474643758eb9222a80529e09png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-SourWatermelon-SFP_cfa022ae-5331-4edc-98ed-83de2bed7d79.png","t":"essentialpwosourwatermelonsfpcfa022ae53314edc98ed83de2bed7d79png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-Grape-SFP_c48f450f-070c-4327-b4a6-af9a492e507e.png","t":"essentialpwograpesfpc48f450f070c4327b4a6af9a492e507epng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-RaspCreamthickle-SFP_b15b6820-18e5-48a6-8a30-c5ddb55b791c.png","t":"essentialpworaspcreamthicklesfpb15b682018e548a68a30c5ddb55b791cpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-Orange-SFP_a9091d91-544e-41eb-9877-59fc35e68dc3.png","t":"essentialpwoorangesfpa9091d91544e41eb987759fc35e68dc3png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-PeachMango-SFP_3dbf3a45-de9c-4982-92ce-95d25da3c5e6.png","t":"essentialpwopeachmangosfp3dbf3a45de9c498292ce95d25da3c5e6png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-BlueRaspberry-SFP_c8341c1e-37fb-4aac-9846-9768458046c2.png","t":"essentialpwoblueraspberrysfpc8341c1e37fb4aac98469768458046c2png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-CitrusGrapefruit-SFP_584b41f0-e014-4dcc-bd6c-3275343a7020.png","t":"essentialpwocitrusgrapefruitsfp584b41f0e0144dccbd6c3275343a7020png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-WhiteCherry-SFP_0fb11280-7895-426b-8346-d75da9df8cc0.png","t":"essentialpwowhitecherrysfp0fb112807895426b8346d75da9df8cc0png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-BlueberryLemonade-SFP_646f72e4-4d24-4b34-aad1-0425f46e4be3.png","t":"essentialpwoblueberrylemonadesfp646f72e44d244b34aad10425f46e4be3png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/EssentialPWO-Lychee-SFP_9a242ef8-6609-452c-b1a8-c6ed6dc2fb60.webp","t":"essentialpwolycheesfp9a242ef86609452cb1a8c6ed6dc2fb60webp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -670,21 +671,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

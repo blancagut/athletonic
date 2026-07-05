@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -633,17 +633,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-PINEAPPLEEXPRESSSNAPBACK_1.jpg","t":"shallnotbeinfringedpineappleexpresssnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-PINEAPPLEEXPRESSSNAPBACK_2.jpg","t":"shallnotbeinfringedpineappleexpresssnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-PINEAPPLEEXPRESSSNAPBACK_3.jpg","t":"shallnotbeinfringedpineappleexpresssnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-PINEAPPLEEXPRESSSNAPBACK_4.jpg","t":"shallnotbeinfringedpineappleexpresssnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-PINEAPPLEEXPRESSSNAPBACK_5.jpg","t":"shallnotbeinfringedpineappleexpresssnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-PINEAPPLEEXPRESSSNAPBACK_6.jpg","t":"shallnotbeinfringedpineappleexpresssnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-TACTICALHAWAIIANSNAPBACK_6.jpg","t":"shallnotbeinfringedtacticalhawaiiansnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-TACTICALHAWAIIANSNAPBACK_1.jpg","t":"shallnotbeinfringedtacticalhawaiiansnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-TACTICALHAWAIIANSNAPBACK_3.jpg","t":"shallnotbeinfringedtacticalhawaiiansnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-TACTICALHAWAIIANSNAPBACK_4.jpg","t":"shallnotbeinfringedtacticalhawaiiansnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-TACTICALHAWAIIANSNAPBACK_5.jpg","t":"shallnotbeinfringedtacticalhawaiiansnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-TACTICALHAWAIIANSNAPBACK_2.jpg","t":"shallnotbeinfringedtacticalhawaiiansnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_1.jpg","t":"shallnotbeinfringedwoodlandripstopblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_2.jpg","t":"shallnotbeinfringedwoodlandripstopblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_3.jpg","t":"shallnotbeinfringedwoodlandripstopblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_4.jpg","t":"shallnotbeinfringedwoodlandripstopblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_5.jpg","t":"shallnotbeinfringedwoodlandripstopblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_1.jpg","t":"shallnotbeinfringedcarboncamoripstopblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_4.jpg","t":"shallnotbeinfringedcarboncamoripstopblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_2.jpg","t":"shallnotbeinfringedcarboncamoripstopblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_5.jpg","t":"shallnotbeinfringedcarboncamoripstopblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_3.jpg","t":"shallnotbeinfringedcarboncamoripstopblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_6.jpg","t":"shallnotbeinfringedcarboncamoripstopblackmeshsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/CMBTBRANDLOGO-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_7.jpg","t":"cmbtbrandlogocarboncamoripstopblackmeshsnapback7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-VICETIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_1.jpg","t":"shallnotbeinfringedvicetigerstriperipstopblackmeshsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-VICETIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_4.jpg","t":"shallnotbeinfringedvicetigerstriperipstopblackmeshsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-VICETIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_3.jpg","t":"shallnotbeinfringedvicetigerstriperipstopblackmeshsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-VICETIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_5.jpg","t":"shallnotbeinfringedvicetigerstriperipstopblackmeshsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-VICETIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_2.jpg","t":"shallnotbeinfringedvicetigerstriperipstopblackmeshsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETIREDHOOCHIEDADDY_VETERANRIBBONS_-VICETIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_7_b219fab0-5d5c-4c80-b71e-b1b01741980c.jpg","t":"retiredhoochiedaddyveteranribbonsvicetigerstriperipstopblackmeshsnapback7b219fab05d5c4c80b71eb1b01741980cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/RETIREDHOOCHIEDADDY_VETERANRIBBONS_-VICETIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_6_6834a828-b43d-4241-a250-80e2006bbc99.jpg","t":"retiredhoochiedaddyveteranribbonsvicetigerstriperipstopblackmeshsnapback66834a828b43d4241a25080e2006bbc99jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -659,21 +660,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -695,7 +700,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813883273586","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"Color","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"Color":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813883306354","key":"TACTICAL HAWAIIAN","title":"TACTICAL HAWAIIAN","sku":null,"optionValues":["TACTICAL HAWAIIAN"],"option_values":[{"position":1,"name":"Color","value":"TACTICAL HAWAIIAN"}],"selected_options":{"Color":"TACTICAL HAWAIIAN"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-TACTICALHAWAIIANSNAPBACK_6.jpg"},{"variant_id":"61813883339122","key":"PINEAPPLE EXPRESS","title":"PINEAPPLE EXPRESS","sku":null,"optionValues":["PINEAPPLE EXPRESS"],"option_values":[{"position":1,"name":"Color","value":"PINEAPPLE EXPRESS"}],"selected_options":{"Color":"PINEAPPLE EXPRESS"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-PINEAPPLEEXPRESSSNAPBACK_1.jpg"},{"variant_id":"61813883371890","key":"CARBON CAMO","title":"CARBON CAMO","sku":null,"optionValues":["CARBON CAMO"],"option_values":[{"position":1,"name":"Color","value":"CARBON CAMO"}],"selected_options":{"Color":"CARBON CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813883404658","key":"VICE TIGER STRIPE CAMO","title":"VICE TIGER STRIPE CAMO","sku":null,"optionValues":["VICE TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"Color","value":"VICE TIGER STRIPE CAMO"}],"selected_options":{"Color":"VICE TIGER STRIPE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_1.jpg"}];
+        var variantPricing = [{"variant_id":"61813883273586","key":"WOODLAND BDU CAMO / BLACK","title":"WOODLAND BDU CAMO / BLACK","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK"],"option_values":[{"position":1,"name":"Color","value":"WOODLAND BDU CAMO / BLACK"}],"selected_options":{"Color":"WOODLAND BDU CAMO / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-WOODLANDRIPSTOP_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813883306354","key":"TACTICAL HAWAIIAN","title":"TACTICAL HAWAIIAN","sku":null,"optionValues":["TACTICAL HAWAIIAN"],"option_values":[{"position":1,"name":"Color","value":"TACTICAL HAWAIIAN"}],"selected_options":{"Color":"TACTICAL HAWAIIAN"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-TACTICALHAWAIIANSNAPBACK_6.jpg"},{"variant_id":"61813883339122","key":"PINEAPPLE EXPRESS","title":"PINEAPPLE EXPRESS","sku":null,"optionValues":["PINEAPPLE EXPRESS"],"option_values":[{"position":1,"name":"Color","value":"PINEAPPLE EXPRESS"}],"selected_options":{"Color":"PINEAPPLE EXPRESS"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-PINEAPPLEEXPRESSSNAPBACK_1.jpg"},{"variant_id":"61813883371890","key":"CARBON CAMO","title":"CARBON CAMO","sku":null,"optionValues":["CARBON CAMO"],"option_values":[{"position":1,"name":"Color","value":"CARBON CAMO"}],"selected_options":{"Color":"CARBON CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-CARBONCAMORIPSTOP_BLACKMESHSNAPBACK_1.jpg"},{"variant_id":"61813883404658","key":"VICE TIGER STRIPE CAMO","title":"VICE TIGER STRIPE CAMO","sku":null,"optionValues":["VICE TIGER STRIPE CAMO"],"option_values":[{"position":1,"name":"Color","value":"VICE TIGER STRIPE CAMO"}],"selected_options":{"Color":"VICE TIGER STRIPE CAMO"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/SHALLNOTBEINFRINGED-VICETIGERSTRIPERIPSTOP_BLACKMESHSNAPBACK_1.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

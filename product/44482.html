@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -535,17 +535,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/Choc_1kg_Pouch.png","t":"choc1kgpouchpng"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/Choc_300g_Pouch.png","t":"choc300gpouchpng"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/Vanilla_300g_Pouch.png","t":"vanilla300gpouchpng"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/Vanilla_1kg_Pouch.png","t":"vanilla1kgpouchpng"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/812J20OeKNL._SL1500.jpg","t":"812j20oeknlsl1500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/71qNskdgo8L._SL1500.jpg","t":"71qnskdgo8lsl1500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/812v_0NRaYL._SL1500.jpg","t":"812v0nraylsl1500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/81FuTdwphDL._SL1500.jpg","t":"81futdwphdlsl1500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/5_ff10aa19-929d-4004-9d9e-b7011ce51f53.jpg","t":"5ff10aa19929d40049d9eb7011ce51f53jpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/2_1df50652-ebad-47bb-973b-fcf21c88e681.jpg","t":"2d31ab9fae5334fedb5723171fba69847jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -561,21 +562,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -597,7 +602,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"8650449977458","key":"Chocolate 35.2oz refill","title":"Chocolate 35.2oz refill","sku":null,"optionValues":["Chocolate 35.2oz refill"],"option_values":[{"position":1,"name":"Size & Flavor","value":"Chocolate 35.2oz refill"}],"selected_options":{"Size & Flavor":"Chocolate 35.2oz refill"},"price_cents":9000,"regular_price_cents":9000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"12542924193880","key":"Chocolate 10.5 oz refill","title":"Chocolate 10.5 oz refill","sku":null,"optionValues":["Chocolate 10.5 oz refill"],"option_values":[{"position":1,"name":"Size & Flavor","value":"Chocolate 10.5 oz refill"}],"selected_options":{"Size & Flavor":"Chocolate 10.5 oz refill"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"8650454007922","key":"Vanilla 35.2oz refill","title":"Vanilla 35.2oz refill","sku":null,"optionValues":["Vanilla 35.2oz refill"],"option_values":[{"position":1,"name":"Size & Flavor","value":"Vanilla 35.2oz refill"}],"selected_options":{"Size & Flavor":"Vanilla 35.2oz refill"},"price_cents":9000,"regular_price_cents":9000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0873/8300/files/Vanilla_300g_Pouch.png"},{"variant_id":"12543137939544","key":"Vanilla 10.5 oz refill","title":"Vanilla 10.5 oz refill","sku":null,"optionValues":["Vanilla 10.5 oz refill"],"option_values":[{"position":1,"name":"Size & Flavor","value":"Vanilla 10.5 oz refill"}],"selected_options":{"Size & Flavor":"Vanilla 10.5 oz refill"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0873/8300/files/Vanilla_300g_Pouch.png"}];
+        var variantPricing = [{"variant_id":"8650449977458","key":"Chocolate 35.2oz refill","title":"Chocolate 35.2oz refill","sku":null,"optionValues":["Chocolate 35.2oz refill"],"option_values":[{"position":1,"name":"Size & Flavor","value":"Chocolate 35.2oz refill"}],"selected_options":{"Size & Flavor":"Chocolate 35.2oz refill"},"price_cents":9000,"regular_price_cents":9000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"12542924193880","key":"Chocolate 10.5 oz refill","title":"Chocolate 10.5 oz refill","sku":null,"optionValues":["Chocolate 10.5 oz refill"],"option_values":[{"position":1,"name":"Size & Flavor","value":"Chocolate 10.5 oz refill"}],"selected_options":{"Size & Flavor":"Chocolate 10.5 oz refill"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"8650454007922","key":"Vanilla 35.2oz refill","title":"Vanilla 35.2oz refill","sku":null,"optionValues":["Vanilla 35.2oz refill"],"option_values":[{"position":1,"name":"Size & Flavor","value":"Vanilla 35.2oz refill"}],"selected_options":{"Size & Flavor":"Vanilla 35.2oz refill"},"price_cents":9000,"regular_price_cents":9000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"12543137939544","key":"Vanilla 10.5 oz refill","title":"Vanilla 10.5 oz refill","sku":null,"optionValues":["Vanilla 10.5 oz refill"],"option_values":[{"position":1,"name":"Size & Flavor","value":"Vanilla 10.5 oz refill"}],"selected_options":{"Size & Flavor":"Vanilla 10.5 oz refill"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

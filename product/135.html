@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -625,17 +625,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_RainbowSherbet_working_020626_1.png","t":"gmheromoderainbowsherbetworking0206261png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_RedGummyFish_1500x1500_9fd1f8cd-9d1b-4502-ae28-71c23ebf65c9-_1.png","t":"gmheromoderedgummyfish1500x15009fd1f8cd9d1b4502ae2871c23ebf65c91png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_OrangeRush_1500x1500_9fd1f8cd-9d1b-4502-ae28-71c23ebf65c9.png","t":"gmheromodeorangerush1500x15009fd1f8cd9d1b4502ae2871c23ebf65c9png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_BlackberryLemonade_1500x1500_47922537-5f49-426d-9670-c43e8d113644.png","t":"gmheromodeblackberrylemonade1500x1500479225375f49426d9670c43e8d113644png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_CherryBlackout_1500x1500_02537f38-310b-4e09-9570-8be228e0031d.png","t":"gmheromodecherryblackout1500x150002537f38310b4e0995708be228e0031dpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_CottonCandyGrape_1500x1500_a2ccf0e9-76be-4b44-8ee0-78b8767c6301.png","t":"gmheromodecottoncandygrape1500x1500a2ccf0e976be4b448ee078b8767c6301png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_BlueRaspberry_1500x1500_23e6e7d5-1d7e-4bbf-802e-3d8ad8c24bf9.png","t":"gmheromodeblueraspberry1500x150023e6e7d51d7e4bbf802e3d8ad8c24bf9png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/Mode_60oz_OrangeIceDream_091925.png","t":"mode60ozorangeicedream091925png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_PattysIcedTea_1500x1500_786c096e-4e9d-4058-bb76-8c2e51df8006.png","t":"gmheromodepattysicedtea1500x1500786c096e4e9d4058bb768c2e51df8006png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_WhiteGummyBear_1500x1500_b196a018-4bc6-4f5d-996d-c66a643858ad.png","t":"gmheromodewhitegummybear1500x1500b196a0184bc64f5d996dc66a643858adpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_Watermelon_1500x1500_1a7320ce-4ec8-4d61-b9ba-bb42089330b8.png","t":"gmheromodewatermelon1500x15001a7320ce4ec84d61b9babb42089330b8png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_FruitPunch_1500x1500_4a4cdabf-aa29-470a-9bba-5dcf1bec0c63.png","t":"gmheromodefruitpunch1500x15004a4cdabfaa29470a9bba5dcf1bec0c63png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_PinkLemonade_1500x1500_2626f06e-1fb1-48c9-bbe2-388f58faf233.png","t":"gmheromodepinklemonade1500x15002626f06e1fb148c9bbe2388f58faf233png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_TigersBlood_1500x1500_b0fe8254-bdf2-456a-bab4-8026a2391314.png","t":"gmheromodetigersblood1500x1500b0fe8254bdf2456abab48026a2391314png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_HERO_Mode_RocketFrost_1500x1500_21488b55-086e-4f6e-a06d-a1dd400d78e6.png","t":"gmheromoderocketfrost1500x150021488b55086e4f6ea06da1dd400d78e6png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Mode_HowToUse_1500x1500_fd4b9b65-3736-475d-9d19-2596d23628be.jpg","t":"gmthumbsmodehowtouse1500x1500fd4b9b653736475d9d192596d23628bejpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Mode_IngBreakdown_1500x1500_94541f42-302d-417f-bdbf-24287ae0f4e7.jpg","t":"gmthumbsmodeingbreakdown1500x150094541f42302d417fbdbf24287ae0f4e7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_Mode_KeyCallouts_1500x1500_eecf1d31-ffea-4df1-a77f-d75ee89e37ba.jpg","t":"gmthumbsmodekeycallouts1500x1500eecf1d31ffea4df1a77fd75ee89e37bajpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -651,21 +652,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

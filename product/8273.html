@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -573,17 +573,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_leggings_element_legging_black_0007_1.jpg","t":"1stphormapparelwomenleggingselementleggingblack00071jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_sportsbra_solstice_bra_black_0002.jpg","t":"1stphormapparelwomensportsbrasolsticebrablack0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_sportsbra_solstice_bra_black_0006.jpg","t":"1stphormapparelwomensportsbrasolsticebrablack0006jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_leggings_element_legging_black_0013_1_41cec3eb-d7dd-4981-b1ee-515bdf540d2b.jpg","t":"1stphormapparelwomenleggingselementleggingblack0013141cec3ebd7dd4981b1ee515bdf540d2bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_leggings_element_legging_black_0003_8f0f3f2f-cceb-445e-9897-b0590be0953b.jpg","t":"1stphormapparelwomenleggingselementleggingblack00038f0f3f2fcceb445e9897b0590be0953bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_women_leggings_element_legging_black_0009_e2934aa0-8f80-46bc-b061-bcc68de66c0e.jpg","t":"1stphormapparelwomenleggingselementleggingblack0009e2934aa08f8046bcb061bcc68de66c0ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tall_socks_black_0001_63d5f59e-839b-4ca0-8425-122a478d7283.jpg","t":"1stphormapparelwomenstallsocksblack000163d5f59e839b4ca08425122a478d7283jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tall_socks_black_0003_dd30708e-3773-4f92-8c60-dddc77219e89.jpg","t":"1stphormapparelwomenstallsocksblack0003dd30708e37734f928c60dddc77219e89jpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tall_socks_white_0001_4e687b86-6f7f-47ad-9173-7b1ae5f4486f.jpg","t":"1stphormapparelwomenstallsockswhite00014e687b866f7f47ad91737b1ae5f4486fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0072/7754/3493/files/1stphorm_apparel_womens_tall_socks_white_0003_296d9c9a-034d-482a-aed4-649b0f828508.jpg","t":"1stphormapparelwomenstallsockswhite0003296d9c9a034d482aaed4649b0f828508jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -599,21 +600,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

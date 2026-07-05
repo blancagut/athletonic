@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -562,17 +562,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_41.jpg","t":"unnamed41jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_40_900ef4a7-9bac-404b-ad6b-d2f9b92e8366.jpg","t":"unnamed40900ef4a79bac404bad6bd2f9b92e8366jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09758.jpg","t":"dsc09758jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/lilferaltan-womenscroptop-cambrey_15.jpg","t":"lilferaltanwomenscroptopcambrey15jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERAL-TANWOMENSCROPTOP_1.jpg","t":"lilferaltanwomenscroptop1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/lilferaltan-womenscroptop-cambrey_17.jpg","t":"lilferaltanwomenscroptopcambrey17jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERALWOMENSCROPTOP-TAN-HALEYLIFESTYLE_4.jpg","t":"lilferalwomenscroptoptanhaleylifestyle4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/lilferaltan-womenscroptop-cambrey_5_061ba635-9bc9-4e4c-8e15-7c6bd27fc684.jpg","t":"lilferaltanwomenscroptopcambrey5061ba6359bc94e4c8e157c6bd27fc684jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/lilferaltan-womenscroptop-cambrey_21_0195aeea-ca8e-4b88-8f99-9f3ed2bbf8c9.jpg","t":"lilferaltanwomenscroptopcambrey210195aeeaca8e4b888f999f3ed2bbf8c9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC06471_dae10c37-0376-441e-9faf-174e5e840456.jpg","t":"dsc06471dae10c370376441e9faf174e5e840456jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC06473_b5441a90-4ccc-46b5-a6b6-591a54b586d8.jpg","t":"dsc06473b5441a904ccc46b5a6b6591a54b586d8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_42_d92f2ca9-6c27-4622-b3a8-db194d6d745c.jpg","t":"unnamed42d92f2ca96c274622b3a8db194d6d745cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/unnamed_39_1ba312da-525b-4c9c-a6dc-a11be09b89a8.jpg","t":"unnamed391ba312da525b4c9ca6dca11be09b89a8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERAL-TIEDIEWOMENSCROPTOP-COURTNEY_3.jpg","t":"lilferaltiediewomenscroptopcourtney3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERAL-TIEDIEWOMENSCROPTOP-CAMBREY_2_f3ea2011-2f6b-4441-88fc-34eafdcbba46.jpg","t":"lilferaltiediewomenscroptopcambrey2f3ea20112f6b444188fc34eafdcbba46jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERALCROPTOP-TIEDIE-HALEYLIFESTYLE_11.jpg","t":"lilferalcroptoptiediehaleylifestyle11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERAL-TIEDIEWOMENSCROPTOP-CAMBREY_16_698c4ee2-3b53-462a-8cac-13755a4d4dd2.jpg","t":"lilferaltiediewomenscroptopcambrey16698c4ee23b53462a8cac13755a4d4dd2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERAL-TIEDIEWOMENSCROPTOP-JENNIFERLIFESTYLE_3_9b00dc2e-73e0-4307-b1e6-a748ad18f58e.jpg","t":"lilferaltiediewomenscroptopjenniferlifestyle39b00dc2e73e04307b1e6a748ad18f58ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERAL-TIEDIEWOMENSCROPTOP-COURTNEY_1_91c991f0-ec26-489c-8da3-ebaf4293e1cb.jpg","t":"lilferaltiediewomenscroptopcourtney191c991f0ec26489c8da3ebaf4293e1cbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/LILFERAL-TIEDIEWOMENSCROPTOP-CAMBREY_8_9c5b4eb1-c5e4-493c-84da-f4bb71952bc5.jpg","t":"lilferaltiediewomenscroptopcambrey89c5b4eb1c5e4493c84daf4bb71952bc5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC06428_eb2288ad-84d7-4299-a197-820b4b4240fb.jpg","t":"dsc06428eb2288ad84d74299a197820b4b4240fbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC06450_02cede88-0fc0-47a5-b417-b435d31d656e.jpg","t":"dsc0645002cede880fc047a5b417b435d31d656ejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -588,21 +589,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

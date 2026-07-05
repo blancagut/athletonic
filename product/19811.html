@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -583,17 +583,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-533238.jpg","t":"10ozmiddleweightbrushedcottonuniform533238jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-811449.jpg","t":"10ozmiddleweightbrushedcottonuniform811449jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-121655.jpg","t":"10ozmiddleweightbrushedcottonuniform121655jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-280515.jpg","t":"10ozmiddleweightbrushedcottonuniform280515jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-174004.jpg","t":"10ozmiddleweightbrushedcottonuniform174004jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-899052.jpg","t":"10ozmiddleweightbrushedcottonuniform899052jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-374941.jpg","t":"10ozmiddleweightbrushedcottonuniform374941jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-779600.jpg","t":"10ozmiddleweightbrushedcottonuniform779600jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-525837.jpg","t":"10ozmiddleweightbrushedcottonuniform525837jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-314039.jpg","t":"10ozmiddleweightbrushedcottonuniform314039jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-525220.jpg","t":"10ozmiddleweightbrushedcottonuniform525220jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-149376.jpg","t":"10ozmiddleweightbrushedcottonuniform149376jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-211445.jpg","t":"10ozmiddleweightbrushedcottonuniform211445jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-702411.jpg","t":"10ozmiddleweightbrushedcottonuniform702411jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-769516.jpg","t":"10ozmiddleweightbrushedcottonuniform769516jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-951527.jpg","t":"10ozmiddleweightbrushedcottonuniform951527jpg"},{"src":"https://cdn.shopify.com/s/files/1/0552/0841/1293/products/10-oz-middleweight-brushed-cotton-uniform-748707.jpg","t":"10ozmiddleweightbrushedcottonuniform748707jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -609,21 +610,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

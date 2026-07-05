@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -598,17 +598,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_9.jpg","t":"dyingiseasyblackvintagepaisleyripstopsnapback9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_1.jpg","t":"dyingiseasyblackvintagepaisleyripstopsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_5.jpg","t":"dyingiseasyblackvintagepaisleyripstopsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_4.jpg","t":"dyingiseasyblackvintagepaisleyripstopsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_6.jpg","t":"dyingiseasyblackvintagepaisleyripstopsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_3.jpg","t":"dyingiseasyblackvintagepaisleyripstopsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_2.jpg","t":"dyingiseasyblackvintagepaisleyripstopsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDBRIM_GREYBACK_BLACKMESHSNAPBACK_1_06722bc1-74d8-4bd7-b390-f6d83598031f.jpg","t":"dyingiseasywoodlandbrimgreybackblackmeshsnapback106722bc174d84bd7b390f6d83598031fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDBRIM_GREYBACK_BLACKMESHSNAPBACK_3_3c7a6183-53f5-4a88-bdc3-5cdee12ab1ec.jpg","t":"dyingiseasywoodlandbrimgreybackblackmeshsnapback33c7a618353f54a88bdc35cdee12ab1ecjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDBRIM_GREYBACK_BLACKMESHSNAPBACK_5_a2a30f20-6bea-4d07-ba3b-4a5046831060.jpg","t":"dyingiseasywoodlandbrimgreybackblackmeshsnapback5a2a30f206bea4d07ba3b4a5046831060jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDBRIM_GREYBACK_BLACKMESHSNAPBACK_4_a5036b2f-fcf9-4a2a-b3c3-48f87e51c929.jpg","t":"dyingiseasywoodlandbrimgreybackblackmeshsnapback4a5036b2ffcf94a2ab3c348f87e51c929jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDBRIM_GREYBACK_BLACKMESHSNAPBACK_6_31e25b24-4c0f-4d9d-addd-ff98f8459338.jpg","t":"dyingiseasywoodlandbrimgreybackblackmeshsnapback631e25b244c0f4d9dadddff98f8459338jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDBRIM_GREYBACK_BLACKMESHSNAPBACK_2_caabd0e2-49bd-424f-99ab-05e8199aadec.jpg","t":"dyingiseasywoodlandbrimgreybackblackmeshsnapback2caabd0e249bd424f99ab05e8199aadecjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -624,21 +625,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -660,7 +665,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813894381938","key":"BLACK / VINTAGE PAISLEY","title":"BLACK / VINTAGE PAISLEY","sku":null,"optionValues":["BLACK / VINTAGE PAISLEY"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / VINTAGE PAISLEY"}],"selected_options":{"COLOR":"BLACK / VINTAGE PAISLEY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_9.jpg"},{"variant_id":"61813894414706","key":"WOODLAND BDU CAMO / BLACK / GRAY","title":"WOODLAND BDU CAMO / BLACK / GRAY","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK / GRAY"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_9.jpg"}];
+        var variantPricing = [{"variant_id":"61813894381938","key":"BLACK / VINTAGE PAISLEY","title":"BLACK / VINTAGE PAISLEY","sku":null,"optionValues":["BLACK / VINTAGE PAISLEY"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / VINTAGE PAISLEY"}],"selected_options":{"COLOR":"BLACK / VINTAGE PAISLEY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_9.jpg"},{"variant_id":"61813894414706","key":"WOODLAND BDU CAMO / BLACK / GRAY","title":"WOODLAND BDU CAMO / BLACK / GRAY","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK / GRAY"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/DYINGISEASY-WOODLANDBRIM_GREYBACK_BLACKMESHSNAPBACK_1_06722bc1-74d8-4bd7-b390-f6d83598031f.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

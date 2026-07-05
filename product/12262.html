@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -606,17 +606,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09846_1_4905a0f1-0884-424d-8839-a0180593f1dd.jpg","t":"dsc0984614905a0f10884424d8839a0180593f1ddjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09853_1_239f8698-01fd-4b92-b6d6-09edeed6bb90.jpg","t":"dsc098531239f869801fd4b92b6d609edeed6bb90jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09833_1_b8329676-bfc5-43ce-ba82-78572dca6f4c.jpg","t":"dsc098331b8329676bfc543ceba8278572dca6f4cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09839_1_f05d8113-2144-4a6a-8744-5cb489de68c4.jpg","t":"dsc098391f05d811321444a6a87445cb489de68c4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/DSC09829_1_58d207b5-a2cb-4443-a463-4f861df36bec.jpg","t":"dsc09829158d207b5a2cb4443a4634f861df36becjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_9.jpg","t":"nobodyiscomingtosaveyoublackoriginaltigerstriperipstopsnapback9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_1.jpg","t":"nobodyiscomingtosaveyoublackoriginaltigerstriperipstopsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_2.jpg","t":"nobodyiscomingtosaveyoublackoriginaltigerstriperipstopsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_4.jpg","t":"nobodyiscomingtosaveyoublackoriginaltigerstriperipstopsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_3.jpg","t":"nobodyiscomingtosaveyoublackoriginaltigerstriperipstopsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_6.jpg","t":"nobodyiscomingtosaveyoublackoriginaltigerstriperipstopsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_7.jpg","t":"nobodyiscomingtosaveyoublackoriginaltigerstriperipstopsnapback7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_1_7a02a84c-ce5b-483f-a8d2-9806a4e4d4d4.jpg","t":"nobodyiscomingtosaveyougraywoodlandbdubrimwhitemeshsnapback17a02a84cce5b483fa8d29806a4e4d4d4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_7_9a9985b5-f634-445f-af53-797fe82b9b20.jpg","t":"nobodyiscomingtosaveyougraywoodlandbdubrimwhitemeshsnapback79a9985b5f634445faf53797fe82b9b20jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_6_4a9a3f1a-5162-430a-8aa7-1067eb7f0d4c.jpg","t":"nobodyiscomingtosaveyougraywoodlandbdubrimwhitemeshsnapback64a9a3f1a5162430a8aa71067eb7f0d4cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_8_632fbdae-aba6-4ce7-a5a4-f3ab82a158b9.jpg","t":"nobodyiscomingtosaveyougraywoodlandbdubrimwhitemeshsnapback8632fbdaeaba64ce7a5a4f3ab82a158b9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_2_692fa93c-01ae-4d65-918d-17a38e7ec323.jpg","t":"nobodyiscomingtosaveyougraywoodlandbdubrimwhitemeshsnapback2692fa93c01ae4d65918d17a38e7ec323jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_5_5d7be9c3-9079-4ad5-9271-36630a187b50.jpg","t":"nobodyiscomingtosaveyougraywoodlandbdubrimwhitemeshsnapback55d7be9c390794ad5927136630a187b50jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_3_a757fe13-e997-444a-82c8-f6cecfadae37.jpg","t":"nobodyiscomingtosaveyougraywoodlandbdubrimwhitemeshsnapback3a757fe13e997444a82c8f6cecfadae37jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_4_ce8c6929-30e1-4b88-8e50-c109e79ebcfb.jpg","t":"nobodyiscomingtosaveyougraywoodlandbdubrimwhitemeshsnapback4ce8c692930e14b888e50c109e79ebcfbjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -632,21 +633,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -668,7 +673,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813892350322","key":"BLACK / ORIGINAL TIGER STRIPE","title":"BLACK / ORIGINAL TIGER STRIPE","sku":null,"optionValues":["BLACK / ORIGINAL TIGER STRIPE"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / ORIGINAL TIGER STRIPE"}],"selected_options":{"COLOR":"BLACK / ORIGINAL TIGER STRIPE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_9.jpg"},{"variant_id":"61813892383090","key":"BDU CAMO / WHITE / GRAY","title":"BDU CAMO / WHITE / GRAY","sku":null,"optionValues":["BDU CAMO / WHITE / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / WHITE / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / WHITE / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_1_7a02a84c-ce5b-483f-a8d2-9806a4e4d4d4.jpg"},{"variant_id":"61813892415858","key":"BDU CAMO / GRAY / BLACK","title":"BDU CAMO / GRAY / BLACK","sku":null,"optionValues":["BDU CAMO / GRAY / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / GRAY / BLACK"}],"selected_options":{"COLOR":"BDU CAMO / GRAY / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_9.jpg"}];
+        var variantPricing = [{"variant_id":"61813892350322","key":"BLACK / ORIGINAL TIGER STRIPE","title":"BLACK / ORIGINAL TIGER STRIPE","sku":null,"optionValues":["BLACK / ORIGINAL TIGER STRIPE"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / ORIGINAL TIGER STRIPE"}],"selected_options":{"COLOR":"BLACK / ORIGINAL TIGER STRIPE"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-BLACK_ORIGINALTIGERSTRIPERIPSTOPSNAPBACK_9.jpg"},{"variant_id":"61813892383090","key":"BDU CAMO / WHITE / GRAY","title":"BDU CAMO / WHITE / GRAY","sku":null,"optionValues":["BDU CAMO / WHITE / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / WHITE / GRAY"}],"selected_options":{"COLOR":"BDU CAMO / WHITE / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_1_7a02a84c-ce5b-483f-a8d2-9806a4e4d4d4.jpg"},{"variant_id":"61813892415858","key":"BDU CAMO / GRAY / BLACK","title":"BDU CAMO / GRAY / BLACK","sku":null,"optionValues":["BDU CAMO / GRAY / BLACK"],"option_values":[{"position":1,"name":"COLOR","value":"BDU CAMO / GRAY / BLACK"}],"selected_options":{"COLOR":"BDU CAMO / GRAY / BLACK"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/NOBODYISCOMINGTOSAVEYOU-GRAY_WOODLANDBDUBRIM_WHITEMESHSNAPBACK_1_7a02a84c-ce5b-483f-a8d2-9806a4e4d4d4.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

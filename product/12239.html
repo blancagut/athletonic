@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -607,17 +607,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_9.jpg","t":"earnyourrestblackvintagepaisleyripstopsnapback9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_1.jpg","t":"earnyourrestblackvintagepaisleyripstopsnapback1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_7.jpg","t":"earnyourrestblackvintagepaisleyripstopsnapback7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_14_32e01a1d-7e9c-4ab4-b3f5-5f1d4e6f1c74.jpg","t":"earnyourrestgreyfrontblackmeshbdubrimsnapback1432e01a1d7e9c4ab4b3f55f1d4e6f1c74jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_5.jpg","t":"earnyourrestblackvintagepaisleyripstopsnapback5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_9_af8ce99d-1476-4758-a615-32cdc7dba67d.jpg","t":"earnyourrestgreyfrontblackmeshbdubrimsnapback9af8ce99d14764758a61532cdc7dba67djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_4.jpg","t":"earnyourrestblackvintagepaisleyripstopsnapback4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_10_eaaa0e9e-27af-4f15-bce7-d313f5ea7414.jpg","t":"earnyourrestgreyfrontblackmeshbdubrimsnapback10eaaa0e9e27af4f15bce7d313f5ea7414jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_6.jpg","t":"earnyourrestblackvintagepaisleyripstopsnapback6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_8_c2cf0133-a97a-4302-963e-004a6f209aac.jpg","t":"earnyourrestgreyfrontblackmeshbdubrimsnapback8c2cf0133a97a4302963e004a6f209aacjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_3.jpg","t":"earnyourrestblackvintagepaisleyripstopsnapback3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_11_04b0971c-4e72-4c62-94b3-e8d4764b6a7c.jpg","t":"earnyourrestgreyfrontblackmeshbdubrimsnapback1104b0971c4e724c6294b3e8d4764b6a7cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_2.jpg","t":"earnyourrestblackvintagepaisleyripstopsnapback2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_12_963905bd-bcbd-4ab9-b7f1-6fa35b2f9f03.jpg","t":"earnyourrestgreyfrontblackmeshbdubrimsnapback12963905bdbcbd4ab9b7f16fa35b2f9f03jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_13_4b507914-3285-4980-bd95-ccb80498933d.jpg","t":"earnyourrestgreyfrontblackmeshbdubrimsnapback134b50791432854980bd95ccb80498933djpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BDUBRIM_WHITEMESHSNAPBACK_1_75a82d40-fe6a-49a3-9592-c8d15b29e25a.jpg","t":"earnyourrestgreyfrontbdubrimwhitemeshsnapback175a82d40fe6a49a39592c8d15b29e25ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BDUBRIM_WHITEMESHSNAPBACK_3_8fca630a-76f8-4e07-8f5a-3636070b8124.jpg","t":"earnyourrestgreyfrontbdubrimwhitemeshsnapback38fca630a76f84e078f5a3636070b8124jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BDUBRIM_WHITEMESHSNAPBACK_4_892f36ad-aa07-4a7e-8652-4caf3dc3349f.jpg","t":"earnyourrestgreyfrontbdubrimwhitemeshsnapback4892f36adaa074a7e86524caf3dc3349fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BDUBRIM_WHITEMESHSNAPBACK_2_080b02a7-0c1f-44dd-b768-8949f5ee5a48.jpg","t":"earnyourrestgreyfrontbdubrimwhitemeshsnapback2080b02a70c1f44ddb7688949f5ee5a48jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BDUBRIM_WHITEMESHSNAPBACK_5_306b3bd9-0420-49f5-95c5-5aa5f15bf556.jpg","t":"earnyourrestgreyfrontbdubrimwhitemeshsnapback5306b3bd9042049f595c55aa5f15bf556jpg"},{"src":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BDUBRIM_WHITEMESHSNAPBACK_6_10ad634d-a4de-4b46-9c1f-185ff66e6c94.jpg","t":"earnyourrestgreyfrontbdubrimwhitemeshsnapback610ad634da4de4b469c1f185ff66e6c94jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -633,21 +634,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -669,7 +674,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"61813894971762","key":"BLACK / VINTAGE PAISLEY","title":"BLACK / VINTAGE PAISLEY","sku":null,"optionValues":["BLACK / VINTAGE PAISLEY"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / VINTAGE PAISLEY"}],"selected_options":{"COLOR":"BLACK / VINTAGE PAISLEY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_9.jpg"},{"variant_id":"61813895004530","key":"WOODLAND BDU CAMO / WHITE / GRAY","title":"WOODLAND BDU CAMO / WHITE / GRAY","sku":null,"optionValues":["WOODLAND BDU CAMO / WHITE / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / WHITE / GRAY"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / WHITE / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_14_32e01a1d-7e9c-4ab4-b3f5-5f1d4e6f1c74.jpg"},{"variant_id":"61813895037298","key":"WOODLAND BDU CAMO / BLACK / GRAY","title":"WOODLAND BDU CAMO / BLACK / GRAY","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK / GRAY"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_9.jpg"}];
+        var variantPricing = [{"variant_id":"61813894971762","key":"BLACK / VINTAGE PAISLEY","title":"BLACK / VINTAGE PAISLEY","sku":null,"optionValues":["BLACK / VINTAGE PAISLEY"],"option_values":[{"position":1,"name":"COLOR","value":"BLACK / VINTAGE PAISLEY"}],"selected_options":{"COLOR":"BLACK / VINTAGE PAISLEY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-BLACK_VINTAGEPAISLEYRIPSTOPSNAPBACK_9.jpg"},{"variant_id":"61813895004530","key":"WOODLAND BDU CAMO / WHITE / GRAY","title":"WOODLAND BDU CAMO / WHITE / GRAY","sku":null,"optionValues":["WOODLAND BDU CAMO / WHITE / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / WHITE / GRAY"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / WHITE / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BDUBRIM_WHITEMESHSNAPBACK_1_75a82d40-fe6a-49a3-9592-c8d15b29e25a.jpg"},{"variant_id":"61813895037298","key":"WOODLAND BDU CAMO / BLACK / GRAY","title":"WOODLAND BDU CAMO / BLACK / GRAY","sku":null,"optionValues":["WOODLAND BDU CAMO / BLACK / GRAY"],"option_values":[{"position":1,"name":"COLOR","value":"WOODLAND BDU CAMO / BLACK / GRAY"}],"selected_options":{"COLOR":"WOODLAND BDU CAMO / BLACK / GRAY"},"price_cents":3500,"regular_price_cents":3500,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0939/5400/files/EARNYOURREST-GREYFRONT_BLACKMESH_BDUBRIMSNAPBACK_14_32e01a1d-7e9c-4ab4-b3f5-5f1d4e6f1c74.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

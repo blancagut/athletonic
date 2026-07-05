@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -612,17 +612,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/12_Protein_Bar_Chocolate.jpg","t":"12proteinbarchocolatejpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ChocCake-02.jpg","t":"mpcombatreadybaramzstackedtileschoccake02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ChocCake-04.jpg","t":"mpcombatreadybaramzstackedtileschoccake04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ChocCake-08.jpg","t":"mpcombatreadybaramzstackedtileschoccake08jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ChocCake-07.jpg","t":"mpcombatreadybaramzstackedtileschoccake07jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/12_Protein_bar_Choco_Chip_cookie.jpg","t":"12proteinbarchocochipcookiejpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CCCD-02.jpg","t":"mpcombatreadybaramzstackedtilescccd02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CCCD-04.jpg","t":"mpcombatreadybaramzstackedtilescccd04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CCCD-08.jpg","t":"mpcombatreadybaramzstackedtilescccd08jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CCCD-07.jpg","t":"mpcombatreadybaramzstackedtilescccd07jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/12_Protein_Bar__Coco_Peanut.jpg","t":"12proteinbarcocopeanutjpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CPBC-02.jpg","t":"mpcombatreadybaramzstackedtilescpbc02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CPBC-04.jpg","t":"mpcombatreadybaramzstackedtilescpbc04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CPBC-08.jpg","t":"mpcombatreadybaramzstackedtilescpbc08jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-06.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll06jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-01.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll01jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-02.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-04.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-08.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll08jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-03.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll03jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-09.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll09jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-05.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll05jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-07.jpg","t":"mpcombatreadybaramzstackedtilescinnamonroll07jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-01.jpg","t":"mpcombatreadybaramzstackedtilesconfettibdaycake01jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-02.jpg","t":"mpcombatreadybaramzstackedtilesconfettibdaycake02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-04.jpg","t":"mpcombatreadybaramzstackedtilesconfettibdaycake04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-08.jpg","t":"mpcombatreadybaramzstackedtilesconfettibdaycake08jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-09.jpg","t":"mpcombatreadybaramzstackedtilesconfettibdaycake09jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-03.jpg","t":"mpcombatreadybaramzstackedtilesconfettibdaycake03jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-06.jpg","t":"mpcombatreadybaramzstackedtilesconfettibdaycake06jpg"},{"src":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-07.jpg","t":"mpcombatreadybaramzstackedtilesconfettibdaycake07jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -638,21 +639,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -674,7 +679,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"42160514957402","key":"Chocolate Cake","title":"Chocolate Cake","sku":null,"optionValues":["Chocolate Cake"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Cake"}],"selected_options":{"Flavor":"Chocolate Cake"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/12_Protein_Bar_Chocolate.jpg"},{"variant_id":"42160514990170","key":"Chocolate Chip Cookie Dough","title":"Chocolate Chip Cookie Dough","sku":null,"optionValues":["Chocolate Chip Cookie Dough"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Chip Cookie Dough"}],"selected_options":{"Flavor":"Chocolate Chip Cookie Dough"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/12_Protein_Bar_Chocolate.jpg"},{"variant_id":"42160515022938","key":"Chocolate Peanut Butter Cup","title":"Chocolate Peanut Butter Cup","sku":null,"optionValues":["Chocolate Peanut Butter Cup"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Peanut Butter Cup"}],"selected_options":{"Flavor":"Chocolate Peanut Butter Cup"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/12_Protein_Bar_Chocolate.jpg"},{"variant_id":"42160515055706","key":"Cinnamon Roll","title":"Cinnamon Roll","sku":null,"optionValues":["Cinnamon Roll"],"option_values":[{"position":1,"name":"Flavor","value":"Cinnamon Roll"}],"selected_options":{"Flavor":"Cinnamon Roll"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-06.jpg"},{"variant_id":"42160515088474","key":"Confetti Birthday Cake","title":"Confetti Birthday Cake","sku":null,"optionValues":["Confetti Birthday Cake"],"option_values":[{"position":1,"name":"Flavor","value":"Confetti Birthday Cake"}],"selected_options":{"Flavor":"Confetti Birthday Cake"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ChocCake-02.jpg"}];
+        var variantPricing = [{"variant_id":"42160514957402","key":"Chocolate Cake","title":"Chocolate Cake","sku":null,"optionValues":["Chocolate Cake"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Cake"}],"selected_options":{"Flavor":"Chocolate Cake"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/12_Protein_Bar_Chocolate.jpg"},{"variant_id":"42160514990170","key":"Chocolate Chip Cookie Dough","title":"Chocolate Chip Cookie Dough","sku":null,"optionValues":["Chocolate Chip Cookie Dough"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Chip Cookie Dough"}],"selected_options":{"Flavor":"Chocolate Chip Cookie Dough"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/12_Protein_bar_Choco_Chip_cookie.jpg"},{"variant_id":"42160515022938","key":"Chocolate Peanut Butter Cup","title":"Chocolate Peanut Butter Cup","sku":null,"optionValues":["Chocolate Peanut Butter Cup"],"option_values":[{"position":1,"name":"Flavor","value":"Chocolate Peanut Butter Cup"}],"selected_options":{"Flavor":"Chocolate Peanut Butter Cup"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":false,"available":true,"image_url":null},{"variant_id":"42160515055706","key":"Cinnamon Roll","title":"Cinnamon Roll","sku":null,"optionValues":["Cinnamon Roll"],"option_values":[{"position":1,"name":"Flavor","value":"Cinnamon Roll"}],"selected_options":{"Flavor":"Cinnamon Roll"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-CinnamonRoll-06.jpg"},{"variant_id":"42160515088474","key":"Confetti Birthday Cake","title":"Confetti Birthday Cake","sku":null,"optionValues":["Confetti Birthday Cake"],"option_values":[{"position":1,"name":"Flavor","value":"Confetti Birthday Cake"}],"selected_options":{"Flavor":"Confetti Birthday Cake"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1618/2767/files/MP-CombatReadyBAR-AMZ-StackedTiles-ConfettiBDayCake-01.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

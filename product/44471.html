@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -518,17 +518,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0873/8300/files/KIDS-6PACK.png","t":"kids6packpng"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/2_8e3a7402-5e98-423e-871b-8937af87bc6c.jpg","t":"28e3a74025e98423e871b8937af87bc6cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/AUS_Kids_0b081d60-476d-4abf-b196-4c0111e4c41b.jpg","t":"auskids0b081d60476d4abfb1964c0111e4c41bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/3_3f65dc06-e733-40b8-afd8-420c70abe95e.jpg","t":"33f65dc06e73340b8afd8420c70abe95ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/4_d4ec2380-b879-4c57-afcf-393edcff4c7f.jpg","t":"4d4ec2380b8794c57afcf393edcff4c7fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0873/8300/products/5_591187aa-a556-4d39-9954-26acb2fc37a6.jpg","t":"5591187aaa5564d39995426acb2fc37a6jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -544,21 +545,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -580,7 +585,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"41522602180794","key":"6 x The Super Kids Elixir + Protein 17.6oz","title":"6 x The Super Kids Elixir + Protein 17.6oz","sku":null,"optionValues":["6 x The Super Kids Elixir + Protein 17.6oz"],"option_values":[{"position":1,"name":"Size","value":"6 x The Super Kids Elixir + Protein 17.6oz"}],"selected_options":{"Size":"6 x The Super Kids Elixir + Protein 17.6oz"},"price_cents":21600,"regular_price_cents":24000,"compare_at_cents":24000,"compare_at_price_cents":24000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0873/8300/files/KIDS-6PACK.png"}];
+        var variantPricing = [{"variant_id":"41522602180794","key":"6 x The Super Kids Elixir + Protein 17.6oz","title":"6 x The Super Kids Elixir + Protein 17.6oz","sku":null,"optionValues":["6 x The Super Kids Elixir + Protein 17.6oz"],"option_values":[{"position":1,"name":"Size","value":"6 x The Super Kids Elixir + Protein 17.6oz"}],"selected_options":{"Size":"6 x The Super Kids Elixir + Protein 17.6oz"},"price_cents":21600,"regular_price_cents":24000,"compare_at_cents":24000,"compare_at_price_cents":24000,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";
