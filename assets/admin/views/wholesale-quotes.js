@@ -21,6 +21,29 @@ function paragraph(value) {
   return escapeHtml(value || "—").replaceAll("\n", "<br />");
 }
 
+function orderMetadataPanel(quoteRequest) {
+  const metadata = quoteRequest && quoteRequest.metadata && typeof quoteRequest.metadata === "object"
+    ? quoteRequest.metadata
+    : {};
+  if (!["wholesale_order", "unit_order"].includes(metadata.request_type)) return "";
+  const proof = metadata.payment_proof && typeof metadata.payment_proof === "object" ? metadata.payment_proof : {};
+  const billing = metadata.billing && typeof metadata.billing === "object" ? metadata.billing : {};
+  const shipping = metadata.shipping && typeof metadata.shipping === "object" ? metadata.shipping : {};
+  const money = Number(metadata.estimated_total_cents);
+  return `
+    <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Order / payment</h3>
+    <dl class="admin-kv">
+      <dt>Invoice</dt><dd><span class="admin-mono">${escapeHtml(metadata.invoice_reference || "—")}</span></dd>
+      <dt>Method</dt><dd>${escapeHtml(metadata.payment_method === "cash_deposit" ? "Cash deposit" : "Bank transfer")}</dd>
+      <dt>Estimated total</dt><dd>${Number.isInteger(money) && money > 0 ? escapeHtml(formatUsdCents(money)) : "Pending"}</dd>
+      <dt>Proof</dt><dd><span class="admin-mono">${escapeHtml(proof.path || "—")}</span></dd>
+      <dt>Bill to</dt><dd>${escapeHtml(billing.legal_name || quoteRequest.company_name)}${billing.tax_id ? ` · ${escapeHtml(billing.tax_id)}` : ""}</dd>
+      <dt>Billing</dt><dd>${escapeHtml([billing.address_line1, billing.city, billing.region, billing.country, billing.postal_code].filter(Boolean).join(", ") || "—")}</dd>
+      <dt>Delivery</dt><dd>${escapeHtml([shipping.address_line1, shipping.city, shipping.region, shipping.country, shipping.postal_code].filter(Boolean).join(", ") || "—")}</dd>
+    </dl>
+  `;
+}
+
 function itemOptions(item) {
   const selected = item && item.selected_options && typeof item.selected_options === "object"
     ? Object.entries(item.selected_options)
@@ -29,8 +52,8 @@ function itemOptions(item) {
   return selected.map(([key, value]) => `${escapeHtml(key)}: ${escapeHtml(value)}`).join(" / ");
 }
 
-function itemWholesaleCents(item) {
-  const value = Number(item && item.wholesale_price_cents);
+function itemUnitCents(item) {
+  const value = Number(item && (item.unit_price_cents || item.retail_price_cents || item.wholesale_price_cents));
   return Number.isInteger(value) && value > 0 ? value : null;
 }
 
@@ -41,10 +64,10 @@ function formatUsdCents(cents) {
 function itemsTable(items) {
   if (!Array.isArray(items) || !items.length) return '<div class="admin-empty">No products saved.</div>';
   const estimatedTotalCents = items.reduce((total, item) => {
-    const unit = itemWholesaleCents(item);
+    const unit = itemUnitCents(item);
     return unit ? total + unit * Math.max(1, Number(item.quantity) || 1) : total;
   }, 0);
-  const hasQuoteOnly = items.some((item) => !itemWholesaleCents(item));
+  const hasPendingPrice = items.some((item) => !itemUnitCents(item));
   return `
     <div class="admin-table-wrap">
       <table class="admin-table">
@@ -55,7 +78,7 @@ function itemsTable(items) {
             <th>Category</th>
             <th>Options</th>
             <th>Qty</th>
-            <th>Wholesale/unit</th>
+            <th>Unit price</th>
             <th>Line total</th>
           </tr>
         </thead>
@@ -63,7 +86,7 @@ function itemsTable(items) {
           ${items
             .map(
               (item) => {
-                const unit = itemWholesaleCents(item);
+                const unit = itemUnitCents(item);
                 const quantity = Math.max(1, Number(item.quantity) || 1);
                 return `
                 <tr>
@@ -75,7 +98,7 @@ function itemsTable(items) {
                   <td>${escapeHtml(item.category_label || item.product_type || "—")}</td>
                   <td>${itemOptions(item) || "—"}</td>
                   <td>${escapeHtml(item.quantity)}</td>
-                  <td>${unit ? escapeHtml(formatUsdCents(unit)) : "Quote only"}</td>
+                  <td>${unit ? escapeHtml(formatUsdCents(unit)) : "Pending"}</td>
                   <td>${unit ? escapeHtml(formatUsdCents(unit * quantity)) : "—"}</td>
                 </tr>
               `;
@@ -85,13 +108,27 @@ function itemsTable(items) {
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="6" style="text-align:right;"><strong>Est. wholesale total${hasQuoteOnly ? " (priced items)" : ""}</strong></td>
+            <td colspan="6" style="text-align:right;"><strong>Estimated total${hasPendingPrice ? " (priced items)" : ""}</strong></td>
             <td><strong>${estimatedTotalCents ? escapeHtml(formatUsdCents(estimatedTotalCents)) : "—"}</strong></td>
           </tr>
         </tfoot>
       </table>
     </div>
   `;
+}
+
+async function sendInvoice(app, quoteRequest) {
+  try {
+    const result = await app.authFetch(`/api/admin/wholesale-quote-requests/${quoteRequest.id}/invoice`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    toast(`Invoice sent to ${result.recipient_email}`, "success");
+    return result;
+  } catch (err) {
+    toast(err.message || "Could not send invoice", "error");
+    return null;
+  }
 }
 
 async function updateStatus(app, quoteRequest, status, reload, modal) {
@@ -113,25 +150,30 @@ async function updateStatus(app, quoteRequest, status, reload, modal) {
 async function openQuoteRequest(app, row, reload) {
   const result = await app.authFetch(`/api/admin/wholesale-quote-requests/${row.id}`);
   const quoteRequest = result.quote_request;
+  const metadata = quoteRequest && quoteRequest.metadata && typeof quoteRequest.metadata === "object"
+    ? quoteRequest.metadata
+    : {};
+  const isOrder = ["wholesale_order", "unit_order"].includes(metadata.request_type);
 
-  const modal = openModal(`Quote mayorista: ${quoteRequest.company_name}`, `
+  const modal = openModal(`${isOrder ? "Order" : "Quote"}: ${quoteRequest.company_name}`, `
     <div class="admin-detail-grid">
       <div>
         <dl class="admin-kv">
           <dt>Status</dt><dd>${statusBadge(quoteRequest.status)}</dd>
-          <dt>Nombre</dt><dd>${escapeHtml(quoteRequest.name)}</dd>
-          <dt>Empresa</dt><dd>${escapeHtml(quoteRequest.company_name)}</dd>
+          <dt>Name</dt><dd>${escapeHtml(quoteRequest.name)}</dd>
+          <dt>Company</dt><dd>${escapeHtml(quoteRequest.company_name)}</dd>
           <dt>Email</dt><dd><a class="admin-link" href="mailto:${escapeHtml(quoteRequest.email)}">${escapeHtml(quoteRequest.email)}</a></dd>
           <dt>WhatsApp</dt><dd>${escapeHtml(quoteRequest.whatsapp)}</dd>
           <dt>Country</dt><dd>${escapeHtml(quoteRequest.country)}</dd>
           <dt>Products</dt><dd>${escapeHtml(quoteRequest.item_count)} lines / ${escapeHtml(quoteRequest.quantity_count)} units</dd>
-          <dt>Origen</dt><dd>${escapeHtml(quoteRequest.source_page || "—")}</dd>
+          <dt>Source</dt><dd>${escapeHtml(quoteRequest.source_page || "—")}</dd>
           <dt>Created</dt><dd>${formatDate(quoteRequest.created_at)}</dd>
-          <dt>Actualizado</dt><dd>${formatDate(quoteRequest.updated_at)}</dd>
+          <dt>Updated</dt><dd>${formatDate(quoteRequest.updated_at)}</dd>
         </dl>
 
-        <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Mensaje</h3>
+        <h3 style="margin:1.1rem 0 0.4rem;font-size:0.95rem;">Notes</h3>
         <p class="admin-callout">${paragraph(quoteRequest.notes)}</p>
+        ${orderMetadataPanel(quoteRequest)}
       </div>
       <div>
         <div class="admin-field">
@@ -141,9 +183,10 @@ async function openQuoteRequest(app, row, reload) {
           </select>
         </div>
         <button type="button" class="admin-btn admin-btn-primary" data-save-status>Save status</button>
+        ${isOrder ? '<button type="button" class="admin-btn" data-send-invoice style="margin-top:0.65rem;">Send invoice</button>' : ""}
       </div>
     </div>
-    <h3 style="margin:1.2rem 0 0.5rem;font-size:1rem;">Requested products</h3>
+    <h3 style="margin:1.2rem 0 0.5rem;font-size:1rem;">Products</h3>
     ${itemsTable(quoteRequest.items)}
   `);
 
@@ -151,10 +194,14 @@ async function openQuoteRequest(app, row, reload) {
     const status = modal.body.querySelector("[data-quote-status]").value;
     updateStatus(app, quoteRequest, status, reload, modal);
   });
+  const sendInvoiceButton = modal.body.querySelector("[data-send-invoice]");
+  if (sendInvoiceButton) {
+    sendInvoiceButton.addEventListener("click", () => sendInvoice(app, quoteRequest));
+  }
 }
 
 export default {
-  title: "Wholesale quote requests",
+  title: "Orders & quotes",
   async render(mount, app, context = {}) {
     if (context.actions) {
       context.actions.innerHTML =

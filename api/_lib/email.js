@@ -44,6 +44,10 @@ function getFromAddress() {
   return process.env.RESEND_FROM_EMAIL || "Athletonic <onboarding@resend.dev>";
 }
 
+function getSalesFromAddress() {
+  return process.env.ATHLETONIC_SALES_FROM_EMAIL || "Athletonic Sales <sales@athletonic.com>";
+}
+
 function getReplyToAddress() {
   return process.env.ATHLETONIC_SUPPORT_EMAIL || undefined;
 }
@@ -798,6 +802,227 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
   });
 }
 
+function wholesaleOrderItemsHtml(order) {
+  return order.items
+    .map((item) => {
+      const options =
+        item.selected_options && Object.keys(item.selected_options).length
+          ? Object.entries(item.selected_options)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(" / ")
+          : "";
+      const unit = itemUnitCents(item);
+      const quantity = Math.max(1, Number(item.quantity) || 1);
+      return `
+        <tr>
+          <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
+            <strong>${escapeHtml(item.name)}</strong>
+            <div style="color:#64748b;font-size:14px;">${escapeHtml(item.brand || "Pending")} · Qty ${quantity}</div>
+            ${options ? `<div style="color:#475569;font-size:13px;margin-top:4px;">${escapeHtml(options)}</div>` : ""}
+            ${item.notes ? `<div style="color:#475569;font-size:13px;margin-top:4px;">${escapeHtml(item.notes)}</div>` : ""}
+          </td>
+          <td style="padding:10px 0 10px 16px;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap;">
+            ${unit ? escapeHtml(formatMoney(unit * quantity, "usd")) : "Pending"}
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function wholesaleOrderItemsText(order) {
+  return order.items.map((item) => {
+    const options =
+      item.selected_options && Object.keys(item.selected_options).length
+        ? ` (${Object.entries(item.selected_options)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(" / ")})`
+        : "";
+    const unit = itemUnitCents(item);
+    const quantity = Math.max(1, Number(item.quantity) || 1);
+    const total = unit ? ` - ${formatMoney(unit * quantity, "usd")}` : " - Pending";
+    return `- ${item.brand || "Pending"} ${item.name}${options} x${quantity}${total}`;
+  });
+}
+
+function bankDetailsHtml(bankDetails) {
+  return `
+    <table style="width:100%;border-collapse:collapse;">
+      <tr><td style="padding:4px 10px 4px 0;color:#64748b;">Company</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.company_name)}</strong></td></tr>
+      <tr><td style="padding:4px 10px 4px 0;color:#64748b;">Account</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.account_number)}</strong></td></tr>
+      <tr><td style="padding:4px 10px 4px 0;color:#64748b;">ACH / wire routing</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.routing_number)}</strong></td></tr>
+      <tr><td style="padding:4px 10px 4px 0;color:#64748b;">SWIFT / BIC</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.swift_bic)}</strong></td></tr>
+      <tr><td style="padding:4px 10px 4px 0;color:#64748b;">Bank</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.bank_name)}</strong></td></tr>
+    </table>
+  `;
+}
+
+function bankDetailsText(bankDetails) {
+  return [
+    `Company: ${bankDetails.company_name}`,
+    `Account: ${bankDetails.account_number}`,
+    `ACH / wire routing: ${bankDetails.routing_number}`,
+    `SWIFT / BIC: ${bankDetails.swift_bic}`,
+    `Receiving bank: ${bankDetails.bank_name}`,
+    "Bank address:",
+    bankDetails.bank_address,
+    "Company address:",
+    bankDetails.company_address,
+  ];
+}
+
+function itemUnitCents(item) {
+  const value = Number(item && (item.unit_price_cents || item.retail_price_cents));
+  return Number.isInteger(value) && value > 0 ? value : null;
+}
+
+async function sendWholesaleOrderBuyerEmail({ order, bankDetails, siteUrl, invoicePdf }) {
+  if (!order || !order.email) return null;
+
+  const reference = order.invoice_reference || order.id;
+  const totalText = order.estimated_total_cents
+    ? formatMoney(order.estimated_total_cents, "usd")
+    : "Pending";
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
+      <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
+        Athletonic
+      </p>
+      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">Your invoice is attached.</h1>
+      <p style="margin:0 0 16px;">
+        Hi ${escapeHtml(order.name)}, your Athletonic order <strong>${escapeHtml(reference)}</strong> for
+        <strong>${escapeHtml(order.company_name)}</strong> is attached as a PDF invoice.
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+        ${wholesaleOrderItemsHtml(order)}
+      </table>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin:0 0 20px;">
+        <p style="margin:0 0 8px;"><strong>Estimated total:</strong> ${escapeHtml(totalText)}</p>
+        <p style="margin:0 0 10px;color:#475569;">Your payment proof was received and remains subject to bank reconciliation.</p>
+        ${bankDetailsHtml(bankDetails)}
+      </div>
+      <p style="margin:0 0 16px;color:#475569;">
+        Athletonic sales will confirm availability, freight, taxes, and any line marked as pending.
+        You can reply to this email or write to
+        <a href="mailto:sales@athletonic.com" style="color:#0f172a;font-weight:bold;">sales@athletonic.com</a>.
+      </p>
+      <p style="margin:0;color:#64748b;font-size:13px;">
+        Reference: ${escapeHtml(reference)} · ${escapeHtml(siteUrl)}
+      </p>
+    </div>
+  `;
+
+  const text = [
+    `Athletonic invoice ${reference}`,
+    "",
+    `Hi ${order.name}, your order for ${order.company_name} is attached as a PDF invoice.`,
+    `Estimated total: ${totalText}`,
+    "",
+    "Items:",
+    ...wholesaleOrderItemsText(order),
+    "",
+    "Payment details:",
+    ...bankDetailsText(bankDetails),
+    "",
+    "Your payment proof was received and remains subject to bank reconciliation.",
+    "Athletonic sales will confirm availability, freight, and taxes.",
+    "Contact: sales@athletonic.com",
+  ].join("\n");
+
+  return sendEmail({
+    from: getSalesFromAddress(),
+    to: order.email,
+    subject: `Athletonic Invoice ${reference}`,
+    html,
+    text,
+    replyTo: process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com",
+    ...(invoicePdf && invoicePdf.buffer
+      ? { attachments: [{ filename: invoicePdf.filename, content: invoicePdf.buffer.toString("base64") }] }
+      : {}),
+  });
+}
+
+async function sendWholesaleOrderSalesEmail({
+  order,
+  bankDetails,
+  recipientEmail,
+  siteUrl,
+  invoicePdf,
+  proofAttachment,
+}) {
+  if (!recipientEmail) return null;
+
+  const reference = order.invoice_reference || order.id;
+  const adminUrl = `${siteUrl}/pages/admin/index.html#/wholesaleQuotes/${encodeURIComponent(order.id)}`;
+  const totalText = order.estimated_total_cents
+    ? formatMoney(order.estimated_total_cents, "usd")
+    : "Pending";
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
+      <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
+        Athletonic order
+      </p>
+      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">New unit order with payment proof</h1>
+      <p style="margin:0 0 12px;">
+        <strong>${escapeHtml(reference)}</strong> was sent by
+        <a href="mailto:${escapeHtml(order.email)}" style="color:#0f172a;font-weight:bold;">${escapeHtml(order.email)}</a>.
+      </p>
+      <p style="margin:0 0 18px;color:#475569;">
+        Company: ${escapeHtml(order.company_name)} · WhatsApp: ${escapeHtml(order.whatsapp)} · Estimated total: ${escapeHtml(totalText)}
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+        ${wholesaleOrderItemsHtml(order)}
+      </table>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin:0 0 20px;">
+        <p style="margin:0 0 8px;"><strong>Invoice:</strong> ${escapeHtml(reference)}</p>
+        <p style="margin:0 0 8px;"><strong>Payment:</strong> ${escapeHtml(order.payment_method === "cash_deposit" ? "Cash deposit" : "Bank transfer")}</p>
+        <p style="margin:0 0 8px;"><strong>Proof:</strong> ${escapeHtml(order.payment_proof_storage && order.payment_proof_storage.path ? order.payment_proof_storage.path : "attached")}</p>
+        ${bankDetailsHtml(bankDetails)}
+      </div>
+      <p style="margin:0 0 24px;">
+        <a href="${escapeHtml(adminUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
+          Open in admin
+        </a>
+      </p>
+      <p style="margin:0;color:#475569;font-size:14px;">Request ID: ${escapeHtml(order.id)}</p>
+    </div>
+  `;
+
+  const attachments = [];
+  if (invoicePdf && invoicePdf.buffer) {
+    attachments.push({ filename: invoicePdf.filename, content: invoicePdf.buffer.toString("base64") });
+  }
+  if (proofAttachment && proofAttachment.content) {
+    attachments.push({ filename: proofAttachment.filename || `Comprobante-${reference}`, content: proofAttachment.content });
+  }
+
+  const text = [
+    `New Athletonic order: ${reference}`,
+    "",
+    `Company: ${order.company_name}`,
+    `Contact: ${order.name} <${order.email}>`,
+    `WhatsApp: ${order.whatsapp}`,
+    `Estimated total: ${totalText}`,
+    `Payment: ${order.payment_method === "cash_deposit" ? "Cash deposit" : "Bank transfer"}`,
+    "",
+    "Items:",
+    ...wholesaleOrderItemsText(order),
+    "",
+    `Admin: ${adminUrl}`,
+    `Request ID: ${order.id}`,
+  ].join("\n");
+
+  return sendEmail({
+    from: getSalesFromAddress(),
+    to: recipientEmail,
+    subject: `New Athletonic Order ${reference}`,
+    html,
+    text,
+    replyTo: order.email,
+    ...(attachments.length ? { attachments } : {}),
+  });
+}
+
 module.exports = {
   sendNewsletterWelcomeEmail,
   sendOrderConfirmationEmail,
@@ -806,4 +1031,6 @@ module.exports = {
   sendWholesaleApplicationDecisionEmail,
   sendWholesaleQuoteRequestEmail,
   sendWholesaleQuoteBuyerEmail,
+  sendWholesaleOrderBuyerEmail,
+  sendWholesaleOrderSalesEmail,
 };
