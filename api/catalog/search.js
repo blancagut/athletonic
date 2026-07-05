@@ -12,12 +12,34 @@
 const { handleError, json, methodNotAllowed } = require("../_lib/http");
 
 let searchIndex;
+let publishedCatalog;
 try {
-  searchIndex = require("../../data/search-index.json");
+  searchIndex = require("../../data/final/search-index.published.json");
 } catch (error) {
-  searchIndex = { products: [] };
+  try {
+    searchIndex = require("../../data/search-index.json");
+  } catch (fallbackError) {
+    searchIndex = { products: [] };
+  }
 }
-const PRODUCTS = Array.isArray(searchIndex.products) ? searchIndex.products : [];
+try {
+  publishedCatalog = require("../../data/final/catalog.published.json");
+} catch (error) {
+  try {
+    publishedCatalog = require("../../data/checkout-catalog.json");
+  } catch (fallbackError) {
+    publishedCatalog = { products: [] };
+  }
+}
+const catalogById = new Map(
+  (Array.isArray(publishedCatalog.products) ? publishedCatalog.products : [])
+    .map((product) => [String(product && product.id || "").trim(), product])
+    .filter((entry) => entry[0])
+);
+const PRODUCTS = (Array.isArray(searchIndex.products) ? searchIndex.products : []).map((product) => {
+  const richProduct = catalogById.get(String(product && product.id || "").trim());
+  return richProduct ? { ...richProduct, ...product } : product;
+});
 
 const MAX_LIMIT = 50;
 const DEFAULT_LIMIT = 10;
@@ -44,17 +66,80 @@ function queryTokens(normalizedQuery) {
     });
 }
 
+function optionValuesText(values) {
+  return Array.isArray(values)
+    ? values
+        .map((entry) => entry && (entry.value || entry.selected_value || entry.label || ""))
+        .filter(Boolean)
+        .join(" ")
+    : "";
+}
+
+function urlSlug(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const clean = raw.split("?")[0].split("#")[0];
+  const slug = clean.split("/").pop() || "";
+  return slug.replace(/\.html?$/i, "");
+}
+
+function uniqueNormalizedValues(values) {
+  const out = [];
+  const seen = new Set();
+  for (const value of values) {
+    const normalized = normalizeSearchText(value);
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    out.push(normalized);
+  }
+  return out;
+}
+
 const blobCache = new WeakMap();
 function productBlobs(product) {
   let blobs = blobCache.get(product);
   if (!blobs) {
-    const text = normalizeSearchText(
-      product.search ||
-        [product.name, product.brand, product.brand_slug, product.section_id]
-          .filter(Boolean)
-          .join(" ")
-    );
-    blobs = { text, squashed: text.replace(/ /g, ""), words: null };
+    const variants = Array.isArray(product && product.variants) ? product.variants : [];
+    const variantTerms = variants.flatMap((variant) => [
+      variant && variant.variant_id,
+      variant && variant.sku,
+      variant && variant.title,
+      optionValuesText(variant && variant.option_values),
+      optionValuesText(
+        variant && variant.selected_options
+          ? Object.entries(variant.selected_options).map(([name, value]) => ({ name, value }))
+          : []
+      ),
+    ]);
+    const identifiers = uniqueNormalizedValues([
+      product.id,
+      product.external_product_id,
+      product.sku,
+      product.default_variant_id,
+      product.url,
+      urlSlug(product.url),
+      ...variantTerms,
+    ]);
+    const text = uniqueNormalizedValues([
+      product.search,
+      product.name,
+      product.brand,
+      product.brand_slug,
+      product.section_id,
+      product.section_title,
+      ...identifiers,
+    ]).join(" ");
+    blobs = {
+      text,
+      squashed: text.replace(/ /g, ""),
+      words: null,
+      name: normalizeSearchText(product.name),
+      brand: normalizeSearchText(product.brand || product.brand_slug),
+      nameWords: normalizeSearchText(product.name).split(" ").filter(Boolean),
+      brandWords: normalizeSearchText(product.brand || product.brand_slug).split(" ").filter(Boolean),
+      identifiers,
+      identifierCompacts: identifiers.map((value) => value.replace(/ /g, "")),
+    };
     blobCache.set(product, blobs);
   }
   return blobs;
@@ -114,15 +199,39 @@ function matchesQuery(blobs, normalizedQuery, tokens) {
 }
 
 function scoreProduct(product, blobs, normalizedQuery, tokens) {
-  const name = normalizeSearchText(product.name);
-  const brand = normalizeSearchText(product.brand || product.brand_slug);
+  const name = blobs.name;
+  const brand = blobs.brand;
+  const compactQuery = normalizedQuery.replace(/ /g, "");
   let score = 0;
+  if (blobs.identifiers.includes(normalizedQuery)) score += 400;
+  else if (compactQuery && blobs.identifierCompacts.includes(compactQuery)) score += 360;
+  else if (
+    compactQuery &&
+    compactQuery.length >= 5 &&
+    blobs.identifierCompacts.some((value) => value.startsWith(compactQuery))
+  ) {
+    score += 260;
+  } else if (
+    compactQuery.length >= 5 &&
+    blobs.identifiers.some((value) => value.includes(normalizedQuery))
+  ) {
+    score += 180;
+  }
   if (name === normalizedQuery) score += 120;
   else if (name.startsWith(normalizedQuery)) score += 80;
   else if (name.includes(normalizedQuery)) score += 50;
-  if (brand && (brand === normalizedQuery || normalizedQuery.includes(brand))) score += 40;
+  if (blobs.nameWords.includes(normalizedQuery)) score += 50;
+  if (brand === normalizedQuery) score += 100;
+  else if (brand && brand.startsWith(normalizedQuery)) score += 70;
+  else if (brand && brand.includes(normalizedQuery)) score += 40;
+  if (blobs.brandWords.includes(normalizedQuery)) score += 35;
   for (const token of tokens) {
-    if (name.includes(token)) score += 12;
+    const compactToken = token.replace(/ /g, "");
+    if (blobs.identifiers.includes(token) || blobs.identifierCompacts.includes(compactToken)) {
+      score += 30;
+    } else if (blobs.nameWords.includes(token)) score += 18;
+    else if (blobs.brandWords.includes(token)) score += 14;
+    else if (name.includes(token)) score += 12;
     else if (brand && brand.includes(token)) score += 8;
     else if (tokenInBlobs(blobs, token)) score += 4;
   }

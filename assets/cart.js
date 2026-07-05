@@ -266,6 +266,7 @@
     const selectedOptions = normalizeVariantSelectedOptions(variant);
     return {
       variantId: String(variant.variant_id || "").trim(),
+      sku: String(variant.sku || "").trim(),
       selectedOptions,
       variant: selectedOptionsLabel(selectedOptions),
       image: variantImageUrl(variant),
@@ -331,6 +332,74 @@
         return normalizedVariantValues.every((value, index) => value === normalizedParts[index]);
       }) || null
     );
+  }
+
+  function optionValuesText(values) {
+    return Array.isArray(values)
+      ? values
+          .map((entry) => entry && (entry.value || entry.selected_value || entry.label || ""))
+          .filter(Boolean)
+          .join(" ")
+      : "";
+  }
+
+  function productUrlSlug(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    const clean = raw.split("?")[0].split("#")[0];
+    const slug = clean.split("/").pop() || "";
+    return slug.replace(/\.html?$/i, "");
+  }
+
+  function uniqueNormalizedSearchValues(values) {
+    const seen = {};
+    const out = [];
+    values.forEach(function (value) {
+      var normalized = normalizeSearchText(value);
+      if (!normalized || seen[normalized]) return;
+      seen[normalized] = true;
+      out.push(normalized);
+    });
+    return out;
+  }
+
+  function productSearchMeta(p) {
+    if (!p._athSearchMeta) {
+      var variants = variantRecords(p);
+      var variantTerms = [];
+      variants.forEach(function (variant) {
+        variantTerms.push(
+          variant && variant.variant_id,
+          variant && variant.sku,
+          variant && variant.title,
+          optionValuesText(variant && variant.option_values),
+          optionValuesText(
+            variant && variant.selected_options
+              ? Object.keys(variant.selected_options).map(function (name) {
+                  return { name: name, value: variant.selected_options[name] };
+                })
+              : []
+          )
+        );
+      });
+      var identifiers = uniqueNormalizedSearchValues([
+        p.id,
+        p.external_product_id,
+        p.sku,
+        p.default_variant_id,
+        p.url,
+        productUrlSlug(p.url),
+      ].concat(variantTerms));
+      p._athSearchMeta = {
+        name: normalizeSearchText(p.name),
+        brand: normalizeSearchText(p.brand || p.brand_slug),
+        nameWords: normalizeSearchText(p.name).split(" ").filter(Boolean),
+        brandWords: normalizeSearchText(p.brand || p.brand_slug).split(" ").filter(Boolean),
+        identifiers: identifiers,
+        identifierCompacts: identifiers.map(function (value) { return value.replace(/ /g, ""); }),
+      };
+    }
+    return p._athSearchMeta;
   }
 
   function normalizeCartItem(item) {
@@ -1166,8 +1235,8 @@
     openCart();
   }
 
-  function addToCartFromButton(button) {
-    addItem({
+  function baseAddToCartPayload(button) {
+    return {
       id: button.dataset.cartProductId || button.dataset.cartId,
       productId: button.dataset.cartProductId || button.dataset.cartId,
       brand: button.dataset.cartBrand,
@@ -1179,6 +1248,68 @@
       sku: button.dataset.cartSku || "",
       selectedOptions: parseDatasetJson(button.dataset.cartSelectedOptions, {}),
       variant: button.dataset.cartVariant || "",
+    };
+  }
+
+  function resolveButtonVariantPayload(button, product, basePayload) {
+    if (!button || !product) return basePayload;
+
+    var variant = null;
+    var selects = button.hasAttribute("data-pdp-add-button")
+      ? Array.from(document.querySelectorAll("[data-pdp-variant]"))
+      : [];
+    if (selects.length) {
+      var values = selects.map(function (select) {
+        return String(select.value || "").trim();
+      });
+      if (values.every(Boolean)) {
+        variant = findVariantBySelectedValues(product, values);
+      } else {
+        return null;
+      }
+    } else {
+      variant = defaultVariantRecord(product);
+    }
+
+    if (!variant) return basePayload;
+    var selectedOptions = normalizeVariantSelectedOptions(variant);
+    var variantLabel = selectedOptionsLabel(selectedOptions) || String(variant.title || "").trim();
+    var price = variantPriceValue(variant) || Number(basePayload.price || 0);
+    return {
+      id: product.id,
+      productId: product.id,
+      brand: product.brand || basePayload.brand,
+      name:
+        button.hasAttribute("data-pdp-add-button") && variantLabel
+          ? String(product.name || basePayload.name || "").trim() + " - " + variantLabel
+          : product.name || basePayload.name,
+      price: price,
+      currency: variant.currency || product.currency || basePayload.currency || "USD",
+      image: variantImageUrl(variant) || product.image || basePayload.image,
+      variantId: String(variant.variant_id || "").trim(),
+      sku: String(variant.sku || product.sku || basePayload.sku || "").trim(),
+      selectedOptions: selectedOptions,
+      variant: variantLabel,
+      quantity: basePayload.quantity,
+    };
+  }
+
+  function addToCartFromButton(button) {
+    var payload = baseAddToCartPayload(button);
+    var hasResolvedVariant =
+      String(payload.variantId || "").trim() ||
+      Object.keys(payload.selectedOptions || {}).length > 0;
+    if (hasResolvedVariant || !payload.productId) {
+      addItem(payload);
+      return;
+    }
+
+    fetchLiveCatalogProducts([payload.productId]).then(function (products) {
+      var resolvedPayload = payload;
+      if (products[0]) {
+        resolvedPayload = resolveButtonVariantPayload(button, products[0], payload) || null;
+      }
+      if (resolvedPayload) addItem(resolvedPayload);
     });
   }
 
@@ -1605,7 +1736,7 @@
     return SCRIPT_ROOT || baseHref();
   }
   function catalogUrl() {
-    return dataRoot() + "data/athletonic-catalog.json";
+    return dataRoot() + "data/final/catalog.published.json";
   }
   function isHome() {
     var p = window.location.pathname;
@@ -1633,7 +1764,7 @@
      active/US/official-source catalog. The dropdown still uses the curated
      athletonic-catalog.json preview set. */
   function searchIndexUrl() {
-    return dataRoot() + "data/search-index.json";
+    return dataRoot() + "data/final/search-index.published.json";
   }
   var _searchIndex = null;
   var _searchIndexReq = null;
@@ -1908,16 +2039,16 @@
      ("shinguards" ↔ "shin guards", "muscle tech" ↔ "muscletech"). */
   function productSearchBlobs(p) {
     if (!p._athSearchBlobs) {
-      var text = normalizeSearchText(
-        p.search || [
-          p.name,
-          p.brand,
-          displayBrand(p),
-          p.section_title,
-          sectionLabel(p),
-          p.section_id,
-        ].filter(Boolean).join(" ")
-      );
+      var meta = productSearchMeta(p);
+      var text = uniqueNormalizedSearchValues([
+        p.search,
+        p.name,
+        p.brand,
+        displayBrand(p),
+        p.section_title,
+        sectionLabel(p),
+        p.section_id,
+      ].concat(meta.identifiers)).join(" ");
       p._athSearchBlobs = { text: text, squashed: text.replace(/ /g, ""), words: null };
     }
     return p._athSearchBlobs;
@@ -1990,23 +2121,50 @@
     });
   }
   function scoreCatalogProduct(p, lq, tokens) {
-    var n = (p.name || "").toLowerCase();
-    var b = (p.brand || "").toLowerCase();
-    var displayB = displayBrand(p).toLowerCase();
+    var meta = productSearchMeta(p);
+    var n = meta.name;
+    var b = meta.brand;
+    var displayB = normalizeSearchText(displayBrand(p));
     var label = (sectionLabel(p) || "").toLowerCase();
     var section = String(p.section_id || "").toLowerCase();
     var haystack = productSearchText(p);
+    var compactQuery = lq.replace(/ /g, "");
     var score = scoreProduct(p, lq);
 
     if (!lq) return score;
+    if (meta.identifiers.indexOf(lq) !== -1) score += 400;
+    else if (compactQuery && meta.identifierCompacts.indexOf(compactQuery) !== -1) score += 360;
+    else if (
+      compactQuery &&
+      compactQuery.length >= 5 &&
+      meta.identifierCompacts.some(function (value) { return value.indexOf(compactQuery) === 0; })
+    ) {
+      score += 260;
+    } else if (
+      compactQuery.length >= 5 &&
+      meta.identifiers.some(function (value) { return value.indexOf(lq) !== -1; })
+    ) {
+      score += 180;
+    }
     if (n === lq) score += 20;
     else if (n.startsWith(lq)) score += 12;
-    if (b === lq || displayB === lq) score += 10;
+    if (meta.nameWords.indexOf(lq) !== -1) score += 18;
+    if (b === lq || displayB === lq) score += 18;
+    else if ((b && b.indexOf(lq) === 0) || (displayB && displayB.indexOf(lq) === 0)) score += 12;
+    if (meta.brandWords.indexOf(lq) !== -1) score += 12;
     if (label === lq || section === lq) score += 6;
     if (haystack.indexOf(lq) !== -1) score += 4;
 
     tokens.forEach(function (token) {
-      if (n.indexOf(token) !== -1) score += 3;
+      var compactToken = token.replace(/ /g, "");
+      if (
+        meta.identifiers.indexOf(token) !== -1 ||
+        meta.identifierCompacts.indexOf(compactToken) !== -1
+      ) {
+        score += 20;
+      } else if (meta.nameWords.indexOf(token) !== -1) score += 6;
+      else if (meta.brandWords.indexOf(token) !== -1) score += 4;
+      else if (n.indexOf(token) !== -1) score += 3;
       else if (b.indexOf(token) !== -1 || displayB.indexOf(token) !== -1) score += 2;
       else if (label.indexOf(token) !== -1 || section.indexOf(token) !== -1) score += 1;
     });
