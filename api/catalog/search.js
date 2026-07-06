@@ -43,6 +43,7 @@ const PRODUCTS = (Array.isArray(searchIndex.products) ? searchIndex.products : [
 
 const MAX_LIMIT = 50;
 const DEFAULT_LIMIT = 10;
+const MAX_OFFSET = 5000;
 const FALLBACK_MAX_RESULTS = 400;
 
 function normalizeSearchText(value) {
@@ -238,19 +239,23 @@ function scoreProduct(product, blobs, normalizedQuery, tokens) {
   return score;
 }
 
-function search(query, category, limit) {
+function search(query, category, limit, offset) {
   const normalizedQuery = normalizeSearchText(query);
   const tokens = queryTokens(normalizedQuery);
   const inCategory = (product) =>
     !category || category === "all" || product.section_id === category;
   const priced = (product) => Number(product.price_cents || 0) > 0;
+  const safeOffset = Number.isInteger(offset) ? Math.max(offset, 0) : 0;
 
   const base = [];
   for (const product of PRODUCTS) {
     if (priced(product) && inCategory(product)) base.push(product);
   }
   if (!normalizedQuery) {
-    return { total: base.length, products: base.slice(0, limit) };
+    return {
+      total: base.length,
+      products: base.slice(safeOffset, safeOffset + limit),
+    };
   }
 
   let matches = [];
@@ -285,7 +290,9 @@ function search(query, category, limit) {
 
   return {
     total: matches.length,
-    products: matches.slice(0, limit).map((entry) => entry.product),
+    products: matches
+      .slice(safeOffset, safeOffset + limit)
+      .map((entry) => entry.product),
   };
 }
 
@@ -302,16 +309,21 @@ module.exports = function handler(req, res) {
     const query = String(params.q || "").slice(0, 120);
     const category = String(params.category || "all").slice(0, 40);
     const limitRaw = Number.parseInt(params.limit, 10);
+    const offsetRaw = Number.parseInt(params.offset, 10);
     const limit = Number.isInteger(limitRaw)
       ? Math.min(Math.max(limitRaw, 1), MAX_LIMIT)
       : DEFAULT_LIMIT;
+    const offset = Number.isInteger(offsetRaw)
+      ? Math.min(Math.max(offsetRaw, 0), MAX_OFFSET)
+      : 0;
 
-    const result = search(query, category, limit);
+    const result = search(query, category, limit, offset);
     // Popular queries repeat constantly: cache per-URL on the CDN for an hour.
     res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
     json(res, 200, {
       query,
       category,
+      offset,
       total: result.total,
       products: result.products,
     });

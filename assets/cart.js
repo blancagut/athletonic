@@ -2552,6 +2552,55 @@
     }
   }
 
+  function fetchCatalogSearchPage(q, category, limit, offset) {
+    if (_searchApiBroken || typeof fetch !== "function") {
+      return Promise.reject(new Error("search api unavailable"));
+    }
+    var url =
+      (SCRIPT_ROOT || "/") +
+      "api/catalog/search?q=" + encodeURIComponent(q || "") +
+      "&category=" + encodeURIComponent(category || "all") +
+      "&limit=" + encodeURIComponent(String(limit)) +
+      "&offset=" + encodeURIComponent(String(offset || 0));
+    return fetch(url).then(function (r) {
+      if (!r.ok) {
+        _searchApiBroken = true;
+        throw new Error("search api http " + r.status);
+      }
+      return r.json();
+    }).then(function (data) {
+      if (!data || !Array.isArray(data.products)) {
+        _searchApiBroken = true;
+        throw new Error("search api bad payload");
+      }
+      return data;
+    });
+  }
+
+  function fetchCatalogSearchResults(q, category) {
+    var trimmed = String(q || "").trim();
+    if (!trimmed) return Promise.resolve([]);
+    var pageSize = 50;
+    return fetchCatalogSearchPage(trimmed, category, pageSize, 0).then(function (firstPage) {
+      var total = Number(firstPage.total || 0);
+      var products = Array.isArray(firstPage.products) ? firstPage.products.slice() : [];
+      if (products.length >= total || total <= pageSize) return products;
+
+      var tasks = [];
+      for (var offset = pageSize; offset < total; offset += pageSize) {
+        tasks.push(fetchCatalogSearchPage(trimmed, category, pageSize, offset));
+      }
+      return Promise.all(tasks).then(function (pages) {
+        pages.forEach(function (page) {
+          if (page && Array.isArray(page.products)) {
+            products = products.concat(page.products);
+          }
+        });
+        return products;
+      });
+    });
+  }
+
   function renderCatalogPage(q, category) {
     var resultsEl = document.querySelector("[data-catalog-results]");
     if (!resultsEl) return;
@@ -2575,8 +2624,14 @@
       return;
     }
 
-    loadSearchIndex().then(function (products) {
-      if (_searchIndexError && !products.length) {
+    var loadMatches = _catalogLastQuery
+      ? fetchCatalogSearchResults(_catalogLastQuery, category)
+      : loadSearchIndex().then(function (products) {
+          return filterCatalogFull(products, q, category);
+        });
+
+    loadMatches.then(function (matches) {
+      if (!_catalogLastQuery && _searchIndexError && !matches.length) {
         if (browseEl) browseEl.hidden = true;
         if (toolsEl) toolsEl.hidden = true;
         if (_loadMoreBtn) _loadMoreBtn.hidden = true;
@@ -2592,13 +2647,22 @@
         }
         return;
       }
-      var matches = filterCatalogFull(products, q, category);
       _catalogBaseMatches = matches;
       populateCatalogFilters(matches);
       applyCatalogFilterParams();
       if (browseEl) browseEl.hidden = true;
       if (toolsEl) toolsEl.hidden = false;
       renderCatalogFilteredResults();
+    }).catch(function () {
+      loadSearchIndex().then(function (products) {
+        var matches = filterCatalogFull(products, q, category);
+        _catalogBaseMatches = matches;
+        populateCatalogFilters(matches);
+        applyCatalogFilterParams();
+        if (browseEl) browseEl.hidden = true;
+        if (toolsEl) toolsEl.hidden = false;
+        renderCatalogFilteredResults();
+      });
     });
   }
 
