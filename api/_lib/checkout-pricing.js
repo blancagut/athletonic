@@ -1,4 +1,5 @@
-const { getShippingCents, validateCartWithOverrides } = require("./catalog");
+const { getShippingCents, getTaxCents, validateCartWithOverrides } = require("./catalog");
+const { loadAppSettings } = require("./app-settings");
 const {
   applyPrivatePricing,
   resolvePrivatePricingGrant,
@@ -19,9 +20,10 @@ async function buildCheckoutPricing(options) {
     supabase,
   });
   const privatePricing = applyPrivatePricing(items, privateGrant);
-  const shippingCents = getShippingCents(subtotalCents);
-  const taxCents = 0;
+  const appSettings = await loadAppSettings(options.supabase, ["shipping", "tax"]);
+  const shippingCents = getShippingCents(subtotalCents, appSettings.shipping);
   const discountCents = privatePricing.discountCents;
+  const taxCents = getTaxCents(subtotalCents, discountCents, appSettings.tax);
   const totalCents = Math.max(
     0,
     subtotalCents + shippingCents + taxCents - discountCents

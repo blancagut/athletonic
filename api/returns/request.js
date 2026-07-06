@@ -2,6 +2,7 @@ const crypto = require("node:crypto");
 const { normalizeEmail } = require("../_lib/validation");
 const { handleError, json, methodNotAllowed, readJson, requireEnv } = require("../_lib/http");
 const { fetchOrderByReferenceAndEmail } = require("../_lib/orders");
+const { loadAppSettings } = require("../_lib/app-settings");
 const { getSupabaseAdmin } = require("../_lib/supabase");
 
 const RETURNABLE_STATUSES = new Set(["paid", "processing", "shipped", "delivered"]);
@@ -153,6 +154,8 @@ module.exports = async function handler(req, res) {
     const notes = String(body.notes || "").trim().slice(0, 1500) || null;
     const supabase = getSupabaseAdmin();
     const { order } = await fetchOrderByReferenceAndEmail(supabase, reference, email);
+    const appSettings = await loadAppSettings(supabase, ["returns"]);
+    const returnsSettings = appSettings.returns || {};
 
     if (!order) {
       const error = new Error("We could not find an order for that email and reference.");
@@ -166,6 +169,35 @@ module.exports = async function handler(req, res) {
       error.statusCode = 409;
       error.code = "order_not_returnable";
       throw error;
+    }
+
+    if (requestedResolution === "refund" && returnsSettings.allow_refund === false) {
+      const error = new Error("Refunds are currently disabled.");
+      error.statusCode = 409;
+      error.code = "refunds_disabled";
+      throw error;
+    }
+
+    if (requestedResolution === "replacement" && returnsSettings.allow_replacement === false) {
+      const error = new Error("Replacements are currently disabled.");
+      error.statusCode = 409;
+      error.code = "replacements_disabled";
+      throw error;
+    }
+
+    const windowDays = Number.isInteger(Number(returnsSettings.window_days))
+      ? Number(returnsSettings.window_days)
+      : 0;
+    if (windowDays >= 0) {
+      const referenceDate = new Date(order.timestamps?.paid_at || order.timestamps?.created_at || order.created_at);
+      const elapsedMs = Date.now() - referenceDate.getTime();
+      const elapsedDays = Math.floor(elapsedMs / (24 * 60 * 60 * 1000));
+      if (elapsedDays > windowDays) {
+        const error = new Error("This order is outside the current return window.");
+        error.statusCode = 409;
+        error.code = "return_window_expired";
+        throw error;
+      }
     }
 
     const items = normalizeItems(body.items, order);
