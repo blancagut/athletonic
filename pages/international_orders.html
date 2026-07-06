@@ -6,7 +6,7 @@
     <title>International Orders | Athletonic</title>
     <meta
       name="description"
-      content="Build an Athletonic international order line by line, review banking details, and optionally upload your payment receipt."
+      content="Build an Athletonic international order request for boxing, Muay Thai, and training gear. Our team reviews availability, shipping, customs, duties, and final landed cost by email."
     />
     <link rel="canonical" href="https://www.athletonic.com/international_orders" />
     <link rel="icon" href="../favicon.ico" sizes="any" />
@@ -18,7 +18,7 @@
     <script src="../assets/international-orders.js" defer></script>
     <style>
       :root {
-        --io-bg: #f4efe7;
+        --io-bg: #f5f7f3;
         --io-ink: #0f172a;
         --io-muted: #475569;
         --io-panel: rgba(255, 255, 255, 0.92);
@@ -32,10 +32,7 @@
         margin: 0;
         font-family: Arial, sans-serif;
         color: var(--io-ink);
-        background:
-          radial-gradient(circle at top left, rgba(194, 65, 12, 0.18), transparent 30%),
-          radial-gradient(circle at top right, rgba(15, 23, 42, 0.1), transparent 34%),
-          linear-gradient(180deg, #fffaf5 0%, var(--io-bg) 100%);
+        background: linear-gradient(180deg, #fbfcfa 0%, var(--io-bg) 100%);
       }
 
       .io-shell {
@@ -397,8 +394,6 @@
       }
 
       .io-summary-block,
-      .io-bank-card,
-      .io-upload-card,
       .io-success {
         border-radius: 24px;
       }
@@ -417,35 +412,16 @@
         font-weight: 700;
       }
 
-      .io-bank-card {
+      .io-review-card {
         padding: 20px;
-        background: linear-gradient(180deg, #fff7ed, #ffedd5);
-        border: 1px solid rgba(194,65,12,.18);
-      }
-
-      .io-bank-card p,
-      .io-bank-card li,
-      .io-upload-card p {
-        color: #7c2d12;
-        line-height: 1.6;
-      }
-
-      .io-bank-grid {
-        display: grid;
-        gap: 12px;
-      }
-
-      .io-bank-grid strong {
-        display: block;
-        color: #431407;
-        margin-bottom: 4px;
-      }
-
-      .io-upload-card {
-        margin-top: 18px;
-        padding: 20px;
-        background: #fff;
+        border-radius: 24px;
+        background: #f8fafc;
         border: 1px solid rgba(15,23,42,.08);
+      }
+
+      .io-review-card p {
+        color: var(--io-muted);
+        line-height: 1.6;
       }
 
       .io-form {
@@ -542,10 +518,10 @@
       <section class="io-hero">
         <article class="io-hero-copy">
           <p class="io-kicker">Athletonic International Orders</p>
-          <h1>Build your order line by line.</h1>
+          <h1>International Boxing &amp; Muay Thai Gear Orders</h1>
           <p>
-            Use the live Athletonic catalog search, add products one by one, choose the real size or ounces available,
-            review the bank transfer details, and submit your request with or without a receipt.
+            Build your request. We review shipping, customs and final quote by email.
+            Arma tu solicitud de pedido internacional. Nuestro equipo revisara disponibilidad, envio, aduanas, impuestos y costo final antes de enviarte la cotizacion oficial.
           </p>
         </article>
         <aside class="io-hero-metrics" aria-label="Quick order summary">
@@ -555,12 +531,12 @@
               <strong>Live catalog</strong>
             </div>
             <div class="io-metric">
-              <small>Payment</small>
-              <strong>Bank transfer before upload</strong>
+              <small>Trust</small>
+              <strong>Latin America shipping</strong>
             </div>
             <div class="io-metric">
-              <small>Email</small>
-              <strong>Professional receipt with photos</strong>
+              <small>Orders</small>
+              <strong>Gyms, teams and resellers welcome</strong>
             </div>
           </div>
         </aside>
@@ -572,14 +548,14 @@
             <p class="io-kicker">1. Add products</p>
             <h2>Search the real catalog</h2>
             <p>
-              Start typing a product, brand, model, or SKU. Press <strong>Enter</strong> to add the first match or pick one from the suggestions.
+              Athletonic ships boxing gloves, Muay Thai gear, shin guards, shorts, pads, focus mitts, hand wraps and training accessories to Latin America and international customers.
             </p>
 
             <div class="io-search" data-search-root>
               <input
                 class="io-search-input"
                 type="search"
-                placeholder="Twins Special, pads, BGV1, FSGL10-49..."
+                placeholder="Windy gloves, pads, Twins Special, BGV1, FSGL10-49..."
                 aria-label="Search products"
                 data-search-input
                 autocomplete="off"
@@ -594,8 +570,8 @@
             <div style="display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap;">
               <div>
                 <p class="io-kicker">2. Review lines</p>
-                <h2>Your order</h2>
-                <p>Each product is added as its own block so variants, sizes, ounces, colors, and quantities stay clear.</p>
+              <h2>Your request cart</h2>
+              <p>Each product is added as its own block so variants, sizes, ounces, colors, and quantities stay clear.</p>
               </div>
               <button class="io-secondary" type="button" data-clear-lines>Clear all lines</button>
             </div>
@@ -606,7 +582,7 @@
           <section class="io-panel">
             <p class="io-kicker">3. Customer details</p>
             <h2>Shipping and contact information</h2>
-            <p>These details will appear in both the customer receipt email and the internal sales email.</p>
+            <p>These details will appear in your request summary and help sales review shipping options, customs, and final landed cost.</p>
             <form class="io-form" data-order-form>
               <div class="io-form-grid">
                 <label class="io-field">
@@ -648,56 +624,33 @@
             <h2>Summary</h2>
             <div class="io-summary-items" data-summary-items></div>
             <div class="io-summary-block">
-              <div class="io-summary-total"><span>Subtotal</span><span data-summary-subtotal>$0.00</span></div>
-              <div class="io-summary-total"><span>Total</span><span data-summary-total>$0.00</span></div>
-              <p class="io-status" style="margin-bottom:0;">Final shipping, duties, and taxes are confirmed separately if needed.</p>
+              <div class="io-summary-total"><span data-summary-subtotal-label>Estimated product subtotal</span><span data-summary-subtotal>$0.00</span></div>
+              <p class="io-status" style="margin-bottom:0;">Final quote pending manual review.</p>
+              <p class="io-status" style="margin-bottom:0;">Final quote will be confirmed after shipping, customs, duties and availability review.</p>
             </div>
           </section>
 
           <section class="io-panel">
-            <p class="io-kicker">4. Banking details first</p>
-            <h2>ATHLETONIC LLC</h2>
-            <div class="io-bank-card">
-              <p style="margin-top:0;font-weight:700;">Datos para Transferencia Bancaria</p>
-              <div class="io-bank-grid">
-                <div><strong>Nombre de la empresa</strong><span>Athletonic LLC</span></div>
-                <div><strong>Número de cuenta</strong><span>279027375786136</span></div>
-                <div><strong>Número de ruta (ACH y transferencias bancarias)</strong><span>084009519</span></div>
-                <div><strong>Código SWIFT / BIC</strong><span>TRWIUS35XXX</span></div>
-                <div><strong>Banco receptor</strong><span>Wise US Inc</span></div>
-                <div><strong>Dirección del banco</strong><span>108 W 13th St<br />Wilmington, DE 19801<br />Estados Unidos</span></div>
-                <div><strong>Dirección de la empresa</strong><span>127 O Higgins Ave<br />Missoula, MT 59802<br />Estados Unidos</span></div>
-              </div>
+            <p class="io-kicker">4. Manual review</p>
+            <h2>Quote pending review</h2>
+            <div class="io-review-card">
+              <p style="margin-top:0;font-weight:700;color:var(--io-ink);">
+                Build your international order request. Our team will review availability, shipping, customs, duties and final landed cost before sending your official quote.
+              </p>
               <p style="margin-bottom:0;">
-                Please use the banking information above for USD wire transfers and ACH payments. If you require an invoice or additional payment information, please contact Athletonic LLC before sending funds.
+                This page does not charge, does not use checkout, and does not ask for a receipt before submission. Banking instructions are sent by email after your request is received.
               </p>
-            </div>
-
-            <div class="io-upload-card">
-              <p style="margin-top:0;font-weight:700;color:var(--io-ink);">Upload de recibo opcional</p>
-              <p>
-                You may upload your payment receipt now if you already paid. If not, you can submit your order first and send the receipt later.
-              </p>
-              <label class="io-field">
-                <span>Receipt or screenshot</span>
-                <input
-                  data-receipt-input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,application/pdf"
-                />
-              </label>
-              <div class="io-status" data-receipt-status>No receipt uploaded yet.</div>
             </div>
           </section>
 
           <section class="io-panel">
             <p class="io-kicker">5. Submit</p>
-            <h2>Send international order</h2>
-            <p>The customer email and the internal sales email will include product photos, selected variants, color notes, and payment instructions.</p>
-            <button class="io-submit" type="button" data-submit-order>Submit order</button>
+            <h2>Request official quote</h2>
+            <p>The customer email and the internal sales email will include product photos, selected variants, color notes, and post-submit banking instructions.</p>
+            <button class="io-submit" type="button" data-submit-order>Request Official Quote</button>
             <div class="io-status" data-submit-status>Ready when you are.</div>
             <div class="io-success" data-success-box aria-live="polite">
-              <strong data-success-title>Order submitted.</strong>
+              <strong data-success-title>Your request was received.</strong>
               <p data-success-copy style="margin:10px 0 0;"></p>
             </div>
           </section>

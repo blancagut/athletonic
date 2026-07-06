@@ -266,6 +266,7 @@
     const selectedOptions = normalizeVariantSelectedOptions(variant);
     return {
       variantId: String(variant.variant_id || "").trim(),
+      sku: String(variant.sku || "").trim(),
       selectedOptions,
       variant: selectedOptionsLabel(selectedOptions),
       image: variantImageUrl(variant),
@@ -331,6 +332,74 @@
         return normalizedVariantValues.every((value, index) => value === normalizedParts[index]);
       }) || null
     );
+  }
+
+  function optionValuesText(values) {
+    return Array.isArray(values)
+      ? values
+          .map((entry) => entry && (entry.value || entry.selected_value || entry.label || ""))
+          .filter(Boolean)
+          .join(" ")
+      : "";
+  }
+
+  function productUrlSlug(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    const clean = raw.split("?")[0].split("#")[0];
+    const slug = clean.split("/").pop() || "";
+    return slug.replace(/\.html?$/i, "");
+  }
+
+  function uniqueNormalizedSearchValues(values) {
+    const seen = {};
+    const out = [];
+    values.forEach(function (value) {
+      var normalized = normalizeSearchText(value);
+      if (!normalized || seen[normalized]) return;
+      seen[normalized] = true;
+      out.push(normalized);
+    });
+    return out;
+  }
+
+  function productSearchMeta(p) {
+    if (!p._athSearchMeta) {
+      var variants = variantRecords(p);
+      var variantTerms = [];
+      variants.forEach(function (variant) {
+        variantTerms.push(
+          variant && variant.variant_id,
+          variant && variant.sku,
+          variant && variant.title,
+          optionValuesText(variant && variant.option_values),
+          optionValuesText(
+            variant && variant.selected_options
+              ? Object.keys(variant.selected_options).map(function (name) {
+                  return { name: name, value: variant.selected_options[name] };
+                })
+              : []
+          )
+        );
+      });
+      var identifiers = uniqueNormalizedSearchValues([
+        p.id,
+        p.external_product_id,
+        p.sku,
+        p.default_variant_id,
+        p.url,
+        productUrlSlug(p.url),
+      ].concat(variantTerms));
+      p._athSearchMeta = {
+        name: normalizeSearchText(p.name),
+        brand: normalizeSearchText(p.brand || p.brand_slug),
+        nameWords: normalizeSearchText(p.name).split(" ").filter(Boolean),
+        brandWords: normalizeSearchText(p.brand || p.brand_slug).split(" ").filter(Boolean),
+        identifiers: identifiers,
+        identifierCompacts: identifiers.map(function (value) { return value.replace(/ /g, ""); }),
+      };
+    }
+    return p._athSearchMeta;
   }
 
   function normalizeCartItem(item) {
@@ -450,37 +519,6 @@
     cartValidation = Object.assign({}, cartValidation, nextState);
   }
 
-  function localCartValidationPayload(snapshot, signature) {
-    const subtotalCents = snapshot.reduce(
-      (sum, item) => sum + Math.round(Number(item.price || 0) * 100) * item.quantity,
-      0
-    );
-    const currency = String((snapshot[0] && snapshot[0].currency) || "USD").toUpperCase();
-    const lineItems = snapshot.map((item, index) => ({
-      input_index: index,
-      valid: true,
-      product_id: item.productId,
-      name: item.name,
-      brand: item.brand,
-      variant: item.variant || "",
-      quantity: item.quantity,
-      price_cents: Math.round(Number(item.price || 0) * 100),
-      currency,
-    }));
-
-    return {
-      valid: true,
-      signature,
-      code: "",
-      message: "",
-      subtotal_cents: subtotalCents,
-      currency,
-      items: lineItems,
-      line_items: lineItems,
-      invalid_items: [],
-    };
-  }
-
   function applyCartValidationPayload(payload, signature) {
     setCartValidationState({
       status: payload && payload.valid ? "valid" : "invalid",
@@ -495,6 +533,49 @@
       invalidItems: Array.isArray(payload && payload.invalid_items) ? payload.invalid_items : [],
       error: "",
     });
+  }
+
+  function applyValidatedCatalogLines() {
+    if (!Array.isArray(cartValidation.lineItems) || !cartValidation.lineItems.length) return;
+    var changed = false;
+    cartValidation.lineItems.forEach(function (line) {
+      var index = Number(line && line.input_index);
+      if (!Number.isInteger(index) || !cart[index] || line.valid !== true) return;
+      var item = cart[index];
+      var unitCents = Number(line.unit_amount_cents || 0);
+      if (Number.isFinite(unitCents) && unitCents > 0) {
+        var unitPrice = unitCents / 100;
+        if (item.price !== unitPrice) {
+          item.price = unitPrice;
+          changed = true;
+        }
+      }
+      [
+        ["productId", line.product_id],
+        ["variantId", line.variant_id],
+        ["brand", line.brand],
+        ["name", line.name],
+        ["image", line.image_url],
+        ["currency", line.currency],
+        ["variant", line.variant],
+        ["sku", line.sku],
+      ].forEach(function (pair) {
+        var key = pair[0];
+        var value = pair[1] == null ? "" : String(pair[1]);
+        if (value && item[key] !== value) {
+          item[key] = value;
+          changed = true;
+        }
+      });
+      if (line.selected_options && typeof line.selected_options === "object") {
+        var selectedOptions = normalizeSelectedOptions(line.selected_options);
+        if (JSON.stringify(item.selectedOptions || {}) !== JSON.stringify(selectedOptions)) {
+          item.selectedOptions = selectedOptions;
+          changed = true;
+        }
+      }
+    });
+    if (changed) saveCart();
   }
 
   function queueCartValidation(options) {
@@ -524,9 +605,57 @@
       return Promise.resolve(cartValidation);
     }
 
-    applyCartValidationPayload(localCartValidationPayload(snapshot, signature), signature);
+    setCartValidationState({
+      status: "loading",
+      valid: false,
+      signature,
+      code: "",
+      message: "Checking live catalog prices...",
+      error: "",
+    });
     renderCart();
-    return Promise.resolve(cartValidation);
+
+    return fetch("/api/cart/validate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cart: snapshot }),
+    })
+      .then(function (response) {
+        return response.text().then(function (raw) {
+          var payload = {};
+          if (raw) {
+            try {
+              payload = JSON.parse(raw);
+            } catch (error) {
+              payload = {};
+            }
+          }
+          if (!response.ok) {
+            throw new Error(payload.message || "Could not verify cart pricing.");
+          }
+          return payload;
+        });
+      })
+      .then(function (payload) {
+        applyCartValidationPayload(payload, signature);
+        applyValidatedCatalogLines();
+        renderCart();
+        return cartValidation;
+      })
+      .catch(function (error) {
+        setCartValidationState({
+          status: "error",
+          valid: false,
+          signature,
+          code: "cart_validation_failed",
+          message: error.message || "Could not verify cart pricing.",
+          error: error.message || "Could not verify cart pricing.",
+        });
+        renderCart();
+        return cartValidation;
+      });
   }
 
   let liveCatalogProductsPromise = null;
@@ -1010,14 +1139,18 @@
     }
 
     if (checkoutForm) checkoutForm.hidden = false;
-    const canCheckout = !checkoutBusy && cart.length > 0;
+    const canCheckout = !checkoutBusy && cart.length > 0 && cartValidation.valid === true;
     if (checkoutSubmit) checkoutSubmit.disabled = !canCheckout;
 
     if (!checkoutBusy) {
       if (cartValidation.status === "loading") {
-        setFormStatus(checkoutStatus, "", "");
+        setFormStatus(checkoutStatus, "Checking live catalog prices...", "pending");
       } else if (cartValidation.status === "invalid") {
-        setFormStatus(checkoutStatus, "", "");
+        setFormStatus(
+          checkoutStatus,
+          cartValidation.message || "Review the highlighted cart item before checkout.",
+          "error"
+        );
       } else if (cartValidation.status === "error") {
         setFormStatus(
           checkoutStatus,
@@ -1038,7 +1171,7 @@
 
     cart.forEach((item, index) => {
       const validationLine = validationLines.get(index) || null;
-      const isInvalid = false;
+      const isInvalid = Boolean(validationLine && validationLine.valid === false);
       const isValidated = Boolean(validationLine && validationLine.valid === true);
       const article = document.createElement("article");
       article.className = "cart-item";
@@ -1084,10 +1217,21 @@
       const price = document.createElement("strong");
       const lineCurrency =
         (isValidated && validationLine && validationLine.currency) || item.currency;
-      const lineTotalCents = isValidated && validationLine
-        ? Number(validationLine.line_total_cents || 0)
-        : Math.max(0, Math.round(Number(item.price || 0) * 100) * item.quantity);
-      price.textContent = formatMoneyFromCents(lineTotalCents, lineCurrency);
+      if (isInvalid) {
+        price.textContent = "Price unavailable";
+      } else {
+        const lineTotalCents = isValidated && validationLine
+          ? Number(validationLine.line_total_cents || 0)
+          : Math.max(0, Math.round(Number(item.price || 0) * 100) * item.quantity);
+        price.textContent =
+          lineTotalCents > 0 ? formatMoneyFromCents(lineTotalCents, lineCurrency) : "Checking price...";
+      }
+      let lineError = null;
+      if (isInvalid && validationLine && validationLine.message) {
+        lineError = document.createElement("p");
+        lineError.className = "cart-item-error";
+        lineError.textContent = validationLine.message;
+      }
 
       const controls = document.createElement("div");
       controls.className = "cart-controls";
@@ -1115,7 +1259,9 @@
       remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>';
 
       controls.append(minus, quantity, plus, remove);
-      body.append(brand, title, price, controls);
+      body.append(brand, title, price);
+      if (lineError) body.append(lineError);
+      body.append(controls);
 
       article.append(image, body);
       cartItems.append(article);
@@ -1166,8 +1312,8 @@
     openCart();
   }
 
-  function addToCartFromButton(button) {
-    addItem({
+  function baseAddToCartPayload(button) {
+    return {
       id: button.dataset.cartProductId || button.dataset.cartId,
       productId: button.dataset.cartProductId || button.dataset.cartId,
       brand: button.dataset.cartBrand,
@@ -1179,6 +1325,68 @@
       sku: button.dataset.cartSku || "",
       selectedOptions: parseDatasetJson(button.dataset.cartSelectedOptions, {}),
       variant: button.dataset.cartVariant || "",
+    };
+  }
+
+  function resolveButtonVariantPayload(button, product, basePayload) {
+    if (!button || !product) return basePayload;
+
+    var variant = null;
+    var selects = button.hasAttribute("data-pdp-add-button")
+      ? Array.from(document.querySelectorAll("[data-pdp-variant]"))
+      : [];
+    if (selects.length) {
+      var values = selects.map(function (select) {
+        return String(select.value || "").trim();
+      });
+      if (values.every(Boolean)) {
+        variant = findVariantBySelectedValues(product, values);
+      } else {
+        return null;
+      }
+    } else {
+      variant = defaultVariantRecord(product);
+    }
+
+    if (!variant) return basePayload;
+    var selectedOptions = normalizeVariantSelectedOptions(variant);
+    var variantLabel = selectedOptionsLabel(selectedOptions) || String(variant.title || "").trim();
+    var price = variantPriceValue(variant) || Number(basePayload.price || 0);
+    return {
+      id: product.id,
+      productId: product.id,
+      brand: product.brand || basePayload.brand,
+      name:
+        button.hasAttribute("data-pdp-add-button") && variantLabel
+          ? String(product.name || basePayload.name || "").trim() + " - " + variantLabel
+          : product.name || basePayload.name,
+      price: price,
+      currency: variant.currency || product.currency || basePayload.currency || "USD",
+      image: variantImageUrl(variant) || product.image || basePayload.image,
+      variantId: String(variant.variant_id || "").trim(),
+      sku: String(variant.sku || product.sku || basePayload.sku || "").trim(),
+      selectedOptions: selectedOptions,
+      variant: variantLabel,
+      quantity: basePayload.quantity,
+    };
+  }
+
+  function addToCartFromButton(button) {
+    var payload = baseAddToCartPayload(button);
+    var hasResolvedVariant =
+      String(payload.variantId || "").trim() ||
+      Object.keys(payload.selectedOptions || {}).length > 0;
+    if (hasResolvedVariant || !payload.productId) {
+      addItem(payload);
+      return;
+    }
+
+    fetchLiveCatalogProducts([payload.productId]).then(function (products) {
+      var resolvedPayload = payload;
+      if (products[0]) {
+        resolvedPayload = resolveButtonVariantPayload(button, products[0], payload) || null;
+      }
+      if (resolvedPayload) addItem(resolvedPayload);
     });
   }
 
@@ -1208,8 +1416,7 @@
     const effectiveEmail = sessionEmail || email;
     const snapshot = buildCartValidationSnapshot();
     const validation = await queueCartValidation({ force: true, delay: false });
-    const hardValidationCodes = new Set(["empty_cart", "invalid_quantity", "mixed_currency"]);
-    if (!validation.valid && hardValidationCodes.has(validation.code)) {
+    if (!validation.valid) {
       const error = new Error(
         validation.message || "One or more items in your cart are not ready for checkout."
       );
@@ -1605,7 +1812,7 @@
     return SCRIPT_ROOT || baseHref();
   }
   function catalogUrl() {
-    return dataRoot() + "data/athletonic-catalog.json";
+    return dataRoot() + "data/final/catalog.published.json";
   }
   function isHome() {
     var p = window.location.pathname;
@@ -1633,7 +1840,7 @@
      active/US/official-source catalog. The dropdown still uses the curated
      athletonic-catalog.json preview set. */
   function searchIndexUrl() {
-    return dataRoot() + "data/search-index.json";
+    return dataRoot() + "data/final/search-index.published.json";
   }
   var _searchIndex = null;
   var _searchIndexReq = null;
@@ -1908,16 +2115,16 @@
      ("shinguards" ↔ "shin guards", "muscle tech" ↔ "muscletech"). */
   function productSearchBlobs(p) {
     if (!p._athSearchBlobs) {
-      var text = normalizeSearchText(
-        p.search || [
-          p.name,
-          p.brand,
-          displayBrand(p),
-          p.section_title,
-          sectionLabel(p),
-          p.section_id,
-        ].filter(Boolean).join(" ")
-      );
+      var meta = productSearchMeta(p);
+      var text = uniqueNormalizedSearchValues([
+        p.search,
+        p.name,
+        p.brand,
+        displayBrand(p),
+        p.section_title,
+        sectionLabel(p),
+        p.section_id,
+      ].concat(meta.identifiers)).join(" ");
       p._athSearchBlobs = { text: text, squashed: text.replace(/ /g, ""), words: null };
     }
     return p._athSearchBlobs;
@@ -1990,23 +2197,50 @@
     });
   }
   function scoreCatalogProduct(p, lq, tokens) {
-    var n = (p.name || "").toLowerCase();
-    var b = (p.brand || "").toLowerCase();
-    var displayB = displayBrand(p).toLowerCase();
+    var meta = productSearchMeta(p);
+    var n = meta.name;
+    var b = meta.brand;
+    var displayB = normalizeSearchText(displayBrand(p));
     var label = (sectionLabel(p) || "").toLowerCase();
     var section = String(p.section_id || "").toLowerCase();
     var haystack = productSearchText(p);
+    var compactQuery = lq.replace(/ /g, "");
     var score = scoreProduct(p, lq);
 
     if (!lq) return score;
+    if (meta.identifiers.indexOf(lq) !== -1) score += 400;
+    else if (compactQuery && meta.identifierCompacts.indexOf(compactQuery) !== -1) score += 360;
+    else if (
+      compactQuery &&
+      compactQuery.length >= 5 &&
+      meta.identifierCompacts.some(function (value) { return value.indexOf(compactQuery) === 0; })
+    ) {
+      score += 260;
+    } else if (
+      compactQuery.length >= 5 &&
+      meta.identifiers.some(function (value) { return value.indexOf(lq) !== -1; })
+    ) {
+      score += 180;
+    }
     if (n === lq) score += 20;
     else if (n.startsWith(lq)) score += 12;
-    if (b === lq || displayB === lq) score += 10;
+    if (meta.nameWords.indexOf(lq) !== -1) score += 18;
+    if (b === lq || displayB === lq) score += 18;
+    else if ((b && b.indexOf(lq) === 0) || (displayB && displayB.indexOf(lq) === 0)) score += 12;
+    if (meta.brandWords.indexOf(lq) !== -1) score += 12;
     if (label === lq || section === lq) score += 6;
     if (haystack.indexOf(lq) !== -1) score += 4;
 
     tokens.forEach(function (token) {
-      if (n.indexOf(token) !== -1) score += 3;
+      var compactToken = token.replace(/ /g, "");
+      if (
+        meta.identifiers.indexOf(token) !== -1 ||
+        meta.identifierCompacts.indexOf(compactToken) !== -1
+      ) {
+        score += 20;
+      } else if (meta.nameWords.indexOf(token) !== -1) score += 6;
+      else if (meta.brandWords.indexOf(token) !== -1) score += 4;
+      else if (n.indexOf(token) !== -1) score += 3;
       else if (b.indexOf(token) !== -1 || displayB.indexOf(token) !== -1) score += 2;
       else if (label.indexOf(token) !== -1 || section.indexOf(token) !== -1) score += 1;
     });
@@ -2394,6 +2628,55 @@
     }
   }
 
+  function fetchCatalogSearchPage(q, category, limit, offset) {
+    if (_searchApiBroken || typeof fetch !== "function") {
+      return Promise.reject(new Error("search api unavailable"));
+    }
+    var url =
+      (SCRIPT_ROOT || "/") +
+      "api/catalog/search?q=" + encodeURIComponent(q || "") +
+      "&category=" + encodeURIComponent(category || "all") +
+      "&limit=" + encodeURIComponent(String(limit)) +
+      "&offset=" + encodeURIComponent(String(offset || 0));
+    return fetch(url).then(function (r) {
+      if (!r.ok) {
+        _searchApiBroken = true;
+        throw new Error("search api http " + r.status);
+      }
+      return r.json();
+    }).then(function (data) {
+      if (!data || !Array.isArray(data.products)) {
+        _searchApiBroken = true;
+        throw new Error("search api bad payload");
+      }
+      return data;
+    });
+  }
+
+  function fetchCatalogSearchResults(q, category) {
+    var trimmed = String(q || "").trim();
+    if (!trimmed) return Promise.resolve([]);
+    var pageSize = 50;
+    return fetchCatalogSearchPage(trimmed, category, pageSize, 0).then(function (firstPage) {
+      var total = Number(firstPage.total || 0);
+      var products = Array.isArray(firstPage.products) ? firstPage.products.slice() : [];
+      if (products.length >= total || total <= pageSize) return products;
+
+      var tasks = [];
+      for (var offset = pageSize; offset < total; offset += pageSize) {
+        tasks.push(fetchCatalogSearchPage(trimmed, category, pageSize, offset));
+      }
+      return Promise.all(tasks).then(function (pages) {
+        pages.forEach(function (page) {
+          if (page && Array.isArray(page.products)) {
+            products = products.concat(page.products);
+          }
+        });
+        return products;
+      });
+    });
+  }
+
   function renderCatalogPage(q, category) {
     var resultsEl = document.querySelector("[data-catalog-results]");
     if (!resultsEl) return;
@@ -2417,8 +2700,14 @@
       return;
     }
 
-    loadSearchIndex().then(function (products) {
-      if (_searchIndexError && !products.length) {
+    var loadMatches = _catalogLastQuery
+      ? fetchCatalogSearchResults(_catalogLastQuery, category)
+      : loadSearchIndex().then(function (products) {
+          return filterCatalogFull(products, q, category);
+        });
+
+    loadMatches.then(function (matches) {
+      if (!_catalogLastQuery && _searchIndexError && !matches.length) {
         if (browseEl) browseEl.hidden = true;
         if (toolsEl) toolsEl.hidden = true;
         if (_loadMoreBtn) _loadMoreBtn.hidden = true;
@@ -2434,13 +2723,22 @@
         }
         return;
       }
-      var matches = filterCatalogFull(products, q, category);
       _catalogBaseMatches = matches;
       populateCatalogFilters(matches);
       applyCatalogFilterParams();
       if (browseEl) browseEl.hidden = true;
       if (toolsEl) toolsEl.hidden = false;
       renderCatalogFilteredResults();
+    }).catch(function () {
+      loadSearchIndex().then(function (products) {
+        var matches = filterCatalogFull(products, q, category);
+        _catalogBaseMatches = matches;
+        populateCatalogFilters(matches);
+        applyCatalogFilterParams();
+        if (browseEl) browseEl.hidden = true;
+        if (toolsEl) toolsEl.hidden = false;
+        renderCatalogFilteredResults();
+      });
     });
   }
 
@@ -2472,7 +2770,25 @@
 
   /* ── Initialize the catalog results page from the URL query string ── */
   function applyUrlParams() {
-    if (!isCatalogPage()) return;
+    if (!isCatalogPage()) {
+      /* Category landing pages (protein, creatine, apparel, …) are generated
+         with data-catalog-category on <main data-catalog-page>. Render the
+         FULL search index for that category so shoppers see the whole
+         assortment instead of the small baked-in preview shelf. The baked
+         shelf stays visible until the index arrives (renderCatalogPage swaps
+         it out once results are ready). */
+      var catMain = document.querySelector(
+        "main[data-catalog-page][data-catalog-category]"
+      );
+      var pageCategory = catMain
+        ? catMain.getAttribute("data-catalog-category") || ""
+        : "";
+      if (pageCategory && document.querySelector("[data-catalog-results]")) {
+        var pageParams = new URLSearchParams(window.location.search);
+        renderCatalogPage(pageParams.get("q") || "", pageCategory);
+      }
+      return;
+    }
     var params   = new URLSearchParams(window.location.search);
     var q        = params.get("q") || "";
     var category = params.get("category") || "all";

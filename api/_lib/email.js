@@ -1030,7 +1030,7 @@ function absoluteLogoUrl(siteUrl) {
 function moneyOrPending(cents, currency) {
   return Number.isInteger(cents) && cents > 0
     ? formatMoney(cents, currency)
-    : "Price confirmed after review";
+    : "Price to be confirmed";
 }
 
 function customerMetaRows(order) {
@@ -1097,9 +1097,9 @@ function internationalOrderItemsHtml(order) {
             ${note}
           </td>
           <td style="padding:18px 0 18px 16px;border-bottom:1px solid #e2e8f0;vertical-align:top;text-align:right;white-space:nowrap;">
-            <div style="font-size:14px;color:#475569;">Unit</div>
+            <div style="font-size:14px;color:#475569;">Catalog price</div>
             <div style="font-weight:700;color:#0f172a;">${escapeHtml(moneyOrPending(item.unit_price_cents, item.currency))}</div>
-            <div style="margin-top:10px;font-size:14px;color:#475569;">Line total</div>
+            <div style="margin-top:10px;font-size:14px;color:#475569;">Estimated line subtotal</div>
             <div style="font-weight:700;color:#0f172a;">${escapeHtml(moneyOrPending(item.line_subtotal_cents, item.currency))}</div>
           </td>
         </tr>
@@ -1117,8 +1117,8 @@ function internationalOrderItemsText(order) {
       `- ${item.name} (${item.brand}) x${item.quantity}`,
       options ? `  ${options}` : null,
       item.reference_image_note ? `  ${item.reference_image_note}` : null,
-      `  Unit: ${moneyOrPending(item.unit_price_cents, item.currency)}`,
-      `  Line total: ${moneyOrPending(item.line_subtotal_cents, item.currency)}`,
+      `  Catalog price: ${moneyOrPending(item.unit_price_cents, item.currency)}`,
+      `  Estimated line subtotal: ${moneyOrPending(item.line_subtotal_cents, item.currency)}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -1149,8 +1149,8 @@ function internationalEmailShell({ siteUrl, eyebrow, title, introHtml, bodyHtml,
 }
 
 async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl }) {
-  const receiptStatus = order.receipt_uploaded ? "Receipt uploaded" : "No receipt uploaded yet";
-  const subject = `International Order Received - ${order.reference}`;
+  const receiptStatus = order.receipt_status || "not requested yet";
+  const subject = "Athletonic International Order Request Received";
   const metaRows = customerMetaRows(order)
     .map(
       ([label, value]) => `
@@ -1167,7 +1167,13 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
       We received your Athletonic international order request and our team is reviewing it now.
       Your reference number is <strong>${escapeHtml(order.reference)}</strong>.
     </p>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#475569;">
+      This is not a final invoice yet. Our team will review availability, shipping, customs and final cost before confirming your official quote.
+    </p>
   `;
+  const subtotalHtml = Number.isInteger(order.subtotal_cents)
+    ? `<p style="margin:0;"><strong>Estimated product subtotal:</strong> ${escapeHtml(moneyOrPending(order.subtotal_cents, order.currency))}</p>`
+    : `<p style="margin:0;"><strong>Estimated product subtotal:</strong> Price to be confirmed</p>`;
   const bodyHtml = `
     <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">${metaRows}</table>
     <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
@@ -1177,8 +1183,8 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
       <p style="margin:0 0 10px;font-size:18px;font-weight:700;">Order summary</p>
       <p style="margin:0 0 8px;"><strong>Reference:</strong> ${escapeHtml(order.reference)}</p>
       <p style="margin:0 0 8px;"><strong>Receipt status:</strong> ${escapeHtml(receiptStatus)}</p>
-      <p style="margin:0 0 8px;"><strong>Subtotal:</strong> ${escapeHtml(moneyOrPending(order.subtotal_cents, order.currency))}</p>
-      <p style="margin:0;"><strong>Total:</strong> ${escapeHtml(moneyOrPending(order.total_cents, order.currency))}</p>
+      ${subtotalHtml}
+      <p style="margin:10px 0 0;color:#475569;">Final quote pending manual review.</p>
     </div>
     <div style="margin:0 0 24px;padding:24px;border-radius:20px;background:#fff7ed;border:1px solid #fdba74;">
       <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#9a3412;">Payment details</p>
@@ -1190,8 +1196,7 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
     <div style="margin:0 0 24px;padding:20px;border:1px solid #e2e8f0;border-radius:18px;background:#ffffff;">
       <p style="margin:0 0 12px;font-size:18px;font-weight:700;">Next step</p>
       <p style="margin:0;font-size:15px;line-height:1.7;">
-        If you have not paid yet, please complete the payment using the banking information above and send your receipt to Athletonic.
-        If you already paid but did not upload a receipt, reply to this email with your payment proof.
+        After sending payment, please reply to this email with your payment receipt or proof of transfer.
       </p>
     </div>
   `;
@@ -1202,7 +1207,8 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
     </p>
   `;
   const text = [
-    `International Order Received - ${order.reference}`,
+    "International Order Request Received",
+    `Reference: ${order.reference}`,
     "",
     `Customer: ${order.customer.name}`,
     `Email: ${order.customer.email}`,
@@ -1216,12 +1222,13 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
     ...internationalOrderItemsText(order),
     "",
     `Receipt status: ${receiptStatus}`,
-    `Subtotal: ${moneyOrPending(order.subtotal_cents, order.currency)}`,
-    `Total: ${moneyOrPending(order.total_cents, order.currency)}`,
+    `Estimated product subtotal: ${moneyOrPending(order.subtotal_cents, order.currency)}`,
+    "Final quote pending manual review.",
+    "This is not a final invoice yet. Our team will review availability, shipping, customs and final cost before confirming your official quote.",
     "",
     ...internationalEmailBankDetailsText(bankDetails),
     "",
-    "If you have not paid yet, please complete the payment using the banking information above and send your receipt to Athletonic.",
+    "After sending payment, please reply to this email with your payment receipt or proof of transfer.",
   ].join("\n");
 
   return sendEmail({
@@ -1230,7 +1237,7 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
     html: internationalEmailShell({
       siteUrl,
       eyebrow: "Athletonic International Orders",
-      title: "International Order Received",
+      title: "International Order Request Received",
       introHtml,
       bodyHtml,
       footerHtml,
@@ -1241,8 +1248,8 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
 }
 
 async function sendInternationalOrderSalesEmail({ order, bankDetails, siteUrl, recipientEmail }) {
-  const receiptStatus = order.receipt_uploaded ? "Receipt uploaded" : "No receipt uploaded yet";
-  const subject = `New International Order - ${order.reference}`;
+  const receiptStatus = order.receipt_status || "not requested yet";
+  const subject = "New International Quote Request";
   const customerDetails = customerMetaRows(order)
     .map(
       ([label, value]) => `
@@ -1255,9 +1262,12 @@ async function sendInternationalOrderSalesEmail({ order, bankDetails, siteUrl, r
     .join("");
   const introHtml = `
     <p style="margin:0 0 24px;font-size:16px;line-height:1.7;">
-      A new international order has been submitted. Reference <strong>${escapeHtml(order.reference)}</strong>.
+      A new international quote request has been submitted. Reference <strong>${escapeHtml(order.reference)}</strong>.
     </p>
   `;
+  const salesSubtotalHtml = Number.isInteger(order.subtotal_cents)
+    ? `<p style="margin:0 0 8px;"><strong>Estimated product subtotal:</strong> ${escapeHtml(moneyOrPending(order.subtotal_cents, order.currency))}</p>`
+    : `<p style="margin:0 0 8px;"><strong>Estimated product subtotal:</strong> Price to be confirmed</p>`;
   const bodyHtml = `
     <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">${customerDetails}</table>
     <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
@@ -1265,23 +1275,16 @@ async function sendInternationalOrderSalesEmail({ order, bankDetails, siteUrl, r
     </table>
     <div style="margin:0 0 24px;padding:20px;border:1px solid #e2e8f0;border-radius:18px;background:#f8fafc;">
       <p style="margin:0 0 8px;"><strong>Receipt status:</strong> ${escapeHtml(receiptStatus)}</p>
-      <p style="margin:0 0 8px;"><strong>Receipt attachment:</strong> ${escapeHtml(order.receipt_uploaded ? "Attached to this email" : "No receipt uploaded")}</p>
-      <p style="margin:0 0 8px;"><strong>Subtotal:</strong> ${escapeHtml(moneyOrPending(order.subtotal_cents, order.currency))}</p>
-      <p style="margin:0;"><strong>Total:</strong> ${escapeHtml(moneyOrPending(order.total_cents, order.currency))}</p>
-    </div>
-    <div style="margin:0 0 24px;padding:24px;border-radius:20px;background:#fff7ed;border:1px solid #fdba74;">
-      <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#9a3412;">Banking information used</p>
-      ${internationalEmailBankDetailsHtml(bankDetails)}
+      ${salesSubtotalHtml}
+      <p style="margin:0;"><strong>Manual review required:</strong> confirm availability, shipping, customs/duties and final quote before asking customer to pay.</p>
     </div>
   `;
   const footerHtml = `
     <p style="margin:0;font-size:14px;color:#475569;">Reply directly to ${escapeHtml(order.customer.email)} to continue the payment follow-up.</p>
   `;
-  const attachments = order.receipt
-    ? [{ filename: order.receipt.filename, content: order.receipt.content_base64 }]
-    : [];
   const text = [
-    `New International Order - ${order.reference}`,
+    "New International Quote Request",
+    `Reference: ${order.reference}`,
     "",
     `Customer: ${order.customer.name} <${order.customer.email}>`,
     `WhatsApp / Phone: ${order.customer.phone}`,
@@ -1294,11 +1297,8 @@ async function sendInternationalOrderSalesEmail({ order, bankDetails, siteUrl, r
     ...internationalOrderItemsText(order),
     "",
     `Receipt status: ${receiptStatus}`,
-    `Receipt attachment: ${order.receipt_uploaded ? "Attached to this email" : "No receipt uploaded"}`,
-    `Subtotal: ${moneyOrPending(order.subtotal_cents, order.currency)}`,
-    `Total: ${moneyOrPending(order.total_cents, order.currency)}`,
-    "",
-    ...internationalEmailBankDetailsText(bankDetails),
+    `Estimated product subtotal: ${moneyOrPending(order.subtotal_cents, order.currency)}`,
+    "Manual review required: confirm availability, shipping, customs/duties and final quote before asking customer to pay.",
   ].join("\n");
 
   return sendEmail({
@@ -1308,14 +1308,13 @@ async function sendInternationalOrderSalesEmail({ order, bankDetails, siteUrl, r
     html: internationalEmailShell({
       siteUrl,
       eyebrow: "Athletonic Sales",
-      title: "New International Order",
+      title: "New International Quote Request",
       introHtml,
       bodyHtml,
       footerHtml,
     }),
     text,
     replyTo: order.customer.email,
-    ...(attachments.length ? { attachments } : {}),
   });
 }
 

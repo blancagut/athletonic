@@ -1,11 +1,9 @@
 (function () {
-  const MAX_RECEIPT_BYTES = 3 * 1024 * 1024;
   const SEARCH_LIMIT = 8;
   const state = {
     suggestions: [],
     highlightedIndex: -1,
     lines: [],
-    receipt: null,
     submitting: false,
   };
 
@@ -19,9 +17,7 @@
     form: document.querySelector("[data-order-form]"),
     summaryItems: document.querySelector("[data-summary-items]"),
     summarySubtotal: document.querySelector("[data-summary-subtotal]"),
-    summaryTotal: document.querySelector("[data-summary-total]"),
-    receiptInput: document.querySelector("[data-receipt-input]"),
-    receiptStatus: document.querySelector("[data-receipt-status]"),
+    summarySubtotalLabel: document.querySelector("[data-summary-subtotal-label]"),
     submitButton: document.querySelector("[data-submit-order]"),
     submitStatus: document.querySelector("[data-submit-status]"),
     successBox: document.querySelector("[data-success-box]"),
@@ -40,11 +36,16 @@
   }
 
   function formatMoney(cents, currency) {
-    if (!Number.isInteger(cents) || cents <= 0) return "Price confirmed after review";
+    if (!Number.isInteger(cents) || cents <= 0 || cents > 10000000) return "Price to be confirmed";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currency || "USD",
     }).format(cents / 100);
+  }
+
+  function safePriceCents(value) {
+    const cents = Number(value);
+    return Number.isInteger(cents) && cents > 0 && cents <= 10000000 ? cents : null;
   }
 
   function selectedOptionsLabel(selectedOptions) {
@@ -81,14 +82,10 @@
     els.submitStatus.style.color = isError ? "#b91c1c" : "";
   }
 
-  function setReceiptStatus(message, isError) {
-    els.receiptStatus.textContent = message;
-    els.receiptStatus.style.color = isError ? "#b91c1c" : "";
-  }
-
   function showSuccess(reference, email) {
-    els.successTitle.textContent = "Order submitted.";
-    els.successCopy.textContent = `Reference ${reference}. Confirmation sent to ${email}.`;
+    els.successTitle.textContent = "Your request was received.";
+    els.successCopy.textContent =
+      `Check ${email} for your request summary and payment instructions. Our team will review customs, shipping and final quote. Reference ${reference}.`;
     els.successBox.setAttribute("data-open", "true");
   }
 
@@ -200,7 +197,7 @@
       variant_choices: product.variant_choices || [],
       color_choices: product.color_choices || [],
       image_url: (defaultVariant && defaultVariant.image_url) || product.image_url || "",
-      unit_price_cents: (defaultVariant && defaultVariant.price_cents) || product.price_cents || null,
+      unit_price_cents: safePriceCents((defaultVariant && defaultVariant.price_cents) || product.price_cents),
       product_color_label: product.color_label || "",
       reference_image_only: referenceOnly,
       reference_image_note: referenceOnly && colorLabel ? `Reference image. Selected color: ${colorLabel}.` : "",
@@ -212,7 +209,7 @@
     if (!variant) return;
     line.variant_id = variant.variant_id;
     line.image_url = variant.image_url || line.image_url;
-    line.unit_price_cents = variant.price_cents || line.unit_price_cents;
+    line.unit_price_cents = safePriceCents(variant.price_cents) || line.unit_price_cents;
     line.selected_options = { ...(variant.selected_options || {}) };
     if (variant.size && !line.selected_options.Size) line.selected_options.Size = variant.size;
     if (line.color) line.selected_options.Color = line.color;
@@ -288,7 +285,7 @@
                       : `<input value="${escapeHtml(line.color || "N/A")}" disabled />`}
                   </label>
                   <div class="io-field">
-                    <span>Price</span>
+                    <span>Catalog price</span>
                     <div class="io-pill">${escapeHtml(formatMoney(line.unit_price_cents, line.currency))}</div>
                   </div>
                 </div>
@@ -303,11 +300,14 @@
   }
 
   function renderSummary() {
-    const subtotal = state.lines.reduce((sum, line) => {
-      return Number.isInteger(line.unit_price_cents) ? sum + line.unit_price_cents * Number(line.quantity || 1) : sum;
-    }, 0);
-    const totalLabel = state.lines.length
-      ? formatMoney(subtotal, state.lines[0] ? state.lines[0].currency : "USD")
+    const allPricesValid = state.lines.length > 0 && state.lines.every((line) => Number.isInteger(line.unit_price_cents) && line.unit_price_cents > 0);
+    const subtotal = allPricesValid
+      ? state.lines.reduce((sum, line) => sum + line.unit_price_cents * Number(line.quantity || 1), 0)
+      : null;
+    const subtotalLabel = state.lines.length
+      ? allPricesValid
+        ? formatMoney(subtotal, state.lines[0] ? state.lines[0].currency : "USD")
+        : "Price to be confirmed"
       : "$0.00";
     els.summaryItems.innerHTML = state.lines
       .map((line) => {
@@ -326,8 +326,12 @@
         `;
       })
       .join("");
-    els.summarySubtotal.textContent = totalLabel;
-    els.summaryTotal.textContent = totalLabel;
+    if (els.summarySubtotalLabel) {
+      els.summarySubtotalLabel.textContent = allPricesValid
+        ? "Estimated product subtotal"
+        : "Estimated product subtotal pending";
+    }
+    els.summarySubtotal.textContent = subtotalLabel;
   }
 
   function findLine(id) {
@@ -350,7 +354,9 @@
     line.selected_options.Color = color;
     const colorChoice = line.color_choices.find((choice) => choice.label === color);
     if (colorChoice && colorChoice.image_url) line.image_url = colorChoice.image_url;
-    if (colorChoice && Number.isInteger(colorChoice.price_cents)) line.unit_price_cents = colorChoice.price_cents;
+    if (colorChoice && Number.isInteger(safePriceCents(colorChoice.price_cents))) {
+      line.unit_price_cents = safePriceCents(colorChoice.price_cents);
+    }
     line.reference_image_only = Boolean(
       line.color &&
       line.product_color_label &&
@@ -370,32 +376,6 @@
     renderSummary();
   }
 
-  async function readReceipt(file) {
-    if (!file) {
-      state.receipt = null;
-      setReceiptStatus("No receipt uploaded yet.");
-      return;
-    }
-    if (file.size > MAX_RECEIPT_BYTES) {
-      state.receipt = null;
-      els.receiptInput.value = "";
-      setReceiptStatus("Receipt must be smaller than 3 MB.", true);
-      return;
-    }
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Could not read the selected receipt."));
-      reader.onload = () => resolve(String(reader.result || ""));
-      reader.readAsDataURL(file);
-    });
-    state.receipt = {
-      filename: file.name,
-      mime_type: file.type || "application/octet-stream",
-      data_base64: base64,
-    };
-    setReceiptStatus(`${file.name} ready to send.`);
-  }
-
   function buildPayload() {
     const fd = new FormData(els.form);
     return {
@@ -406,7 +386,6 @@
       city: String(fd.get("city") || "").trim(),
       shipping_address: String(fd.get("shipping_address") || "").trim(),
       notes: String(fd.get("notes") || "").trim(),
-      receipt: state.receipt,
       items: state.lines.map((line) => ({
         product_id: line.product_id,
         variant_id: line.variant_id,
@@ -429,7 +408,7 @@
     }
     state.submitting = true;
     els.submitButton.disabled = true;
-    setSubmitStatus("Submitting international order...");
+    setSubmitStatus("Sending quote request...");
     try {
       const data = await fetchJson("/api/international-orders", {
         method: "POST",
@@ -437,16 +416,13 @@
         body: JSON.stringify(buildPayload()),
       });
       showSuccess(data.reference, data.customer_email);
-      setSubmitStatus("International order sent.");
+      setSubmitStatus("International quote request sent.");
       els.form.reset();
-      els.receiptInput.value = "";
       state.lines = [];
-      state.receipt = null;
       renderLines();
       renderSummary();
-      setReceiptStatus("No receipt uploaded yet.");
     } catch (error) {
-      setSubmitStatus(error.message || "Could not submit the international order.", true);
+      setSubmitStatus(error.message || "Could not submit the international quote request.", true);
     } finally {
       state.submitting = false;
       els.submitButton.disabled = false;
@@ -521,13 +497,6 @@
     renderLines();
     renderSummary();
     clearSuccess();
-  });
-
-  els.receiptInput.addEventListener("change", () => {
-    readReceipt(els.receiptInput.files && els.receiptInput.files[0]).catch((error) => {
-      state.receipt = null;
-      setReceiptStatus(error.message || "Could not read the selected receipt.", true);
-    });
   });
 
   els.submitButton.addEventListener("click", submitOrder);

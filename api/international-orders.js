@@ -83,7 +83,7 @@ module.exports = async function handler(req, res) {
     json(res, 201, {
       ok: true,
       reference: order.reference,
-      receipt_uploaded: order.receipt_uploaded,
+      receipt_status: order.receipt_status,
       customer_email: order.customer.email,
     });
   } catch (error) {

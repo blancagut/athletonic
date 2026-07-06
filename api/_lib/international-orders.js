@@ -4,7 +4,6 @@ const { randomUUID } = require("node:crypto");
 const { loadPublishedCatalog } = require("./catalog-source");
 
 const MAX_ORDER_ITEMS = 24;
-const MAX_RECEIPT_BYTES = 3 * 1024 * 1024;
 const BANK_DETAILS = {
   companyName: "Athletonic LLC",
   accountNumber: "279027375786136",
@@ -75,7 +74,7 @@ function email(value) {
 
 function moneyCents(value) {
   const cents = Number.parseInt(value, 10);
-  return Number.isInteger(cents) && cents > 0 ? cents : null;
+  return Number.isInteger(cents) && cents > 0 && cents <= 10000000 ? cents : null;
 }
 
 function productImageUrl(product, variant) {
@@ -259,27 +258,6 @@ function productLookupResponse(productId) {
   return presentProduct(product);
 }
 
-function normalizeReceipt(rawReceipt) {
-  if (!rawReceipt || typeof rawReceipt !== "object" || Array.isArray(rawReceipt)) return null;
-  const filename = clean(rawReceipt.filename, 180) || "payment-receipt";
-  const mimeType = clean(rawReceipt.mime_type || rawReceipt.mimeType, 80);
-  const dataBase64 = String(rawReceipt.data_base64 || rawReceipt.dataBase64 || "").replace(/^data:[^;]+;base64,/, "");
-  if (!dataBase64) return null;
-  if (!/^(image\/(png|jpeg|webp)|application\/pdf)$/i.test(mimeType)) {
-    throw validationError("Receipt must be PNG, JPG, WEBP, or PDF.", "invalid_receipt_type");
-  }
-  const buffer = Buffer.from(dataBase64, "base64");
-  if (!buffer.length || buffer.length > MAX_RECEIPT_BYTES) {
-    throw validationError("Receipt must be smaller than 3 MB.", "receipt_too_large");
-  }
-  return {
-    filename,
-    mime_type: mimeType,
-    content_base64: buffer.toString("base64"),
-    size: buffer.length,
-  };
-}
-
 function selectedOptionSummary(selectedOptions) {
   return Object.entries(selectedOptions || {})
     .map(([name, value]) => `${name}: ${value}`)
@@ -359,7 +337,7 @@ function normalizeOrderItem(rawItem) {
     reference_image_note: referenceImageNote && selectedColor
       ? `Reference image. Selected color: ${selectedColor}.`
       : null,
-    price_label: unitPriceCents ? null : "Price confirmed after review",
+    price_label: unitPriceCents ? null : "Price to be confirmed",
   };
 }
 
@@ -397,7 +375,7 @@ function normalizeInternationalOrder(body) {
   const items = rawItems.map(normalizeOrderItem);
   const subtotalCents = items.reduce((sum, item) => sum + (item.line_subtotal_cents || 0), 0);
   const pricedItemCount = items.filter((item) => Number.isInteger(item.line_subtotal_cents)).length;
-  const receipt = normalizeReceipt(body.receipt);
+  const allPricesValid = pricedItemCount === items.length;
 
   return {
     id: randomUUID(),
@@ -414,11 +392,9 @@ function normalizeInternationalOrder(body) {
     },
     items,
     currency: items[0] && items[0].currency ? items[0].currency : "USD",
-    subtotal_cents: pricedItemCount ? subtotalCents : null,
-    total_cents: pricedItemCount ? subtotalCents : null,
+    subtotal_cents: allPricesValid ? subtotalCents : null,
     priced_item_count: pricedItemCount,
-    receipt,
-    receipt_uploaded: Boolean(receipt),
+    receipt_status: "not requested yet",
   };
 }
 
