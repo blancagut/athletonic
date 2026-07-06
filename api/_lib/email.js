@@ -1023,11 +1023,309 @@ async function sendWholesaleOrderSalesEmail({
   });
 }
 
+function absoluteLogoUrl(siteUrl) {
+  return `${String(siteUrl || "").replace(/\/$/, "")}/assets/logo.png`;
+}
+
+function moneyOrPending(cents, currency) {
+  return Number.isInteger(cents) && cents > 0
+    ? formatMoney(cents, currency)
+    : "Price confirmed after review";
+}
+
+function customerMetaRows(order) {
+  return [
+    ["Customer", order.customer.name],
+    ["Email", order.customer.email],
+    ["WhatsApp / Phone", order.customer.phone],
+    ["Country", order.customer.country],
+    ["City", order.customer.city],
+    ["Shipping address", order.customer.shipping_address],
+    ["Notes", order.customer.notes || "None"],
+  ];
+}
+
+function internationalEmailBankDetailsHtml(bankDetails) {
+  return `
+    <table role="presentation" style="width:100%;border-collapse:collapse;">
+      <tr><td style="padding:0 0 8px;"><strong>Company name:</strong> ${escapeHtml(bankDetails.companyName)}</td></tr>
+      <tr><td style="padding:0 0 8px;"><strong>Account number:</strong> ${escapeHtml(bankDetails.accountNumber)}</td></tr>
+      <tr><td style="padding:0 0 8px;"><strong>Routing number (ACH and wire):</strong> ${escapeHtml(bankDetails.routingNumber)}</td></tr>
+      <tr><td style="padding:0 0 8px;"><strong>SWIFT / BIC:</strong> ${escapeHtml(bankDetails.swiftBic)}</td></tr>
+      <tr><td style="padding:0 0 8px;"><strong>Receiving bank:</strong> ${escapeHtml(bankDetails.bankName)}</td></tr>
+      <tr><td style="padding:0 0 8px;"><strong>Bank address:</strong><br />${escapeHtml(bankDetails.bankAddress.join("\n")).replaceAll("\n", "<br />")}</td></tr>
+      <tr><td style="padding:0;"><strong>Company address:</strong><br />${escapeHtml(bankDetails.companyAddress.join("\n")).replaceAll("\n", "<br />")}</td></tr>
+    </table>
+  `;
+}
+
+function internationalEmailBankDetailsText(bankDetails) {
+  return [
+    `Company name: ${bankDetails.companyName}`,
+    `Account number: ${bankDetails.accountNumber}`,
+    `Routing number (ACH and wire): ${bankDetails.routingNumber}`,
+    `SWIFT / BIC: ${bankDetails.swiftBic}`,
+    `Receiving bank: ${bankDetails.bankName}`,
+    "Bank address:",
+    ...bankDetails.bankAddress,
+    "Company address:",
+    ...bankDetails.companyAddress,
+    "",
+    bankDetails.paymentInstructions,
+  ];
+}
+
+function internationalOrderItemsHtml(order) {
+  return order.items
+    .map((item) => {
+      const options = Object.entries(item.selected_options || {})
+        .map(([name, value]) => `<div style="margin:2px 0;"><strong>${escapeHtml(name)}:</strong> ${escapeHtml(value)}</div>`)
+        .join("");
+      const note = item.reference_image_note
+        ? `<p style="margin:8px 0 0;color:#92400e;font-size:12px;">${escapeHtml(item.reference_image_note)}</p>`
+        : "";
+      const image = item.image_url
+        ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" width="96" style="display:block;width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid #e2e8f0;" />`
+        : `<div style="width:96px;height:96px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;color:#64748b;font-size:12px;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;box-sizing:border-box;">Athletonic</div>`;
+      return `
+        <tr>
+          <td style="padding:18px 0;border-bottom:1px solid #e2e8f0;vertical-align:top;width:112px;">${image}</td>
+          <td style="padding:18px 0;border-bottom:1px solid #e2e8f0;vertical-align:top;">
+            <div style="font-size:18px;font-weight:700;color:#0f172a;">${escapeHtml(item.name)}</div>
+            <div style="margin:4px 0 8px;color:#475569;font-size:14px;">${escapeHtml(item.brand)} · Qty ${escapeHtml(item.quantity)}</div>
+            ${options || '<div style="color:#64748b;font-size:14px;">No variant details selected.</div>'}
+            ${note}
+          </td>
+          <td style="padding:18px 0 18px 16px;border-bottom:1px solid #e2e8f0;vertical-align:top;text-align:right;white-space:nowrap;">
+            <div style="font-size:14px;color:#475569;">Unit</div>
+            <div style="font-weight:700;color:#0f172a;">${escapeHtml(moneyOrPending(item.unit_price_cents, item.currency))}</div>
+            <div style="margin-top:10px;font-size:14px;color:#475569;">Line total</div>
+            <div style="font-weight:700;color:#0f172a;">${escapeHtml(moneyOrPending(item.line_subtotal_cents, item.currency))}</div>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function internationalOrderItemsText(order) {
+  return order.items.map((item) => {
+    const options = Object.entries(item.selected_options || {})
+      .map(([name, value]) => `${name}: ${value}`)
+      .join(" / ");
+    return [
+      `- ${item.name} (${item.brand}) x${item.quantity}`,
+      options ? `  ${options}` : null,
+      item.reference_image_note ? `  ${item.reference_image_note}` : null,
+      `  Unit: ${moneyOrPending(item.unit_price_cents, item.currency)}`,
+      `  Line total: ${moneyOrPending(item.line_subtotal_cents, item.currency)}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+  });
+}
+
+function internationalEmailShell({ siteUrl, eyebrow, title, introHtml, bodyHtml, footerHtml }) {
+  return `
+    <div style="margin:0;padding:24px;background:#f3f4f6;font-family:Arial,sans-serif;color:#0f172a;">
+      <table role="presentation" style="width:100%;max-width:760px;margin:0 auto;border-collapse:collapse;background:#ffffff;border-radius:24px;overflow:hidden;">
+        <tr>
+          <td style="padding:32px 32px 24px;background:linear-gradient(135deg,#0f172a 0%,#1f2937 100%);">
+            <img src="${escapeHtml(absoluteLogoUrl(siteUrl))}" alt="Athletonic" width="164" style="display:block;width:164px;height:auto;" />
+            <p style="margin:24px 0 8px;color:#cbd5e1;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;">${escapeHtml(eyebrow)}</p>
+            <h1 style="margin:0;color:#ffffff;font-size:30px;line-height:1.2;">${escapeHtml(title)}</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            ${introHtml}
+            ${bodyHtml}
+            ${footerHtml}
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+}
+
+async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl }) {
+  const receiptStatus = order.receipt_uploaded ? "Receipt uploaded" : "No receipt uploaded yet";
+  const subject = `International Order Received - ${order.reference}`;
+  const metaRows = customerMetaRows(order)
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:700;width:180px;">${escapeHtml(label)}</td>
+          <td style="padding:10px 12px;border:1px solid #e2e8f0;">${escapeHtml(value)}</td>
+        </tr>
+      `
+    )
+    .join("");
+  const introHtml = `
+    <p style="margin:0 0 12px;font-size:16px;">Hello ${escapeHtml(order.customer.name)},</p>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.7;">
+      We received your Athletonic international order request and our team is reviewing it now.
+      Your reference number is <strong>${escapeHtml(order.reference)}</strong>.
+    </p>
+  `;
+  const bodyHtml = `
+    <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">${metaRows}</table>
+    <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+      ${internationalOrderItemsHtml(order)}
+    </table>
+    <div style="margin:0 0 24px;padding:20px;border:1px solid #e2e8f0;border-radius:18px;background:#f8fafc;">
+      <p style="margin:0 0 10px;font-size:18px;font-weight:700;">Order summary</p>
+      <p style="margin:0 0 8px;"><strong>Reference:</strong> ${escapeHtml(order.reference)}</p>
+      <p style="margin:0 0 8px;"><strong>Receipt status:</strong> ${escapeHtml(receiptStatus)}</p>
+      <p style="margin:0 0 8px;"><strong>Subtotal:</strong> ${escapeHtml(moneyOrPending(order.subtotal_cents, order.currency))}</p>
+      <p style="margin:0;"><strong>Total:</strong> ${escapeHtml(moneyOrPending(order.total_cents, order.currency))}</p>
+    </div>
+    <div style="margin:0 0 24px;padding:24px;border-radius:20px;background:#fff7ed;border:1px solid #fdba74;">
+      <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#9a3412;">Payment details</p>
+      <p style="margin:0 0 14px;font-size:22px;font-weight:700;">ATHLETONIC LLC</p>
+      <p style="margin:0 0 16px;font-size:16px;font-weight:700;">Datos para Transferencia Bancaria</p>
+      ${internationalEmailBankDetailsHtml(bankDetails)}
+      <p style="margin:16px 0 0;font-size:14px;color:#7c2d12;">${escapeHtml(bankDetails.paymentInstructions)}</p>
+    </div>
+    <div style="margin:0 0 24px;padding:20px;border:1px solid #e2e8f0;border-radius:18px;background:#ffffff;">
+      <p style="margin:0 0 12px;font-size:18px;font-weight:700;">Next step</p>
+      <p style="margin:0;font-size:15px;line-height:1.7;">
+        If you have not paid yet, please complete the payment using the banking information above and send your receipt to Athletonic.
+        If you already paid but did not upload a receipt, reply to this email with your payment proof.
+      </p>
+    </div>
+  `;
+  const footerHtml = `
+    <p style="margin:0;font-size:14px;color:#475569;">
+      Athletonic Sales · <a href="mailto:sales@athletonic.com" style="color:#0f172a;">sales@athletonic.com</a> ·
+      <a href="${escapeHtml(siteUrl)}/international_orders" style="color:#0f172a;">athletonic.com/international_orders</a>
+    </p>
+  `;
+  const text = [
+    `International Order Received - ${order.reference}`,
+    "",
+    `Customer: ${order.customer.name}`,
+    `Email: ${order.customer.email}`,
+    `WhatsApp / Phone: ${order.customer.phone}`,
+    `Country: ${order.customer.country}`,
+    `City: ${order.customer.city}`,
+    `Shipping address: ${order.customer.shipping_address}`,
+    `Notes: ${order.customer.notes || "None"}`,
+    "",
+    "Products:",
+    ...internationalOrderItemsText(order),
+    "",
+    `Receipt status: ${receiptStatus}`,
+    `Subtotal: ${moneyOrPending(order.subtotal_cents, order.currency)}`,
+    `Total: ${moneyOrPending(order.total_cents, order.currency)}`,
+    "",
+    ...internationalEmailBankDetailsText(bankDetails),
+    "",
+    "If you have not paid yet, please complete the payment using the banking information above and send your receipt to Athletonic.",
+  ].join("\n");
+
+  return sendEmail({
+    to: order.customer.email,
+    subject,
+    html: internationalEmailShell({
+      siteUrl,
+      eyebrow: "Athletonic International Orders",
+      title: "International Order Received",
+      introHtml,
+      bodyHtml,
+      footerHtml,
+    }),
+    text,
+    replyTo: "sales@athletonic.com",
+  });
+}
+
+async function sendInternationalOrderSalesEmail({ order, bankDetails, siteUrl, recipientEmail }) {
+  const receiptStatus = order.receipt_uploaded ? "Receipt uploaded" : "No receipt uploaded yet";
+  const subject = `New International Order - ${order.reference}`;
+  const customerDetails = customerMetaRows(order)
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:700;width:180px;">${escapeHtml(label)}</td>
+          <td style="padding:10px 12px;border:1px solid #e2e8f0;">${escapeHtml(value)}</td>
+        </tr>
+      `
+    )
+    .join("");
+  const introHtml = `
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.7;">
+      A new international order has been submitted. Reference <strong>${escapeHtml(order.reference)}</strong>.
+    </p>
+  `;
+  const bodyHtml = `
+    <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">${customerDetails}</table>
+    <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+      ${internationalOrderItemsHtml(order)}
+    </table>
+    <div style="margin:0 0 24px;padding:20px;border:1px solid #e2e8f0;border-radius:18px;background:#f8fafc;">
+      <p style="margin:0 0 8px;"><strong>Receipt status:</strong> ${escapeHtml(receiptStatus)}</p>
+      <p style="margin:0 0 8px;"><strong>Receipt attachment:</strong> ${escapeHtml(order.receipt_uploaded ? "Attached to this email" : "No receipt uploaded")}</p>
+      <p style="margin:0 0 8px;"><strong>Subtotal:</strong> ${escapeHtml(moneyOrPending(order.subtotal_cents, order.currency))}</p>
+      <p style="margin:0;"><strong>Total:</strong> ${escapeHtml(moneyOrPending(order.total_cents, order.currency))}</p>
+    </div>
+    <div style="margin:0 0 24px;padding:24px;border-radius:20px;background:#fff7ed;border:1px solid #fdba74;">
+      <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#9a3412;">Banking information used</p>
+      ${internationalEmailBankDetailsHtml(bankDetails)}
+    </div>
+  `;
+  const footerHtml = `
+    <p style="margin:0;font-size:14px;color:#475569;">Reply directly to ${escapeHtml(order.customer.email)} to continue the payment follow-up.</p>
+  `;
+  const attachments = order.receipt
+    ? [{ filename: order.receipt.filename, content: order.receipt.content_base64 }]
+    : [];
+  const text = [
+    `New International Order - ${order.reference}`,
+    "",
+    `Customer: ${order.customer.name} <${order.customer.email}>`,
+    `WhatsApp / Phone: ${order.customer.phone}`,
+    `Country: ${order.customer.country}`,
+    `City: ${order.customer.city}`,
+    `Shipping address: ${order.customer.shipping_address}`,
+    `Notes: ${order.customer.notes || "None"}`,
+    "",
+    "Products:",
+    ...internationalOrderItemsText(order),
+    "",
+    `Receipt status: ${receiptStatus}`,
+    `Receipt attachment: ${order.receipt_uploaded ? "Attached to this email" : "No receipt uploaded"}`,
+    `Subtotal: ${moneyOrPending(order.subtotal_cents, order.currency)}`,
+    `Total: ${moneyOrPending(order.total_cents, order.currency)}`,
+    "",
+    ...internationalEmailBankDetailsText(bankDetails),
+  ].join("\n");
+
+  return sendEmail({
+    from: getSalesFromAddress(),
+    to: recipientEmail,
+    subject,
+    html: internationalEmailShell({
+      siteUrl,
+      eyebrow: "Athletonic Sales",
+      title: "New International Order",
+      introHtml,
+      bodyHtml,
+      footerHtml,
+    }),
+    text,
+    replyTo: order.customer.email,
+    ...(attachments.length ? { attachments } : {}),
+  });
+}
+
 module.exports = {
   sendNewsletterWelcomeEmail,
   sendOrderConfirmationEmail,
   sendBankTransferOrderCustomerEmail,
   sendBankTransferOrderSalesEmail,
+  sendInternationalOrderCustomerEmail,
+  sendInternationalOrderSalesEmail,
   sendWholesaleApplicationDecisionEmail,
   sendWholesaleQuoteRequestEmail,
   sendWholesaleQuoteBuyerEmail,
