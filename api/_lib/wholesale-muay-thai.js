@@ -46,11 +46,8 @@ const THAI_FIGHT_BRANDS = new Set([
 const APPROVED_WHOLESALE_BRANDS = new Set([
   ...THAI_FIGHT_BRANDS,
   "century_martial_arts",
-  "everlast",
   "fuji_sports",
-  "hayabusa",
   "rdx_sports",
-  "rival_boxing",
   "sanabul",
   "shock_doctor",
 ]);
@@ -58,7 +55,10 @@ const APPROVED_WHOLESALE_BRANDS = new Set([
 const BANNED_WHOLESALE_BRANDS = new Set([
   "allbirds",
   "bear_komplex",
+  "everlast",
   "ghost_lifestyle",
+  "hayabusa",
+  "rival_boxing",
   "soccer90",
   "soccer_post",
   "soccer_zone_usa",
@@ -67,11 +67,8 @@ const BANNED_WHOLESALE_BRANDS = new Set([
 
 const GLOBAL_FIGHT_BRANDS = new Set([
   "century_martial_arts",
-  "everlast",
   "fuji_sports",
-  "hayabusa",
   "rdx_sports",
-  "rival_boxing",
   "sanabul",
   "shock_doctor",
 ]);
