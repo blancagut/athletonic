@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -553,17 +553,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/01_3623b789-553e-41e8-aa16-17ffb0b79564.png","t":"013623b789553e41e8aa1617ffb0b79564png"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/02_-_nutrition_facts_2ad1481c-339a-4dc4-8566-f49b349ebc5f.png","t":"02nutritionfacts2ad1481c339a4dc48566f49b349ebc5fpng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/04_-_10_vitamins_and_minerals.png","t":"0410vitaminsandmineralspng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/08_-_step.png","t":"08steppng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/06_-_lifestyle_image.png","t":"06lifestyleimagepng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/01_-_product_shot_d48a4f95-0e31-4b06-8691-39e671be3b7f.png","t":"01productshotd48a4f950e314b06869139e671be3b7fpng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/07_-_serving_size_9414b8f7-aee2-4c54-b5a7-e5db1e95bd7c.png","t":"07servingsize9414b8f7aee24c54b5a7e5db1e95bd7cpng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/03_-_flavor_profile.png","t":"03flavorprofilepng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/02_-_nutrition_facts_1.png","t":"02nutritionfacts1png"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/04_-_10_vitamins_and_minerals_1.png","t":"0410vitaminsandminerals1png"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/08_-_step_1.png","t":"08step1png"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/06_-_lifestyle_image_1.png","t":"06lifestyleimage1png"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/01_-_product_shot_1_53776406-63ef-4c23-8cc0-40a7cd46f71e.png","t":"01productshot15377640663ef4c238cc040a7cd46f71epng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/01_1_5dbac9b1-7b17-4931-807b-5f2c8513d4a7.png","t":"0115dbac9b17b174931807b5f2c8513d4a7png"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/03_-_flavor_profile_1.png","t":"03flavorprofile1png"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/07_-_serving_size_1_3e77a7e8-09dc-4dd6-9a40-0dc4e6ff0fc2.png","t":"07servingsize13e77a7e809dc4dd69a400dc4e6ff0fc2png"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/05_-_comparison.png","t":"05comparisonpng"},{"src":"https://cdn.shopify.com/s/files/1/0497/3759/7096/files/05_-_comparison_1.png","t":"05comparison1png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -579,21 +580,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

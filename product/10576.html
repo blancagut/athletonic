@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -635,17 +635,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/1RATEDULTIMATEGRIPS.png","t":"1ratedultimategripspng"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/1_RATED_ULTIMATE_GRIPS_fc005ce1-c674-4b9b-ae30-6d4e24b43f9e.png","t":"1ratedultimategripspng"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC8112_2_87d583a8-9b29-4000-9061-2cf838e1a96c.jpg","t":"dsc8112287d583a89b29400090612cf838e1a96cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC0945_491dfaa7-b910-4ea6-835f-4db8137e5fbb.jpg","t":"dsc0945491dfaa7b9104ea6835f4db8137e5fbbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC8625_4d8f0285-630f-43eb-b4bc-9ffd5384e69e.jpg","t":"dsc86254d8f0285630f43ebb4bc9ffd5384e69ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/NEW-Model-1907-Platinum-Edition-Ultimate-Grips-Schiek-Sports-54970172.jpg","t":"newmodel1907platinumeditionultimategripsschieksports54970172jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/1RATEDULTIMATEGRIPS_3.png","t":"1ratedultimategrips3png"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/1_RATED_ULTIMATE_GRIPS_3_fa931dfb-9db9-480a-8e52-c0c15e702315.png","t":"1ratedultimategrips3png"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/CCE13A06-4D46-404F-873A-A75FC01CE02F.jpg","t":"cce13a064d46404f873aa75fc01ce02fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/60074D87-5158-4E4D-B8F5-5E4486EFC921.jpg","t":"60074d8751584e4db8f55e4486efc921jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC0549.jpg","t":"dsc0549jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC0598.jpg","t":"dsc0598jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC0444.jpg","t":"dsc0444jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/1RATEDULTIMATEGRIPS_2.png","t":"1ratedultimategrips2png"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/1_RATED_ULTIMATE_GRIPS_2_928db493-e02c-48e1-b81d-32ce48522519.png","t":"1ratedultimategrips2png"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/81C5AFB6-8F76-4C85-A64A-77C9FAA7664A.jpg","t":"81c5afb68f764c85a64a77c9faa7664ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/41C51981-F3BD-4FCD-A534-0BBE6F282F79_Original.jpg","t":"41c51981f3bd4fcda5340bbe6f282f79originaljpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/1RATEDULTIMATEGRIPS_4.png","t":"1ratedultimategrips4png"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/1_RATED_ULTIMATE_GRIPS_4_c129621e-d8b1-449b-b4ab-eb4c93c90011.png","t":"1ratedultimategrips4png"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC04648.jpg","t":"dsc04648jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/NEW-Model-1907-Platinum-Edition-Ultimate-Grips-Schiek-Sports-54969459.jpg","t":"newmodel1907platinumeditionultimategripsschieksports54969459jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC04486.jpg","t":"dsc04486jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC04643.jpg","t":"dsc04643jpg"},{"src":"https://cdn.shopify.com/s/files/1/0766/0175/3896/files/DSC1071.jpg","t":"dsc1071jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -661,21 +662,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

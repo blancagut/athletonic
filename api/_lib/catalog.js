@@ -1,16 +1,8 @@
-// Authoritative checkout catalog: contains EVERY purchasable storefront product
-// (curated + official + full indexed catalog, ~12k records) with variants and
-// pricing. The curated preview catalog (athletonic-catalog.json, ~1.3k records)
-// only covers homepage/category picks — validating against it rejected every
-// non-curated product as "not ready for checkout". Fall back to the curated
-// catalog only if the authoritative file is missing (regenerate via
-// scripts/generate-home.mjs).
-let catalog;
-try {
-  catalog = require("../../data/checkout-catalog.json");
-} catch (error) {
-  catalog = require("../../data/athletonic-catalog.json");
-}
+const { loadCatalog } = require("./catalog-source");
+
+// Runtime now prefers the consolidated final catalog, with a legacy fallback
+// so the app can still boot before regeneration in local/dev flows.
+const catalog = loadCatalog();
 const {
   applyVariantPricingToProduct,
   loadVariantPricingOverrideMap,
@@ -1095,21 +1087,38 @@ async function evaluateCartWithOverrides(cart, options = {}) {
   return evaluateCartAgainstIndexes(cart, products, variants, options);
 }
 
-function getShippingCents(subtotalCents) {
-  const shippingCents = Number.parseInt(
-    process.env.ATHLETONIC_SHIPPING_AMOUNT_CENTS || "0",
-    10
+function parseIntPositive(value) {
+  const number = Number.parseInt(String(value || ""), 10);
+  return Number.isInteger(number) && number >= 0 ? number : 0;
+}
+
+function getShippingCents(subtotalCents, shipping = {}) {
+  const shippingCents = parseIntPositive(
+    shipping.flat_amount_cents ?? process.env.ATHLETONIC_SHIPPING_AMOUNT_CENTS || "0"
   );
-  const freeShippingMinCents = Number.parseInt(
-    process.env.ATHLETONIC_FREE_SHIPPING_MIN_CENTS || "0",
-    10
+  const freeShippingMinCents = parseIntPositive(
+    shipping.free_shipping_min_cents ?? process.env.ATHLETONIC_FREE_SHIPPING_MIN_CENTS || "0"
   );
 
   if (freeShippingMinCents > 0 && subtotalCents >= freeShippingMinCents) {
     return 0;
   }
 
-  return Number.isInteger(shippingCents) && shippingCents > 0 ? shippingCents : 0;
+  return shippingCents > 0 ? shippingCents : 0;
+}
+
+function getTaxCents(subtotalCents, discountCents, tax = {}) {
+  if (tax.automatic !== true) {
+    return 0;
+  }
+
+  const defaultRateBps = parseIntPositive(tax.default_rate_bps);
+  if (defaultRateBps <= 0) {
+    return 0;
+  }
+
+  const taxableBase = Math.max(0, subtotalCents - (Number.isInteger(discountCents) ? discountCents : 0));
+  return Math.round((taxableBase * defaultRateBps) / 10000);
 }
 
 function cartProductIds(cart) {
@@ -1127,6 +1136,7 @@ module.exports = {
   evaluateCart,
   evaluateCartWithOverrides,
   getShippingCents,
+  getTaxCents,
   loadProductsWithOverrides,
   normalizeAttribution,
   normalizeEmail,

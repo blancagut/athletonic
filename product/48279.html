@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -539,17 +539,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12009_25Q3_Wool_Runner_NZ_Natural_Black_Natural_Black_Sole_PDP_LEFT_722d0fa8-2302-4608-8fb9-5546367a278e.png","t":"a1200925q3woolrunnernznaturalblacknaturalblacksolepdpleft722d0fa8230246088fb95546367a278epng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12009_25Q3_Wool_Runner_NZ_Natural_Black_Natural_Black_Sole_PDP_TD_68e65dad-45b4-4152-8c25-2475016cb2af.png","t":"a1200925q3woolrunnernznaturalblacknaturalblacksolepdptd68e65dad45b441528c252475016cb2afpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12009_25Q3_Wool_Runner_NZ_Natural_Black_Natural_Black_Sole_PDP_SOLE_02ea75b5-e046-4980-b6c3-6fa715e02fad.png","t":"a1200925q3woolrunnernznaturalblacknaturalblacksolepdpsole02ea75b5e0464980b6c36fa715e02fadpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12009_25Q3_Wool_Runner_NZ_Natural_Black_Natural_Black_Sole_PDP_PAIR_3Q_bd637b6c-ca8a-4171-bf5e-5578bd22b158.png","t":"a1200925q3woolrunnernznaturalblacknaturalblacksolepdppair3qbd637b6cca8a4171bf5e5578bd22b158png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12009_25Q3_Wool_Runner_NZ_Natural_Black_Natural_Black_Sole_PDP_BACK_d703faf7-0adb-44a7-90d2-2bb7ee901b60.png","t":"a1200925q3woolrunnernznaturalblacknaturalblacksolepdpbackd703faf70adb44a790d22bb7ee901b60png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -565,21 +566,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

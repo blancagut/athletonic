@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -563,17 +563,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy8_5ae911db-d31b-474c-a2af-5b71e725b7a8.jpg","t":"artboard1copy85ae911dbd31b474ca2af5b71e725b7a8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1_6837e954-5101-4084-88c5-724903280fe1.jpg","t":"artboard16837e9545101408488c5724903280fe1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy_7ec9341a-a74b-4aa8-aace-a9021e9f3803.jpg","t":"artboard1copy7ec9341aa74b4aa8aacea9021e9f3803jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy5_980aac6c-5021-4304-8615-4970c2612500.jpg","t":"artboard1copy5980aac6c5021430486154970c2612500jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy4_c9a766f5-b2fe-4b4a-adf6-ba758dcf0861.jpg","t":"artboard1copy4c9a766f5b2fe4b4aadf6ba758dcf0861jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy2_02a13c39-56b9-44b9-b95d-60dfc482301a.jpg","t":"artboard1copy202a13c3956b944b9b95d60dfc482301ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy6_c0f1b4e6-cf94-43e6-a24a-7b7d36c240f8.jpg","t":"artboard1copy6c0f1b4e6cf9443e6a24a7b7d36c240f8jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy3_c908a2ef-303d-4310-9476-1cee37407622.jpg","t":"artboard1copy3c908a2ef303d431094761cee37407622jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy7_94db2944-b191-489b-84ac-d9ab748660f3.jpg","t":"artboard1copy794db2944b191489b84acd9ab748660f3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0002/4680/8603/products/Artboard1copy9_6eb84755-d5f7-48c9-9882-b427d87df93b.jpg","t":"artboard1copy96eb84755d5f748c99882b427d87df93bjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -589,21 +590,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

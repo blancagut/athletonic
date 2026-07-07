@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -572,17 +572,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a1_anklet_support_black_1__6_b21418be-97c6-41cc-90e1-17b7090d3931.jpg","t":"a1ankletsupportblack16b21418be97c641cc90e117b7090d3931jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_a1_dot_grip_ankle_support_1_3f31fabc-6d87-40b8-941a-15cec2d7a995.jpg","t":"rdxa1dotgripanklesupport13f31fabc6d8740b8941a15cec2d7a995jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a1_anklet_support_black_2__6_6f663fdc-c9f7-42a5-8f6d-b88f7ccdeb40.jpg","t":"a1ankletsupportblack266f663fdcc9f742a58f6db88f7ccdeb40jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a1_anklet_support_black_3__6_d0c406ec-41c1-4674-b3e5-87f768eb09f3.jpg","t":"a1ankletsupportblack36d0c406ec41c14674b3e587f768eb09f3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_a1_dot_grip_ankle_support_2_2a8d1045-e7d7-4275-9493-8b22b5de0e70.jpg","t":"rdxa1dotgripanklesupport22a8d1045e7d7427594938b22b5de0e70jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a1_anklet_support_black_4__6_35b7515e-5367-4970-940b-5cd607073822.jpg","t":"a1ankletsupportblack4635b7515e53674970940b5cd607073822jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a1_anklet_support_black_5__6_1f8d0dec-73ea-47d9-a291-74c13c7c0365.jpg","t":"a1ankletsupportblack561f8d0dec73ea47d9a29174c13c7c0365jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/a1_anklet_support_black_6__6_4bd82b0a-0499-4907-b213-6f3765dceda9.jpg","t":"a1ankletsupportblack664bd82b0a04994907b2136f3765dceda9jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -598,21 +599,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

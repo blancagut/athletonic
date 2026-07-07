@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -552,17 +552,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3d9d0258-0498-47f6-8563-a46d7b317cfe/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8eb0b7b5-9f0e-4203-90d6-ddbbfed9248e/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/b62cc45a-492d-4c14-b46a-0fc0fef51ec6/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/58f6571e-0332-491c-b9c2-3bf4b9b423aa/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/cdadbe6a-b34f-475f-9fb1-def47c5ded8a/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/d5a548f6-8382-4b7e-9064-f52471781ffc/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/a35d880a-75e4-4573-be3c-5439f6d5fd16/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/272afdb1-a195-4dd8-b3ff-150b93db92b9/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/bb5326ae-6a60-465b-960c-935c833edbbc/kobe-air-force-1-low-mens-shoes-boVohBiO.png","t":"kobeairforce1lowmensshoeskobeairforce1lowmensshoesbovohbiopng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -578,21 +579,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

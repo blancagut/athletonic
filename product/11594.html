@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -549,17 +549,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_b2_weightlifting_barbell_pad_4_725ddc8d-0dbd-497f-af95-bd8505ae4061.jpg","t":"rdxb2weightliftingbarbellpad4725ddc8d0dbd497faf95bd8505ae4061jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_b2_weightlifting_barbell_pad_6_46c45789-c876-46e6-808e-419410936643.jpg","t":"rdxb2weightliftingbarbellpad646c45789c87646e6808e419410936643jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_b2_weightlifting_barbell_pad_5_87d449ec-6107-444a-a90f-04c950f42b63.jpg","t":"rdxb2weightliftingbarbellpad587d449ec6107444aa90f04c950f42b63jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_b2_weightlifting_barbell_pad_2_67eb1018-a128-4324-af07-981c1d04a20b.jpg","t":"rdxb2weightliftingbarbellpad267eb1018a1284324af07981c1d04a20bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_b2_weightlifting_barbell_pad_3_db72e9c2-a68c-4d78-bdab-2250addcc666.jpg","t":"rdxb2weightliftingbarbellpad3db72e9c2a68c4d78bdab2250addcc666jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/rdx_b2_weightlifting_barbell_pad_7_aff930bf-e1c8-4683-ae71-d77f2e62d1f2.jpg","t":"rdxb2weightliftingbarbellpad7aff930bfe1c84683ae71d77f2e62d1f2jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -575,21 +576,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -622,17 +622,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TROPSNOWCONE-TW-PDP_4.png","t":"tropsnowconetwpdp4png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TROPSNOWCONE-TW-PDP_5.png","t":"tropsnowconetwpdp5png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/WEEKEND-PDPSPF_9d38fa3b-3030-4cdd-955c-e43d212cad0b.png","t":"weekendpdpspf9d38fa3b30304cdd955ce43d212cad0bpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_BAJABOMB_30SERV_FLV-2023.png","t":"twbajabomb30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/BAJABOMB.jpg","t":"bajabombjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_SOURGUMMYBEARS_30SERV_FLV-2023.png","t":"twsourgummybears30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/SGB.jpg","t":"sgbjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TW_GREENAPPLE_30SERV_FLV-2023.png","t":"twgreenapple30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/GREENAPPLE.jpg","t":"greenapplejpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_BLUERASPBERRY_30SERV_FLV-2023.png","t":"twblueraspberry30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/BLUERASPBERRY.jpg","t":"blueraspberryjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_GRAPE_30SERV_FLV-2023.png","t":"twgrape30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/GRAPE.jpg","t":"grapejpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TW_ORANGECRUSH_30SERV_FLV-2023_df67db56-b7dd-4fdf-a8c1-2efb43ff48c6.png","t":"tworangecrush30servflv2023df67db56b7dd4fdfa8c12efb43ff48c6png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/ORANGECRUSH.jpg","t":"orangecrushjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_RAINBOWCANDY_30SERV_FLV-2023.png","t":"twrainbowcandy30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/RAINBOWCANDY.jpg","t":"rainbowcandyjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_STRAWBERRYKIWI_30SERV_FLV-2023.png","t":"twstrawberrykiwi30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/STRAWBERRYKIWI.jpg","t":"strawberrykiwijpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_STRAWBERRYMANGO_30SERV_FLV-2023.png","t":"twstrawberrymango30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/STRAWBEERYMANGO.jpg","t":"strawbeerymangojpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/4-Benefits_1.5x.png","t":"4benefits15xpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_CALISPLASH_30SERV_FLV-2023.png","t":"twcalisplash30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/CALISPLASH.jpg","t":"calisplashjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/products/TW_VICECITY_30SERV_FLV-2023.png","t":"twvicecity30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/VICECITY.jpg","t":"vicecityjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/watermelon-total-war.png","t":"watermelontotalwarpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/WATERMELON.jpg","t":"watermelonjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TW_TIGERSBLOOD_30SERV_FLV-2023.png","t":"twtigersblood30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TIGER_SBLOOD.jpg","t":"tigersbloodjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TW_BLUELEMONADE_30SERV_FLV-2023.png","t":"twbluelemonade30servflv2023png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/BLUELEMONADE.jpg","t":"bluelemonadejpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/5-How_When_2x_5384fa59-9f93-4ffd-b7bb-90decb9dcf7e.png","t":"5howwhen2x5384fa599f934ffdb7bb90decb9dcf7epng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/8-Delivers_2x_2778750f-48ee-48af-b869-144323e1ce90.png","t":"8delivers2x2778750f48ee48afb869144323e1ce90png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TW-8-Newlook.png","t":"tw8newlookpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TW-3-FlavorDescription.png","t":"tw3flavordescriptionpng"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/TW_PEACHCANDY_30SERV_FLV_31177ccd-0ef3-4572-9502-fd4d422323f6.png","t":"twpeachcandy30servflv31177ccd0ef345729502fd4d422323f6png"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/SOURPEACHRINGS.jpg","t":"sourpeachringsjpg"},{"src":"https://cdn.shopify.com/s/files/1/1304/0433/files/6-KeyIngredients_1.5x.png","t":"6keyingredients15xpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -648,21 +649,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

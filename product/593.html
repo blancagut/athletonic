@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -616,17 +616,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Pump_Lemonade_Front_37f99d4c-a133-4f98-af3d-64425f43f881.webp","t":"pumplemonadefront37f99d4ca1334f98af3d64425f43f881webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Pump_Rasberry_Lemonade_Front_69969cef-d6ab-4713-9cb7-579303013555.webp","t":"pumprasberrylemonadefront69969cefd6ab47139cb7579303013555webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Pump_Pineapple_Front_b084815c-e518-486b-aaab-ed532111532d.webp","t":"pumppineapplefrontb084815ce518486baaabed532111532dwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/pump-souraf_9594cc97-b275-4362-89fe-eec6fbddd3b4.webp","t":"pumpsouraf9594cc97b275436289feeec6fbddd3b4webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Pump_Strawberry_Lemonade_Front_955bfff1-00f6-4655-9dc0-1bb79d187335.webp","t":"pumpstrawberrylemonadefront955bfff100f646559dc01bb79d187335webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Pump_Watermelon_Front_dd4bdc41-e3a4-4dc9-afd2-17a0aa3916f6.webp","t":"pumpwatermelonfrontdd4bdc41e3a44dc9afd217a0aa3916f6webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/pump_-_champion_mentality.webp","t":"pumpchampionmentalitywebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/PUMP_-_Watermelon_Grape_-_front.png","t":"pumpwatermelongrapefrontpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/RAWPumpOrangeMango.webp","t":"rawpumporangemangowebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/RAW_Pump_Orange_Mango_Supp_Facts_Flavor_bdb50ba2-8b30-44ed-9dec-ce368b47bcdb.png","t":"rawpumporangemangosuppfactsflavorbdb50ba28b3044ed9decce368b47bcdbpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/pump-championmentality_67f52ea2-185f-4de2-9f44-bb2e81688953.webp","t":"pumpchampionmentality67f52ea2185f4de29f44bb2e81688953webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/pump-watermelongrape_e95eed1f-8cc0-4e93-99ae-212cddc85072.webp","t":"pumpwatermelongrapee95eed1f8cc04e9399ae212cddc85072webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/pumpsouraf_588b7b0d-50ff-43c6-9fa6-1a3781466af3.webp","t":"pumpsouraf588b7b0d50ff43c69fa61a3781466af3webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/PUMP-Lemonade-SFP_289a5d28-068f-45fc-9520-e7ad9adfef55.png","t":"pumplemonadesfp289a5d28068f45fc9520e7ad9adfef55png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/PUMP-RaspberryLemonade-SFP_070784ff-26d4-4c9d-bb0e-a5940c468712.png","t":"pumpraspberrylemonadesfp070784ff26d44c9dbb0ea5940c468712png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/PUMP-Pineapple-SFP_f412ab9d-ea61-4b4c-a2f8-c9530c8a83f3.png","t":"pumppineapplesfpf412ab9dea614b4ca2f8c9530c8a83f3png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/PUMP-Watermelon-SFP_a37ac331-a58a-4d57-a313-9d3d4cd7eea4.png","t":"pumpwatermelonsfpa37ac331a58a4d57a3139d3d4cd7eea4png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/PUMP-StrawberryLemonade-SFP_fcc4bacc-66da-4f3e-82ab-1f8530504244.png","t":"pumpstrawberrylemonadesfpfcc4bacc66da4f3e82ab1f8530504244png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -642,21 +643,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

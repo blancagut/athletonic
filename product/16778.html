@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -547,17 +547,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2538/3594/products/Choc-TravelKits.png","t":"choctravelkitspng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/products/Van-TravelKits_6f25a032-73f7-4076-81ea-d745cb9eb7a6.png","t":"vantravelkits6f25a03273f7407681ead745cb9eb7a6png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/products/CPB-TravelKits_487ff48c-608b-4323-84c9-eb7ec92a6102.png","t":"cpbtravelkits487ff48c608b432384c9eb7ec92a6102png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/products/Chai-SingleServes_b4776cb9-6163-4e82-b82c-1c2a175ab62b.png","t":"chaisingleservesb4776cb961634e82b82c1c2a175ab62bpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/products/BC-TravelKits.png","t":"bctravelkitspng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/10packBoxDesign_Matcha_1_006ffb60-410a-4c31-8565-cc0d121b84cc.png","t":"10packboxdesignmatcha1006ffb60410a4c318565cc0d121b84ccpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/MockUp10packBoxDesign_Boxes_Pumpkin_main_44ab012e-3a63-4603-a4c8-16385fa41323.png","t":"mockup10packboxdesignboxespumpkinmain44ab012e3a634603a4c816385fa41323png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/products/PB-SingleServes_259c6b88-95bb-4da5-9e4e-3ad446aa4855.png","t":"pbsingleserves259c6b8895bb4da59e4e3ad446aa4855png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/products/Unflavored-SingleServes_28e83307-a421-4f4e-a0d3-d83175e5d171.png","t":"unflavoredsingleserves28e83307a4214f4ea0d3d83175e5d171png"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/MockUp10packBoxDesign_Boxes_MintChocolate_main.png","t":"mockup10packboxdesignboxesmintchocolatemainpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/MockUp10packBoxDesign_Boxes_Strawberry_main.png","t":"mockup10packboxdesignboxesstrawberrymainpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/MockUp10packBoxDesign_Boxes_ChocolateStrawberry_main.png","t":"mockup10packboxdesignboxeschocolatestrawberrymainpng"},{"src":"https://cdn.shopify.com/s/files/1/2538/3594/files/MockUp10packBoxDesign_Boxes_LemonCookie_main.png","t":"mockup10packboxdesignboxeslemoncookiemainpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -573,21 +574,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

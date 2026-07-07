@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -522,17 +522,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Whey-Unflavored-2LB-Main-Image.jpg","t":"wheyunflavored2lbmainimagejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/grass-fed-whey-farms_2cd8dd23-0996-4b22-9584-cde89b872418.jpg","t":"grassfedwheyfarms2cd8dd2309964b229584cde89b872418jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Whey-Unflavored-2LB-Graphic.png","t":"wheyunflavored2lbgraphicpng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/clean-protein-no-gmo-no-hormones_793f39aa-96e5-4919-ad00-2ddf905a7eaf.jpg","t":"cleanproteinnogmonohormones793f39aa96e54919ad002ddf905a7eafjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Whey-Unflavored-2LB-NutritionFacts-Sodium2026.png","t":"wheyunflavored2lbnutritionfactssodium2026png"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/third-party-tested-whey-protein_ab74688a-7ea8-4a48-97d8-a18615e93eb2.jpg","t":"thirdpartytestedwheyproteinab74688a7ea84a4897d8a18615e93eb2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/whey-protein-Lifestyle.png","t":"wheyproteinlifestylepng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/grassfed-whey-protein-powder_8363d3a9-79b4-4c29-9895-30222847669e.png","t":"grassfedwheyproteinpowder8363d3a979b44c29989530222847669epng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/whey-protein-recipe_75d6d9ec-4f2c-4bcd-946c-058c24c18d78.jpg","t":"wheyproteinrecipe75d6d9ec4f2c4bcd946c058c24c18d78jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/whey-protein-shake-how-to_c907914d-daa3-43f1-827b-49d68eb32b94.jpg","t":"wheyproteinshakehowtoc907914ddaa343f1827b49d68eb32b94jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -548,21 +549,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

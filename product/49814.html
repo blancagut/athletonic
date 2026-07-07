@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -550,17 +550,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/cdf50c3f-02c5-4635-89a4-b5c31ffac397/zoom-fly-6-glam-mens-road-running-shoes-wn2ALjkm.png","t":"nikezoomfly6glammensroadrunningshoeszoomfly6glammensroadrunningshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8102d215-ca3d-4ac3-b16c-dd6cd59b8298/zoom-fly-6-glam-mens-road-running-shoes-wn2ALjkm.png","t":"nikezoomfly6glammensroadrunningshoeszoomfly6glammensroadrunningshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/09187391-8fdc-4002-a864-41a8d840721d/zoom-fly-6-glam-mens-road-running-shoes-wn2ALjkm.png","t":"nikezoomfly6glammensroadrunningshoeszoomfly6glammensroadrunningshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f9dc8697-3706-46bf-8536-5b37bb0d79f0/zoom-fly-6-glam-mens-road-running-shoes-wn2ALjkm.png","t":"nikezoomfly6glammensroadrunningshoeszoomfly6glammensroadrunningshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/8276cc1f-f263-4fad-acc9-3c8b4df30479/zoom-fly-6-glam-mens-road-running-shoes-wn2ALjkm.png","t":"nikezoomfly6glammensroadrunningshoeszoomfly6glammensroadrunningshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/43eef605-8459-41e1-bbbe-7607917b6d90/zoom-fly-6-glam-mens-road-running-shoes-wn2ALjkm.png","t":"nikezoomfly6glammensroadrunningshoeszoomfly6glammensroadrunningshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/05c9aaa7-dd0c-4e6a-8405-42ee382c200d/zoom-fly-6-glam-mens-road-running-shoes-wn2ALjkm.png","t":"nikezoomfly6glammensroadrunningshoeszoomfly6glammensroadrunningshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f8a7c2f1-1429-4b02-9778-2cb979e43cfe/zoom-fly-6-glam-mens-road-running-shoes-wn2ALjkm.png","t":"nikezoomfly6glammensroadrunningshoeszoomfly6glammensroadrunningshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/33cd69bc-813e-4c18-adb2-714f0edce239/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod_ps/w_1536,c_limit/b27c37d8-f2cc-4839-b4d8-35c6ec3d48cf/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/4e1433d6-a3e6-4dcb-8cd7-6e31bd335974/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_960,c_limit/dc0889be-bae6-4ba1-9c33-3677b18f6dd9/image.jpg","t":"imagejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -576,21 +577,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -556,17 +556,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_Black_Front_3811v01-_1.jpg","t":"recovershort7inblackfront3811v011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/Recover_Short_-_Hover_and_Active_Video_in_Buy_Box_37b362c4-ed22-4c81-a699-21cab9175dd0.jpg","t":"recovershorthoverandactivevideoinbuyboxjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_LHG_Front_3811v01_95c7f215-b480-4aac-9b9c-a27dfed4526c.jpg","t":"recovershort7inlhgfront3811v0195c7f215b4804aac9b9ca27dfed4526cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_Black_RightPocket_3816v01_329891d9-3189-40d5-a257-ade1e0d671c6.jpg","t":"recovershort7inblackrightpocket3816v01329891d9318940d5a257ade1e0d671c6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_Black_LogoDetail_3840v01_fbaa7ec9-e8ff-4d5e-9c76-e9e330496470.jpg","t":"recovershort7inblacklogodetail3840v01fbaa7ec9e8ff4d5e9c76e9e330496470jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_Black_LeftPocket_3817v01_6cf16bbb-b96c-4ebc-8655-c26ef9d3d8bb.jpg","t":"recovershort7inblackleftpocket3817v016cf16bbbb96c4ebc8655c26ef9d3d8bbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_Black_InteriorDrawCord_3822v01_246a0018-34fd-4218-9c84-a2725b6b27ee.jpg","t":"recovershort7inblackinteriordrawcord3822v01246a001834fd42189c84a2725b6b27eejpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_Black_FabricDetail_3818v01_3d4acf17-1fa6-4745-88e1-7bd5258aa95f.jpg","t":"recovershort7inblackfabricdetail3818v013d4acf171fa6474588e17bd5258aa95fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_OD-Green_Front_3811v01-_1.jpg","t":"recovershort7inodgreenfront3811v011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_LHG_RightPocket_3816v01_d5d72250-9f0c-4101-a62f-e97f909394ea.jpg","t":"recovershort7inlhgrightpocket3816v01d5d722509f0c4101a62fe97f909394eajpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_LHG_LogoDetail_3840v01_763ac6e5-bede-4b98-9c3e-76464021e244.jpg","t":"recovershort7inlhglogodetail3840v01763ac6e5bede4b989c3e76464021e244jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_LHG_LeftPocket_3817v01_7cd978e8-a284-4db2-b2e6-044c0388289e.jpg","t":"recovershort7inlhgleftpocket3817v017cd978e8a2844db2b2e6044c0388289ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_LHG_InteriorDrawCord_3822v01_1e667fcc-0f5e-44f4-af49-da67f6dff420.jpg","t":"recovershort7inlhginteriordrawcord3822v011e667fcc0f5e44f4af49da67f6dff420jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_LHG_FabricDetail_3818v01_8152d795-89c9-4fc0-8559-427fcf149d17.jpg","t":"recovershort7inlhgfabricdetail3818v018152d79589c94fc08559427fcf149d17jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_OD-Green_RightPocket_3816v01_2aed511c-ef2a-417a-91e4-2a7f441bab9a.jpg","t":"recovershort7inodgreenrightpocket3816v012aed511cef2a417a91e42a7f441bab9ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_OD-Green_LogoDetail_3840v01_6569cc49-94d8-45a4-8800-8b11239dea0e.jpg","t":"recovershort7inodgreenlogodetail3840v016569cc4994d845a488008b11239dea0ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_Black_Back_3842v01-_1.jpg","t":"recovershort7inblackback3842v011jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_OD-Green_LeftPocket_3817v01_a6f73389-abd2-40ad-b65d-962d7956ebb6.jpg","t":"recovershort7inodgreenleftpocket3817v01a6f73389abd240adb65d962d7956ebb6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_OD-Green_InteriorDrawCord_3822v01_98085df7-bc83-495d-8c68-03c2ecf57498.jpg","t":"recovershort7inodgreeninteriordrawcord3822v0198085df7bc83495d8c6803c2ecf57498jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_OD-Green_FabricDetail_3818v01_a3f816cd-6340-4f1a-b1ee-b3cae35ec7c6.jpg","t":"recovershort7inodgreenfabricdetail3818v01a3f816cd63404f1ab1eeb3cae35ec7c6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_LHG_Back_3842v01_e14d781c-72d6-4d6e-834c-d254a46906f7.jpg","t":"recovershort7inlhgback3842v01e14d781c72d64d6e834cd254a46906f7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/RecoverShort_7in_OD-Green_Back_3842v01-_1.jpg","t":"recovershort7inodgreenback3842v011jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -582,21 +583,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -582,17 +582,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-shop-all.jpg","t":"focusground10ozwholebeanshopalljpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-1-pack.jpg","t":"focusground10ozwholebean1packjpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-2-pack.jpg","t":"focusground10ozwholebean2packjpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-4-pack.jpg","t":"focusground10ozwholebean4packjpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/Think_Whole_Bean_7_Pack.jpg","t":"thinkwholebean7packjpg"},{"src":"https://cdn.shopify.com/s/files/1/0739/9341/files/Think_Whole_Bean_20_Pack.jpg","t":"thinkwholebean20packjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -608,21 +609,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -644,7 +649,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"40641575714852","key":"1-pack","title":"1-pack","sku":null,"optionValues":["1-pack"],"option_values":[{"position":1,"name":"Pack Size","value":"1-pack"}],"selected_options":{"Pack Size":"1-pack"},"price_cents":2000,"regular_price_cents":2000,"compare_at_cents":2000,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-1-pack.jpg"},{"variant_id":"40641575747620","key":"2-Pack","title":"2-Pack","sku":null,"optionValues":["2-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"2-Pack"}],"selected_options":{"Pack Size":"2-Pack"},"price_cents":3800,"regular_price_cents":4000,"compare_at_cents":4000,"compare_at_price_cents":4000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-2-pack.jpg"},{"variant_id":"40641575780388","key":"4-Pack","title":"4-Pack","sku":null,"optionValues":["4-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"4-Pack"}],"selected_options":{"Pack Size":"4-Pack"},"price_cents":7200,"regular_price_cents":8000,"compare_at_cents":8000,"compare_at_price_cents":8000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-4-pack.jpg"},{"variant_id":"40641575813156","key":"6-Pack","title":"6-Pack","sku":null,"optionValues":["6-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"6-Pack"}],"selected_options":{"Pack Size":"6-Pack"},"price_cents":10200,"regular_price_cents":12000,"compare_at_cents":12000,"compare_at_price_cents":12000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-1-pack.jpg"},{"variant_id":"42093624655908","key":"7-Pack","title":"7-Pack","sku":null,"optionValues":["7-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"7-Pack"}],"selected_options":{"Pack Size":"7-Pack"},"price_cents":8900,"regular_price_cents":14000,"compare_at_cents":14000,"compare_at_price_cents":14000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/Think_Whole_Bean_7_Pack.jpg"},{"variant_id":"42093624688676","key":"20-Pack","title":"20-Pack","sku":null,"optionValues":["20-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"20-Pack"}],"selected_options":{"Pack Size":"20-Pack"},"price_cents":19900,"regular_price_cents":40000,"compare_at_cents":40000,"compare_at_price_cents":40000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/Think_Whole_Bean_20_Pack.jpg"},{"variant_id":"42105931137060","key":"4-Pack (new)","title":"4-Pack (new)","sku":null,"optionValues":["4-Pack (new)"],"option_values":[{"position":1,"name":"Pack Size","value":"4-Pack (new)"}],"selected_options":{"Pack Size":"4-Pack (new)"},"price_cents":5900,"regular_price_cents":8000,"compare_at_cents":8000,"compare_at_price_cents":8000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-1-pack.jpg"}];
+        var variantPricing = [{"variant_id":"40641575714852","key":"1-pack","title":"1-pack","sku":null,"optionValues":["1-pack"],"option_values":[{"position":1,"name":"Pack Size","value":"1-pack"}],"selected_options":{"Pack Size":"1-pack"},"price_cents":2000,"regular_price_cents":2000,"compare_at_cents":2000,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-1-pack.jpg"},{"variant_id":"40641575747620","key":"2-Pack","title":"2-Pack","sku":null,"optionValues":["2-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"2-Pack"}],"selected_options":{"Pack Size":"2-Pack"},"price_cents":3800,"regular_price_cents":4000,"compare_at_cents":4000,"compare_at_price_cents":4000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-2-pack.jpg"},{"variant_id":"40641575780388","key":"4-Pack","title":"4-Pack","sku":null,"optionValues":["4-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"4-Pack"}],"selected_options":{"Pack Size":"4-Pack"},"price_cents":7200,"regular_price_cents":8000,"compare_at_cents":8000,"compare_at_price_cents":8000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-4-pack.jpg"},{"variant_id":"40641575813156","key":"6-Pack","title":"6-Pack","sku":null,"optionValues":["6-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"6-Pack"}],"selected_options":{"Pack Size":"6-Pack"},"price_cents":10200,"regular_price_cents":12000,"compare_at_cents":12000,"compare_at_price_cents":12000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/focus-ground-10oz-whole-bean-1-pack.jpg"},{"variant_id":"42093624655908","key":"7-Pack","title":"7-Pack","sku":null,"optionValues":["7-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"7-Pack"}],"selected_options":{"Pack Size":"7-Pack"},"price_cents":8900,"regular_price_cents":14000,"compare_at_cents":14000,"compare_at_price_cents":14000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/Think_Whole_Bean_7_Pack.jpg"},{"variant_id":"42093624688676","key":"20-Pack","title":"20-Pack","sku":null,"optionValues":["20-Pack"],"option_values":[{"position":1,"name":"Pack Size","value":"20-Pack"}],"selected_options":{"Pack Size":"20-Pack"},"price_cents":19900,"regular_price_cents":40000,"compare_at_cents":40000,"compare_at_price_cents":40000,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0739/9341/files/Think_Whole_Bean_20_Pack.jpg"},{"variant_id":"42105931137060","key":"4-Pack (new)","title":"4-Pack (new)","sku":null,"optionValues":["4-Pack (new)"],"option_values":[{"position":1,"name":"Pack Size","value":"4-Pack (new)"}],"selected_options":{"Pack Size":"4-Pack (new)"},"price_cents":5900,"regular_price_cents":8000,"compare_at_cents":8000,"compare_at_price_cents":8000,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -560,17 +560,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2501-J_adorade_9e6f1edf-8fd0-4fbe-b375-8e814012571a.png","t":"2501jadorade9e6f1edf8fd04fbeb3758e814012571apng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Jadorade_Stack.jpg","t":"jadoradestackjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Jadorade_Stack_Stick.jpg","t":"jadoradestackstickjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -586,21 +587,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -622,7 +627,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"42204227895379","key":"Jar / Watermelon","title":"Jar / Watermelon","sku":null,"optionValues":["Jar","Watermelon"],"option_values":[{"position":1,"name":"Type","value":"Jar"},{"position":2,"name":"Mini-Dew Flavor","value":"Watermelon"}],"selected_options":{"Type":"Jar","Mini-Dew Flavor":"Watermelon"},"price_cents":7740,"regular_price_cents":8600,"compare_at_cents":8600,"compare_at_price_cents":8600,"source_available":true,"available":true,"image_url":null},{"variant_id":"42204227928147","key":"Sticks / Watermelon","title":"Sticks / Watermelon","sku":null,"optionValues":["Sticks","Watermelon"],"option_values":[{"position":1,"name":"Type","value":"Sticks"},{"position":2,"name":"Mini-Dew Flavor","value":"Watermelon"}],"selected_options":{"Type":"Sticks","Mini-Dew Flavor":"Watermelon"},"price_cents":6930,"regular_price_cents":7700,"compare_at_cents":7700,"compare_at_price_cents":7700,"source_available":false,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/Jadorade_Stack_Stick.jpg"},{"variant_id":"42204227960915","key":"Jar / Pomelo","title":"Jar / Pomelo","sku":null,"optionValues":["Jar","Pomelo"],"option_values":[{"position":1,"name":"Type","value":"Jar"},{"position":2,"name":"Mini-Dew Flavor","value":"Pomelo"}],"selected_options":{"Type":"Jar","Mini-Dew Flavor":"Pomelo"},"price_cents":7740,"regular_price_cents":8600,"compare_at_cents":8600,"compare_at_price_cents":8600,"source_available":true,"available":true,"image_url":null},{"variant_id":"42204227993683","key":"Sticks / Pomelo","title":"Sticks / Pomelo","sku":null,"optionValues":["Sticks","Pomelo"],"option_values":[{"position":1,"name":"Type","value":"Sticks"},{"position":2,"name":"Mini-Dew Flavor","value":"Pomelo"}],"selected_options":{"Type":"Sticks","Mini-Dew Flavor":"Pomelo"},"price_cents":6930,"regular_price_cents":7700,"compare_at_cents":7700,"compare_at_price_cents":7700,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1095/5588/files/Jadorade_Stack_Stick.jpg"}];
+        var variantPricing = [{"variant_id":"42204227895379","key":"Jar / Watermelon","title":"Jar / Watermelon","sku":null,"optionValues":["Jar","Watermelon"],"option_values":[{"position":1,"name":"Type","value":"Jar"},{"position":2,"name":"Mini-Dew Flavor","value":"Watermelon"}],"selected_options":{"Type":"Jar","Mini-Dew Flavor":"Watermelon"},"price_cents":7740,"regular_price_cents":8600,"compare_at_cents":8600,"compare_at_price_cents":8600,"source_available":true,"available":true,"image_url":null},{"variant_id":"42204227928147","key":"Sticks / Watermelon","title":"Sticks / Watermelon","sku":null,"optionValues":["Sticks","Watermelon"],"option_values":[{"position":1,"name":"Type","value":"Sticks"},{"position":2,"name":"Mini-Dew Flavor","value":"Watermelon"}],"selected_options":{"Type":"Sticks","Mini-Dew Flavor":"Watermelon"},"price_cents":6930,"regular_price_cents":7700,"compare_at_cents":7700,"compare_at_price_cents":7700,"source_available":false,"available":true,"image_url":null},{"variant_id":"42204227960915","key":"Jar / Pomelo","title":"Jar / Pomelo","sku":null,"optionValues":["Jar","Pomelo"],"option_values":[{"position":1,"name":"Type","value":"Jar"},{"position":2,"name":"Mini-Dew Flavor","value":"Pomelo"}],"selected_options":{"Type":"Jar","Mini-Dew Flavor":"Pomelo"},"price_cents":7740,"regular_price_cents":8600,"compare_at_cents":8600,"compare_at_price_cents":8600,"source_available":true,"available":true,"image_url":null},{"variant_id":"42204227993683","key":"Sticks / Pomelo","title":"Sticks / Pomelo","sku":null,"optionValues":["Sticks","Pomelo"],"option_values":[{"position":1,"name":"Type","value":"Sticks"},{"position":2,"name":"Mini-Dew Flavor","value":"Pomelo"}],"selected_options":{"Type":"Sticks","Mini-Dew Flavor":"Pomelo"},"price_cents":6930,"regular_price_cents":7700,"compare_at_cents":7700,"compare_at_price_cents":7700,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

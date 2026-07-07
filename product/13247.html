@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -542,17 +542,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100Whey_60Serv_Strawberry_1200x1200_f3eda4e2-f453-4a0c-88ff-4762906a81aa.jpg","t":"100whey60servstrawberry1200x1200f3eda4e2f4534a0c88ff4762906a81aajpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100Whey_60Serv_CookiesCream_1200x1200_09117540-2f54-4fa0-b294-13b7c4ed7a6a.jpg","t":"100whey60servcookiescream1200x1200091175402f544fa0b29413b7c4ed7a6ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100Whey_60Serv_Chocolate_1200x1200_29041651-93e9-48b6-a990-9b690122e4f0.jpg","t":"100whey60servchocolate1200x12002904165193e948b6a9909b690122e4f0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100Whey_60Serv_Vanilla_1200x1200_5fe807b4-89a4-41d8-8d53-711b2cfc1d2f.jpg","t":"100whey60servvanilla1200x12005fe807b489a441d88d53711b2cfc1d2fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100_Whey_2LB_Chocolate_Sept2023_1.png","t":"100whey2lbchocolatesept20231png"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/Whey4lb_Cookies_Cream1_1.jpg","t":"whey4lbcookiescream11jpg"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100Whey_Ingredients.webp","t":"100wheyingredientswebp"},{"src":"https://cdn.shopify.com/s/files/1/0675/6882/8736/files/100Whey_BenefitsCard_f3b9154d-426c-4213-8681-95208bf59186.webp","t":"100wheybenefitscardf3b9154d426c4213868195208bf59186webp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -568,21 +569,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -565,17 +565,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-328559.jpg","t":"versaenergydrinkbeveragepescience328559jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-801348.jpg","t":"versaenergydrinkbeveragepescience801348jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-879579.jpg","t":"versaenergydrinkbeveragepescience879579jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-309027.jpg","t":"versaenergydrinkbeveragepescience309027jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-600918.jpg","t":"versaenergydrinkbeveragepescience600918jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-486194.jpg","t":"versaenergydrinkbeveragepescience486194jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-462083.jpg","t":"versaenergydrinkbeveragepescience462083jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-889840.jpg","t":"versaenergydrinkbeveragepescience889840jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-552518.jpg","t":"versaenergydrinkbeveragepescience552518jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-579974.jpg","t":"versaenergydrinkbeveragepescience579974jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-723552.jpg","t":"versaenergydrinkbeveragepescience723552jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-500668.jpg","t":"versaenergydrinkbeveragepescience500668jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-945424.jpg","t":"versaenergydrinkbeveragepescience945424jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-473174.jpg","t":"versaenergydrinkbeveragepescience473174jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-806471.jpg","t":"versaenergydrinkbeveragepescience806471jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-400400.jpg","t":"versaenergydrinkbeveragepescience400400jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-828527.jpg","t":"versaenergydrinkbeveragepescience828527jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-449302.jpg","t":"versaenergydrinkbeveragepescience449302jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-570789.jpg","t":"versaenergydrinkbeveragepescience570789jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-905256.jpg","t":"versaenergydrinkbeveragepescience905256jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg","t":"versaenergydrinkbeveragepesciencevarietypack12pack211772jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-565308.jpg","t":"versaenergydrinkbeveragepescience565308jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-552582.jpg","t":"versaenergydrinkbeveragepesciencevarietypack12pack552582jpg"},{"src":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-796783.jpg","t":"versaenergydrinkbeveragepescience796783jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -591,21 +592,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -627,7 +632,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"40329801367627","key":"Mandarin Orange Mango / 12 Pack","title":"Mandarin Orange Mango / 12 Pack","sku":null,"optionValues":["Mandarin Orange Mango / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Mandarin Orange Mango / 12 Pack"}],"selected_options":{"Flavor":"Mandarin Orange Mango / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg"},{"variant_id":"40329801302091","key":"White Cherry Slushie / 12 Pack","title":"White Cherry Slushie / 12 Pack","sku":null,"optionValues":["White Cherry Slushie / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"White Cherry Slushie / 12 Pack"}],"selected_options":{"Flavor":"White Cherry Slushie / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg"},{"variant_id":"40329801334859","key":"Black Raspberry / 12 Pack","title":"Black Raspberry / 12 Pack","sku":null,"optionValues":["Black Raspberry / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Black Raspberry / 12 Pack"}],"selected_options":{"Flavor":"Black Raspberry / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg"},{"variant_id":"41758225301579","key":"Watermelon Candy / 12 Pack","title":"Watermelon Candy / 12 Pack","sku":null,"optionValues":["Watermelon Candy / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Watermelon Candy / 12 Pack"}],"selected_options":{"Flavor":"Watermelon Candy / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg"},{"variant_id":"40409099108427","key":"Variety Pack / 12 Pack","title":"Variety Pack / 12 Pack","sku":null,"optionValues":["Variety Pack / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Variety Pack / 12 Pack"}],"selected_options":{"Flavor":"Variety Pack / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg"},{"variant_id":"41078451798091","key":"Variety Pack / 4-Pack","title":"Variety Pack / 4-Pack","sku":null,"optionValues":["Variety Pack / 4-Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Variety Pack / 4-Pack"}],"selected_options":{"Flavor":"Variety Pack / 4-Pack"},"price_cents":999,"regular_price_cents":999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg"}];
+        var variantPricing = [{"variant_id":"40329801367627","key":"Mandarin Orange Mango / 12 Pack","title":"Mandarin Orange Mango / 12 Pack","sku":null,"optionValues":["Mandarin Orange Mango / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Mandarin Orange Mango / 12 Pack"}],"selected_options":{"Flavor":"Mandarin Orange Mango / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40329801302091","key":"White Cherry Slushie / 12 Pack","title":"White Cherry Slushie / 12 Pack","sku":null,"optionValues":["White Cherry Slushie / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"White Cherry Slushie / 12 Pack"}],"selected_options":{"Flavor":"White Cherry Slushie / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40329801334859","key":"Black Raspberry / 12 Pack","title":"Black Raspberry / 12 Pack","sku":null,"optionValues":["Black Raspberry / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Black Raspberry / 12 Pack"}],"selected_options":{"Flavor":"Black Raspberry / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41758225301579","key":"Watermelon Candy / 12 Pack","title":"Watermelon Candy / 12 Pack","sku":null,"optionValues":["Watermelon Candy / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Watermelon Candy / 12 Pack"}],"selected_options":{"Flavor":"Watermelon Candy / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"40409099108427","key":"Variety Pack / 12 Pack","title":"Variety Pack / 12 Pack","sku":null,"optionValues":["Variety Pack / 12 Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Variety Pack / 12 Pack"}],"selected_options":{"Flavor":"Variety Pack / 12 Pack"},"price_cents":2499,"regular_price_cents":2499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg"},{"variant_id":"41078451798091","key":"Variety Pack / 4-Pack","title":"Variety Pack / 4-Pack","sku":null,"optionValues":["Variety Pack / 4-Pack"],"option_values":[{"position":1,"name":"Flavor","value":"Variety Pack / 4-Pack"}],"selected_options":{"Flavor":"Variety Pack / 4-Pack"},"price_cents":999,"regular_price_cents":999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/1943/7603/files/versa-energy-drink-beverage-pescience-variety-pack-12-pack-211772.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

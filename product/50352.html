@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -545,17 +545,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/55f5b1ee-2a7f-483e-9b51-04c530f4b246/sb-zoom-janoski-og-canvas-skate-shoes-qgv22J.png","t":"nikesbzoomjanoskiogcanvasskateshoessbzoomjanoskiogcanvasskateshoesqgv22jpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/f99c88b4-c796-49e8-9db8-401c46f5b727/sb-zoom-janoski-og-canvas-skate-shoes-qgv22J.png","t":"nikesbzoomjanoskiogcanvasskateshoessbzoomjanoskiogcanvasskateshoesqgv22jpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/753e2357-c72c-4d48-a5f2-a0b4cf6bdd3a/sb-zoom-janoski-og-canvas-skate-shoes-qgv22J.png","t":"nikesbzoomjanoskiogcanvasskateshoessbzoomjanoskiogcanvasskateshoesqgv22jpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4de3cfa1-6dc2-4062-973f-5676e9a041c2/sb-zoom-janoski-og-canvas-skate-shoes-qgv22J.png","t":"nikesbzoomjanoskiogcanvasskateshoessbzoomjanoskiogcanvasskateshoesqgv22jpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/2f53ac2d-a1b1-44ee-8427-b90ef05c3fd5/sb-zoom-janoski-og-canvas-skate-shoes-qgv22J.png","t":"nikesbzoomjanoskiogcanvasskateshoessbzoomjanoskiogcanvasskateshoesqgv22jpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/742eee1c-4af0-4535-832e-aa4daa5227f5/sb-zoom-janoski-og-canvas-skate-shoes-qgv22J.png","t":"nikesbzoomjanoskiogcanvasskateshoessbzoomjanoskiogcanvasskateshoesqgv22jpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/775ad71d-6ba2-4dee-9553-becf863c6e63/sb-zoom-janoski-og-canvas-skate-shoes-qgv22J.png","t":"nikesbzoomjanoskiogcanvasskateshoessbzoomjanoskiogcanvasskateshoesqgv22jpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4abd8662-087e-4b67-80a6-c58bdd3d18c8/sb-zoom-janoski-og-canvas-skate-shoes-qgv22J.png","t":"nikesbzoomjanoskiogcanvasskateshoessbzoomjanoskiogcanvasskateshoesqgv22jpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -571,21 +572,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -537,17 +537,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FRONT_428a9247-402c-4815-a879-3b0f2ec1bbb0.jpg","t":"front428a9247402c4815a8793b0f2ec1bbb0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/JF-Horchata-Web-PDPHorchata3.4_1_1.png","t":"jfhorchatawebpdphorchata3411png"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/INFOGRAPHIC_5096d870-1736-4770-bb0c-ad1d57a15317.jpg","t":"infographic5096d87017364770bb0cad1d57a15317jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/QUOTE_30c1b2f0-4db5-493e-a252-4aca6d2e9bba.jpg","t":"quote30c1b2f04db5493ea2524aca6d2e9bbajpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BACK_07fe7198-0aa0-4435-8882-1702d9b20451.jpg","t":"back07fe71980aa0443588821702d9b20451jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/SFP_b9e52438-c91e-40d2-891d-64f46481fe82.jpg","t":"sfpb9e52438c91e40d2891d64f46481fe82jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -563,21 +564,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

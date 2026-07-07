@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -539,17 +539,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12447_26Q1_Dasher-NZ-Blizzard-Blizzard_PDP_LEFT_43da74dc-9258-490a-b9d8-3083bd6eb85f.png","t":"a1244726q1dashernzblizzardblizzardpdpleft43da74dc9258490ab9d83083bd6eb85fpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12447_26Q1_Dasher-NZ-Blizzard-Blizzard_PDP_TD_06ac87d5-f40b-46a8-844f-7d392e5871fc.png","t":"a1244726q1dashernzblizzardblizzardpdptd06ac87d5f40b46a8844f7d392e5871fcpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12447_26Q1_Dasher-NZ-Blizzard-Blizzard_PDP_SOLE_43eb79df-10a8-40db-8d90-a5e51d8f1006.png","t":"a1244726q1dashernzblizzardblizzardpdpsole43eb79df10a840db8d90a5e51d8f1006png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12447_26Q1_Dasher-NZ-Blizzard-Blizzard_PDP_PAIR_3Q_e6c99ff4-8dfe-48c9-929b-3964e6d8d1e0.png","t":"a1244726q1dashernzblizzardblizzardpdppair3qe6c99ff48dfe48c9929b3964e6d8d1e0png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12447_26Q1_Dasher-NZ-Blizzard-Blizzard_PDP_BACK_fba7bf5f-d418-4f6a-9f33-e6dd8924f8c2.png","t":"a1244726q1dashernzblizzardblizzardpdpbackfba7bf5fd4184f6a9f33e6dd8924f8c2png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -565,21 +566,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

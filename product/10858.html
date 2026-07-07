@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -593,17 +593,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp","t":"blackclassicelbowwrapswebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/olympic-blue-classic-elbow-wraps.webp","t":"olympicblueclassicelbowwrapswebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/milspec-green-classic-elbow-wraps.webp","t":"milspecgreenclassicelbowwrapswebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/gray-classic-elbow-wraps.webp","t":"grayclassicelbowwrapswebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/red-classic-elbow-wraps.webp","t":"redclassicelbowwrapswebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/camo-gray-classic-elbow-wraps.webp","t":"camograyclassicelbowwrapswebp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps-2.webp","t":"blackclassicelbowwraps2webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/olympic-blue-classic-elbow-wraps-2.webp","t":"olympicblueclassicelbowwraps2webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps-3.webp","t":"blackclassicelbowwraps3webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps-4.webp","t":"blackclassicelbowwraps4webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps-5.webp","t":"blackclassicelbowwraps5webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/olympic-blue-classic-elbow-wraps-3.webp","t":"olympicblueclassicelbowwraps3webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/olympic-blue-classic-elbow-wraps-4.webp","t":"olympicblueclassicelbowwraps4webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/olympic-blue-classic-elbow-wraps-5.webp","t":"olympicblueclassicelbowwraps5webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/milspec-green-classic-elbow-wraps-2.webp","t":"milspecgreenclassicelbowwraps2webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/milspec-green-classic-elbow-wraps-3.webp","t":"milspecgreenclassicelbowwraps3webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/milspec-green-classic-elbow-wraps-4.webp","t":"milspecgreenclassicelbowwraps4webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/milspec-green-classic-elbow-wraps-5.webp","t":"milspecgreenclassicelbowwraps5webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps-6.webp","t":"blackclassicelbowwraps6webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/gray-classic-elbow-wraps-2.webp","t":"grayclassicelbowwraps2webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/gray-classic-elbow-wraps-3.webp","t":"grayclassicelbowwraps3webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/gray-classic-elbow-wraps-4.webp","t":"grayclassicelbowwraps4webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/gray-classic-elbow-wraps-5.webp","t":"grayclassicelbowwraps5webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/olympic-blue-classic-elbow-wraps-6.webp","t":"olympicblueclassicelbowwraps6webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/milspec-green-classic-elbow-wraps-6.webp","t":"milspecgreenclassicelbowwraps6webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/red-classic-elbow-wraps-2.webp","t":"redclassicelbowwraps2webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/red-classic-elbow-wraps-3.webp","t":"redclassicelbowwraps3webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/red-classic-elbow-wraps-4.webp","t":"redclassicelbowwraps4webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/red-classic-elbow-wraps-5.webp","t":"redclassicelbowwraps5webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/gray-classic-elbow-wraps-6.webp","t":"grayclassicelbowwraps6webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/red-classic-elbow-wraps-6.webp","t":"redclassicelbowwraps6webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/camo-gray-classic-elbow-wraps-2.webp","t":"camograyclassicelbowwraps2webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/camo-gray-classic-elbow-wraps-3.webp","t":"camograyclassicelbowwraps3webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/camo-gray-classic-elbow-wraps-4.webp","t":"camograyclassicelbowwraps4webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/camo-gray-classic-elbow-wraps-5.webp","t":"camograyclassicelbowwraps5webp"},{"src":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/camo-gray-classic-elbow-wraps-6.webp","t":"camograyclassicelbowwraps6webp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -619,21 +620,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -655,7 +660,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"42162754945193","key":"Black","title":"Black","sku":null,"optionValues":["Black"],"option_values":[{"position":1,"name":"Color","value":"Black"}],"selected_options":{"Color":"Black"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp"},{"variant_id":"42162755010729","key":"Black/Milspec Green","title":"Black/Milspec Green","sku":null,"optionValues":["Black/Milspec Green"],"option_values":[{"position":1,"name":"Color","value":"Black/Milspec Green"}],"selected_options":{"Color":"Black/Milspec Green"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp"},{"variant_id":"42162755043497","key":"Black/Olympic Blue","title":"Black/Olympic Blue","sku":null,"optionValues":["Black/Olympic Blue"],"option_values":[{"position":1,"name":"Color","value":"Black/Olympic Blue"}],"selected_options":{"Color":"Black/Olympic Blue"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp"},{"variant_id":"42162755076265","key":"Camo Gray","title":"Camo Gray","sku":null,"optionValues":["Camo Gray"],"option_values":[{"position":1,"name":"Color","value":"Camo Gray"}],"selected_options":{"Color":"Camo Gray"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/camo-gray-classic-elbow-wraps.webp"},{"variant_id":"42162755109033","key":"Black/Red","title":"Black/Red","sku":null,"optionValues":["Black/Red"],"option_values":[{"position":1,"name":"Color","value":"Black/Red"}],"selected_options":{"Color":"Black/Red"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp"},{"variant_id":"42162755174569","key":"Black/Gray","title":"Black/Gray","sku":null,"optionValues":["Black/Gray"],"option_values":[{"position":1,"name":"Color","value":"Black/Gray"}],"selected_options":{"Color":"Black/Gray"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp"}];
+        var variantPricing = [{"variant_id":"42162754945193","key":"Black","title":"Black","sku":null,"optionValues":["Black"],"option_values":[{"position":1,"name":"Color","value":"Black"}],"selected_options":{"Color":"Black"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp"},{"variant_id":"42162755010729","key":"Black/Milspec Green","title":"Black/Milspec Green","sku":null,"optionValues":["Black/Milspec Green"],"option_values":[{"position":1,"name":"Color","value":"Black/Milspec Green"}],"selected_options":{"Color":"Black/Milspec Green"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/milspec-green-classic-elbow-wraps.webp"},{"variant_id":"42162755043497","key":"Black/Olympic Blue","title":"Black/Olympic Blue","sku":null,"optionValues":["Black/Olympic Blue"],"option_values":[{"position":1,"name":"Color","value":"Black/Olympic Blue"}],"selected_options":{"Color":"Black/Olympic Blue"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/olympic-blue-classic-elbow-wraps.webp"},{"variant_id":"42162755076265","key":"Camo Gray","title":"Camo Gray","sku":null,"optionValues":["Camo Gray"],"option_values":[{"position":1,"name":"Color","value":"Camo Gray"}],"selected_options":{"Color":"Camo Gray"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/camo-gray-classic-elbow-wraps.webp"},{"variant_id":"42162755109033","key":"Black/Red","title":"Black/Red","sku":null,"optionValues":["Black/Red"],"option_values":[{"position":1,"name":"Color","value":"Black/Red"}],"selected_options":{"Color":"Black/Red"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp"},{"variant_id":"42162755174569","key":"Black/Gray","title":"Black/Gray","sku":null,"optionValues":["Black/Gray"],"option_values":[{"position":1,"name":"Color","value":"Black/Gray"}],"selected_options":{"Color":"Black/Gray"},"price_cents":3000,"regular_price_cents":3000,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0268/4682/2569/products/black-classic-elbow-wraps.webp"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

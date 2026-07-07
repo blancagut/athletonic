@@ -519,37 +519,6 @@
     cartValidation = Object.assign({}, cartValidation, nextState);
   }
 
-  function localCartValidationPayload(snapshot, signature) {
-    const subtotalCents = snapshot.reduce(
-      (sum, item) => sum + Math.round(Number(item.price || 0) * 100) * item.quantity,
-      0
-    );
-    const currency = String((snapshot[0] && snapshot[0].currency) || "USD").toUpperCase();
-    const lineItems = snapshot.map((item, index) => ({
-      input_index: index,
-      valid: true,
-      product_id: item.productId,
-      name: item.name,
-      brand: item.brand,
-      variant: item.variant || "",
-      quantity: item.quantity,
-      price_cents: Math.round(Number(item.price || 0) * 100),
-      currency,
-    }));
-
-    return {
-      valid: true,
-      signature,
-      code: "",
-      message: "",
-      subtotal_cents: subtotalCents,
-      currency,
-      items: lineItems,
-      line_items: lineItems,
-      invalid_items: [],
-    };
-  }
-
   function applyCartValidationPayload(payload, signature) {
     setCartValidationState({
       status: payload && payload.valid ? "valid" : "invalid",
@@ -564,6 +533,49 @@
       invalidItems: Array.isArray(payload && payload.invalid_items) ? payload.invalid_items : [],
       error: "",
     });
+  }
+
+  function applyValidatedCatalogLines() {
+    if (!Array.isArray(cartValidation.lineItems) || !cartValidation.lineItems.length) return;
+    var changed = false;
+    cartValidation.lineItems.forEach(function (line) {
+      var index = Number(line && line.input_index);
+      if (!Number.isInteger(index) || !cart[index] || line.valid !== true) return;
+      var item = cart[index];
+      var unitCents = Number(line.unit_amount_cents || 0);
+      if (Number.isFinite(unitCents) && unitCents > 0) {
+        var unitPrice = unitCents / 100;
+        if (item.price !== unitPrice) {
+          item.price = unitPrice;
+          changed = true;
+        }
+      }
+      [
+        ["productId", line.product_id],
+        ["variantId", line.variant_id],
+        ["brand", line.brand],
+        ["name", line.name],
+        ["image", line.image_url],
+        ["currency", line.currency],
+        ["variant", line.variant],
+        ["sku", line.sku],
+      ].forEach(function (pair) {
+        var key = pair[0];
+        var value = pair[1] == null ? "" : String(pair[1]);
+        if (value && item[key] !== value) {
+          item[key] = value;
+          changed = true;
+        }
+      });
+      if (line.selected_options && typeof line.selected_options === "object") {
+        var selectedOptions = normalizeSelectedOptions(line.selected_options);
+        if (JSON.stringify(item.selectedOptions || {}) !== JSON.stringify(selectedOptions)) {
+          item.selectedOptions = selectedOptions;
+          changed = true;
+        }
+      }
+    });
+    if (changed) saveCart();
   }
 
   function queueCartValidation(options) {
@@ -593,9 +605,57 @@
       return Promise.resolve(cartValidation);
     }
 
-    applyCartValidationPayload(localCartValidationPayload(snapshot, signature), signature);
+    setCartValidationState({
+      status: "loading",
+      valid: false,
+      signature,
+      code: "",
+      message: "Checking live catalog prices...",
+      error: "",
+    });
     renderCart();
-    return Promise.resolve(cartValidation);
+
+    return fetch("/api/cart/validate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cart: snapshot }),
+    })
+      .then(function (response) {
+        return response.text().then(function (raw) {
+          var payload = {};
+          if (raw) {
+            try {
+              payload = JSON.parse(raw);
+            } catch (error) {
+              payload = {};
+            }
+          }
+          if (!response.ok) {
+            throw new Error(payload.message || "Could not verify cart pricing.");
+          }
+          return payload;
+        });
+      })
+      .then(function (payload) {
+        applyCartValidationPayload(payload, signature);
+        applyValidatedCatalogLines();
+        renderCart();
+        return cartValidation;
+      })
+      .catch(function (error) {
+        setCartValidationState({
+          status: "error",
+          valid: false,
+          signature,
+          code: "cart_validation_failed",
+          message: error.message || "Could not verify cart pricing.",
+          error: error.message || "Could not verify cart pricing.",
+        });
+        renderCart();
+        return cartValidation;
+      });
   }
 
   let liveCatalogProductsPromise = null;
@@ -1079,14 +1139,18 @@
     }
 
     if (checkoutForm) checkoutForm.hidden = false;
-    const canCheckout = !checkoutBusy && cart.length > 0;
+    const canCheckout = !checkoutBusy && cart.length > 0 && cartValidation.valid === true;
     if (checkoutSubmit) checkoutSubmit.disabled = !canCheckout;
 
     if (!checkoutBusy) {
       if (cartValidation.status === "loading") {
-        setFormStatus(checkoutStatus, "", "");
+        setFormStatus(checkoutStatus, "Checking live catalog prices...", "pending");
       } else if (cartValidation.status === "invalid") {
-        setFormStatus(checkoutStatus, "", "");
+        setFormStatus(
+          checkoutStatus,
+          cartValidation.message || "Review the highlighted cart item before checkout.",
+          "error"
+        );
       } else if (cartValidation.status === "error") {
         setFormStatus(
           checkoutStatus,
@@ -1107,7 +1171,7 @@
 
     cart.forEach((item, index) => {
       const validationLine = validationLines.get(index) || null;
-      const isInvalid = false;
+      const isInvalid = Boolean(validationLine && validationLine.valid === false);
       const isValidated = Boolean(validationLine && validationLine.valid === true);
       const article = document.createElement("article");
       article.className = "cart-item";
@@ -1153,10 +1217,21 @@
       const price = document.createElement("strong");
       const lineCurrency =
         (isValidated && validationLine && validationLine.currency) || item.currency;
-      const lineTotalCents = isValidated && validationLine
-        ? Number(validationLine.line_total_cents || 0)
-        : Math.max(0, Math.round(Number(item.price || 0) * 100) * item.quantity);
-      price.textContent = formatMoneyFromCents(lineTotalCents, lineCurrency);
+      if (isInvalid) {
+        price.textContent = "Price unavailable";
+      } else {
+        const lineTotalCents = isValidated && validationLine
+          ? Number(validationLine.line_total_cents || 0)
+          : Math.max(0, Math.round(Number(item.price || 0) * 100) * item.quantity);
+        price.textContent =
+          lineTotalCents > 0 ? formatMoneyFromCents(lineTotalCents, lineCurrency) : "Checking price...";
+      }
+      let lineError = null;
+      if (isInvalid && validationLine && validationLine.message) {
+        lineError = document.createElement("p");
+        lineError.className = "cart-item-error";
+        lineError.textContent = validationLine.message;
+      }
 
       const controls = document.createElement("div");
       controls.className = "cart-controls";
@@ -1184,7 +1259,9 @@
       remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>';
 
       controls.append(minus, quantity, plus, remove);
-      body.append(brand, title, price, controls);
+      body.append(brand, title, price);
+      if (lineError) body.append(lineError);
+      body.append(controls);
 
       article.append(image, body);
       cartItems.append(article);
@@ -1339,8 +1416,7 @@
     const effectiveEmail = sessionEmail || email;
     const snapshot = buildCartValidationSnapshot();
     const validation = await queueCartValidation({ force: true, delay: false });
-    const hardValidationCodes = new Set(["empty_cart", "invalid_quantity", "mixed_currency"]);
-    if (!validation.valid && hardValidationCodes.has(validation.code)) {
+    if (!validation.valid) {
       const error = new Error(
         validation.message || "One or more items in your cart are not ready for checkout."
       );
@@ -2552,6 +2628,55 @@
     }
   }
 
+  function fetchCatalogSearchPage(q, category, limit, offset) {
+    if (_searchApiBroken || typeof fetch !== "function") {
+      return Promise.reject(new Error("search api unavailable"));
+    }
+    var url =
+      (SCRIPT_ROOT || "/") +
+      "api/catalog/search?q=" + encodeURIComponent(q || "") +
+      "&category=" + encodeURIComponent(category || "all") +
+      "&limit=" + encodeURIComponent(String(limit)) +
+      "&offset=" + encodeURIComponent(String(offset || 0));
+    return fetch(url).then(function (r) {
+      if (!r.ok) {
+        _searchApiBroken = true;
+        throw new Error("search api http " + r.status);
+      }
+      return r.json();
+    }).then(function (data) {
+      if (!data || !Array.isArray(data.products)) {
+        _searchApiBroken = true;
+        throw new Error("search api bad payload");
+      }
+      return data;
+    });
+  }
+
+  function fetchCatalogSearchResults(q, category) {
+    var trimmed = String(q || "").trim();
+    if (!trimmed) return Promise.resolve([]);
+    var pageSize = 50;
+    return fetchCatalogSearchPage(trimmed, category, pageSize, 0).then(function (firstPage) {
+      var total = Number(firstPage.total || 0);
+      var products = Array.isArray(firstPage.products) ? firstPage.products.slice() : [];
+      if (products.length >= total || total <= pageSize) return products;
+
+      var tasks = [];
+      for (var offset = pageSize; offset < total; offset += pageSize) {
+        tasks.push(fetchCatalogSearchPage(trimmed, category, pageSize, offset));
+      }
+      return Promise.all(tasks).then(function (pages) {
+        pages.forEach(function (page) {
+          if (page && Array.isArray(page.products)) {
+            products = products.concat(page.products);
+          }
+        });
+        return products;
+      });
+    });
+  }
+
   function renderCatalogPage(q, category) {
     var resultsEl = document.querySelector("[data-catalog-results]");
     if (!resultsEl) return;
@@ -2575,8 +2700,14 @@
       return;
     }
 
-    loadSearchIndex().then(function (products) {
-      if (_searchIndexError && !products.length) {
+    var loadMatches = _catalogLastQuery
+      ? fetchCatalogSearchResults(_catalogLastQuery, category)
+      : loadSearchIndex().then(function (products) {
+          return filterCatalogFull(products, q, category);
+        });
+
+    loadMatches.then(function (matches) {
+      if (!_catalogLastQuery && _searchIndexError && !matches.length) {
         if (browseEl) browseEl.hidden = true;
         if (toolsEl) toolsEl.hidden = true;
         if (_loadMoreBtn) _loadMoreBtn.hidden = true;
@@ -2592,13 +2723,22 @@
         }
         return;
       }
-      var matches = filterCatalogFull(products, q, category);
       _catalogBaseMatches = matches;
       populateCatalogFilters(matches);
       applyCatalogFilterParams();
       if (browseEl) browseEl.hidden = true;
       if (toolsEl) toolsEl.hidden = false;
       renderCatalogFilteredResults();
+    }).catch(function () {
+      loadSearchIndex().then(function (products) {
+        var matches = filterCatalogFull(products, q, category);
+        _catalogBaseMatches = matches;
+        populateCatalogFilters(matches);
+        applyCatalogFilterParams();
+        if (browseEl) browseEl.hidden = true;
+        if (toolsEl) toolsEl.hidden = false;
+        renderCatalogFilteredResults();
+      });
     });
   }
 
@@ -2630,7 +2770,25 @@
 
   /* ── Initialize the catalog results page from the URL query string ── */
   function applyUrlParams() {
-    if (!isCatalogPage()) return;
+    if (!isCatalogPage()) {
+      /* Category landing pages (protein, creatine, apparel, …) are generated
+         with data-catalog-category on <main data-catalog-page>. Render the
+         FULL search index for that category so shoppers see the whole
+         assortment instead of the small baked-in preview shelf. The baked
+         shelf stays visible until the index arrives (renderCatalogPage swaps
+         it out once results are ready). */
+      var catMain = document.querySelector(
+        "main[data-catalog-page][data-catalog-category]"
+      );
+      var pageCategory = catMain
+        ? catMain.getAttribute("data-catalog-category") || ""
+        : "";
+      if (pageCategory && document.querySelector("[data-catalog-results]")) {
+        var pageParams = new URLSearchParams(window.location.search);
+        renderCatalogPage(pageParams.get("q") || "", pageCategory);
+      }
+      return;
+    }
     var params   = new URLSearchParams(window.location.search);
     var q        = params.get("q") || "";
     var category = params.get("category") || "all";

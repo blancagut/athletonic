@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -539,17 +539,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A13118_26Q1_Cruiser-Canvas-Stormy-Lilac-Natural-White-Sole_PDP_LEFT_04994990-e928-4d3e-8b9f-bc1e897993c6.png","t":"a1311826q1cruisercanvasstormylilacnaturalwhitesolepdpleft04994990e9284d3e8b9fbc1e897993c6png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A13118_26Q1_Cruiser-Canvas-Stormy-Lilac-Natural-White-Sole_PDP_TD_78c08aa4-758e-4384-9656-0f4aa02708ba.png","t":"a1311826q1cruisercanvasstormylilacnaturalwhitesolepdptd78c08aa4758e438496560f4aa02708bapng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A13118_26Q1_Cruiser-Canvas-Stormy-Lilac-Natural-White-Sole_PDP_SOLE_1adadcb6-67ef-40e2-a8ab-dfbe294592ab.png","t":"a1311826q1cruisercanvasstormylilacnaturalwhitesolepdpsole1adadcb667ef40e2a8abdfbe294592abpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A13118_26Q1_Cruiser-Canvas-Stormy-Lilac-Natural-White-Sole_PDP_PAIR_3Q_fe9aca02-1704-481a-add3-65cc003cc697.png","t":"a1311826q1cruisercanvasstormylilacnaturalwhitesolepdppair3qfe9aca021704481aadd365cc003cc697png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A13118_26Q1_Cruiser-Canvas-Stormy-Lilac-Natural-White-Sole_PDP_BACK_a72b9e61-b869-483b-b37a-4cb036104f37.png","t":"a1311826q1cruisercanvasstormylilacnaturalwhitesolepdpbacka72b9e61b869483bb37a4cb036104f37png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -565,21 +566,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

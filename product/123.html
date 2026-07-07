@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -576,17 +576,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RootBeer_1500x1500_e0a8c279-af06-4d07-9754-f303e9a584ed.png","t":"gmcaseheroenergydrinkrootbeer1500x1500e0a8c279af064d079754f303e9a584edpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RedGummyFish_1500x1500_2c1cccb6-cdcf-4006-b11a-6f1e973f40ad.png","t":"gmcaseheroenergydrinkredgummyfish1500x15002c1cccb6cdcf4006b11a6f1e973f40adpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RainbowSherbet_1500x1500_0cc4726f-be06-4d78-81e9-6e8c610e34cf.png","t":"gmcaseheroenergydrinkrainbowsherbet1500x15000cc4726fbe064d7881e96e8c610e34cfpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_OrangeRush_1500x1500_6007ee74-761c-459f-971f-94964564f354.png","t":"gmcaseheroenergydrinkorangerush1500x15006007ee74761c459f971f94964564f354png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_TigersBlood_1500x1500_46cca994-95dd-4e5b-8817-4f45fe1e3de5.png","t":"gmcaseheroenergydrinktigersblood1500x150046cca99495dd4e5b88174f45fe1e3de5png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_VarietyPack1_1500x1500_4571ee9d-63c5-45c2-8b22-3ab9e6c23a9e.png","t":"gmcaseheroenergydrinkvarietypack11500x15004571ee9d63c545c28b223ab9e6c23a9epng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_VarietyPack2_1500x1500_89e40a12-f856-4c4c-9320-54b009ab0fa0.png","t":"gmcaseheroenergydrinkvarietypack21500x150089e40a12f8564c4c932054b009ab0fa0png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_WildGrape_1500x1500_9303035b-dbb9-4149-adff-2bbdc56d3135.png","t":"gmcaseheroenergydrinkwildgrape1500x15009303035bdbb94149adff2bbdc56d3135png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_CitrusRain_1500x1500_050ec494-f43d-4aa8-ba50-bfa4838333a2.png","t":"gmcaseheroenergydrinkcitrusrain1500x1500050ec494f43d4aa8ba50bfa4838333a2png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_WhiteGummyBear_1500x1500_e4a55776-4c10-4a67-8bca-415fc94e1ff2.png","t":"gmcaseheroenergydrinkwhitegummybear1500x1500e4a557764c104a678bca415fc94e1ff2png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_BlueRaspberry_1500x1500_887b8298-73a1-4eb8-8135-a216f649dbbe.png","t":"gmcaseheroenergydrinkblueraspberry1500x1500887b829873a14eb88135a216f649dbbepng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_BlackCherryVanilla_1500x1500_d2bfdaef-f123-445a-a5fb-166650d0a71c.png","t":"gmcaseheroenergydrinkblackcherryvanilla1500x1500d2bfdaeff123445aa5fb166650d0a71cpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_WhiteFrost_1500x1500_c3d4b712-c797-4142-816e-a29f287174cd.png","t":"gmcaseheroenergydrinkwhitefrost1500x1500c3d4b712c7974142816ea29f287174cdpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_BlackberryLemonade_1500x1500_b3e2bc98-6d86-4e92-9d58-2b3ca9e61aea.png","t":"gmcaseheroenergydrinkblackberrylemonade1500x1500b3e2bc986d864e929d582b3ca9e61aeapng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_StrawberryCandy_1500x1500_667c135a-a1a5-47b8-9091-9a691d275410.png","t":"gmcaseheroenergydrinkstrawberrycandy1500x1500667c135aa1a547b890919a691d275410png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_CASEHERO_EnergyDrink_RocketFrost_1500x1500_26ebe914-a404-473d-95aa-836ebb968b1e.png","t":"gmcaseheroenergydrinkrocketfrost1500x150026ebe914a404473d95aa836ebb968b1epng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_EnergyDrink_01_1500x1500_e5da41d0-fef7-4aff-91a4-f62fbdbfbcbc.png","t":"gmthumbsenergydrink011500x1500e5da41d0fef74aff91a4f62fbdbfbcbcpng"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_EnergyDrink_02_1500x1500_9414760c-cc9b-49a6-be3b-0713f1fb4121.png","t":"gmthumbsenergydrink021500x15009414760ccc9b49a6be3b0713f1fb4121png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_EnergyDrink_03_1500x1500_2ed9dc70-6ec1-40de-828c-e0d079c5fdd4.png","t":"gmthumbsenergydrink031500x15002ed9dc706ec140de828ce0d079c5fdd4png"},{"src":"https://cdn.shopify.com/s/files/1/0369/2580/0493/files/GM_THUMBS_EnergyDrink_04_1500x1500_4734c1a5-57d6-4b36-b30c-0c30fb1d33a4.png","t":"gmthumbsenergydrink041500x15004734c1a557d64b36b30c0c30fb1d33a4png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -602,21 +603,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

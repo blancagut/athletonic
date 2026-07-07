@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -607,17 +607,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_red_01_5_5_x1024_f776c59e-eeb1-4569-8ccf-fdefa51834d0.jpg","t":"bgv1nationprintsred0155x1024f776c59eeeb145698ccffdefa51834d0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_red_02_4_5_x1024_6d952c39-8f8e-4587-a2f2-7e160e7734c9.jpg","t":"bgv1nationprintsred0245x10246d952c398f8e4587a2f27e160e7734c9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_red_04_3_5_x1024_63ed1c48-3600-473b-8454-61f620e5ba14.jpg","t":"bgv1nationprintsred0435x102463ed1c483600473b845461f620e5ba14jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_red_03_1_3_5_x1024_9aa0026f-75e3-4d22-a945-e2457a13e997.jpg","t":"bgv1nationprintsred03135x10249aa0026f75e34d22a945e2457a13e997jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_pink_01_5_4_x1024_216c14f0-d9f4-453d-b884-193e52f27f3d.jpg","t":"bgv1nationprintspink0154x1024216c14f0d9f4453db884193e52f27f3djpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_pink_02_4_4_x1024_564e31ce-68b5-462c-91bb-32940c7281b5.jpg","t":"bgv1nationprintspink0244x1024564e31ce68b5462c91bb32940c7281b5jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_pink_04_4_4_x1024_11f863e3-fb20-409b-bc73-e6a32b9036d9.jpg","t":"bgv1nationprintspink0444x102411f863e3fb20409bbc73e6a32b9036d9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_pink_03_4_4_x1024_eaa2f2b4-69c1-48f9-ae12-d9bc8ecaa301.jpg","t":"bgv1nationprintspink0344x1024eaa2f2b469c148f9ae12d9bc8ecaa301jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_yellow_01_12_1_x1024_0e3f06a6-b45b-4355-970d-28f239fa5f68.jpg","t":"bgv1nationprintsyellow01121x10240e3f06a6b45b4355970d28f239fa5f68jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_yellow_02_12_1_x1024_5fabac9b-5d1e-4ca3-97e6-ecd8c4eba237.jpg","t":"bgv1nationprintsyellow02121x10245fabac9b5d1e4ca397e6ecd8c4eba237jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_yellow_04_12_1_x1024_f2a8574a-c2ea-43f0-a360-22dc86e535ca.jpg","t":"bgv1nationprintsyellow04121x1024f2a8574ac2ea43f0a36022dc86e535cajpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_yellow_03_12_1_x1024_66938dbb-cdfc-45f6-905b-d56cdb8402c7.jpg","t":"bgv1nationprintsyellow03121x102466938dbbcdfc45f6905bd56cdb8402c7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_black_01_5_3_x1024_fcaf3a7a-5fa3-4152-9cbb-37810a985905.jpg","t":"bgv1nationprintsblack0153x1024fcaf3a7a5fa341529cbb37810a985905jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_black_02_5_3_x1024_842ff675-458b-4ba6-8ad5-2219bb998c9a.jpg","t":"bgv1nationprintsblack0253x1024842ff675458b4ba68ad52219bb998c9ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_black_03_4_3_x1024_e05ad24c-367c-4f96-9e3b-01de2a02def9.jpg","t":"bgv1nationprintsblack0343x1024e05ad24c367c4f969e3b01de2a02def9jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_black_04_4_3_x1024_817c0a1c-0bd4-4a03-bedb-f29e641acf89.jpg","t":"bgv1nationprintsblack0443x1024817c0a1c0bd44a03bedbf29e641acf89jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_blue_01_5_3_x1024_5bde3e1e-ebf7-4f17-b7da-4f8992eb171e.jpg","t":"bgv1nationprintsblue0153x10245bde3e1eebf74f17b7da4f8992eb171ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_blue_02_4_3_x1024_58832bb8-c4e2-441d-83e1-63419f23b6b0.jpg","t":"bgv1nationprintsblue0243x102458832bb8c4e2441d83e163419f23b6b0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_blue_03_4_3_x1024_0f2b9f55-1319-44cb-9e2c-eb1338a8cd4e.jpg","t":"bgv1nationprintsblue0343x10240f2b9f55131944cb9e2ceb1338a8cd4ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_blue_04_4_3_x1024_5fc3ea74-cd95-45cd-93e6-1516852cb660.jpg","t":"bgv1nationprintsblue0443x10245fc3ea74cd9545cd93e61516852cb660jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_white_01_3_5_x1024_b5b33a44-25ce-453a-8ec1-1cfd8ceb755a.jpg","t":"bgv1nationprintswhite0135x1024b5b33a4425ce453a8ec11cfd8ceb755ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_white_02_12_5_x1024_746175c2-23bb-4aec-aa59-feefbc2b9ef3.jpg","t":"bgv1nationprintswhite02125x1024746175c223bb4aecaa59feefbc2b9ef3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_white_03_12_5_x1024_6b1a2af2-3ec7-4d94-8bb1-2e69523c4cf1.jpg","t":"bgv1nationprintswhite03125x10246b1a2af23ec74d948bb12e69523c4cf1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0840/4913/3860/files/bgv1_nation_prints_white_04_12_5_x1024_f174ba57-1709-46fe-8345-8498f38b3c9b.jpg","t":"bgv1nationprintswhite04125x1024f174ba57170946fe83458498f38b3c9bjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -633,21 +634,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -617,17 +617,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PDP_RTBs_PR_Van.jpg","t":"pdprtbsprvanjpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Vanilla_29oz.png","t":"vegaperformanceproteinrecoveryvanilla29ozpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/BrandStory_486c20b1-6de4-4936-84ef-f56d96c3c9a4.jpg","t":"brandstory1303862c6f0e43bfb605aa00cb09edc2jpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/VEG00855_Vega_Protein_Recovery_Vanilla_US__29.2oz__C1N1_1.jpg","t":"veg00855vegaproteinrecoveryvanillaus292ozc1n11jpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Protein_Recovery_Vanilla_29oz_NFT_6b35fc03-92a9-4b7b-aeb6-ef92ae50d85f.png","t":"proteinrecoveryvanilla29oznft6b35fc0392a94b7baeb6ef92ae50d85fpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Chocolate_29oz.png","t":"vegaperformanceproteinrecoverychocolate29ozpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/VEG00856_Vega_Protein_Recovery_Chocolate_US_29.5oz_C1N1_1.jpg","t":"veg00856vegaproteinrecoverychocolateus295ozc1n11jpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PR_Chocolate_LG_VEG00856_NFT_1.png","t":"prchocolatelgveg00856nft1png"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Mocha_29oz.png","t":"vegaperformanceproteinrecoverymocha29ozpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/VEG00857_Vega_Protein_Recovery_Mocha_US_28.6oz_C1N1_1.jpg","t":"veg00857vegaproteinrecoverymochaus286ozc1n11jpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PR_VEG00857_NFT.png","t":"prveg00857nftpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Berry_29oz.png","t":"vegaperformanceproteinrecoveryberry29ozpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/VEG00854_Vega_Protein_Recovery_Berry_US_28.3oz_C1N1__1.jpg","t":"veg00854vegaproteinrecoveryberryus283ozc1n11jpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Protein_Recovery_29oz_Berry_NFT_1.jpg","t":"vegaproteinrecovery29ozberrynft1jpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Peanut_Butter_29oz.png","t":"vegaperformanceproteinrecoverypeanutbutter29ozpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/VEG00808_Vega_Protein_Recovery_PeanutButter_US_28.7oz_C1N1_1.jpg","t":"veg00808vegaproteinrecoverypeanutbutterus287ozc1n11jpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PR_VEG00808_NFT.png","t":"prveg00808nftpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Chocolate_4lb_1.png","t":"vegaperformanceproteinrecoverychocolate4lb1png"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PR_Chocolate_XL_VEG00858_NFT.png","t":"prchocolatexlveg00858nftpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Vanilla_4lb_1.png","t":"vegaperformanceproteinrecoveryvanilla4lb1png"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PR_VEG00859_NFT_1.png","t":"prveg00859nft1png"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Mocha_4lb_1.png","t":"vegaperformanceproteinrecoverymocha4lb1png"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PR_Mocha_XL_VEG00773_NFT_1.png","t":"prmochaxlveg00773nft1png"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Berry_4lb_1.png","t":"vegaperformanceproteinrecoveryberry4lb1png"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PR_VEG00772_NFT.png","t":"prveg00772nftpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Peanut_Butter_4lb_1.png","t":"vegaperformanceproteinrecoverypeanutbutter4lb1png"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Protein_Recovery_PeanutButter_US_XL.jpg","t":"vegaproteinrecoverypeanutbutterusxljpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PR_VEG00819_NFT.png","t":"prveg00819nftpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega-Protein-Recovery-Chocolate-1.5oz.png","t":"vegaproteinrecoverychocolate15ozpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/VEG00866_Vega_Protein_Recovery_Chocolate__US.jpg","t":"veg00866vegaproteinrecoverychocolateusjpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Protein_Recovery_1.5oz_Chocolate_NFT_f5973a12-0632-476a-a6e6-b86cc899586a.jpg","t":"vegaproteinrecovery15ozchocolatenftf5973a120632476aa6e6b86cc899586ajpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/Vega_Performance_Protein_Recovery_Vanilla_1.5oz.png","t":"vegaperformanceproteinrecoveryvanilla15ozpng"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/VEG00865_Vega_Protein_Recovery_Vanilla__US.jpg","t":"veg00865vegaproteinrecoveryvanillausjpg"},{"src":"https://cdn.shopify.com/s/files/1/2590/5380/files/PKG00865V40_US_Vega_Pro_Recov_Van__12x1.5oz__3000x3000_nft_ing.png","t":"pkg00865v40usvegaprorecovvan12x15oz3000x3000nftingpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -643,21 +644,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

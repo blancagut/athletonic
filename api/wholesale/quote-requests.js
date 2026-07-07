@@ -8,6 +8,17 @@ const {
 const { loadSupplementsCatalogManifest } = require("../_lib/wholesale-supplements");
 const { sendWholesaleQuoteRequestEmail, sendWholesaleQuoteBuyerEmail } = require("../_lib/email");
 const { buildWholesaleQuotePdf } = require("../_lib/quote-pdf");
+const { BANK_DETAILS } = require("../_lib/wholesale-order");
+const { handleWholesaleOrderRequest } = require("../_lib/wholesale-order-handler");
+
+function requestQuery(req) {
+  if (req.query && typeof req.query === "object") return req.query;
+  try {
+    return Object.fromEntries(new URL(req.url || "/", "https://athletonic.local").searchParams.entries());
+  } catch {
+    return {};
+  }
+}
 
 function normalizeSelectedOptions(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -69,8 +80,20 @@ async function getSuperAdminNotificationEmails(supabase) {
 }
 
 module.exports = async function handler(req, res) {
+  const query = requestQuery(req);
+
+  if (req.method === "GET" && String(query.bank_details || "") === "1") {
+    json(res, 200, { bank_details: BANK_DETAILS });
+    return;
+  }
+
   if (req.method !== "POST") {
-    methodNotAllowed(res, ["POST"]);
+    methodNotAllowed(res, ["GET", "POST"]);
+    return;
+  }
+
+  if (String(query.order || "") === "1" || String(req.headers["x-athletonic-order-request"] || "") === "1") {
+    await handleWholesaleOrderRequest(req, res);
     return;
   }
 

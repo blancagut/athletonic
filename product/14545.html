@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -601,17 +601,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FRUIT_PUNCH_FRONT.jpg","t":"fruitpunchfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/INFOGRAPHIC_FRUIT_PUNCH.jpg","t":"infographicfruitpunchjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Train_Hard_Be_Relentless_Image_1.jpg","t":"trainhardberelentlessimage1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BLUE_RAS_FRONT.jpg","t":"bluerasfrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/PWO-FP-Energy.jpg","t":"pwofpenergyjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/PWO-FP-Clean.jpg","t":"pwofpcleanjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/PWO-FP_Power.jpg","t":"pwofppowerjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FRUIT_PUNCH_SIDE.jpg","t":"fruitpunchsidejpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/INFOGRAPHIC_BLUE_RAS.jpg","t":"infographicbluerasjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Preworkout_Value_Prop_Ad_1x1__99203.1695055544.1280.1280_5f86c3a7-3be9-4cd8-b14d-9ec8e3af9c84.jpg","t":"preworkoutvaluepropad1x1992031695055544128012805f86c3a73be94cd8b14d9ec8e3af9c84jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/NITRO_FRONT.jpg","t":"nitrofrontjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Preworkout_What_Makes_It_Special_Ad_1x1__03888.1695055544.1280.1280_9417eb3f-6ae1-4a90-9a26-42469d78006b.jpg","t":"preworkoutwhatmakesitspecialad1x1038881695055544128012809417eb3f6ae14a909a2642469d78006bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Preworkout_Launch_Image_1x1__94209.1695065101.1280.1280_225f9e56-91f1-421c-940f-8df7b583d5ae.jpg","t":"preworkoutlaunchimage1x194209169506510112801280225f9e5691f1421c940f8df7b583d5aejpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Preworkout_Instructions_Blue_Raz_1x1__29414.1695065101.1280.1280_7aa75ac1-dd0d-4aa7-9534-ee474a756f3b.jpg","t":"preworkoutinstructionsblueraz1x1294141695065101128012807aa75ac1dd0d4aa79534ee474a756f3bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BLUE_RAS_SIDE.jpg","t":"bluerassidejpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/INFOGRAPHIC_NITRO.jpg","t":"infographicnitrojpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FRUIT_PUNCH_BACK.jpg","t":"fruitpunchbackjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Preworkout_Value_Prop_Ad_1x1__93751.1695054847.1280.1280_0de9a10e-3ccf-4a47-bc33-a5576f08bada.jpg","t":"preworkoutvaluepropad1x1937511695054847128012800de9a10e3ccf4a47bc33a5576f08badajpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Preworkout_What_Makes_It_Special_Ad_1x1__49353.1695054847.1280.1280_47ea646a-5f6b-49fc-9483-f88007ec7916.jpg","t":"preworkoutwhatmakesitspecialad1x14935316950548471280128047ea646a5f6b49fc9483f88007ec7916jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Preworkout_Launch_Image_1x1__70825.1695054847.1280.1280_6b301ba7-8696-4c42-b867-76abe1bd3394.jpg","t":"preworkoutlaunchimage1x1708251695054847128012806b301ba786964c42b86776abe1bd3394jpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/Preworkout_Instructions_Blue_Raz_1x1__51353.1695054796.1280.1280_96ca44fd-7115-487d-a9bf-8a164705bc1e.jpg","t":"preworkoutinstructionsblueraz1x15135316950547961280128096ca44fd7115487da9bf8a164705bc1ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/NITRO_SIDE.jpg","t":"nitrosidejpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/FRUIT_PUNCH_SFP.jpg","t":"fruitpunchsfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BLUE_RAS_BACK.jpg","t":"bluerasbackjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/BLUE_RAS_SFP.jpg","t":"bluerassfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/NITRO_BACK.jpg","t":"nitrobackjpg"},{"src":"https://cdn.shopify.com/s/files/1/0793/7802/2695/files/NITRO_SFP.jpg","t":"nitrosfpjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -627,21 +628,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

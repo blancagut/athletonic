@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -692,17 +692,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/Mag_New_800x800_4dbf7a23-5fdf-4b50-81ee-e0618d9f8c2b.png","t":"magnew800x8004dbf7a235fdf4b5081eee0618d9f8c2bpng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/Blue_Mag_800x800_a25f2756-4a0c-4c56-b676-da649936fda4.png","t":"bluemag800x800a25f27564a0c4c56b676da649936fda4png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Ecom-Naked_Mag_ba9c27d2-10d2-434c-afed-cb4b52af296b.png","t":"ecomnakedmagba9c27d210d2434cafedcb4b52af296bpng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Mag_Refill_NEW-02_800x800_37ab9e47-1281-41fd-8f2e-a3b9545bf18b.png","t":"magrefillnew02800x80037ab9e47128141fd8f2ea3b9545bf18bpng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Blue_Mag_Refill_800x800_1.png","t":"bluemagrefill800x8001png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Mag_Sticks_Open_800x800_933fdb81-f7b9-49f2-9851-0431c0fa8a44.png","t":"magsticksopen800x800933fdb81f7b949f298510431c0fa8a44png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Blue_Mag_Stick_Open_800x800_7f69d549-83d7-4d50-887a-0436efc4249a.png","t":"bluemagstickopen800x8007f69d54983d74d50887a0436efc4249apng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2407_TuttiFrutti_Rendering-800x800.png","t":"2407tuttifruttirendering800x800png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Blue_Pink_Mag_Stick_800x800_e55ce8b2-71b6-4af7-96ce-46863d3d56f3.png","t":"bluepinkmagstick800x800e55ce8b271b64af796ce46863d3d56f3png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/MoonJuice_PPage_MagnesiOm_2_V1_Retouched_0.5x.jpg","t":"moonjuiceppagemagnesiom2v1retouched05xjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/MoonJuice_PPage_MagnesiOm_1_ALT_V1_Retouched_0.5x.jpg","t":"moonjuiceppagemagnesiom1altv1retouched05xjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/MoonJuice_PPAge_BlueMag_2_V3_Retouched_0.5x.jpg","t":"moonjuiceppagebluemag2v3retouched05xjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/MoonJuice_PPAge_BlueMag_3_ALT_V1_0.5x.jpg","t":"moonjuiceppagebluemag3altv105xjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/big-mag-jar-berry.jpg","t":"bigmagjarberryjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/big-mag-jar-blue-lemon.jpg","t":"bigmagjarbluelemonjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/MoonJuice_PPage_MagnesiOM_Refill_ALT_V1.jpg","t":"moonjuiceppagemagnesiomrefillaltv1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Blue_Mag_Refill_alt.jpg","t":"bluemagrefillaltjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/mag_stick_ppage.jpg","t":"magstickppagejpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Blue_Mag_Stick.jpg","t":"bluemagstickjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Mag_Combo_Stick.jpg","t":"magcombostickjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/mag_18stick_ppage.jpg","t":"mag18stickppagejpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Ping_Blue_Mag_Sticks-02.jpg","t":"altppagepingbluemagsticks02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Mag_Stick.jpg","t":"altppagemagstick0cfbdf00a7d54183b409ac95c79593acjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Blue_Mag.jpg","t":"altppagebluemaga91461a165ea42868e30a14e767710f3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Blue_Mag_xl.jpg","t":"altppagebluemagxljpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Sleepy_Mag-Main-02.jpg","t":"sleepymagmain02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Blue_Mag-02_cac851d7-ddfd-47bc-bef7-c14d78053ef9.jpg","t":"altppagebluemag02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Blue_Mag-02_1.jpg","t":"altppagebluemag021jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Blue_Mag-xl.jpg","t":"altppagebluemagxljpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/04_Mag_Video.jpg","t":"04magvideojpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/05_Mag_SPF.jpg","t":"05magspf06ba5844a0bf44f5baa7b36b321bc075jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Mag_Naked-01.jpg","t":"altppagemagnaked01jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage__Mag_Naked-03.jpg","t":"altppagemagnaked03jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Mag_Naked-02.jpg","t":"altppagemagnaked02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage__Mag_Naked-04.jpg","t":"altppagemagnaked04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Sleepy_Mag-Alt-04.jpg","t":"sleepymagalt04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/How_to_use-02.jpg","t":"howtouse02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Tutti-Frutti-Alt-03.jpg","t":"tuttifruttialt03jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2312_Magnesi-Om_Berry_Carton_Front_Amazon.jpg","t":"2312magnesiomberrycartonfrontamazonjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2312_Magnesi-Om_Blue_Carton_Front_Amazon.jpg","t":"2312magnesiombluecartonfrontamazonjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/03_Mag_Usage_228fe87c-e4a4-443d-989a-35bcf95cf0e7.jpg","t":"03magusagec65bf16371394745845cc9c3b3c8a8a8jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Big_Mag_Lemon.png","t":"bigmaglemonpng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Big_Mag_Berry.png","t":"bigmagberrypng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/03_Mag_Usage.jpg","t":"03magusagejpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2303_BlueMag_SFP.png","t":"2303bluemagsfp26afa6868a9b45fa825bf87c563ac582png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2301_MagStickPack_Rendering-18ct.png","t":"2301magstickpackrendering18ctpng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2308_BlueMagStickPack_Rendering-NOSLEEP-18ct.png","t":"2308bluemagstickpackrenderingnosleep18ctpng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/2303_MagSticks_SFP.jpg","t":"2303magstickssfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Blue-Lemon-Mag-Sticks-SFP.jpg","t":"bluelemonmagstickssfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2308_BluePink_ComboBox_SFP.jpg","t":"2308bluepinkcomboboxsfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2403_Naked_Magnesi-Om_SFP.jpg","t":"2403nakedmagnesiomsfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2407_TuttiFrutti_SFP-5.jpg","t":"2407tuttifruttisfp5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Big_Mag_Lemon--SFP.jpg","t":"bigmaglemonsfpjpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Big_Mag_Berry-SFP.jpg","t":"bigmagberrysfpjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -718,21 +719,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

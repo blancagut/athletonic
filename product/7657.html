@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -524,17 +524,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/WheyISO-2LB-Chocolate-MainImage.jpg","t":"wheyiso2lbchocolatemainimagejpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/chocolate-whey-isolate-new-united-kingdom.jpg","t":"chocolatewheyisolatenewunitedkingdomjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/WheyISO-2LB-Chocolate-Graphic_41e9895c-d941-48f7-b8f5-684fcbf4c56b.jpg","t":"wheyiso2lbchocolategraphic41e9895cd94148f7b8f5684fcbf4c56bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/grass-fed-whey-protein_62451b4b-5648-49f7-afac-9d49b85765db.jpg","t":"grassfedwheyprotein62451b4b564849f7afac9d49b85765dbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/WheyIso-Chocolate-Nutrition.jpg","t":"wheyisochocolatenutritionjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/third-party-tested-whey-protein_b467c1cd-b281-4d52-8bdb-b57465ff029b.jpg","t":"thirdpartytestedwheyproteinb467c1cdb2814d528bdbb57465ff029bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/chocolate-whey-isolate-protein-2.jpg","t":"chocolatewheyisolateprotein2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/chocolate-whey-isolate-protein-3.jpg","t":"chocolatewheyisolateprotein3jpg"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/Mass_Gainers_101_-_v01.png","t":"massgainers101v01png"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/whey-protein-Lifestyle.png","t":"wheyproteinlifestylepng"},{"src":"https://cdn.shopify.com/s/files/1/0645/6465/files/whey-protein-shake-how-to_98a4e85e-ccda-4fac-b296-7f428a4ec36d.jpg","t":"wheyproteinshakehowto98a4e85eccda4facb2967f428a4ec36djpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -550,21 +551,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

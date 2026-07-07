@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Order | Athletonic</title>
+    <meta
+      name="description"
+      content="Build your Athletonic unit order, choose product options, complete billing details, and upload payment proof."
+    />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <link rel="canonical" href="https://athletonic.com/order" />
+    <link rel="icon" href="../favicon.ico" sizes="any" />
+    <link rel="manifest" href="../site.webmanifest" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="../assets/wholesale-order.js" defer></script>
+  </head>
+  <body class="wholesale-order-body">
+    <header class="wo-topbar">
+      <a class="wo-brand" href="../" aria-label="Athletonic home">
+        <img src="../assets/logo.png" alt="Athletonic" width="1536" height="1024" decoding="async" />
+        <span>ATHLETONIC</span>
+      </a>
+      <nav class="wo-steps" aria-label="Order progress">
+        <button type="button" data-step-tab="products" aria-current="step" data-i18n="steps.products">Products</button>
+        <button type="button" data-step-tab="details" data-i18n="steps.details">Billing</button>
+        <button type="button" data-step-tab="payment" data-i18n="steps.payment">Payment</button>
+      </nav>
+      <div class="wo-topbar-tools">
+        <div class="wo-locale-switch" aria-label="Language selector">
+          <button type="button" data-locale-switch="en" aria-pressed="true">EN</button>
+          <button type="button" data-locale-switch="es" aria-pressed="false">ES</button>
+        </div>
+        <a class="wo-sales-link" href="mailto:sales@athletonic.com">sales@athletonic.com</a>
+      </div>
+    </header>
+
+    <main class="wo-shell">
+      <section class="wo-order-head" aria-labelledby="wo-title">
+        <div>
+          <p class="wo-kicker">ATHLETONIC</p>
+          <h1 id="wo-title" data-i18n="hero.title">Unit Order</h1>
+          <p data-i18n="hero.copy">
+            Browse the full martial arts catalog, choose your size or color, and build the order line by line.
+          </p>
+        </div>
+        <div class="wo-order-metrics" aria-label="Quick order summary">
+          <div><span data-i18n="summary.order">Order</span><strong data-summary-lines>0 lines</strong></div>
+          <div><span data-i18n="summary.total">Total</span><strong data-summary-total>Pending</strong></div>
+          <div><span data-i18n="summary.payment">Payment</span><strong data-i18n="summary.paymentValue">Bank details at checkout</strong></div>
+        </div>
+      </section>
+
+      <section class="wo-layout">
+        <div class="wo-workspace">
+          <section class="wo-panel" data-step-panel="products" aria-labelledby="wo-products-title">
+            <div class="wo-panel-head">
+              <div>
+                <p class="wo-kicker" data-i18n="products.kicker">1. Products</p>
+                <h2 id="wo-products-title" data-i18n="products.title">Martial arts catalog</h2>
+              </div>
+              <button type="button" class="wo-ghost-button" data-clear-order data-i18n="products.clear">Clear order</button>
+            </div>
+
+            <div class="wo-stock-tabs" aria-label="Quick filters">
+              <button type="button" data-stock-preset="" aria-pressed="true" data-i18n="filters.all">All products</button>
+              <button type="button" data-stock-preset="gloves" aria-pressed="false" data-i18n="filters.gloves">Gloves</button>
+              <button type="button" data-stock-preset="bag gloves" aria-pressed="false" data-i18n="filters.bagGloves">Bag gloves</button>
+              <button type="button" data-stock-preset="shin guards" aria-pressed="false" data-i18n="filters.shinGuards">Shin guards</button>
+              <button type="button" data-stock-preset="shorts" aria-pressed="false" data-i18n="filters.shorts">Shorts</button>
+              <button type="button" data-stock-preset="pads" aria-pressed="false" data-i18n="filters.pads">Pads</button>
+            </div>
+
+            <form class="wo-search" data-search-form>
+              <label class="span-2">
+                <span data-i18n="products.searchLabel">Search item</span>
+                <input
+                  type="search"
+                  name="search"
+                  placeholder="Gloves, Fairtex, 12oz, red, shin guards..."
+                  list="wo-product-suggestions"
+                  autocomplete="off"
+                  data-product-search
+                />
+                <datalist id="wo-product-suggestions" data-product-suggestions></datalist>
+              </label>
+            </form>
+
+            <div class="wo-search-status" data-search-status aria-live="polite">Loading catalog...</div>
+            <div class="wo-results" data-product-results></div>
+
+            <details class="wo-manual">
+              <summary data-i18n="manual.summary">Add a manual line if the product is not listed</summary>
+              <form data-manual-form class="wo-manual-grid">
+                <label class="span-2">
+                  <span data-i18n="manual.product">Exact product</span>
+                  <input name="name" placeholder="Ex. Boon Compact Velcro Gloves" required />
+                </label>
+                <label>
+                  <span data-i18n="manual.category">Category</span>
+                  <select name="category" data-manual-category>
+                    <option value="Training Gloves">Training Gloves</option>
+                    <option value="Bag Gloves">Bag Gloves</option>
+                    <option value="Shorts">Shorts</option>
+                    <option value="Shin Guards">Shin Guards</option>
+                    <option value="Pads">Pads</option>
+                    <option value="Accessories">Accessories</option>
+                  </select>
+                </label>
+                <label>
+                  <span data-i18n="manual.brand">Brand</span>
+                  <input name="brand" placeholder="Athletonic / Fairtex / Twins..." />
+                </label>
+                <label>
+                  <span data-i18n="manual.size">Size / oz</span>
+                  <input name="size" list="wo-size-suggestions" placeholder="8oz, 10oz, S, M..." />
+                  <datalist id="wo-size-suggestions" data-size-suggestions></datalist>
+                </label>
+                <label>
+                  <span data-i18n="manual.color">Color</span>
+                  <input name="color" placeholder="Black, red, blue..." />
+                </label>
+                <label>
+                  <span data-i18n="manual.quantity">Quantity</span>
+                  <input name="quantity" type="number" min="1" max="999" step="1" value="1" required />
+                </label>
+                <label class="span-2">
+                  <span data-i18n="manual.notes">Notes</span>
+                  <input name="notes" placeholder="Model, accepted substitutions, bundle notes..." />
+                </label>
+                <button type="submit" class="span-2" data-i18n="manual.add">Add line</button>
+              </form>
+            </details>
+          </section>
+
+          <section class="wo-panel" data-step-panel="details" aria-labelledby="wo-details-title" hidden>
+            <div class="wo-panel-head">
+              <div>
+                <p class="wo-kicker" data-i18n="details.kicker">2. Billing</p>
+                <h2 id="wo-details-title" data-i18n="details.title">Customer, billing, and delivery details</h2>
+              </div>
+            </div>
+
+            <form class="wo-details-form" data-details-form>
+              <div class="wo-form-section">
+                <h3 data-i18n="details.contact">Contact</h3>
+                <div class="wo-form-grid">
+                  <label>
+                    <span data-i18n="details.name">Name</span>
+                    <input name="name" autocomplete="name" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.company">Company</span>
+                    <input name="company_name" autocomplete="organization" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.email">Invoice email</span>
+                    <input name="email" type="email" autocomplete="email" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.whatsapp">WhatsApp</span>
+                    <input name="whatsapp" type="tel" autocomplete="tel" required />
+                  </label>
+                </div>
+              </div>
+
+              <div class="wo-form-section">
+                <h3 data-i18n="details.billing">Billing</h3>
+                <div class="wo-form-grid">
+                  <label>
+                    <span data-i18n="details.legalName">Legal name</span>
+                    <input name="billing_legal_name" autocomplete="organization" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.taxId">Tax ID</span>
+                    <input name="billing_tax_id" autocomplete="off" />
+                  </label>
+                  <label class="span-2">
+                    <span data-i18n="details.billingAddress">Billing address</span>
+                    <input name="billing_address_line1" autocomplete="billing street-address" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.city">City</span>
+                    <input name="billing_city" autocomplete="billing address-level2" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.region">State / region</span>
+                    <input name="billing_region" autocomplete="billing address-level1" />
+                  </label>
+                  <label>
+                    <span data-i18n="details.country">Country</span>
+                    <input name="billing_country" autocomplete="billing country-name" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.postalCode">Postal code</span>
+                    <input name="billing_postal_code" autocomplete="billing postal-code" />
+                  </label>
+                </div>
+              </div>
+
+              <div class="wo-form-section">
+                <h3 data-i18n="details.shipping">Delivery</h3>
+                <div class="wo-form-grid">
+                  <label class="span-2">
+                    <span data-i18n="details.shippingAddress">Delivery address</span>
+                    <input name="shipping_address_line1" autocomplete="shipping street-address" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.city">City</span>
+                    <input name="shipping_city" autocomplete="shipping address-level2" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.region">State / region</span>
+                    <input name="shipping_region" autocomplete="shipping address-level1" />
+                  </label>
+                  <label>
+                    <span data-i18n="details.country">Country</span>
+                    <input name="country" autocomplete="shipping country-name" required />
+                  </label>
+                  <label>
+                    <span data-i18n="details.postalCode">Postal code</span>
+                    <input name="shipping_postal_code" autocomplete="shipping postal-code" />
+                  </label>
+                  <label class="span-2">
+                    <span data-i18n="details.notes">General notes</span>
+                    <textarea name="notes" rows="4" placeholder="Urgency, preferred substitutions, delivery instructions..."></textarea>
+                  </label>
+                </div>
+              </div>
+            </form>
+          </section>
+
+          <section class="wo-panel" data-step-panel="payment" aria-labelledby="wo-payment-title" hidden>
+            <div class="wo-panel-head">
+              <div>
+                <p class="wo-kicker" data-i18n="payment.kicker">3. Payment</p>
+                <h2 id="wo-payment-title" data-i18n="payment.title">Bank transfer and payment proof</h2>
+              </div>
+            </div>
+
+            <div class="wo-payment-choice" role="radiogroup" aria-label="Payment method">
+              <label>
+                <input type="radio" name="payment_method" value="bank_transfer" checked data-payment-method />
+                <span data-i18n="payment.transfer">Bank transfer</span>
+              </label>
+              <label>
+                <input type="radio" name="payment_method" value="cash_deposit" data-payment-method />
+                <span data-i18n="payment.deposit">Cash deposit</span>
+              </label>
+            </div>
+
+            <div class="wo-bank-lock" data-bank-lock>
+              <strong data-i18n="payment.lockTitle">Payment details are hidden</strong>
+              <span data-i18n="payment.lockCopy">Complete products and billing details to reveal the bank account.</span>
+              <button type="button" data-reveal-bank data-i18n="payment.showBank">Show payment details</button>
+            </div>
+
+            <div class="wo-bank-details" data-bank-details hidden aria-live="polite"></div>
+
+            <label class="wo-proof">
+              <span data-i18n="payment.proof">Payment proof</span>
+              <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" data-proof-input required />
+              <small data-proof-status>PNG, JPG, WEBP, or PDF.</small>
+            </label>
+
+            <p class="wo-submit-status" data-order-status aria-live="polite"></p>
+            <button type="button" class="wo-submit" data-submit-order data-i18n="payment.submit">Send order and invoice</button>
+          </section>
+        </div>
+
+        <aside class="wo-cart" aria-labelledby="wo-cart-title">
+          <div class="wo-cart-head">
+            <div>
+              <p class="wo-kicker" data-i18n="cart.kicker">Order</p>
+              <h2 id="wo-cart-title" data-i18n="cart.title">Summary</h2>
+            </div>
+            <span data-cart-count>0</span>
+          </div>
+          <div class="wo-cart-items" data-cart-items></div>
+          <div class="wo-totals">
+            <div><span data-i18n="cart.lines">Lines</span><strong data-total-lines>0</strong></div>
+            <div><span data-i18n="cart.units">Units</span><strong data-total-units>0</strong></div>
+            <div class="span-2"><span data-i18n="cart.total">Estimated total</span><strong data-total-estimate>Pending</strong></div>
+          </div>
+          <div class="wo-currency-box">
+            <label>
+              <span data-i18n="cart.currency">Local currency</span>
+              <select data-currency-select>
+                <option value="USD">USD</option>
+              </select>
+            </label>
+            <div>
+              <span data-i18n="cart.localEstimate">Local estimate</span>
+              <strong data-local-total>Pending</strong>
+              <small data-local-rate>Invoice and payment are based on USD.</small>
+            </div>
+          </div>
+          <div class="wo-actions">
+            <button type="button" data-next-step data-i18n="cart.continue">Continue</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>

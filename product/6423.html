@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -603,17 +603,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-1.png","t":"adotsbuybox1png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-2_49f5844e-715a-4971-a015-626c42c30807.jpg","t":"adotsbuybox249f5844e715a4971a015626c42c30807jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-3_3de8d70e-fb5f-431f-ba96-10bea24654f5.jpg","t":"adotsbuybox33de8d70efb5f431fba9610bea24654f5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-4_550cbfc4-4317-4154-b2d7-eb879cda02eb.jpg","t":"adotsbuybox4550cbfc443174154b2d7eb879cda02ebjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-5_71b104e9-522c-42dd-a0fa-36d7d53cae2e.jpg","t":"adotsbuybox571b104e9522c42dda0fa36d7d53cae2ejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-6_a4558693-b667-41ea-a7ee-7bcb98b84408.jpg","t":"adotsbuybox6a4558693b66741eaa7ee7bcb98b84408jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-7_9867986a-1338-4d26-9dc8-193096c81d4f.jpg","t":"adotsbuybox79867986a13384d269dc8193096c81d4fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-8_ad90d7e8-4062-49fe-850f-638aae70a426.jpg","t":"adotsbuybox8ad90d7e8406249fe850f638aae70a426jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-9_8528e726-aa8d-4f23-b19e-0446970c8429.jpg","t":"adotsbuybox98528e726aa8d4f23b19e0446970c8429jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-10.jpg","t":"adotsbuybox10jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-11.jpg","t":"adotsbuybox11jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/ADots-Buybox-12.jpg","t":"adotsbuybox12jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Lavender-Buybox-1_1.png","t":"adotslavenderbuybox11png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Lavender-Buybox-2_1.jpg","t":"adotslavenderbuybox21jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Lavender-Buybox-8_1.jpg","t":"adotslavenderbuybox81jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Eucalyptus-Buybox-1_1.png","t":"adotseucalyptusbuybox11png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Eucalyptus-Buybox-2_1.jpg","t":"adotseucalyptusbuybox21jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Eucalyptus-Buybox-8_1.jpg","t":"adotseucalyptusbuybox81jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Bergamot-Buybox-1_1.png","t":"adotsbergamotbuybox11png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Bergamot-Buybox-2_1.jpg","t":"adotsbergamotbuybox21jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/ADots-Bergamot-Buybox-8_1.jpg","t":"adotsbergamotbuybox81jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -629,21 +630,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -171,10 +171,10 @@
         <div class="pdp-info">
           <p class="pdp-brand">twins_special</p>
           <h1 class="pdp-title" data-pdp-title>TWINS Boxing Gloves- Dual Bold Colors- Premium Leather w/ Laceup- White Fist- Dark Green, Maroon, Purple, Dark Red, Dark Brown, Navy Blue</h1>
-          <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="9500" data-base-compare-cents="12990" data-currency="USD">
-            <strong class="pdp-price" data-pdp-price>$95.00</strong>
-            <span class="pdp-compare" data-pdp-compare >$129.90</span>
-            <span class="pdp-discount" data-pdp-discount >−27%</span>
+          <div class="pdp-price-row" data-pdp-price-row data-base-price-cents="9900" data-base-compare-cents="" data-currency="USD">
+            <strong class="pdp-price" data-pdp-price>$99.00</strong>
+            <span class="pdp-compare" data-pdp-compare hidden></span>
+            <span class="pdp-discount" data-pdp-discount hidden>Limited offer</span>
           </div>
           <p class="pdp-availability">In stock · Sold by Athletonic</p>
 
@@ -203,7 +203,7 @@
               data-cart-id="56245"
               data-cart-brand="twins_special"
               data-cart-name="TWINS Boxing Gloves- Dual Bold Colors- Premium Leather w/ Laceup- White Fist- Dark Green, Maroon, Purple, Dark Red, Dark Brown, Navy Blue"
-              data-cart-price="95"
+              data-cart-price="99"
               data-cart-currency="USD"
               data-cart-image="https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12414/7758/TW36-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-11_0.png__77303.1774534732.jpg"
               data-cart-variant-id="TW36-TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-DARK-GREEN-MAROON-PURPLE-DARK-RED-DARK-BROWN-NAVY-BLUE"
@@ -569,17 +569,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12414/7758/TW36-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-11_0.png__77303.1774534732.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistdarkgreenmaroonpurpledarkreddarkbrownnavybluetw36dualcolorlaceupcoloredpalmwhitebodyandthumbview1110png773031774534732jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12414/7761/TW36-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-12_0.png__92955.1774534732.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistdarkgreenmaroonpurpledarkreddarkbrownnavybluetw36dualcolorlaceupcoloredpalmwhitebodyandthumbview1120png929551774534732jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12414/7760/TW36-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-13_0.png__98369.1774534731.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistdarkgreenmaroonpurpledarkreddarkbrownnavybluetw36dualcolorlaceupcoloredpalmwhitebodyandthumbview1130png983691774534731jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12414/7757/TW36-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-14_0.png__53813.1774534732.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistdarkgreenmaroonpurpledarkreddarkbrownnavybluetw36dualcolorlaceupcoloredpalmwhitebodyandthumbview1140png538131774534732jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12414/7762/TW36-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-15_0.png__54964.1774534732.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistdarkgreenmaroonpurpledarkreddarkbrownnavybluetw36dualcolorlaceupcoloredpalmwhitebodyandthumbview1150png549641774534732jpg"},{"src":"https://cdn11.bigcommerce.com/s-zueukrvtuw/images/stencil/1920x1920/products/12414/7759/TW36-DualColorLaceup-ColoredPalm-WhitebodyandthumbView1-16_0.png__50206.1774534732.jpg","t":"twinsboxingglovesdualboldcolorspremiumleatherwlaceupwhitefistdarkgreenmaroonpurpledarkreddarkbrownnavybluetw36dualcolorlaceupcoloredpalmwhitebodyandthumbview1160png502061774534732jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -595,21 +596,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -631,7 +636,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"TW36-TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-DARK-GREEN-MAROON-PURPLE-DARK-RED-DARK-BROWN-NAVY-BLUE","key":"TW36-TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-DARK-GREEN-MAROON-PURPLE-DARK-RED-DARK-BROWN-NAVY-BLUE","title":"","sku":null,"optionValues":[],"option_values":[],"selected_options":{},"price_cents":9999,"regular_price_cents":9999,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
+        var variantPricing = [{"variant_id":"TW36-TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-DARK-GREEN-MAROON-PURPLE-DARK-RED-DARK-BROWN-NAVY-BLUE","key":"TW36-TWINS-BOXING-GLOVES-DUAL-BOLD-COLORS-PREMIUM-LEATHER-W-LACEUP-WHITE-FIST-DARK-GREEN-MAROON-PURPLE-DARK-RED-DARK-BROWN-NAVY-BLUE","title":"","sku":null,"optionValues":[],"option_values":[],"selected_options":{},"price_cents":9999,"regular_price_cents":19998,"compare_at_cents":19998,"compare_at_price_cents":19998,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

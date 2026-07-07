@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -554,17 +554,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4e5fb8b2-1146-492e-b7fa-190b6a6c8b20/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/26ec2e52-1dbe-4c66-9c0a-86d76d0e6cd8/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/19c85eb1-e44b-4fc8-8329-54f9c96e1a54/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/decc732b-7e67-4220-a063-88a32fa73aaa/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/58763257-cd3b-4657-9ce4-16c8510edc4e/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/3beed2e1-1d2e-4a79-a069-82f6a6fb93e7/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/09e095ca-b61c-4aec-848f-e1f3dd9439ed/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/c8bce63c-febf-4760-89b1-40e0bdfda8ae/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/9aa1affa-7793-470a-abf6-c50639e48a6a/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6373f623-3bd2-4a88-a715-beb29d3a2581/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/6fcf51e9-8b06-49b3-8ada-255c3061f3c5/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_default/u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/402d8126-96bd-48f7-a357-639cc1d037c6/zoom-fly-6-mens-road-racing-shoes-wn2ALjkm.png","t":"nikezoomfly6mensroadracingshoeszoomfly6mensroadracingshoeswn2aljkmpng"},{"src":"https://static.nike.com/a/images/t_prod/w_1536,c_limit/33cd69bc-813e-4c18-adb2-714f0edce239/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/t_prod_ps/w_1536,c_limit/b27c37d8-f2cc-4839-b4d8-35c6ec3d48cf/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_1536,c_limit/4e1433d6-a3e6-4dcb-8cd7-6e31bd335974/image.jpg","t":"imagejpg"},{"src":"https://static.nike.com/a/images/w_960,c_limit/dc0889be-bae6-4ba1-9c33-3677b18f6dd9/image.jpg","t":"imagejpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -580,21 +581,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

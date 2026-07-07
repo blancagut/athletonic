@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -609,17 +609,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/27060_Bottle_Render.png","t":"27060bottlerenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/27060_Bottle_Render2.png","t":"27060bottlerender2png"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/52670_Bottle_Render.png","t":"52670bottlerenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/52670_BottleRender2.png","t":"52670bottlerender2png"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26010_BottleRender.png","t":"26010bottlerenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26010_NewLook.png","t":"26010newlookpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26010_SupplementFacts.png","t":"26010supplementfactspng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/29010_BottleRender.png","t":"29010bottlerenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/29010_NewLook.png","t":"29010newlookpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/29010_SupplementFactsPanel.png","t":"29010supplementfactspanelpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26060_BottleRender.png","t":"26060bottlerenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26060_NewLook.png","t":"26060newlookpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26060_SupplementFactsPannel.png","t":"26060supplementfactspannelpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26120_BottleRender.png","t":"26120bottlerenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26120_NewLook.png","t":"26120newlookpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/52670_Supplement_Facts.png","t":"52670supplementfactspng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26120_SupplementFactsPanel.png","t":"26120supplementfactspanelpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26020_BottleRender.png","t":"26020bottlerenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26020_NewLook.png","t":"26020newlookpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/27060_Supplement_Facts.png","t":"27060supplementfactspng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26020_SupplementFactsPanel.png","t":"26020supplementfactspanelpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26960_e3f12557-1588-4c0d-9109-2871308fc280.png","t":"26960e3f1255715884c0d91092871308fc280png"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26960_NewLook.png","t":"26960newlookpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26960_SupplementFactsPanel_BottleRender.png","t":"26960supplementfactspanelbottlerenderpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/21540_fd452024-9a8c-4175-a241-f3cbe879541a.png","t":"21540png"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/products/21540.jpg","t":"21540jpg"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/27060_Label_flat.png","t":"27060labelflatpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/21580_b93f7ef2-7ff0-4b97-9510-6c182dba1308.png","t":"21580png"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/products/21580.jpg","t":"21580jpg"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/products/third-img_1cba9b29-2285-4a5a-a1f7-9f9d9931ae2f.jpg","t":"thirdimg1cba9b2922854a5aa1f79f9d9931ae2fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/52670_Label_Flat.png","t":"52670labelflatpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/products/fourth-img_ac28eded-b770-49d7-8f36-71982af74176.jpg","t":"fourthimgac28ededb77049d78f3671982af74176jpg"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26010_LabelFlat.png","t":"26010labelflatpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/29010_LabelFlat.png","t":"29010labelflatpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26060_LabelFlat.png","t":"26060labelflatpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26120_LabelFlat.png","t":"26120labelflatpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26020_LabelFlat.png","t":"26020labelflatpng"},{"src":"https://cdn.shopify.com/s/files/1/0266/5152/5328/files/26960_LabelFlat.png","t":"26960labelflatpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -635,21 +636,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

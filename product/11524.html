@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -567,17 +567,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_8_c75c98b5-09f5-4bed-b213-04fd5a103a9c.jpg","t":"1bjoggingtrousers8c75c98b509f54bedb21304fd5a103a9cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_9_b848a845-652e-4c9f-bd87-4c44b9657c43.jpg","t":"1bjoggingtrousersblackwhite9b848a845652e4c9fbd874c44b9657c43jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_4_35311010-039a-4353-b132-a6905dfbf6da.jpg","t":"1bjoggingtrousersblackwhite435311010039a4353b132a6905dfbf6dajpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_3_4c0c9f1a-7ba5-4862-b72e-71a700242202.jpg","t":"1bjoggingtrousersblackwhite34c0c9f1a7ba54862b72e71a700242202jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_8_a5422e19-66bd-4993-bf88-cb039f93f66b.jpg","t":"1bjoggingtrousersblackwhite8a5422e1966bd4993bf88cb039f93f66bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_6_2ffcd95b-45a1-4d43-af3d-8395b067e8ed.jpg","t":"1bjoggingtrousersblackwhite62ffcd95b45a14d43af3d8395b067e8edjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_1_6bd9d97f-b08d-47ef-ab75-953a8f323696.jpg","t":"1bjoggingtrousersblackwhite16bd9d97fb08d47efab75953a8f323696jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_2_592ae8c2-42c4-4796-ab6c-40d3978033df.jpg","t":"1bjoggingtrousersblackwhite2592ae8c242c44796ab6c40d3978033dfjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_5_d306f9fd-116a-4e94-b7d5-9dc7afb36cb1.jpg","t":"1bjoggingtrousersblackwhite5d306f9fd116a4e94b7d59dc7afb36cb1jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -593,21 +594,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -629,7 +634,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"47205218550074","key":"WhiteBlack / S","title":"WhiteBlack / S","sku":null,"optionValues":["WhiteBlack","S"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"WhiteBlack","Size":"S"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_9_b848a845-652e-4c9f-bd87-4c44b9657c43.jpg"},{"variant_id":"50206445142330","key":"WhiteBlack / M","title":"WhiteBlack / M","sku":null,"optionValues":["WhiteBlack","M"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"WhiteBlack","Size":"M"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_9_b848a845-652e-4c9f-bd87-4c44b9657c43.jpg"},{"variant_id":"50206445175098","key":"WhiteBlack / L","title":"WhiteBlack / L","sku":null,"optionValues":["WhiteBlack","L"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"WhiteBlack","Size":"L"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_9_b848a845-652e-4c9f-bd87-4c44b9657c43.jpg"},{"variant_id":"50206445207866","key":"WhiteBlack / XL","title":"WhiteBlack / XL","sku":null,"optionValues":["WhiteBlack","XL"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"WhiteBlack","Size":"XL"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_9_b848a845-652e-4c9f-bd87-4c44b9657c43.jpg"},{"variant_id":"50206445240634","key":"WhiteBlack / 2XL","title":"WhiteBlack / 2XL","sku":null,"optionValues":["WhiteBlack","2XL"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"WhiteBlack","Size":"2XL"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_9_b848a845-652e-4c9f-bd87-4c44b9657c43.jpg"}];
+        var variantPricing = [{"variant_id":"47205218550074","key":"WhiteBlack / S","title":"WhiteBlack / S","sku":null,"optionValues":["WhiteBlack","S"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"S"}],"selected_options":{"Color":"WhiteBlack","Size":"S"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_8_c75c98b5-09f5-4bed-b213-04fd5a103a9c.jpg"},{"variant_id":"50206445142330","key":"WhiteBlack / M","title":"WhiteBlack / M","sku":null,"optionValues":["WhiteBlack","M"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"M"}],"selected_options":{"Color":"WhiteBlack","Size":"M"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"50206445175098","key":"WhiteBlack / L","title":"WhiteBlack / L","sku":null,"optionValues":["WhiteBlack","L"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"L"}],"selected_options":{"Color":"WhiteBlack","Size":"L"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/1b_jogging_trousers_black_white_9_b848a845-652e-4c9f-bd87-4c44b9657c43.jpg"},{"variant_id":"50206445207866","key":"WhiteBlack / XL","title":"WhiteBlack / XL","sku":null,"optionValues":["WhiteBlack","XL"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"XL"}],"selected_options":{"Color":"WhiteBlack","Size":"XL"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"50206445240634","key":"WhiteBlack / 2XL","title":"WhiteBlack / 2XL","sku":null,"optionValues":["WhiteBlack","2XL"],"option_values":[{"position":1,"name":"Color","value":"WhiteBlack"},{"position":2,"name":"Size","value":"2XL"}],"selected_options":{"Color":"WhiteBlack","Size":"2XL"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

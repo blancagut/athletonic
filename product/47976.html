@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -539,17 +539,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12558_26Q1_Runner-NZ-Slip-On-Light-Grey-Light-Grey_PDP_LEFT_ac2914e0-07bf-4d18-9478-e4b51d81d340.png","t":"a1255826q1runnernzsliponlightgreylightgreypdpleftac2914e007bf4d189478e4b51d81d340png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12558_26Q1_Runner-NZ-Slip-On-Light-Grey-Light-Grey_PDP_TD_55c01bf0-52f2-440c-91ae-bf18e96825dd.png","t":"a1255826q1runnernzsliponlightgreylightgreypdptd55c01bf052f2440c91aebf18e96825ddpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12558_26Q1_Runner-NZ-Slip-On-Light-Grey-Light-Grey_PDP_SOLE_67169573-16c0-46f9-8080-a48ea8ed4aec.png","t":"a1255826q1runnernzsliponlightgreylightgreypdpsole6716957316c046f98080a48ea8ed4aecpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12558_26Q1_Runner-NZ-Slip-On-Light-Grey-Light-Grey_PDP_PAIR_3Q_7b5e88d1-29e0-419a-b017-a3256daf1a73.png","t":"a1255826q1runnernzsliponlightgreylightgreypdppair3q7b5e88d129e0419ab017a3256daf1a73png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A12558_26Q1_Runner-NZ-Slip-On-Light-Grey-Light-Grey_PDP_BACK_ba40034e-3c58-4468-a8af-59c7c9ea91b1.png","t":"a1255826q1runnernzsliponlightgreylightgreypdpbackba40034e3c584468a8af59c7c9ea91b1png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -565,21 +566,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

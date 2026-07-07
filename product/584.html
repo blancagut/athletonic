@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -604,17 +604,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thuper_Thavage_-_Thuper_Secret_-_front_62293cd8-6202-47c1-8cd0-56dc1d67a6ff.png","t":"thuperthavagethupersecretfront62293cd8620247c18cd056dc1d67a6ffpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/THAVAGE_THUPER_CITRUS_GRAPEFRUIT_FRONT_7c536efa-ec39-483f-8767-4a5a53741b46.png","t":"thavagethupercitrusgrapefruitfront7c536efaec39483f87674a5a53741b46png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/THAVAGE_THUPER_WHITE_CHERRY_FRONT_30039a04-88cc-4296-93f1-ff06a665f504.png","t":"thavagethuperwhitecherryfront30039a0488cc429693f1ff06a665f504png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/ThuperThavageCherryBerryFront_ee2a4eed-4464-41f9-9646-29a16716a65e.png","t":"thuperthavagecherryberryfrontee2a4eed446441f9964629a16716a65epng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thupertavage-championmentality.webp","t":"thupertavagechampionmentalitywebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuper_thavage_-_6peat_-_front_52360442-c316-47a1-8dc4-9e30cca0e479.png","t":"thuperthavage6peatfront52360442c31647a18dc49e30cca0e479png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuper_thavage_-_Watermelon_Grape_-_front.png","t":"thuperthavagewatermelongrapefrontpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuper_thavage_rainbow_sherbet.webp","t":"thuperthavagerainbowsherbetwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuper-cottoncandy_1.webp","t":"thupercottoncandy1webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuper-arcticberry_1.webp","t":"thuperarcticberry1webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/RAW_Thuper_Thavage_Orange_Mango.webp","t":"rawthuperthavageorangemangowebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/RAW_Thuper_Thavage_Orange_Mango_Supp_Facts_Flavor_3a96bbae-3ead-42cd-abaf-9d0ea17e4f6a.png","t":"rawthuperthavageorangemangosuppfactsflavor3a96bbae3ead42cdabaf9d0ea17e4f6apng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuperthavage-cottoncandy_bcdbc44e-9e6b-48b0-b115-60d0ce8bc5db.webp","t":"thuperthavagecottoncandybcdbc44e9e6b48b0b11560d0ce8bc5dbwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuperthavage-arcticberry_f8c1ad44-46f5-4320-abed-cd2947057dca.webp","t":"thuperthavagearcticberryf8c1ad4446f54320abedcd2947057dcawebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuperthavage-championmentality_e5b5e7b1-6afc-43ee-9de3-40c53a54b790.webp","t":"thuperthavagechampionmentalitye5b5e7b16afc43ee9de340c53a54b790webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuper-watermelongrape_f07aa5ba-bf13-43fb-bac8-28aea3de04e4.webp","t":"thuperwatermelongrapef07aa5babf1343fbbac828aea3de04e4webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thuper-rainbowsherbet_85589569-c9ae-47f1-a585-dc53eb4520e7.webp","t":"thuperrainbowsherbet85589569c9ae47f1a585dc53eb4520e7webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thuper-Thav-ThuperSecret-SFP_11024177-ac84-4013-b863-d236cff2fe01.png","t":"thuperthavthupersecretsfp11024177ac844013b863d236cff2fe01png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thuper-Thav-CitrusGrapefruit-SFP_b15a18d6-d462-440b-ac0c-7aa6f54032e4.png","t":"thuperthavcitrusgrapefruitsfpb15a18d6d462440bac0c7aa6f54032e4png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thuper-Thav-WhiteCherry-SFP_fe910cbd-6491-49aa-ba47-da736666b191.png","t":"thuperthavwhitecherrysfpfe910cbd649149aaba47da736666b191png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thuper-Thav-CherryBerry-SFP_e914f540-72e5-4b0b-b3b3-906332ba04ba.png","t":"thuperthavcherryberrysfpe914f54072e54b0bb3b3906332ba04bapng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thuper-Thav-6peat-SFP_ca6ed9bc-ad6a-497c-8ffe-a3eba300ef84.png","t":"thuperthav6peatsfpca6ed9bcad6a497c8ffea3eba300ef84png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -630,21 +631,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -598,17 +598,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/O_0000_40ct_PWO_SourPeachRing_Shopify_90a92b54-934c-4fc8-9f2a-f2f356c6d408.jpg","t":"o000040ctpwosourpeachringshopify90a92b54934c4fc89f2af2f356c6d408jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0004_30ct_HEPWO_SourPeachRing_Shopify_a9782b99-56ff-4b1b-a83b-998808a5262a.jpg","t":"he000430cthepwosourpeachringshopifya9782b9956ff4b1ba83b998808a5262ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/O_0001_40ct_PWO_RaspberryLemonade_Shopify_25f2223f-efe9-4a8b-9552-07a12f7f3301.jpg","t":"o000140ctpworaspberrylemonadeshopify25f2223fefe94a8b955207a12f7f3301jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0006_30ct_HEPWO_RaspberryLemonade_Shopify_1db1ad15-99a7-4341-b1ad-d776890b1831.jpg","t":"he000630cthepworaspberrylemonadeshopify1db1ad1599a74341b1add776890b1831jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/O_0006_40ct_PWO_FruitPunch_Shopify_8cccbe89-b96e-4fef-a925-7d985d03ac84.jpg","t":"o000640ctpwofruitpunchshopify8cccbe89b96e4fefa9257d985d03ac84jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0010_30ct_HEPWO_FruitPunch_Shopify_43dd72dd-3dc1-4e3a-b77c-69df49d0007d.jpg","t":"he001030cthepwofruitpunchshopify43dd72dd3dc14e3ab77c69df49d0007djpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/O_0005_40ct_PWO_GlacierIce_Shopify_3d193de9-12a6-4d64-b774-1aaa337fd6a1.jpg","t":"o000540ctpwoglaciericeshopify3d193de912a64d64b7741aaa337fd6a1jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0009_30ct_HEPWO_GlacierIce_Shopify_747b7c69-700f-4c2f-bdd4-235060b184c7.jpg","t":"he000930cthepwoglaciericeshopify747b7c69700f4c2fbdd4235060b184c7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/O_0007_40ct_PWO_BerryPomegranate_Shopify_008d1f6a-dbc9-4670-b086-6263efcd78d0.jpg","t":"o000740ctpwoberrypomegranateshopify008d1f6adbc94670b0866263efcd78d0jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/O_0004_40ct_PWO_Guava_Shopify_1c210b75-119e-437c-9bb9-6f10febd342d.jpg","t":"o000440ctpwoguavashopify1c210b75119e437c9bb96f10febd342djpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/O_0002_40ct_PWO_RainbowIce_Shopify_c67e75bb-ff3c-4323-a83c-5d133c20796a.jpg","t":"o000240ctpworainbowiceshopifyc67e75bbff3c4323a83c5d133c20796ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/O_0003_40ct_PWO_Mango_Shopify_20c42276-46e3-4420-9188-f2537c4f9e0a.jpg","t":"o000340ctpwomangoshopify20c4227646e344209188f2537c4f9e0ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0008_30ct_HEPWO_Mango_Shopify_ed470f57-be88-4d2c-9aef-724988823e93.jpg","t":"he000830cthepwomangoshopifyed470f57be884d2c9aef724988823e93jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0005_30ct_HEPWO_SourGummy_Shopify_254f66ee-9427-4603-abab-bf7f3436bd3a.jpg","t":"he000530cthepwosourgummyshopify254f66ee94274603ababbf7f3436bd3ajpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/leana1_453ab00b-7cae-4f6b-aca9-00c699cef332.jpg","t":"leana1453ab00b7cae4f6baca900c699cef332jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/0004_15ct_HEPWO_Variety_Front_Shopify_7d109f17-8c5f-498f-8cf5-d6a20f96e46e.jpg","t":"000415cthepwovarietyfrontshopify7d109f178c5f498f8cf5d6a20f96e46ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0012_30ct_HEPWO_BlueRaspberry_Shopify_b4f1d80f-dd3a-4c93-83fb-e8eb5e4977f7.jpg","t":"he001230cthepwoblueraspberryshopifyb4f1d80fdd3a4c9383fbe8eb5e4977f7jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/0006_15ct_HEPWO_SourPeachRing_Front_Shopify_012f5223-a3f5-4d16-ba94-d100ec4eedd6.jpg","t":"000615cthepwosourpeachringfrontshopify012f5223a3f54d16ba94d100ec4eedd6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0003_30ct_HEPWO_StrawberryMango_Shopify_f1cdf21a-a5b2-4d58-a3fc-5c247051e88b.jpg","t":"he000330cthepwostrawberrymangoshopifyf1cdf21aa5b24d58a3fc5c247051e88bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/0005_15ct_HEPWO_StrawberryMango_Front_Shopify_26573430-ee59-4b1d-9618-9337aab25093.jpg","t":"000515cthepwostrawberrymangofrontshopify26573430ee594b1d96189337aab25093jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0013_30ct_HEPWO_BahamaMama_Shopify_c4b66fb3-71f2-4d1f-b205-1f734e211ae4.jpg","t":"he001330cthepwobahamamamashopifyc4b66fb371f24d1fb2051f734e211ae4jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/0007_15ct_HEPWO_RaspberryLemonade_Front_Shopify_169306c6-65b9-4262-b72e-3341a46beb06.jpg","t":"000715cthepworaspberrylemonadefrontshopify169306c665b94262b72e3341a46beb06jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0002_30ct_HEPWO_StrawberryMargarita_Shopify_9e58b22a-a74d-425f-9688-ed44cf2438a6.jpg","t":"he000230cthepwostrawberrymargaritashopify9e58b22aa74d425f9688ed44cf2438a6jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/HE_0000_30ct_HEPWO_Watermelon_Shopify_91bfca2f-2a33-4b50-b805-99fdde855910.jpg","t":"he000030cthepwowatermelonshopify91bfca2f2a334b50b80599fdde855910jpg"},{"src":"https://cdn.shopify.com/s/files/1/0143/0952/3556/files/Artboard1.jpg","t":"artboard1jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -624,21 +625,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

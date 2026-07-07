@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -540,17 +540,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11776_25Q3_Cruiser_Natural_White_Taupe_Blush_Blizzard_PDP_LEFT-2000x2000_9bf91bd9-48d1-4dd9-b518-d23b0c13dc1c.png","t":"a1177625q3cruisernaturalwhitetaupeblushblizzardpdpleft2000x20009bf91bd948d14dd9b518d23b0c13dc1cpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11776_25Q3_Cruiser_Natural_White_Taupe_Blush_Blizzard_PDP_TD-2000x2000_7991e1bc-403e-42ce-b94f-c8f498f9a54f.png","t":"a1177625q3cruisernaturalwhitetaupeblushblizzardpdptd2000x20007991e1bc403e42ceb94fc8f498f9a54fpng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11776_25Q3_Cruiser_Natural_White_Taupe_Blush_Blizzard_PDP_SOLE-2000x2000_d3b1db20-3960-4b3b-802f-aa59064ff382.png","t":"a1177625q3cruisernaturalwhitetaupeblushblizzardpdpsole2000x2000d3b1db2039604b3b802faa59064ff382png"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11776_25Q3_Cruiser_Natural_White_Taupe_Blush_Blizzard_PDP_PAIR_3Q-2000x2000_4d69f3b8-17c6-488c-b19a-fe620e6447ba.png","t":"a1177625q3cruisernaturalwhitetaupeblushblizzardpdppair3q2000x20004d69f3b817c6488cb19afe620e6447bapng"},{"src":"https://cdn.shopify.com/s/files/1/1104/4168/files/A11776_25Q3_Cruiser_Natural_White_Taupe_Blush_Blizzard_PDP_BACK-2000x2000_d491ccbb-aa3f-4260-af95-471a07c30081.png","t":"a1177625q3cruisernaturalwhitetaupeblushblizzardpdpback2000x2000d491ccbbaa3f4260af95471a07c30081png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -566,21 +567,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

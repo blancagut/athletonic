@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -580,17 +580,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/up-to-URO-Bladder-3.png","t":"uptourobladder3png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/URO-Bladder-3_1_8dd96c00-82ba-46ba-a4ab-f97a0ef680cc.png","t":"urobladder318dd96c0082ba46baa4abf97a0ef680ccpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/URO-Bladder-4_7140dc9c-fdf3-4939-9910-0368f716e444.png","t":"urobladder47140dc9cfdf3493999100368f716e444png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/products/URO-Bladder-6.png","t":"urobladder6png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/products/URO-Bladder-4.png","t":"urobladder4png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/products/URO-Bladder-3_1.png","t":"urobladder31png"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/URO-Bladder-6_a8caddf1-d52f-4bd9-98ab-177ff97b2a1c.png","t":"urobladder6a8caddf1d52f4bd998ab177ff97b2a1cpng"},{"src":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/OP-carousel-uro-bladder-sfp_1_283ad706-4623-4301-90d4-4e123dafa165.png","t":"opcarouselurobladdersfp1283ad7064623430190d44e123dafa165png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -606,21 +607,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -642,7 +647,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"43661526696085","key":"URO Bladder Control Capsule - 6 Bundle Pack","title":"URO Bladder Control Capsule - 6 Bundle Pack","sku":null,"optionValues":["URO Bladder Control Capsule - 6 Bundle Pack"],"option_values":[{"position":1,"name":"Title","value":"URO Bladder Control Capsule - 6 Bundle Pack"}],"selected_options":{"Title":"URO Bladder Control Capsule - 6 Bundle Pack"},"price_cents":14400,"regular_price_cents":19200,"compare_at_cents":19200,"compare_at_price_cents":19200,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/up-to-URO-Bladder-3.png"},{"variant_id":"43661526728853","key":"URO Bladder Control Capsule - 4 Bundle Pack","title":"URO Bladder Control Capsule - 4 Bundle Pack","sku":null,"optionValues":["URO Bladder Control Capsule - 4 Bundle Pack"],"option_values":[{"position":1,"name":"Title","value":"URO Bladder Control Capsule - 4 Bundle Pack"}],"selected_options":{"Title":"URO Bladder Control Capsule - 4 Bundle Pack"},"price_cents":10000,"regular_price_cents":12800,"compare_at_cents":12800,"compare_at_price_cents":12800,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/up-to-URO-Bladder-3.png"},{"variant_id":"43661526761621","key":"URO Bladder Control Capsule - 3 Bundle Pack","title":"URO Bladder Control Capsule - 3 Bundle Pack","sku":null,"optionValues":["URO Bladder Control Capsule - 3 Bundle Pack"],"option_values":[{"position":1,"name":"Title","value":"URO Bladder Control Capsule - 3 Bundle Pack"}],"selected_options":{"Title":"URO Bladder Control Capsule - 3 Bundle Pack"},"price_cents":7800,"regular_price_cents":9600,"compare_at_cents":9600,"compare_at_price_cents":9600,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0588/9340/2261/files/up-to-URO-Bladder-3.png"}];
+        var variantPricing = [{"variant_id":"43661526696085","key":"URO Bladder Control Capsule - 6 Bundle Pack","title":"URO Bladder Control Capsule - 6 Bundle Pack","sku":null,"optionValues":["URO Bladder Control Capsule - 6 Bundle Pack"],"option_values":[{"position":1,"name":"Title","value":"URO Bladder Control Capsule - 6 Bundle Pack"}],"selected_options":{"Title":"URO Bladder Control Capsule - 6 Bundle Pack"},"price_cents":14400,"regular_price_cents":19200,"compare_at_cents":19200,"compare_at_price_cents":19200,"source_available":true,"available":true,"image_url":null},{"variant_id":"43661526728853","key":"URO Bladder Control Capsule - 4 Bundle Pack","title":"URO Bladder Control Capsule - 4 Bundle Pack","sku":null,"optionValues":["URO Bladder Control Capsule - 4 Bundle Pack"],"option_values":[{"position":1,"name":"Title","value":"URO Bladder Control Capsule - 4 Bundle Pack"}],"selected_options":{"Title":"URO Bladder Control Capsule - 4 Bundle Pack"},"price_cents":10000,"regular_price_cents":12800,"compare_at_cents":12800,"compare_at_price_cents":12800,"source_available":true,"available":true,"image_url":null},{"variant_id":"43661526761621","key":"URO Bladder Control Capsule - 3 Bundle Pack","title":"URO Bladder Control Capsule - 3 Bundle Pack","sku":null,"optionValues":["URO Bladder Control Capsule - 3 Bundle Pack"],"option_values":[{"position":1,"name":"Title","value":"URO Bladder Control Capsule - 3 Bundle Pack"}],"selected_options":{"Title":"URO Bladder Control Capsule - 3 Bundle Pack"},"price_cents":7800,"regular_price_cents":9600,"compare_at_cents":9600,"compare_at_price_cents":9600,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

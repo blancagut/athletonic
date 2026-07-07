@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -591,17 +591,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/d8531cc91429661dfd15e5be4cc3ebf523407f9a.png","t":"d8531cc91429661dfd15e5be4cc3ebf523407f9apng"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/d13d138bee158ca58cdca4110a202d6ab01f8008.png","t":"d13d138bee158ca58cdca4110a202d6ab01f8008png"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/0f26aa645a5f1bf2459a86196c4beb33ee6ecd08.png","t":"0f26aa645a5f1bf2459a86196c4beb33ee6ecd08png"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/c9e9c5522647c32150ca95e5a4ffd37e39b7da08.png","t":"c9e9c5522647c32150ca95e5a4ffd37e39b7da08png"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/f32c3f264de666b7ca09d7a00db2a98e25818ffb.jpg","t":"f32c3f264de666b7ca09d7a00db2a98e25818ffbjpg"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/76d42f0c8930850a1ed596e338fa57f8977c4e61.png","t":"76d42f0c8930850a1ed596e338fa57f8977c4e61png"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/79f43e03847b1b121cb09eded6ab70fb7780ad33.png","t":"79f43e03847b1b121cb09eded6ab70fb7780ad33png"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/3fdf04ee884e717db46a00e915d76ddc7d7e8ae7.png","t":"3fdf04ee884e717db46a00e915d76ddc7d7e8ae7png"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/098c7a3e2d4d1dc550444c16da285cf29f7e4261.png","t":"098c7a3e2d4d1dc550444c16da285cf29f7e4261png"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/4798f6d6eb9691871bd0e8aebbac9b91ff5f9eb2.jpg","t":"4798f6d6eb9691871bd0e8aebbac9b91ff5f9eb2jpg"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/eb1decfc27acef3bdf1205762b2a4ecbffe9f46b.png","t":"eb1decfc27acef3bdf1205762b2a4ecbffe9f46bpng"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/b7313f62e020b112e0bbd06d0109aea176cf15da.png","t":"b7313f62e020b112e0bbd06d0109aea176cf15dapng"},{"src":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/5b7e43cfae33a7d64ef9ae0b0cbc0ebc3f4ce71b.jpg","t":"5b7e43cfae33a7d64ef9ae0b0cbc0ebc3f4ce71bjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -617,21 +618,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -653,7 +658,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"22876606627904","key":"35 Servings","title":"35 Servings","sku":null,"optionValues":["35 Servings"],"option_values":[{"position":1,"name":"Amount","value":"35 Servings"}],"selected_options":{"Amount":"35 Servings"},"price_cents":1399,"regular_price_cents":1399,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"22877163880512","key":"50 Servings","title":"50 Servings","sku":null,"optionValues":["50 Servings"],"option_values":[{"position":1,"name":"Amount","value":"50 Servings"}],"selected_options":{"Amount":"50 Servings"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"39488014712907","key":"120 or 60 Serving Pouch","title":"120 or 60 Serving Pouch","sku":null,"optionValues":["120 or 60 Serving Pouch"],"option_values":[{"position":1,"name":"Amount","value":"120 or 60 Serving Pouch"}],"selected_options":{"Amount":"120 or 60 Serving Pouch"},"price_cents":2159,"regular_price_cents":2159,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/0108/2900/4864/files/eb1decfc27acef3bdf1205762b2a4ecbffe9f46b.png"}];
+        var variantPricing = [{"variant_id":"22876606627904","key":"35 Servings","title":"35 Servings","sku":null,"optionValues":["35 Servings"],"option_values":[{"position":1,"name":"Amount","value":"35 Servings"}],"selected_options":{"Amount":"35 Servings"},"price_cents":1399,"regular_price_cents":1399,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"22877163880512","key":"50 Servings","title":"50 Servings","sku":null,"optionValues":["50 Servings"],"option_values":[{"position":1,"name":"Amount","value":"50 Servings"}],"selected_options":{"Amount":"50 Servings"},"price_cents":1799,"regular_price_cents":1799,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"39488014712907","key":"120 or 60 Serving Pouch","title":"120 or 60 Serving Pouch","sku":null,"optionValues":["120 or 60 Serving Pouch"],"option_values":[{"position":1,"name":"Amount","value":"120 or 60 Serving Pouch"}],"selected_options":{"Amount":"120 or 60 Serving Pouch"},"price_cents":2159,"regular_price_cents":2159,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

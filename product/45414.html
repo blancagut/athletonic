@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -538,17 +538,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/DistanceShorts_3in_Black_Front_91964_v03_f2207815-88c5-4eb2-921a-25ead2ff242d.jpg","t":"distanceshorts3inblackfront91964v03f220781588c54eb2921a25ead2ff242djpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/DistanceShort_Black_InteriorKeyPocket_91612_a68d096a-e9ae-442b-ac59-ceb4605ad950.jpg","t":"distanceshortblackinteriorkeypocket91612a68d096ae9ae442bac59ceb4605ad950jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/DistanceShort_Black_RearPocketPhone_91602_77750831-31ea-4a5a-90d1-2841be379a30.jpg","t":"distanceshortblackrearpocketphone916027775083131ea4a5a90d12841be379a30jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/DistanceShort_Black_SideSlit_91594_5a51c39e-5f6d-4cac-b391-001592f6ea04.jpg","t":"distanceshortblacksideslit915945a51c39e5f6d4cacb391001592f6ea04jpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/DistanceShort_Black_Waistband_91815_v01_b67c3fd0-3f47-46e4-bd53-2715669b827f.jpg","t":"distanceshortblackwaistband91815v01b67c3fd03f4746e4bd532715669b827fjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/DistanceShort_Black_FabricDetail_91614_86869900-004a-4d95-9095-770c380c7a8b.jpg","t":"distanceshortblackfabricdetail9161486869900004a4d959095770c380c7a8bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0251/7377/files/DistanceShorts_3in_Black_Back_91970_v03_4f1dc447-8e92-4906-b5bf-2244e60c1eba.jpg","t":"distanceshorts3inblackback91970v034f1dc4478e924906b5bf2244e60c1ebajpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -564,21 +565,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

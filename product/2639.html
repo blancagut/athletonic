@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -582,17 +582,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Post_HeroBenefit-1_e0b34d36-ec44-42df-914a-912a6d22180c.webp","t":"shpostherobenefit1e0b34d36ec4442df914a912a6d22180cwebp"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-post-gainy-smith-one-bottle_d461a990-371d-4261-b4fa-0a2eb78c7637.png","t":"superhumanpostgainysmithonebottled461a990371d4261b4fa0a2eb78c7637png"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Post_HeroBenefit-2_4459a41e-7bff-4945-a04e-6299ea63c4be.webp","t":"shpostherobenefit24459a41e7bff4945a04e6299ea63c4bewebp"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-post-mucle-marg-one-bottle_c0691011-bc1f-4de1-9a15-24bfdefc289f.png","t":"superhumanpostmuclemargonebottlec0691011bc1f4de19a1524bfdefc289fpng"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/postcurlin1bottle_1a45ef45-c768-4655-883b-6d1f6aea8247.png","t":"postcurlin1bottle1a45ef45c7684655883b6d1f6aea8247png"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Post_SupplementFacts_f5db775c-54cb-4098-8a3f-c21e5b10300f.webp","t":"shpostsupplementfactsf5db775c54cb40988a3fc21e5b10300fwebp"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Post_MG_fda11004-044c-402b-bd26-eb64a00db128.webp","t":"shpostmgfda11004044c402bbd26eb64a00db128webp"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Post_SuggestedUse_1bf00bda-7b50-4286-8a46-50f92990602d.webp","t":"shpostsuggesteduse1bf00bda7b5042868a4650f92990602dwebp"},{"src":"https://cdn.shopify.com/s/files/1/2321/6571/files/SH-Post_Benefits_6ccf1bb7-5b8e-470c-8258-c987c73aa9e3.webp","t":"shpostbenefits6ccf1bb75b8e470c8258c987c73aa9e3webp"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -608,21 +609,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -644,7 +649,7 @@
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"41217889402942","key":"GAINY SMITH APPLE (Green Apple Candy)","title":"GAINY SMITH APPLE (Green Apple Candy)","sku":null,"optionValues":["GAINY SMITH APPLE (Green Apple Candy)"],"option_values":[{"position":1,"name":"Flavor","value":"GAINY SMITH APPLE (Green Apple Candy)"}],"selected_options":{"Flavor":"GAINY SMITH APPLE (Green Apple Candy)"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-post-gainy-smith-one-bottle_d461a990-371d-4261-b4fa-0a2eb78c7637.png"},{"variant_id":"41217889435710","key":"MUSCLE MARG (Lemon-Lime Margarita)","title":"MUSCLE MARG (Lemon-Lime Margarita)","sku":null,"optionValues":["MUSCLE MARG (Lemon-Lime Margarita)"],"option_values":[{"position":1,"name":"Flavor","value":"MUSCLE MARG (Lemon-Lime Margarita)"}],"selected_options":{"Flavor":"MUSCLE MARG (Lemon-Lime Margarita)"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-post-mucle-marg-one-bottle_c0691011-bc1f-4de1-9a15-24bfdefc289f.png"},{"variant_id":"41217889468478","key":"CURLIN CANDY (Blue Cotton Candy)","title":"CURLIN CANDY (Blue Cotton Candy)","sku":null,"optionValues":["CURLIN CANDY (Blue Cotton Candy)"],"option_values":[{"position":1,"name":"Flavor","value":"CURLIN CANDY (Blue Cotton Candy)"}],"selected_options":{"Flavor":"CURLIN CANDY (Blue Cotton Candy)"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/postcurlin1bottle_1a45ef45-c768-4655-883b-6d1f6aea8247.png"}];
+        var variantPricing = [{"variant_id":"41217889402942","key":"GAINY SMITH APPLE (Green Apple Candy)","title":"GAINY SMITH APPLE (Green Apple Candy)","sku":null,"optionValues":["GAINY SMITH APPLE (Green Apple Candy)"],"option_values":[{"position":1,"name":"Flavor","value":"GAINY SMITH APPLE (Green Apple Candy)"}],"selected_options":{"Flavor":"GAINY SMITH APPLE (Green Apple Candy)"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2321/6571/files/superhuman-post-gainy-smith-one-bottle_d461a990-371d-4261-b4fa-0a2eb78c7637.png"},{"variant_id":"41217889435710","key":"MUSCLE MARG (Lemon-Lime Margarita)","title":"MUSCLE MARG (Lemon-Lime Margarita)","sku":null,"optionValues":["MUSCLE MARG (Lemon-Lime Margarita)"],"option_values":[{"position":1,"name":"Flavor","value":"MUSCLE MARG (Lemon-Lime Margarita)"}],"selected_options":{"Flavor":"MUSCLE MARG (Lemon-Lime Margarita)"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"41217889468478","key":"CURLIN CANDY (Blue Cotton Candy)","title":"CURLIN CANDY (Blue Cotton Candy)","sku":null,"optionValues":["CURLIN CANDY (Blue Cotton Candy)"],"option_values":[{"position":1,"name":"Flavor","value":"CURLIN CANDY (Blue Cotton Candy)"}],"selected_options":{"Flavor":"CURLIN CANDY (Blue Cotton Candy)"},"price_cents":4499,"regular_price_cents":4499,"compare_at_cents":0,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

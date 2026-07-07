@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -675,17 +675,18 @@ White Pineapple Strawberry Label </li>
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_PS_FRONT.png","t":"abcpsfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_MYSTERY_Front_e04966a5-63fc-4b83-bba2-8faa0ee71527.png","t":"abcmysteryfronte04966a563fc4b83bba28faa0ee71527png"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_BR_FRONT.png","t":"abcbrfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_PS_Left.png","t":"abcpsleftpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_PS_Right.png","t":"abcpsrightpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_CB_FRONT.png","t":"abccbfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_MYSTERY_Left_67e0b8f0-e8be-4af2-b802-564d67feee74.png","t":"abcmysteryleft67e0b8f0e8be4af2b802564d67feee74png"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_MYSTERY_Right_c1545c4b-bc0b-4e15-bff3-21682851a988.png","t":"abcmysteryrightc1545c4bbc0b4e15bff321682851a988png"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_OG_FRONT.png","t":"abcogfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_BR_Left.png","t":"abcbrleftpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_BR_Right.png","t":"abcbrrightpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_LD_FRONT_e872200f-10b2-4620-adfd-359e75138c3b.png","t":"abcldfronte872200f10b24620adfd359e75138c3bpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_CB_Left.png","t":"abccbleftpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_CB_Right.png","t":"abccbrightpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_GS_FRONT.png","t":"abcgsfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_OG_Left.png","t":"abcogleftpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_OG_Right.png","t":"abcogrightpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_PM_FRONT.png","t":"abcpmfrontpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_LD_Left_fb8092bc-46a2-4ee4-8b32-cb500f938c25.png","t":"abcldleftfb8092bc46a24ee48b32cb500f938c25png"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_LD_Right_f372f5aa-756c-46ba-b7d2-1d429ca1b79d.png","t":"abcldrightf372f5aa756c46bab7d21d429ca1b79dpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_GS_Left.png","t":"abcgsleftpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_GS_Right.png","t":"abcgsrightpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_PM_Left.png","t":"abcpmleftpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_PM_Right.png","t":"abcpmrightpng"},{"src":"https://cdn.shopify.com/s/files/1/2440/0931/files/core-products-patriot-pop.jpg","t":"coreproductspatriotpopjpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -701,21 +702,25 @@ White Pineapple Strawberry Label </li>
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
@@ -737,7 +742,7 @@ White Pineapple Strawberry Label </li>
         var titleEl = document.querySelector("[data-pdp-title]");
         var variantDealNote = document.querySelector("[data-pdp-variant-deal-note]");
         var variantDeals = [];
-        var variantPricing = [{"variant_id":"44809689104560","key":"Fun Sweets® Mystery Flavor","title":"Fun Sweets® Mystery Flavor","sku":null,"optionValues":["Fun Sweets® Mystery Flavor"],"option_values":[{"position":1,"name":"Flavor","value":"Fun Sweets® Mystery Flavor"}],"selected_options":{"Flavor":"Fun Sweets® Mystery Flavor"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/ABC_MYSTERY_Front_e04966a5-63fc-4b83-bba2-8faa0ee71527.png"},{"variant_id":"44871078084784","key":"Fun Sweets® Blue Raspberry","title":"Fun Sweets® Blue Raspberry","sku":null,"optionValues":["Fun Sweets® Blue Raspberry"],"option_values":[{"position":1,"name":"Flavor","value":"Fun Sweets® Blue Raspberry"}],"selected_options":{"Flavor":"Fun Sweets® Blue Raspberry"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44871078117552","key":"Fun Sweets® Cherry Berry","title":"Fun Sweets® Cherry Berry","sku":null,"optionValues":["Fun Sweets® Cherry Berry"],"option_values":[{"position":1,"name":"Flavor","value":"Fun Sweets® Cherry Berry"}],"selected_options":{"Flavor":"Fun Sweets® Cherry Berry"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44871078150320","key":"Fun Sweets® Orange Cream","title":"Fun Sweets® Orange Cream","sku":null,"optionValues":["Fun Sweets® Orange Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Fun Sweets® Orange Cream"}],"selected_options":{"Flavor":"Fun Sweets® Orange Cream"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42987069472944","key":"Lemon Drop","title":"Lemon Drop","sku":null,"optionValues":["Lemon Drop"],"option_values":[{"position":1,"name":"Flavor","value":"Lemon Drop"}],"selected_options":{"Flavor":"Lemon Drop"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42987069243568","key":"Gummy Snakes","title":"Gummy Snakes","sku":null,"optionValues":["Gummy Snakes"],"option_values":[{"position":1,"name":"Flavor","value":"Gummy Snakes"}],"selected_options":{"Flavor":"Gummy Snakes"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42987069440176","key":"Pineapple Strawberry","title":"Pineapple Strawberry","sku":null,"optionValues":["Pineapple Strawberry"],"option_values":[{"position":1,"name":"Flavor","value":"Pineapple Strawberry"}],"selected_options":{"Flavor":"Pineapple Strawberry"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44871082541232","key":"Peach Mango","title":"Peach Mango","sku":null,"optionValues":["Peach Mango"],"option_values":[{"position":1,"name":"Flavor","value":"Peach Mango"}],"selected_options":{"Flavor":"Peach Mango"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42987069178032","key":"Patriot Pop","title":"Patriot Pop","sku":null,"optionValues":["Patriot Pop"],"option_values":[{"position":1,"name":"Flavor","value":"Patriot Pop"}],"selected_options":{"Flavor":"Patriot Pop"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/core-products-patriot-pop.jpg"}];
+        var variantPricing = [{"variant_id":"44809689104560","key":"Fun Sweets® Mystery Flavor","title":"Fun Sweets® Mystery Flavor","sku":null,"optionValues":["Fun Sweets® Mystery Flavor"],"option_values":[{"position":1,"name":"Flavor","value":"Fun Sweets® Mystery Flavor"}],"selected_options":{"Flavor":"Fun Sweets® Mystery Flavor"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44871078084784","key":"Fun Sweets® Blue Raspberry","title":"Fun Sweets® Blue Raspberry","sku":null,"optionValues":["Fun Sweets® Blue Raspberry"],"option_values":[{"position":1,"name":"Flavor","value":"Fun Sweets® Blue Raspberry"}],"selected_options":{"Flavor":"Fun Sweets® Blue Raspberry"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44871078117552","key":"Fun Sweets® Cherry Berry","title":"Fun Sweets® Cherry Berry","sku":null,"optionValues":["Fun Sweets® Cherry Berry"],"option_values":[{"position":1,"name":"Flavor","value":"Fun Sweets® Cherry Berry"}],"selected_options":{"Flavor":"Fun Sweets® Cherry Berry"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44871078150320","key":"Fun Sweets® Orange Cream","title":"Fun Sweets® Orange Cream","sku":null,"optionValues":["Fun Sweets® Orange Cream"],"option_values":[{"position":1,"name":"Flavor","value":"Fun Sweets® Orange Cream"}],"selected_options":{"Flavor":"Fun Sweets® Orange Cream"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42987069472944","key":"Lemon Drop","title":"Lemon Drop","sku":null,"optionValues":["Lemon Drop"],"option_values":[{"position":1,"name":"Flavor","value":"Lemon Drop"}],"selected_options":{"Flavor":"Lemon Drop"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42987069243568","key":"Gummy Snakes","title":"Gummy Snakes","sku":null,"optionValues":["Gummy Snakes"],"option_values":[{"position":1,"name":"Flavor","value":"Gummy Snakes"}],"selected_options":{"Flavor":"Gummy Snakes"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42987069440176","key":"Pineapple Strawberry","title":"Pineapple Strawberry","sku":null,"optionValues":["Pineapple Strawberry"],"option_values":[{"position":1,"name":"Flavor","value":"Pineapple Strawberry"}],"selected_options":{"Flavor":"Pineapple Strawberry"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"44871082541232","key":"Peach Mango","title":"Peach Mango","sku":null,"optionValues":["Peach Mango"],"option_values":[{"position":1,"name":"Flavor","value":"Peach Mango"}],"selected_options":{"Flavor":"Peach Mango"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":null},{"variant_id":"42987069178032","key":"Patriot Pop","title":"Patriot Pop","sku":null,"optionValues":["Patriot Pop"],"option_values":[{"position":1,"name":"Flavor","value":"Patriot Pop"}],"selected_options":{"Flavor":"Patriot Pop"},"price_cents":3499,"regular_price_cents":3499,"compare_at_cents":3499,"compare_at_price_cents":null,"source_available":true,"available":true,"image_url":"https://cdn.shopify.com/s/files/1/2440/0931/files/core-products-patriot-pop.jpg"}];
         var baseCartPrice = addBtn ? addBtn.dataset.cartPrice : "";
         var baseCartName = addBtn ? addBtn.dataset.cartName : "";
         var baseCartImage = addBtn ? addBtn.dataset.cartImage : "";

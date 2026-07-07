@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -649,17 +649,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/Ting_800x800_69845d2f-7a2c-41e0-881b-30dce02dc809.png","t":"ting800x80069845d2f7a2c41e0881b30dce02dc809png"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Ting_Refill_NEW-02_800x800_6a4011f1-5630-49bc-b745-769ed58f844e.png","t":"tingrefillnew02800x8006a4011f1563049bcb745769ed58f844epng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Ting_Sticks_Open_800x800_03fcf947-bbc1-4c68-9d45-3a55dbf063dd.png","t":"tingsticksopen800x80003fcf947bbc14c689d453a55dbf063ddpng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/Ting_PPage_Image-02.jpg","t":"tingppageimage02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/ting_stick_ppage.jpg","t":"tingstickppagejpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/MoonJuice_PPage_Ting_Refill_ALT_V1.jpg","t":"moonjuiceppagetingrefillaltv1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/Ting_PPage_Image-03.jpg","t":"tingppageimage03jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_f2021747-8ac2-4b78-a59c-ed432762abd0.jpg","t":"altppagef20217478ac24b78a59ced432762abd0jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/Alt_Ppage_Ting-02.jpg","t":"altppageting02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/products/04_Ting_Video.jpg","t":"04tingvideojpg"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2307_Ting_SFP.png","t":"2307tingsfpaa1545a856124f7ba6021b225ce1156epng"},{"src":"https://cdn.shopify.com/s/files/1/1095/5588/files/2308_Ting_Stick_SFP.png","t":"2308tingsticksfppng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -675,21 +676,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

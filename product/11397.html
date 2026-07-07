@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -574,17 +574,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_green_1_e121ba8a-8d1e-4301-9283-85e0923e7145.jpg","t":"9c6inchweightliftingbeltgreen1e121ba8a8d1e4301928385e0923e7145jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_green_2_70640357-20fe-4a2e-ae83-2c35f47377ff.jpg","t":"9c6inchweightliftingbeltgreen27064035720fe4a2eae832c35f47377ffjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_green_4_376f2215-0ba4-4388-bbe9-bbcb360e3626.jpg","t":"9c6inchweightliftingbeltgreen4376f22150ba44388bbe9bbcb360e3626jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_green_6_917ea23e-6a64-480a-9a6d-660efc719861.jpg","t":"9c6inchweightliftingbeltgreen6917ea23e6a64480a9a6d660efc719861jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_green_7_c69e4989-b12b-480d-9786-d8736332859b.jpg","t":"9c6inchweightliftingbeltgreen7c69e4989b12b480d9786d8736332859bjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_8_e9d7912a-6c2b-48aa-8f47-a25f773a17cc.jpg","t":"9c6inchweightliftingbelt8e9d7912a6c2b48aa8f47a25f773a17ccjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_11_ee563288-0d38-4fcd-a6ff-ee5552d22e9e.jpg","t":"9c6inchweightliftingbelt11ee5632880d384fcda6ffee5552d22e9ejpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_12_29ef169b-b2ca-46aa-91f6-7ddd5ee84c51.jpg","t":"9c6inchweightliftingbelt1229ef169bb2ca46aa91f67ddd5ee84c51jpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_13_895ebde8-55e7-4fc6-9740-535ae1a7207c.jpg","t":"9c6inchweightliftingbelt13895ebde855e74fc69740535ae1a7207cjpg"},{"src":"https://cdn.shopify.com/s/files/1/0815/3631/9802/products/9c_6_inch_weightlifting_belt_14_7f4c3ab2-9dfe-4b67-bd1e-753de0bac151.jpg","t":"9c6inchweightliftingbelt147f4c3ab29dfe4b67bd1e753de0bac151jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -600,21 +601,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

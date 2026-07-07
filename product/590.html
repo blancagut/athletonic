@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -630,17 +630,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_-_rainbow_sherbet_-_front_1.webp","t":"thavagerainbowsherbetfront1webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/6Peat_Front.webp","t":"6peatfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage-dragon_fruit.webp","t":"thavagedragonfruitwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_Raspberry_Lemonade-front_NEW.webp","t":"thavageraspberrylemonadefrontnewwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_Lemonade-front_NEW_1.webp","t":"thavagelemonadefrontnew1webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_-_champion_mentality.webp","t":"thavagechampionmentalitywebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_-_lemon_lime_front.webp","t":"thavagelemonlimefrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thavage_Sour_Watermelon_Front.webp","t":"thavagesourwatermelonfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/BELCAST-thavage.webp","t":"belcastthavagewebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_-_south_beach_slush_front.webp","t":"thavagesouthbeachslushfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_-_peach_bum_front.webp","t":"thavagepeachbumfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_-_rocket_candy_front.webp","t":"thavagerocketcandyfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_-_blackberry_lemonade_front.webp","t":"thavageblackberrylemonadefrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage-Lions_blood-front.webp","t":"thavagelionsbloodfrontwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage_secret_stuff_center.webp","t":"thavagesecretstuffcenterwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/5_PEAT.webp","t":"5peatwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/thavage-championmentality_a6f1c708-5c6a-4d51-861d-6a5890d77276.webp","t":"thavagechampionmentalitya6f1c7085c6a4d51861d6a5890d77276webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thavage_Lion_s_Blood_Strawberry_and_Coconut_copy_c10bcc3f-9ff7-4e0d-98c5-d7291929be52.webp","t":"thavagelionsbloodstrawberryandcoconutcopyc10bcc3f9ff74e0d98c5d7291929be52webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-DragonFruit-SFP_2166d5b3-bad9-4b5e-81d6-98e98becc968.png","t":"thavdragonfruitsfp2166d5b3bad94b5e81d698e98becc968png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-SourWatermelon-SFP_e32fa6a7-823e-4430-a5f0-a6581c117bad.png","t":"thavsourwatermelonsfpe32fa6a7823e4430a5f0a6581c117badpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-6peat-SFP_22768968-db2f-4ada-8cb0-73701917e1eb.png","t":"thav6peatsfpe9a6a980d81946d2b1396dc11c4846cdpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-Lemonade-SFP_afd7362e-faa8-484e-b875-afeaa3ee073f.png","t":"thavlemonadesfpafd7362efaa8484eb875afeaa3ee073fpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-LemonLime-SFP_762c319f-daca-4a43-88b6-4b4b3efe9af4.png","t":"thavlemonlimesfp762c319fdaca4a4388b64b4b3efe9af4png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-SouthBeach-SFP_75f536d1-e7dc-434a-9692-df40119bff2c.png","t":"thavsouthbeachsfp75f536d1e7dc434a9692df40119bff2cpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-SecretStuff-SFP_566d6312-730a-4966-9bf4-0452b42c5649.png","t":"thavsecretstuffsfp566d6312730a49669bf40452b42c5649png"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-PeachBum-SFP_f573ce2f-a54b-47c6-823f-61195ac6e89a.png","t":"thavpeachbumsfpf573ce2fa54b47c6823f61195ac6e89apng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-RocketCandy-SFP_7f685da9-05e5-4a8a-8ee9-54e0c6958fad.png","t":"thavrocketcandysfp7f685da905e54a8a8ee954e0c6958fadpng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-BlackLemonade-SFP_658474e1-4ab7-4f34-9ee2-997c7f9e8cbe.png","t":"thavblacklemonadesfp658474e14ab74f349ee2997c7f9e8cbepng"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-RainbowSherbet-SFP_2_59bdaf7c-19c7-4ad2-9e00-eb2239c661bf.webp","t":"thavrainbowsherbetsfp259bdaf7c19c74ad29e00eb2239c661bfwebp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-Lychee-SFP_b906a186-00ae-4c26-8d4b-4dee4b0e6ee9.webp","t":"thavlycheesfpb906a18600ae4c268d4b4dee4b0e6ee9webp"},{"src":"https://cdn.shopify.com/s/files/1/0932/3141/5614/files/Thav-RaspberryLemonade-SFP_387a8695-45f8-435b-b109-1d07704ca3b4.png","t":"thavraspberrylemonadesfp387a869545f8435bb1091d07704ca3b4png"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -656,21 +657,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

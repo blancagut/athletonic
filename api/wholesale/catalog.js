@@ -6,7 +6,7 @@ const {
   paginateWholesaleProducts,
 } = require("../_lib/wholesale-muay-thai");
 
-const MAX_PAGE_SIZE = 48;
+const MAX_PAGE_SIZE = 5000;
 
 function normalizePageValue(value, fallback, maxValue) {
   const parsed = Number.parseInt(value, 10);

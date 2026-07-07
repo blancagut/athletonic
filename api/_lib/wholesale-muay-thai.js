@@ -905,6 +905,7 @@ function sanitizeQuoteItem(rawItem, catalogProduct) {
     selected_options: selectedOptions,
     quantity: safeQuantity,
     availability_status: catalogProduct.availability_status,
+    unit_price_cents: retailPriceCents,
     retail_price_cents: retailPriceCents,
     wholesale_price_cents: wholesaleCents,
     wholesale_discount_bps: discountBps,

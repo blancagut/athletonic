@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -623,17 +623,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-BRI.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30bripng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_PDPs_DTC_XtendOriginalXtendOriginal30-Benefits-BRI_v2.png","t":"xtend1144digitalrelabelflowthroughpdpsdtcxtendoriginalxtendoriginal30benefitsbriv2png"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_PDPs_DTC_XtendOriginal30_BenefitsLifestyle-Flavor-BRI.png","t":"xtend1144digitalrelabelflowthroughpdpsdtcxtendoriginal30benefitslifestyleflavorbripng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_PDPs_DTC_XtendOriginal30_BenefitsLifestyle-NewVsOld-BRI.png","t":"xtend1144digitalrelabelflowthroughpdpsdtcxtendoriginal30benefitslifestylenewvsoldbripng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_PDPs_DTC_XtendOriginal30_BenefitsLifestyle-Lifestyle.png","t":"xtend1144digitalrelabelflowthroughpdpsdtcxtendoriginal30benefitslifestylelifestylepng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-GG.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30ggpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-IBO.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30ibopng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-KFP.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30kfppng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-SKS.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30skspng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-FI.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30fipng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG90-BRI.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog90bripng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG90-IBO.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog90ibopng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG90-WE.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog90wepng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-BRI-Label_0d1a309c-eb0e-4844-99fd-da0f7e690263.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30brilabel0d1a309ceb0e484499fdda0f7e690263png"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-FI-Label.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30filabelpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-GG-Label.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30gglabelpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-IBO-Label.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30ibolabelpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-KFP-Label.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30kfplabelpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-LLS-Label.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30llslabelpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-MM-Label_9d9a3a5f-984c-46dc-a796-7ff358a725c5.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30mmlabel9d9a3a5f984c46dca7967ff358a725c5png"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-SKS-Label.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30skslabelpng"},{"src":"https://cdn.shopify.com/s/files/1/1492/2278/files/XTEND_1144_Digital_Relabel_FlowThrough_Assets_PDPs_OnGreyBackground-XTEND-OG30-WE-Label.png","t":"xtend1144digitalrelabelflowthroughassetspdpsongreybackgroundxtendog30welabelpng"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -649,21 +650,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

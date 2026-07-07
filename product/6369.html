@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -619,17 +619,18 @@ ZERO EYE PRESSURE</div>
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/1.5-Mask-Buy-Box-1_d0fae277-806a-4989-8baa-726160b21c2d.png","t":"15maskbuybox1d0fae277806a49898baa726160b21c2dpng"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/5_9f80da48-3c35-4e93-9391-f4a692690fbf.jpg","t":"59f80da483c354e939391f4a692690fbfjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/6_97d688a8-1139-49b4-8a10-990f2713515d.jpg","t":"697d688a8113949b48a10990f2713515djpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/3_27dfd471-b77c-43d4-ae5b-258f18ae8ca8.jpg","t":"313df0ff6355041379e01caa60281a2b7jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/2_d00cdf76-c290-47a3-a7ab-538b9afd826d.jpg","t":"2546f84ef6b114c52a66aba756174d2f4jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/11_c874a482-e4ba-4b19-a45d-2cf7a7467e3b.jpg","t":"11c874a482e4ba4b19a45d2cf7a7467e3bjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/12_4c05077d-1606-459a-9e17-96d22c4f551e.jpg","t":"124c05077d1606459a9e1796d22c4f551ejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/9_7d795ca5-c498-4320-925a-211a8c5fe1ca.jpg","t":"97d795ca5c4984320925a211a8c5fe1cajpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/4_c1ddf3c4-e412-4900-bb0d-648b1efd2ef5.jpg","t":"4c1ddf3c4e4124900bb0d648b1efd2ef5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/1.5-Mask-Buy-Box-8_89c7f3d8-4eba-4ce1-a897-24ed380a9b20.jpg","t":"15maskbuybox889c7f3d84eba4ce1a89724ed380a9b20jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/1_bdce5685-8469-4bdd-b002-de135b3e2560.jpg","t":"1bdce568584694bddb002de135b3e2560jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/1.5-Mask-Buy-Box-9_566884af-2efe-4784-88ae-0779ef781c0c.jpg","t":"15maskbuybox9566884af2efe478488ae0779ef781c0cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/18_7ef6a211-c1fa-49f9-8fc6-c700d82029bd.jpg","t":"187ef6a211c1fa49f98fc6c700d82029bdjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/19_01110111-5b49-4106-adb9-a64850ed0fb3.jpg","t":"19011101115b494106adb9a64850ed0fb3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-1_1_37b94041-a3de-4647-add5-9bbeec4d961b.png","t":"pinkbuybox1137b94041a3de4647add59bbeec4d961bpng"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/Testimonial-Video-5_9a739aa0-f4d8-486b-b4b4-fe6b7f93eacf.jpg","t":"testimonialvideo59a739aa0f4d8486bb4b4fe6b7f93eacfjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-2_c6ac65f8-e7df-4f57-a2d2-8896f382b31c.jpg","t":"pinkbuybox2c6ac65f8e7df4f57a2d28896f382b31cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/Testimonial-Video-4_c09c1604-d81a-4d7c-bca3-0e3523420c3a.jpg","t":"testimonialvideo4c09c1604d81a4d7cbca30e3523420c3ajpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-3_1_93102f09-5379-42c9-b647-5b0b3fd8d7bc.jpg","t":"pinkbuybox3193102f09537942c9b6475b0b3fd8d7bcjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/Testimonial-Video-2_249f04a0-6af3-4107-80a2-e2e580eb950c.jpg","t":"testimonialvideo2249f04a06af3410780a2e2e580eb950cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-4_1_8fdd4ae2-6b2d-43c0-a8a4-e79aad1c9ebb.jpg","t":"pinkbuybox418fdd4ae26b2d43c0a8a4e79aad1c9ebbjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/Testimonial-Video-1_d636b507-51e7-43aa-8fcc-e434831b5f3c.jpg","t":"testimonialvideo1d636b50751e743aa8fcce434831b5f3cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-5_1_d58c0810-e18d-4e43-9caa-102bc3d9b237.jpg","t":"pinkbuybox51d58c0810e18d4e439caa102bc3d9b237jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/products/Testimonial-Video-3_4b3a4df7-02e7-48b2-bd23-d674511713de.jpg","t":"testimonialvideo34b3a4df702e748b2bd23d674511713dejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-6_1_7e47d2db-81f8-47da-9a44-3b23165b55ce.jpg","t":"pinkbuybox617e47d2db81f847da9a443b23165b55cejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-7_1_e884da2c-6820-4530-9ab4-34c1b3eae5d1.jpg","t":"pinkbuybox71e884da2c682045309ab434c1b3eae5d1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-8_ba7bfd83-820a-418f-833d-46a16392323c.jpg","t":"pinkbuybox8ba7bfd83820a418f833d46a16392323cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-9_1_002d25f7-f7b0-4441-8cc6-4e54d3a72768.jpg","t":"pinkbuybox91002d25f7f7b044418cc64e54d3a72768jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-10_1_4e5f0295-ded7-4feb-a98b-306bb98772de.jpg","t":"pinkbuybox1014e5f0295ded74feba98b306bb98772dejpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-12_1_4a75310d-de24-49de-be36-4a8756f31186.jpg","t":"pinkbuybox1214a75310dde2449debe364a8756f31186jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/PINK-Buy-Box-11_1_3a0eaf11-706b-469f-986c-3878685f8c99.jpg","t":"pinkbuybox1113a0eaf11706b469f986c3878685f8c99jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-1_1_c318126e-c643-44a8-88ca-9871dd2388ba.png","t":"blackbuybox11c318126ec64344a888ca9871dd2388bapng"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-2_1_e2677d60-092b-4785-b17a-69a73bfeb392.jpg","t":"blackbuybox21e2677d60092b4785b17a69a73bfeb392jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-3_1_f292ce3b-d094-450e-8e5c-89e4766ecbe7.jpg","t":"blackbuybox31f292ce3bd094450e8e5c89e4766ecbe7jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-4_2cdb2444-d50a-4ad0-a4e3-48eb8f2ce5b5.jpg","t":"blackbuybox42cdb2444d50a4ad0a4e348eb8f2ce5b5jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-5_1_5838c5bc-190e-414a-8b84-5a070a727314.jpg","t":"blackbuybox515838c5bc190e414a8b845a070a727314jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-6_1_7d4eb57f-ddd8-4456-b3e5-8e55513703b3.jpg","t":"blackbuybox617d4eb57fddd84456b3e58e55513703b3jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-7_1_ad341079-8868-437b-b287-ef800f86d2cf.jpg","t":"blackbuybox71ad3410798868437bb287ef800f86d2cfjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-8_1_4f766493-2097-4d9f-8026-a348e23de31f.jpg","t":"blackbuybox814f76649320974d9f8026a348e23de31fjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-9_0af2f73b-65e8-46dc-a741-3ed967b39e84.jpg","t":"blackbuybox90af2f73b65e846dca7413ed967b39e84jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-10_6ef86885-2c10-4b0c-b024-74986b92e5ff.jpg","t":"blackbuybox106ef868852c104b0cb02474986b92e5ffjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/BLACK-Buy-Box-11_b3dee47a-de96-4eb0-853e-d83a2f71a533.jpg","t":"blackbuybox11b3dee47ade964eb0853ed83a2f71a533jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-01.png","t":"15buyboxgreen01png"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-02.jpg","t":"15buyboxgreen02jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-03.jpg","t":"15buyboxgreen03jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-04.jpg","t":"15buyboxgreen04jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-05.jpg","t":"15buyboxgreen05jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-06.jpg","t":"15buyboxgreen06jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-07-US.jpg","t":"15buyboxgreen07usjpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-08.jpg","t":"15buyboxgreen08jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-09.jpg","t":"15buyboxgreen09jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-10.jpg","t":"15buyboxgreen10jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-11.jpg","t":"15buyboxgreen11jpg"},{"src":"https://cdn.shopify.com/s/files/1/1582/3265/files/1.5-Buybox-Green-12.jpg","t":"15buyboxgreen12jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -645,21 +646,25 @@ ZERO EYE PRESSURE</div>
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);

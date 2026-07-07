@@ -137,8 +137,8 @@
           <span>Subtotal</span>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
-        <button type="submit" data-checkout-submit>Continue to secure payment</button>
-        <p class="form-note">Payment is processed securely with Stripe. Athletonic creates your order after payment is confirmed.</p>
+        <button type="submit" data-checkout-submit>Place order</button>
+        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
       </form>
     </aside>
 
@@ -562,17 +562,18 @@
 
         // Variant-aware main image: switch to the image matching the selected
         // variant. Each image carries a compact token blob (from its alt text +
-        // filename). We score every image by how many selected option values it
-        // matches (whole value or a significant word of it), so the strongest
-        // signal wins: exact variant > same flavor > same size. When no image
-        // carries a usable signal we keep the current/default image, so a wrong
-        // image is never shown.
+        // filename). Flavor-like values (no digits) weigh far more than size-
+        // like values, and word matches are proportional, so "french vanilla"
+        // (2/3 words) always beats a stray shared word like "cream" (1/3).
+        // When no image carries a usable flavor signal we keep the current/
+        // default image, so a wrong image is never shown.
         var galleryImages = [{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel15-Mango-Jar-Hero.jpg","t":"fuel15mangojarhero026a15385c9048f782347c35626b0002jpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel15-Mango-Jar-Hero-1.jpg","t":"fuel15mangojarhero1jpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel_POG-15-serv_2000x2000_07212025-CC.png","t":"fuelpog15serv2000x200007212025ccpng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel-ScienceInAction_b17f2238-a809-4f1f-9276-85909546076c.jpg","t":"fuelscienceinactionb17f2238a8094f1f927685909546076cjpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-POG-TravelPacks-HowToUse-2.jpg","t":"fuel10pogtravelpackshowtouse2jpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-SocialProof.png","t":"fuel10travelpackssocialproofpng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-POG-TravelPacks-FuelYourPurpose.jpg","t":"fuel10pogtravelpacksfuelyourpurposejpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-Palatinose.png","t":"fuel10travelpackspalatinosepng"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel15-POG-Mango-Jars-MomentousStandard.jpg","t":"fuel15pogmangojarsmomentousstandardjpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel10-TravelPacks-Stats_383561be-236a-4347-9c4f-3999cadfdd32.png","t":"fuel10travelpacksstats383561be236a43479c4f3999cadfdd32png"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel15-POG-Jar-Supps.jpg","t":"fuel15pogjarsuppsjpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel15-Mango-Jar-Supps.jpg","t":"fuel15mangojarsuppsbf9631111ec24e60a2659912eb19a028jpg"},{"src":"https://cdn.shopify.com/s/files/1/1400/2351/files/Fuel15-Mango-Jar-Supps-1.jpg","t":"fuel15mangojarsupps1jpg"}];
         function variantValueGroup(value) {
           var words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
           return {
             compact: words.join(""),
             words: words.filter(function (w) { return w.length >= 3; }),
+            sizeLike: /\d/.test(words.join("")),
           };
         }
         function pickVariantImage(values) {
@@ -588,21 +589,25 @@
             if (!blob) return;
             var score = 0;
             groups.forEach(function (group) {
+              var full = group.sizeLike ? 1 : 4;
               if (group.compact && blob.indexOf(group.compact) !== -1) {
-                score += 2;
+                score += full;
                 return;
               }
-              var wordHit = group.words.some(function (w) {
-                return w.length >= 3 && blob.indexOf(w) !== -1;
-              });
-              if (wordHit) score += 1;
+              if (!group.words.length) return;
+              var matched = group.words.filter(function (w) {
+                return blob.indexOf(w) !== -1;
+              }).length;
+              if (matched > 0) score += (full * 0.75 * matched) / group.words.length;
             });
             if (score > bestScore) {
               bestScore = score;
               best = img.src;
             }
           });
-          return bestScore > 0 ? best : null;
+          var hasNonSize = groups.some(function (g) { return !g.sizeLike; });
+          var threshold = hasNonSize ? 1 : 0.5;
+          return bestScore >= threshold ? best : null;
         }
         function applyVariantImage(values) {
           var src = pickVariantImage(values || []);
