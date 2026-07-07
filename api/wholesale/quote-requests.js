@@ -209,11 +209,12 @@ module.exports = async function handler(req, res) {
 
     let quotePdf = null;
     try {
-      quotePdf = buildWholesaleQuotePdf({
+      quotePdf = await buildWholesaleQuotePdf({
         request: { id: quoteRequest.id, created_at: quoteRequest.created_at, ...body, items },
         supportEmail: salesEmail,
         siteHost: getSiteUrl(req).replace(/^https?:\/\//, ""),
         isWholesale,
+        bankDetails: BANK_DETAILS,
       });
     } catch (pdfError) {
       console.warn("Wholesale quotation PDF generation failed:", pdfError);

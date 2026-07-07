@@ -41,7 +41,30 @@ function optionsText(item) {
   return selected.map(([key, value]) => `${key}: ${value}`).join("  ·  ");
 }
 
-function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale = true }) {
+const PAYMENT_INSTRUCTIONS_NOTE =
+  "Please use the banking information above for USD wire transfers and ACH payments. If you require an invoice or additional payment information, please contact Athletonic LLC before sending funds.";
+
+async function fetchItemImage(url, timeoutMs = 3000) {
+  if (!url) return null;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!response.ok) return null;
+    const contentType = response.headers.get("content-type") || "";
+    const arrayBuffer = await response.arrayBuffer();
+    if (!arrayBuffer || !arrayBuffer.byteLength) return null;
+    let format = "JPEG";
+    if (/png/i.test(contentType) || /\.png($|\?)/i.test(url)) format = "PNG";
+    else if (/webp/i.test(contentType) || /\.webp($|\?)/i.test(url)) format = "WEBP";
+    return { data: Buffer.from(arrayBuffer).toString("base64"), format };
+  } catch {
+    return null;
+  }
+}
+
+async function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale = true, bankDetails = null }) {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -53,6 +76,7 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale =
   const validUntil = new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000);
   const fromLabel = isWholesale ? "Athletonic Wholesale" : "Athletonic International Orders";
   const preparedForLabel = String(request.company_name || request.name || "");
+  const itemImages = await Promise.all(request.items.map((item) => fetchItemImage(item && item.image_url)));
 
   // Letterhead band
   doc.setFillColor(...NAVY);
@@ -96,7 +120,7 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale =
   doc.setTextColor(...MUTED);
   doc.text(
     [
-      String(request.name || ""),
+      String(request.name || "") !== preparedForLabel ? String(request.name || "") : null,
       String(request.email || ""),
       `WhatsApp: ${String(request.whatsapp || "")}`,
       String(request.country || ""),
@@ -118,7 +142,7 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale =
     const quantity = Math.max(1, Number(item.quantity) || 1);
     const options = optionsText(item);
     return [
-      String(index + 1),
+      "",
       `${item.name}${options ? `\n${options}` : ""}`,
       String(item.brand || ""),
       String(quantity),
@@ -136,7 +160,7 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale =
   autoTable(doc, {
     startY: y + 96,
     margin: { left: margin, right: margin, bottom: 96 },
-    head: [["#", "Product", "Brand", "Qty", isWholesale ? "Wholesale / unit" : "Unit price", "Line total"]],
+    head: [["Photo", "Product", "Brand", "Qty", isWholesale ? "Wholesale / unit" : "Unit price", "Line total"]],
     body: rows,
     styles: {
       font: "helvetica",
@@ -146,6 +170,7 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale =
       lineColor: LINE,
       lineWidth: { bottom: 0.75 },
       valign: "middle",
+      minCellHeight: 46,
     },
     headStyles: {
       fillColor: NAVY,
@@ -156,12 +181,26 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale =
     },
     alternateRowStyles: { fillColor: [246, 250, 253] },
     columnStyles: {
-      0: { cellWidth: 24, textColor: MUTED },
+      0: { cellWidth: 46 },
       1: { cellWidth: "auto" },
-      2: { cellWidth: 78 },
-      3: { cellWidth: 34, halign: "right" },
-      4: { cellWidth: 86, halign: "right" },
-      5: { cellWidth: 74, halign: "right", fontStyle: "bold" },
+      2: { cellWidth: 74 },
+      3: { cellWidth: 30, halign: "right" },
+      4: { cellWidth: 82, halign: "right" },
+      5: { cellWidth: 70, halign: "right", fontStyle: "bold" },
+    },
+    didDrawCell: (data) => {
+      if (data.section !== "body" || data.column.index !== 0) return;
+      const image = itemImages[data.row.index];
+      if (!image) return;
+      try {
+        const padding = 5;
+        const size = Math.min(data.cell.width, data.cell.height) - padding * 2;
+        const x = data.cell.x + (data.cell.width - size) / 2;
+        const yPos = data.cell.y + (data.cell.height - size) / 2;
+        doc.addImage(image.data, image.format, x, yPos, size, size);
+      } catch {
+        // Skip images jsPDF can't decode instead of failing the whole PDF.
+      }
     },
   });
 
@@ -211,6 +250,71 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale =
     afterTable + 27,
     { lineHeightFactor: 1.5, maxWidth: pageWidth - margin * 2 - 250 }
   );
+
+  // Payment instructions (bank transfer details)
+  if (bankDetails) {
+    const boxHeight = 172;
+    let paymentY = afterTable + 92;
+    if (paymentY + boxHeight > pageHeight - 54) {
+      doc.addPage();
+      paymentY = margin;
+    }
+    const AMBER_BG = [255, 247, 237];
+    const AMBER_BORDER = [253, 186, 116];
+    const AMBER_INK = [124, 45, 18];
+    const boxWidth = pageWidth - margin * 2;
+
+    doc.setFillColor(...AMBER_BG);
+    doc.setDrawColor(...AMBER_BORDER);
+    doc.setLineWidth(1);
+    doc.roundedRect(margin, paymentY, boxWidth, boxHeight, 10, 10, "FD");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...AMBER_INK);
+    doc.setCharSpace(1.2);
+    doc.text("PAYMENT INSTRUCTIONS", margin + 16, paymentY + 20);
+    doc.setCharSpace(0);
+    doc.setFontSize(13);
+    doc.text("ATHLETONIC LLC", margin + 16, paymentY + 38);
+
+    const leftColX = margin + 16;
+    const rightColX = margin + boxWidth / 2 + 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...INK);
+    doc.text(
+      [
+        `Company name: ${bankDetails.company_name || ""}`,
+        `Account number: ${bankDetails.account_number || ""}`,
+        `Routing number (ACH/wire): ${bankDetails.routing_number || ""}`,
+        `SWIFT / BIC: ${bankDetails.swift_bic || ""}`,
+        `Receiving bank: ${bankDetails.bank_name || ""}`,
+      ],
+      leftColX,
+      paymentY + 56,
+      { lineHeightFactor: 1.55 }
+    );
+    doc.text(
+      [
+        "Bank address:",
+        ...String(bankDetails.bank_address || "").split("\n"),
+        "",
+        "Company address:",
+        ...String(bankDetails.company_address || "").split("\n"),
+      ],
+      rightColX,
+      paymentY + 56,
+      { lineHeightFactor: 1.4 }
+    );
+
+    doc.setFontSize(7.6);
+    doc.setTextColor(...AMBER_INK);
+    doc.text(PAYMENT_INSTRUCTIONS_NOTE, leftColX, paymentY + boxHeight - 16, {
+      maxWidth: boxWidth - 32,
+      lineHeightFactor: 1.4,
+    });
+  }
 
   // Footer on every page
   const pageCount = doc.getNumberOfPages();
