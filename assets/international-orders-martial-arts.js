@@ -21,6 +21,7 @@
     quoteItems: document.querySelector("[data-quote-items]"),
     quoteItemCount: document.querySelector("[data-quote-item-count]"),
     quoteUnitCount: document.querySelector("[data-quote-unit-count]"),
+    quoteEstimate: document.querySelector("[data-quote-estimate]"),
     quoteCount: document.querySelector("[data-quote-count]"),
     quoteStatus: document.querySelector("[data-quote-status]"),
     quoteForm: document.querySelector("[data-quote-form]"),
@@ -89,9 +90,26 @@
     return state.quoteCart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
   }
 
-  function availabilityCellHtml(product) {
-    const label = product.availability_status || (product.available ? "Available" : "Unavailable");
-    return `<div class="wholesale-line__price"><span class="wholesale-availability">${escapeHtml(label)}</span></div>`;
+  function formatUsd(cents) {
+    const value = Number(cents);
+    if (!Number.isFinite(value) || value <= 0) return "";
+    return (value / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
+  }
+
+  function priceCellHtml(product) {
+    const retail = formatUsd(product.retail_price_cents);
+    if (!retail) {
+      return '<div class="wholesale-line__price"><span class="wholesale-muted">Quote only</span></div>';
+    }
+    return `<div class="wholesale-line__price"><strong>${retail}</strong><span>Per unit</span></div>`;
+  }
+
+  function estimatedRetailTotalCents() {
+    return state.quoteCart.reduce((sum, item) => {
+      const unit = Number(item.retail_price_cents);
+      if (!Number.isFinite(unit) || unit <= 0) return sum;
+      return sum + unit * Number(item.quantity || 0);
+    }, 0);
   }
 
   function setStatus(message) {
@@ -142,6 +160,10 @@
     if (els.quoteUnitCount) els.quoteUnitCount.textContent = String(unitCount);
     if (els.quoteCount) els.quoteCount.textContent = String(lineCount);
     if (els.quoteOpen) els.quoteOpen.dataset.hasItems = lineCount > 0 ? "true" : "false";
+    if (els.quoteEstimate) {
+      const totalCents = estimatedRetailTotalCents();
+      els.quoteEstimate.textContent = totalCents > 0 ? formatUsd(totalCents) : "\u2014";
+    }
   }
 
   function renderSelect(selectEl, items, currentValue, placeholder) {
@@ -230,7 +252,7 @@
               ${!product.sizes.length && !product.colors.length ? '<span class="wholesale-muted">No variants listed</span>' : ""}
               <div class="wholesale-line__selectors">${sizeOptions}${colorOptions}</div>
             </div>
-            ${availabilityCellHtml(product)}
+            ${priceCellHtml(product)}
             <label class="wholesale-line__qty">
               <span>Qty</span>
               <input type="number" min="1" max="999" step="1" value="1" data-card-qty />
@@ -258,12 +280,17 @@
         const options = Object.entries(item.selected_options || {})
           .map(([key, value]) => `<span>${escapeHtml(key)}: ${escapeHtml(value)}</span>`)
           .join("");
+        const retail = formatUsd(item.retail_price_cents);
+        const priceLine = retail
+          ? `<span class="wholesale-quote-item__price">${retail} <b>/unit</b></span>`
+          : '<span class="wholesale-quote-item__price wholesale-muted">Price on quote</span>';
         return `
           <article class="wholesale-quote-item" data-quote-key="${escapeHtml(quoteItemKey(item))}">
             <img src="${escapeHtml(item.image_url || "")}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async" />
             <div class="wholesale-quote-item__body">
               <strong>${escapeHtml(item.name)}</strong>
               <span>${escapeHtml(item.brand)}</span>
+              ${priceLine}
               <div class="wholesale-quote-item__meta">${options || `<span>${escapeHtml(item.category_label || "")}</span>`}</div>
               <div class="wholesale-quote-item__controls">
                 <label>
@@ -385,6 +412,7 @@
         image_url: product.image_url,
         url: product.url,
         availability_status: product.availability_status,
+        retail_price_cents: product.retail_price_cents || null,
         selected_options: selectedOptions,
         quantity,
       });
