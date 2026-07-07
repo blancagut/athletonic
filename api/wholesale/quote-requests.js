@@ -208,6 +208,8 @@ module.exports = async function handler(req, res) {
           request: { id: quoteRequest.id, ...body, items },
           siteUrl: getSiteUrl(req),
           quotePdf,
+          bankDetails: BANK_DETAILS,
+          sourcePage,
         });
         buyerConfirmationSent = true;
       } catch (emailError) {
@@ -227,6 +229,7 @@ module.exports = async function handler(req, res) {
           recipientEmail: recipientEmails,
           siteUrl: getSiteUrl(req),
           quotePdf,
+          sourcePage,
         });
         notificationSent = true;
       } catch (emailError) {

@@ -600,88 +600,112 @@ async function sendWholesaleApplicationDecisionEmail({
   });
 }
 
-async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl, quotePdf }) {
-  if (!recipientEmail) return null;
+function quoteItemWholesaleCents(item) {
+  const value = Number(item && item.wholesale_price_cents);
+  return Number.isInteger(value) && value > 0 ? value : null;
+}
 
-  const quoteUrl = `${siteUrl}/catalog/wholesale-muay-thai`;
-  const adminUrl = `${siteUrl}/pages/admin/index.html#/wholesaleQuotes/${encodeURIComponent(request.id)}`;
-  const itemWholesaleCents = (item) => {
-    const value = Number(item && item.wholesale_price_cents);
-    return Number.isInteger(value) && value > 0 ? value : null;
-  };
-  const estimatedTotalCents = request.items.reduce((total, item) => {
-    const unit = itemWholesaleCents(item);
-    return unit ? total + unit * Math.max(1, Number(item.quantity) || 1) : total;
+function quoteEstimatedTotalCents(items) {
+  return (items || []).reduce((total, item) => {
+    const unit = quoteItemWholesaleCents(item);
+    const quantity = Math.max(1, Number(item.quantity) || 1);
+    return unit ? total + unit * quantity : total;
   }, 0);
-  const itemsHtml = request.items
-    .map(
-      (item) => `
+}
+
+function wholesaleQuoteItemsHtml(items) {
+  return (items || [])
+    .map((item) => {
+      const options = Object.entries(item.selected_options || {})
+        .map(([name, value]) => `<div style="margin:2px 0;"><strong>${escapeHtml(name)}:</strong> ${escapeHtml(value)}</div>`)
+        .join("");
+      const unit = quoteItemWholesaleCents(item);
+      const quantity = Math.max(1, Number(item.quantity) || 1);
+      const image = item.image_url
+        ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" width="96" style="display:block;width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid #e2e8f0;" />`
+        : `<div style="width:96px;height:96px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;color:#64748b;font-size:12px;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;box-sizing:border-box;">Athletonic</div>`;
+      return `
         <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
-            <strong>${escapeHtml(item.name)}</strong>
-            <div style="color:#64748b;font-size:14px;">${escapeHtml(item.brand)} · Qty ${item.quantity}${
-              itemWholesaleCents(item)
-                ? ` · Wholesale ${escapeHtml(formatMoney(itemWholesaleCents(item), "usd"))}/unit`
-                : " · Price on quote"
-            }</div>
+          <td style="padding:18px 0;border-bottom:1px solid #e2e8f0;vertical-align:top;width:112px;">${image}</td>
+          <td style="padding:18px 0;border-bottom:1px solid #e2e8f0;vertical-align:top;">
+            <div style="font-size:17px;font-weight:700;color:#0f172a;">${escapeHtml(item.name)}</div>
+            <div style="margin:4px 0 8px;color:#475569;font-size:14px;">${escapeHtml(item.brand || "")} · Qty ${quantity}</div>
+            ${options || '<div style="color:#64748b;font-size:14px;">No size/color selected.</div>'}
+          </td>
+          <td style="padding:18px 0 18px 16px;border-bottom:1px solid #e2e8f0;vertical-align:top;text-align:right;white-space:nowrap;">
+            <div style="font-size:14px;color:#475569;">${unit ? "Wholesale / unit" : ""}</div>
+            <div style="font-weight:700;color:#0f172a;">${unit ? escapeHtml(formatMoney(unit, "usd")) : "Quote only"}</div>
             ${
-              item.selected_options && Object.keys(item.selected_options).length
-                ? `<div style="color:#475569;font-size:13px;margin-top:4px;">${escapeHtml(
-                    Object.entries(item.selected_options)
-                      .map(([key, value]) => `${key}: ${value}`)
-                      .join(" / ")
-                  )}</div>`
+              unit
+                ? `<div style="margin-top:10px;font-size:14px;color:#475569;">Line total</div><div style="font-weight:700;color:#0f172a;">${escapeHtml(formatMoney(unit * quantity, "usd"))}</div>`
                 : ""
             }
           </td>
         </tr>
-      `
-    )
+      `;
+    })
     .join("");
+}
 
-  const html = `
-    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
-      <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
-        Athletonic wholesale quote request
-      </p>
-      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">New wholesale inquiry</h1>
-      <p style="margin:0 0 16px;">
-        <strong>${escapeHtml(request.company_name)}</strong> submitted a quote request from
-        <strong>${escapeHtml(request.name)}</strong> (${escapeHtml(request.email)}).
-      </p>
-      <p style="margin:0 0 12px;color:#475569;">
-        WhatsApp: ${escapeHtml(request.whatsapp)}<br />
-        Country: ${escapeHtml(request.country)}
-      </p>
-      <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
-        ${itemsHtml}
-      </table>
-      ${
-        estimatedTotalCents
-          ? `<p style="margin:0 0 20px;font-size:15px;"><strong>Est. wholesale total:</strong> ${escapeHtml(
-              formatMoney(estimatedTotalCents, "usd")
-            )}</p>`
-          : ""
-      }
-      ${
-        request.notes
-          ? `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:0 0 20px;"><strong>Notes</strong><br />${escapeHtml(
-              request.notes
-            ).replaceAll("\n", "<br />")}</div>`
-          : ""
-      }
-      <p style="margin:0 0 24px;">
-        <a href="${escapeHtml(adminUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;margin:0 8px 8px 0;">
-          Open quote in admin
-        </a>
-        <a href="${escapeHtml(quoteUrl)}" style="display:inline-block;background:#ffffff;color:#0f172a;text-decoration:none;padding:12px 18px;border-radius:8px;border:1px solid #cbd5e1;margin:0 0 8px 0;">
-          Open catalog
-        </a>
-      </p>
-      <p style="margin:0;color:#475569;font-size:14px;">
-        Request ID: ${escapeHtml(request.id)}
-      </p>
-    </div>
+function wholesaleQuoteItemsText(items) {
+  return (items || []).map((item) => {
+    const options = Object.entries(item.selected_options || {})
+      .map(([name, value]) => `${name}: ${value}`)
+      .join(" / ");
+    const unit = quoteItemWholesaleCents(item);
+    const quantity = Math.max(1, Number(item.quantity) || 1);
+    const price = unit
+      ? ` @ ${formatMoney(unit, "usd")}/unit (line total ${formatMoney(unit * quantity, "usd")})`
+      : " (price on quote)";
+    return `- ${item.brand || ""} ${item.name}${options ? ` [${options}]` : ""} x${quantity}${price}`;
+  });
+}
+
+async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl, quotePdf, sourcePage }) {
+  if (!recipientEmail) return null;
+
+  const quoteUrl = `${siteUrl}${sourcePage || "/catalog/wholesale-muay-thai"}`;
+  const adminUrl = `${siteUrl}/pages/admin/index.html#/wholesaleQuotes/${encodeURIComponent(request.id)}`;
+  const estimatedTotalCents = quoteEstimatedTotalCents(request.items);
+
+  const introHtml = `
+    <p style="margin:0 0 12px;font-size:16px;">
+      <strong>${escapeHtml(request.company_name)}</strong> submitted a quote request from
+      <strong>${escapeHtml(request.name)}</strong> (${escapeHtml(request.email)}).
+    </p>
+    <p style="margin:0 0 24px;color:#475569;font-size:15px;">
+      WhatsApp: ${escapeHtml(request.whatsapp)} · Country: ${escapeHtml(request.country)}
+    </p>
+  `;
+  const bodyHtml = `
+    <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+      ${wholesaleQuoteItemsHtml(request.items)}
+    </table>
+    ${
+      estimatedTotalCents
+        ? `<p style="margin:0 0 20px;font-size:15px;"><strong>Est. wholesale total:</strong> ${escapeHtml(
+            formatMoney(estimatedTotalCents, "usd")
+          )}</p>`
+        : ""
+    }
+    ${
+      request.notes
+        ? `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:0 0 20px;"><strong>Notes</strong><br />${escapeHtml(
+            request.notes
+          ).replaceAll("\n", "<br />")}</div>`
+        : ""
+    }
+    <p style="margin:0 0 8px;">
+      <a href="${escapeHtml(adminUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;margin:0 8px 8px 0;">
+        Open quote in admin
+      </a>
+      <a href="${escapeHtml(quoteUrl)}" style="display:inline-block;background:#ffffff;color:#0f172a;text-decoration:none;padding:12px 18px;border-radius:8px;border:1px solid #cbd5e1;margin:0 0 8px 0;">
+        Open catalog
+      </a>
+    </p>
+  `;
+  const footerHtml = `
+    <p style="margin:0;color:#475569;font-size:14px;">Request ID: ${escapeHtml(request.id)}</p>
   `;
 
   const textLines = [
@@ -693,17 +717,7 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
     `Country: ${request.country}`,
     "",
     "Items:",
-    ...request.items.map((item) => {
-      const options =
-        item.selected_options && Object.keys(item.selected_options).length
-          ? ` (${Object.entries(item.selected_options)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join(" / ")})`
-          : "";
-      const unit = itemWholesaleCents(item);
-      const price = unit ? ` @ ${formatMoney(unit, "usd")}/unit` : " (price on quote)";
-      return `- ${item.brand} ${item.name}${options} x${item.quantity}${price}`;
-    }),
+    ...wholesaleQuoteItemsText(request.items),
     estimatedTotalCents ? `Est. wholesale total: ${formatMoney(estimatedTotalCents, "usd")}` : null,
     request.notes ? "" : null,
     request.notes ? `Notes:\n${request.notes}` : null,
@@ -716,7 +730,14 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
   return sendEmail({
     to: recipientEmail,
     subject: `Athletonic wholesale quote request from ${request.company_name}`,
-    html,
+    html: internationalEmailShell({
+      siteUrl,
+      eyebrow: "Athletonic Wholesale",
+      title: "New wholesale inquiry",
+      introHtml,
+      bodyHtml,
+      footerHtml,
+    }),
     text: textLines.join("\n"),
     ...(quotePdf && quotePdf.buffer
       ? { attachments: [{ filename: quotePdf.filename, content: quotePdf.buffer.toString("base64") }] }
@@ -724,53 +745,69 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
   });
 }
 
-async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
+async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDetails, sourcePage }) {
   if (!request || !request.email) return null;
 
   const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
-  const catalogUrl = `${siteUrl}/catalog/wholesale-muay-thai`;
+  const catalogUrl = `${siteUrl}${sourcePage || "/catalog/wholesale-muay-thai"}`;
   const reference = quotePdf && quotePdf.reference ? quotePdf.reference : request.id;
-  const itemWholesaleCents = (item) => {
-    const value = Number(item && item.wholesale_price_cents);
-    return Number.isInteger(value) && value > 0 ? value : null;
-  };
-  const estimatedTotalCents = request.items.reduce((total, item) => {
-    const unit = itemWholesaleCents(item);
-    return unit ? total + unit * Math.max(1, Number(item.quantity) || 1) : total;
-  }, 0);
+  const estimatedTotalCents = quoteEstimatedTotalCents(request.items);
+  const itemCount = request.items.length;
 
-  const html = `
-    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
-      <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">
-        Athletonic Wholesale
-      </p>
-      <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">Your quotation is attached</h1>
-      <p style="margin:0 0 16px;">
-        Hi ${escapeHtml(request.name)}, thank you for your wholesale inquiry from
-        <strong>${escapeHtml(request.company_name)}</strong>.
-      </p>
-      <p style="margin:0 0 16px;">
-        Your quotation <strong>${escapeHtml(reference)}</strong> is attached as a PDF. It covers
-        ${escapeHtml(request.items.length)} product line${request.items.length === 1 ? "" : "s"}${
-          estimatedTotalCents
-            ? ` with an estimated wholesale total of <strong>${escapeHtml(formatMoney(estimatedTotalCents, "usd"))}</strong>`
-            : ""
-        }.
-      </p>
-      <p style="margin:0 0 16px;color:#475569;">
-        Our sales team will contact you shortly on WhatsApp (${escapeHtml(request.whatsapp)}) or by email to
-        confirm availability, MOQ, and shipping to ${escapeHtml(request.country)}. You can reach us any time at
-        <a href="mailto:${escapeHtml(salesEmail)}" style="color:#0f172a;font-weight:bold;">${escapeHtml(salesEmail)}</a>.
-      </p>
-      <p style="margin:0 0 24px;">
-        <a href="${escapeHtml(catalogUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
-          Browse the wholesale catalog
-        </a>
-      </p>
-      <p style="margin:0;color:#475569;font-size:14px;">
-        Reference: ${escapeHtml(reference)} · ${escapeHtml(ATHLETONIC_OFFICE_ADDRESS_TEXT)}
-      </p>
-    </div>
+  const introHtml = `
+    <p style="margin:0 0 12px;font-size:16px;">
+      Hi ${escapeHtml(request.name)}, thank you for your wholesale inquiry from
+      <strong>${escapeHtml(request.company_name)}</strong>.
+    </p>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#475569;">
+      Your quotation <strong>${escapeHtml(reference)}</strong> is attached as a PDF and detailed below. It covers
+      ${escapeHtml(String(itemCount))} product line${itemCount === 1 ? "" : "s"}${
+        estimatedTotalCents
+          ? ` with an estimated wholesale total of <strong>${escapeHtml(formatMoney(estimatedTotalCents, "usd"))}</strong>`
+          : ""
+      }. This is a proforma, not a final invoice — our sales team will confirm availability, MOQ, and shipping to
+      ${escapeHtml(request.country)} before you pay.
+    </p>
+  `;
+  const bodyHtml = `
+    <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+      ${wholesaleQuoteItemsHtml(request.items)}
+    </table>
+    ${
+      estimatedTotalCents
+        ? `<div style="margin:0 0 24px;padding:20px;border:1px solid #e2e8f0;border-radius:18px;background:#f8fafc;">
+            <p style="margin:0;font-size:18px;font-weight:700;">Estimated wholesale total: ${escapeHtml(
+              formatMoney(estimatedTotalCents, "usd")
+            )}</p>
+          </div>`
+        : ""
+    }
+    ${
+      bankDetails
+        ? `<div style="margin:0 0 24px;padding:24px;border-radius:20px;background:#fff7ed;border:1px solid #fdba74;">
+            <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#9a3412;">Payment instructions</p>
+            <p style="margin:0 0 14px;font-size:22px;font-weight:700;">ATHLETONIC LLC</p>
+            <p style="margin:0 0 16px;font-size:16px;font-weight:700;">Datos para Transferencia Bancaria</p>
+            ${bankDetailsHtml(bankDetails)}
+            <p style="margin:16px 0 0;font-size:14px;color:#7c2d12;">${escapeHtml(WHOLESALE_PAYMENT_INSTRUCTIONS_NOTE)}</p>
+          </div>`
+        : ""
+    }
+    <p style="margin:0 0 16px;color:#475569;font-size:15px;line-height:1.7;">
+      Our sales team will contact you shortly on WhatsApp (${escapeHtml(request.whatsapp)}) or by email to
+      confirm availability, MOQ, and shipping to ${escapeHtml(request.country)}. You can reach us any time at
+      <a href="mailto:${escapeHtml(salesEmail)}" style="color:#0f172a;font-weight:bold;">${escapeHtml(salesEmail)}</a>.
+    </p>
+    <p style="margin:0 0 8px;">
+      <a href="${escapeHtml(catalogUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
+        Browse the wholesale catalog
+      </a>
+    </p>
+  `;
+  const footerHtml = `
+    <p style="margin:0;color:#475569;font-size:14px;">
+      Reference: ${escapeHtml(reference)} · ${escapeHtml(ATHLETONIC_OFFICE_ADDRESS_TEXT)}
+    </p>
   `;
 
   const textLines = [
@@ -779,8 +816,16 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
     `Hi ${request.name},`,
     "",
     `Thank you for your wholesale inquiry from ${request.company_name}.`,
-    `Your quotation ${reference} is attached as a PDF (${request.items.length} product line${request.items.length === 1 ? "" : "s"}).`,
+    `Your quotation ${reference} is attached as a PDF (${itemCount} product line${itemCount === 1 ? "" : "s"}).`,
+    "This is a proforma, not a final invoice — our sales team will confirm availability, MOQ, and shipping before you pay.",
+    "",
+    "Items:",
+    ...wholesaleQuoteItemsText(request.items),
     estimatedTotalCents ? `Estimated wholesale total: ${formatMoney(estimatedTotalCents, "usd")}` : null,
+    bankDetails ? "" : null,
+    bankDetails ? "Payment instructions (ATHLETONIC LLC):" : null,
+    ...(bankDetails ? bankDetailsText(bankDetails) : []),
+    bankDetails ? WHOLESALE_PAYMENT_INSTRUCTIONS_NOTE : null,
     "",
     `Our sales team will contact you shortly on WhatsApp (${request.whatsapp}) or by email to confirm availability, MOQ, and shipping to ${request.country}.`,
     `Contact us: ${salesEmail}`,
@@ -793,7 +838,14 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf }) {
   return sendEmail({
     to: request.email,
     subject: `Your Athletonic wholesale quotation ${reference}`,
-    html,
+    html: internationalEmailShell({
+      siteUrl,
+      eyebrow: "Athletonic Wholesale",
+      title: "Your quotation is ready",
+      introHtml,
+      bodyHtml,
+      footerHtml,
+    }),
     text: textLines.join("\n"),
     replyTo: salesEmail,
     ...(quotePdf && quotePdf.buffer
@@ -845,6 +897,9 @@ function wholesaleOrderItemsText(order) {
   });
 }
 
+const WHOLESALE_PAYMENT_INSTRUCTIONS_NOTE =
+  "Please use the banking information above for USD wire transfers and ACH payments. If you require an invoice or additional payment information, please contact Athletonic LLC before sending funds.";
+
 function bankDetailsHtml(bankDetails) {
   return `
     <table style="width:100%;border-collapse:collapse;">
@@ -853,6 +908,8 @@ function bankDetailsHtml(bankDetails) {
       <tr><td style="padding:4px 10px 4px 0;color:#64748b;">ACH / wire routing</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.routing_number)}</strong></td></tr>
       <tr><td style="padding:4px 10px 4px 0;color:#64748b;">SWIFT / BIC</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.swift_bic)}</strong></td></tr>
       <tr><td style="padding:4px 10px 4px 0;color:#64748b;">Bank</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.bank_name)}</strong></td></tr>
+      <tr><td style="padding:4px 10px 4px 0;color:#64748b;vertical-align:top;">Bank address</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.bank_address).replaceAll("\n", "<br />")}</strong></td></tr>
+      <tr><td style="padding:4px 10px 4px 0;color:#64748b;vertical-align:top;">Company address</td><td style="padding:4px 0;"><strong>${escapeHtml(bankDetails.company_address).replaceAll("\n", "<br />")}</strong></td></tr>
     </table>
   `;
 }
