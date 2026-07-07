@@ -665,8 +665,6 @@ function wholesaleQuoteItemsText(items) {
 async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl, quotePdf, sourcePage, isWholesale = true }) {
   if (!recipientEmail) return null;
 
-  const quoteUrl = `${siteUrl}${sourcePage || "/catalog/wholesale-muay-thai"}`;
-  const adminUrl = `${siteUrl}/pages/admin/index.html#/wholesaleQuotes/${encodeURIComponent(request.id)}`;
   const estimatedTotalCents = quoteEstimatedTotalCents(request.items);
   const inquirerLabel = request.company_name || request.name;
 
@@ -706,14 +704,6 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
           ).replaceAll("\n", "<br />")}</div>`
         : ""
     }
-    <p style="margin:0 0 8px;">
-      <a href="${escapeHtml(adminUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;margin:0 8px 8px 0;">
-        Open quote in admin
-      </a>
-      <a href="${escapeHtml(quoteUrl)}" style="display:inline-block;background:#ffffff;color:#0f172a;text-decoration:none;padding:12px 18px;border-radius:8px;border:1px solid #cbd5e1;margin:0 0 8px 0;">
-        Open catalog
-      </a>
-    </p>
   `;
   const footerHtml = `
     <p style="margin:0;color:#475569;font-size:14px;">Request ID: ${escapeHtml(request.id)}</p>
@@ -733,8 +723,6 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
     request.notes ? "" : null,
     request.notes ? `Notes:\n${request.notes}` : null,
     "",
-    `Open in admin: ${adminUrl}`,
-    `Open catalog: ${quoteUrl}`,
     `Request ID: ${request.id}`,
   ].filter((line) => line !== null);
 

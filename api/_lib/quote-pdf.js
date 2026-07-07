@@ -253,9 +253,9 @@ async function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWhole
 
   // Payment instructions (bank transfer details)
   if (bankDetails) {
-    const boxHeight = 172;
+    const boxHeight = 196;
     let paymentY = afterTable + 92;
-    if (paymentY + boxHeight > pageHeight - 54) {
+    if (paymentY + boxHeight > pageHeight - 60) {
       doc.addPage();
       paymentY = margin;
     }
@@ -263,56 +263,87 @@ async function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWhole
     const AMBER_BORDER = [253, 186, 116];
     const AMBER_INK = [124, 45, 18];
     const boxWidth = pageWidth - margin * 2;
+    const pad = 18;
+    const leftColX = margin + pad;
+    const rightColX = margin + boxWidth / 2 + 6;
+
+    const compactAddress = (value) =>
+      String(value || "")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
 
     doc.setFillColor(...AMBER_BG);
     doc.setDrawColor(...AMBER_BORDER);
     doc.setLineWidth(1);
     doc.roundedRect(margin, paymentY, boxWidth, boxHeight, 10, 10, "FD");
 
+    // Heading
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(...AMBER_INK);
-    doc.setCharSpace(1.2);
-    doc.text("PAYMENT INSTRUCTIONS", margin + 16, paymentY + 20);
+    doc.setCharSpace(1.4);
+    doc.text("PAYMENT INSTRUCTIONS", leftColX, paymentY + 22);
     doc.setCharSpace(0);
-    doc.setFontSize(13);
-    doc.text("ATHLETONIC LLC", margin + 16, paymentY + 38);
+    doc.setFontSize(14);
+    doc.text("ATHLETONIC LLC", leftColX, paymentY + 42);
 
-    const leftColX = margin + 16;
-    const rightColX = margin + boxWidth / 2 + 8;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.setTextColor(...INK);
-    doc.text(
-      [
-        `Company name: ${bankDetails.company_name || ""}`,
-        `Account number: ${bankDetails.account_number || ""}`,
-        `Routing number (ACH/wire): ${bankDetails.routing_number || ""}`,
-        `SWIFT / BIC: ${bankDetails.swift_bic || ""}`,
-        `Receiving bank: ${bankDetails.bank_name || ""}`,
-      ],
-      leftColX,
-      paymentY + 56,
-      { lineHeightFactor: 1.55 }
-    );
-    doc.text(
-      [
-        "Bank address:",
-        ...String(bankDetails.bank_address || "").split("\n"),
-        "",
-        "Company address:",
-        ...String(bankDetails.company_address || "").split("\n"),
-      ],
-      rightColX,
-      paymentY + 56,
-      { lineHeightFactor: 1.4 }
-    );
+    // Divider under heading
+    doc.setDrawColor(...AMBER_BORDER);
+    doc.setLineWidth(0.5);
+    doc.line(leftColX, paymentY + 50, margin + boxWidth - pad, paymentY + 50);
 
+    // Left column: banking numbers (bold label + value on same line)
+    const rowsY = paymentY + 66;
+    const bankRows = [
+      ["Company name", bankDetails.company_name],
+      ["Account number", bankDetails.account_number],
+      ["Routing (ACH/wire)", bankDetails.routing_number],
+      ["SWIFT / BIC", bankDetails.swift_bic],
+      ["Receiving bank", bankDetails.bank_name],
+    ];
+    const rowGap = 14.5;
+    bankRows.forEach(([label, value], i) => {
+      const lineY = rowsY + i * rowGap;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...INK);
+      doc.text(`${label}:`, leftColX, lineY);
+      doc.setFont("helvetica", "normal");
+      doc.text(String(value || ""), leftColX + 96, lineY);
+    });
+
+    // Right column: addresses
+    const bankAddr = compactAddress(bankDetails.bank_address);
+    const companyAddr = compactAddress(bankDetails.company_address);
+    let addrY = rowsY;
+    const addrGap = 12;
+    const writeAddress = (heading, lines) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...INK);
+      doc.text(heading, rightColX, addrY);
+      addrY += addrGap;
+      doc.setFont("helvetica", "normal");
+      lines.forEach((line) => {
+        doc.text(line, rightColX, addrY);
+        addrY += addrGap;
+      });
+      addrY += 4;
+    };
+    writeAddress("Bank address", bankAddr);
+    writeAddress("Company address", companyAddr);
+
+    // Note along the bottom
+    doc.setDrawColor(...AMBER_BORDER);
+    doc.setLineWidth(0.5);
+    doc.line(leftColX, paymentY + boxHeight - 34, margin + boxWidth - pad, paymentY + boxHeight - 34);
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(7.6);
     doc.setTextColor(...AMBER_INK);
-    doc.text(PAYMENT_INSTRUCTIONS_NOTE, leftColX, paymentY + boxHeight - 16, {
-      maxWidth: boxWidth - 32,
-      lineHeightFactor: 1.4,
+    doc.text(PAYMENT_INSTRUCTIONS_NOTE, leftColX, paymentY + boxHeight - 20, {
+      maxWidth: boxWidth - pad * 2,
+      lineHeightFactor: 1.35,
     });
   }
 
