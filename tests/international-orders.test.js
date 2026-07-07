@@ -14,7 +14,7 @@ test("productLookupResponse exposes unique color options for Twins Special famil
 });
 
 test("normalizeInternationalOrder keeps selected color notes when image is referential", () => {
-  const product = productLookupResponse("8370");
+  const product = productLookupResponse("official-twins_special-twins-special-shinguards-sgl-10-blues");
   const alternativeColor = product.color_choices.find((choice) => choice.label !== product.color_label);
   assert.ok(alternativeColor, "expected an alternate color choice");
 
