@@ -9,11 +9,15 @@ node_modules/
 test-results/
 .tmp/
 
-# Scraped data and images (large)
+# Scraped data and images (large) — keep only the small catalogs the wholesale
+# APIs read at runtime (api/_lib/wholesale-muay-thai.js, wholesale-supplements.js);
+# everything else in data/ (multi-MB build sources / search indexes / checkout
+# catalog) stays excluded to avoid the Vercel request body / bundle size limit.
 output/
 archive_original_project/
-data/
-data/search-index 2.json
+data/*
+!data/wholesale-muay-thai-catalog.json
+!data/wholesale-supplements-catalog.json
 api/cart/validate 2.js
 api/catalog/products 2.js
 
