@@ -33,6 +33,8 @@ function normalizeSelectedOptions(value) {
   return out;
 }
 
+const FREEFORM_OPTION_KEYS = new Set(["color note", "notes"]);
+
 function validateSelectedOptions(product, selectedOptions) {
   const clean = normalizeSelectedOptions(selectedOptions);
   if (!Object.keys(clean).length) return clean;
@@ -43,7 +45,8 @@ function validateSelectedOptions(product, selectedOptions) {
     ...(Array.isArray(product.other_options) ? product.other_options : []),
   ].map((value) => String(value).toLowerCase()));
 
-  for (const value of Object.values(clean)) {
+  for (const [key, value] of Object.entries(clean)) {
+    if (FREEFORM_OPTION_KEYS.has(String(key).trim().toLowerCase())) continue;
     if (allowedValues.size > 0 && !allowedValues.has(String(value).toLowerCase())) {
       const error = new Error("Selected size or color is not available for one of the products.");
       error.statusCode = 400;
@@ -53,6 +56,12 @@ function validateSelectedOptions(product, selectedOptions) {
   }
 
   return clean;
+}
+
+function isInternationalRetailRequest(rawBody, sourcePage) {
+  const explicitMode = String((rawBody && (rawBody.order_mode || rawBody.orderMode)) || "").trim().toLowerCase();
+  if (explicitMode === "international_retail") return true;
+  return /\/catalog\/international_orders_martial_arts/i.test(String(sourcePage || ""));
 }
 
 function sumQuantities(items) {
@@ -102,7 +111,15 @@ module.exports = async function handler(req, res) {
     const manifest = loadWholesaleCatalogManifest();
     const supplementsManifest = loadSupplementsCatalogManifest();
     const rawBody = await readJson(req);
-    const body = normalizeQuoteRequestBody(rawBody);
+    const sourcePage = String(
+      rawBody.source_page ||
+        rawBody.sourcePage ||
+        req.headers.referer ||
+        req.headers["x-forwarded-referer"] ||
+        "/catalog/wholesale-muay-thai"
+    ).slice(0, 300);
+    const isInternationalRetail = isInternationalRetailRequest(rawBody, sourcePage);
+    const body = normalizeQuoteRequestBody(rawBody, { requireCompany: !isInternationalRetail });
     const productsById = new Map(
       [...manifest.products, ...supplementsManifest.products].map((product) => [String(product.id), product])
     );
@@ -132,7 +149,11 @@ module.exports = async function handler(req, res) {
       }
 
       const selectedOptions = validateSelectedOptions(product, rawItem.selected_options);
-      return sanitizeQuoteItem({ ...rawItem, quantity, selected_options: selectedOptions }, product);
+      return sanitizeQuoteItem(
+        { ...rawItem, quantity, selected_options: selectedOptions },
+        product,
+        { noDiscount: isInternationalRetail }
+      );
     });
 
     const itemCount = items.length;
@@ -145,18 +166,12 @@ module.exports = async function handler(req, res) {
     }
 
     const supabase = getSupabaseAdmin();
-    const sourcePage = String(
-      rawBody.source_page ||
-        rawBody.sourcePage ||
-        req.headers.referer ||
-        req.headers["x-forwarded-referer"] ||
-        "/catalog/wholesale-muay-thai"
-    ).slice(0, 300);
     const metadata = {
       client_ip: getClientIp(req),
       user_agent: String(req.headers["user-agent"] || "").slice(0, 500) || null,
       source_page: sourcePage,
       catalog_generated_at: manifest.generated_at,
+      order_mode: isInternationalRetail ? "international_retail" : "wholesale",
     };
 
     const { data: quoteRequest, error } = await supabase
@@ -190,12 +205,15 @@ module.exports = async function handler(req, res) {
       salesEmail,
     ]);
 
+    const isWholesale = !isInternationalRetail;
+
     let quotePdf = null;
     try {
       quotePdf = buildWholesaleQuotePdf({
         request: { id: quoteRequest.id, created_at: quoteRequest.created_at, ...body, items },
         supportEmail: salesEmail,
         siteHost: getSiteUrl(req).replace(/^https?:\/\//, ""),
+        isWholesale,
       });
     } catch (pdfError) {
       console.warn("Wholesale quotation PDF generation failed:", pdfError);
@@ -210,6 +228,7 @@ module.exports = async function handler(req, res) {
           quotePdf,
           bankDetails: BANK_DETAILS,
           sourcePage,
+          isWholesale,
         });
         buyerConfirmationSent = true;
       } catch (emailError) {
@@ -230,6 +249,7 @@ module.exports = async function handler(req, res) {
           siteUrl: getSiteUrl(req),
           quotePdf,
           sourcePage,
+          isWholesale,
         });
         notificationSent = true;
       } catch (emailError) {

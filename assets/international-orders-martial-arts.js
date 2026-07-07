@@ -227,6 +227,27 @@
     `;
   }
 
+  function isBgvl3Product(product) {
+    const name = String((product && product.name) || "");
+    if (String((product && product.brand_slug) || "") !== "twins_special") return false;
+    if (!/boxing gloves/i.test(name)) return false;
+    if (!/velcro/i.test(name)) return false;
+    if (/laceup|angle color|\bair\b/i.test(name)) return false;
+    if (/velcro\s*-\s*\d/i.test(name)) return false;
+    return true;
+  }
+
+  function colorNoteHtml(product) {
+    if (!isBgvl3Product(product)) return "";
+    return `
+      <label class="wholesale-line__color-note">
+        <span>Color choice (optional)</span>
+        <input type="text" maxlength="120" placeholder="e.g. Black/Gold" data-card-color-note />
+        <small>Many BGVL3 colorways aren't photographed — tell us the exact color combo you want.</small>
+      </label>
+    `;
+  }
+
   function renderProducts(products, append) {
     if (!els.list) return;
     const html = products
@@ -251,6 +272,7 @@
               ${optionChips(product.colors, "Colors")}
               ${!product.sizes.length && !product.colors.length ? '<span class="wholesale-muted">No variants listed</span>' : ""}
               <div class="wholesale-line__selectors">${sizeOptions}${colorOptions}</div>
+              ${colorNoteHtml(product)}
             </div>
             ${priceCellHtml(product)}
             <label class="wholesale-line__qty">
@@ -383,10 +405,12 @@
     const selected = {};
     const size = line.querySelector("[data-card-size]");
     const color = line.querySelector("[data-card-color]");
+    const colorNote = line.querySelector("[data-card-color-note]");
     if (size && size.value) selected.Size = size.value;
     else if (Array.isArray(product.sizes) && product.sizes.length === 1) selected.Size = product.sizes[0];
     if (color && color.value) selected.Color = color.value;
     else if (Array.isArray(product.colors) && product.colors.length === 1) selected.Color = product.colors[0];
+    if (colorNote && colorNote.value.trim()) selected["Color note"] = colorNote.value.trim().slice(0, 120);
     return selected;
   }
 
@@ -474,7 +498,6 @@
     const formData = new FormData(form);
     const payload = {
       name: String(formData.get("name") || "").trim(),
-      company_name: String(formData.get("company_name") || "").trim(),
       email: String(formData.get("email") || "").trim(),
       whatsapp: String(formData.get("whatsapp") || "").trim(),
       country: String(formData.get("country") || "").trim(),
@@ -485,6 +508,7 @@
         selected_options: item.selected_options || {},
       })),
       source_page: window.location.pathname,
+      order_mode: "international_retail",
     };
 
     const submitButton = form.querySelector("[type=submit]");

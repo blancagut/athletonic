@@ -866,7 +866,7 @@ function collectWholesaleFacets(products) {
   };
 }
 
-function sanitizeQuoteItem(rawItem, catalogProduct) {
+function sanitizeQuoteItem(rawItem, catalogProduct, options = {}) {
   const quantity = Number.parseInt(rawItem && rawItem.quantity, 10);
   const safeQuantity = Number.isInteger(quantity) && quantity > 0 ? Math.min(quantity, 999) : 1;
   const selectedOptions = rawItem && typeof rawItem.selected_options === "object" && !Array.isArray(rawItem.selected_options)
@@ -881,14 +881,18 @@ function sanitizeQuoteItem(rawItem, catalogProduct) {
     Number.isInteger(catalogProduct.retail_price_cents) && catalogProduct.retail_price_cents > 0
       ? catalogProduct.retail_price_cents
       : null;
-  const discountBps =
-    Number.isInteger(catalogProduct.wholesale_discount_bps) && catalogProduct.wholesale_discount_bps > 0
+  const noDiscount = Boolean(options.noDiscount);
+  const discountBps = noDiscount
+    ? 0
+    : Number.isInteger(catalogProduct.wholesale_discount_bps) && catalogProduct.wholesale_discount_bps > 0
       ? catalogProduct.wholesale_discount_bps
       : WHOLESALE_DISCOUNT_BPS;
   const wholesaleCents = retailPriceCents
-    ? Number.isInteger(catalogProduct.wholesale_price_cents) && catalogProduct.wholesale_price_cents > 0
-      ? catalogProduct.wholesale_price_cents
-      : Math.max(1, Math.round((retailPriceCents * (10000 - discountBps)) / 10000))
+    ? noDiscount
+      ? retailPriceCents
+      : Number.isInteger(catalogProduct.wholesale_price_cents) && catalogProduct.wholesale_price_cents > 0
+        ? catalogProduct.wholesale_price_cents
+        : Math.max(1, Math.round((retailPriceCents * (10000 - discountBps)) / 10000))
     : null;
 
   return {
@@ -909,11 +913,12 @@ function sanitizeQuoteItem(rawItem, catalogProduct) {
   };
 }
 
-function normalizeQuoteRequestBody(body) {
+function normalizeQuoteRequestBody(body, options = {}) {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     throw new Error("Invalid request payload.");
   }
 
+  const requireCompany = options.requireCompany !== false;
   const name = stripHtml(body.name).trim();
   const companyName = stripHtml(body.company_name).trim();
   const email = stripHtml(body.email).trim().toLowerCase();
@@ -923,7 +928,9 @@ function normalizeQuoteRequestBody(body) {
   const items = Array.isArray(body.items) ? body.items : [];
 
   if (!name) throw Object.assign(new Error("Enter your name."), { statusCode: 400, code: "missing_name" });
-  if (!companyName) throw Object.assign(new Error("Enter your company name."), { statusCode: 400, code: "missing_company_name" });
+  if (requireCompany && !companyName) {
+    throw Object.assign(new Error("Enter your company name."), { statusCode: 400, code: "missing_company_name" });
+  }
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw Object.assign(new Error("Enter a valid email address."), { statusCode: 400, code: "invalid_email" });
   }

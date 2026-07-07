@@ -41,7 +41,7 @@ function optionsText(item) {
   return selected.map(([key, value]) => `${key}: ${value}`).join("  ·  ");
 }
 
-function buildWholesaleQuotePdf({ request, supportEmail, siteHost }) {
+function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWholesale = true }) {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -51,6 +51,8 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost }) {
   const reference = quoteReference(request.id);
   const createdAt = request.created_at ? new Date(request.created_at) : new Date();
   const validUntil = new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000);
+  const fromLabel = isWholesale ? "Athletonic Wholesale" : "Athletonic International Orders";
+  const preparedForLabel = String(request.company_name || request.name || "");
 
   // Letterhead band
   doc.setFillColor(...NAVY);
@@ -62,7 +64,7 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost }) {
   doc.setFontSize(10);
   doc.setTextColor(94, 234, 212);
   doc.setCharSpace(2);
-  doc.text("WHOLESALE QUOTATION", margin, 66);
+  doc.text(isWholesale ? "WHOLESALE QUOTATION" : "ORDER CONFIRMATION", margin, 66);
   doc.setCharSpace(0);
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "normal");
@@ -87,8 +89,8 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost }) {
 
   doc.setFontSize(10);
   doc.setTextColor(...INK);
-  doc.text(String(request.company_name || ""), margin, y + 16);
-  doc.text("Athletonic Wholesale", margin + columnWidth + 24, y + 16);
+  doc.text(preparedForLabel, margin, y + 16);
+  doc.text(fromLabel, margin + columnWidth + 24, y + 16);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...MUTED);
@@ -134,7 +136,7 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost }) {
   autoTable(doc, {
     startY: y + 96,
     margin: { left: margin, right: margin, bottom: 96 },
-    head: [["#", "Product", "Brand", "Qty", "Wholesale / unit", "Line total"]],
+    head: [["#", "Product", "Brand", "Qty", isWholesale ? "Wholesale / unit" : "Unit price", "Line total"]],
     body: rows,
     styles: {
       font: "helvetica",
@@ -176,7 +178,11 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost }) {
   doc.setFontSize(7.5);
   doc.setTextColor(191, 219, 254);
   doc.setCharSpace(1);
-  doc.text(`EST. WHOLESALE TOTAL${hasQuoteOnly ? " (PRICED ITEMS)" : ""}`, pageWidth - margin - 218, afterTable + 17);
+  doc.text(
+    `${isWholesale ? "EST. WHOLESALE TOTAL" : "ESTIMATED TOTAL"}${hasQuoteOnly ? " (PRICED ITEMS)" : ""}`,
+    pageWidth - margin - 218,
+    afterTable + 17
+  );
   doc.setCharSpace(0);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(15);
@@ -185,7 +191,9 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost }) {
 
   // Terms
   const terms = [
-    "Estimate only — final pricing, availability, and MOQ are confirmed by our sales team.",
+    isWholesale
+      ? "Estimate only — final pricing, availability, and MOQ are confirmed by our sales team."
+      : "Estimate only — final pricing, availability, and shipping are confirmed by our sales team.",
     "All prices in USD. Freight, duties, and taxes are not included.",
     hasQuoteOnly ? "Items marked \u201cOn quote\u201d are priced individually after review." : null,
     `This quotation is valid until ${formatPdfDate(validUntil)}.`,
@@ -214,7 +222,7 @@ function buildWholesaleQuotePdf({ request, supportEmail, siteHost }) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
-    doc.text(`Athletonic Wholesale  ·  ${ATHLETONIC_OFFICE_ADDRESS_TEXT}  ·  ${contact}`, margin, pageHeight - 38);
+    doc.text(`${fromLabel}  ·  ${ATHLETONIC_OFFICE_ADDRESS_TEXT}  ·  ${contact}`, margin, pageHeight - 38);
     doc.text(`${reference}  ·  Page ${page} of ${pageCount}`, pageWidth - margin, pageHeight - 38, { align: "right" });
   }
 

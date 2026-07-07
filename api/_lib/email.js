@@ -613,7 +613,8 @@ function quoteEstimatedTotalCents(items) {
   }, 0);
 }
 
-function wholesaleQuoteItemsHtml(items) {
+function wholesaleQuoteItemsHtml(items, isWholesale = true) {
+  const unitLabel = isWholesale ? "Wholesale / unit" : "Unit price";
   return (items || [])
     .map((item) => {
       const options = Object.entries(item.selected_options || {})
@@ -633,7 +634,7 @@ function wholesaleQuoteItemsHtml(items) {
             ${options || '<div style="color:#64748b;font-size:14px;">No size/color selected.</div>'}
           </td>
           <td style="padding:18px 0 18px 16px;border-bottom:1px solid #e2e8f0;vertical-align:top;text-align:right;white-space:nowrap;">
-            <div style="font-size:14px;color:#475569;">${unit ? "Wholesale / unit" : ""}</div>
+            <div style="font-size:14px;color:#475569;">${unit ? unitLabel : ""}</div>
             <div style="font-weight:700;color:#0f172a;">${unit ? escapeHtml(formatMoney(unit, "usd")) : "Quote only"}</div>
             ${
               unit
@@ -661,14 +662,16 @@ function wholesaleQuoteItemsText(items) {
   });
 }
 
-async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl, quotePdf, sourcePage }) {
+async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl, quotePdf, sourcePage, isWholesale = true }) {
   if (!recipientEmail) return null;
 
   const quoteUrl = `${siteUrl}${sourcePage || "/catalog/wholesale-muay-thai"}`;
   const adminUrl = `${siteUrl}/pages/admin/index.html#/wholesaleQuotes/${encodeURIComponent(request.id)}`;
   const estimatedTotalCents = quoteEstimatedTotalCents(request.items);
+  const inquirerLabel = request.company_name || request.name;
 
-  const introHtml = `
+  const introHtml = isWholesale
+    ? `
     <p style="margin:0 0 12px;font-size:16px;">
       <strong>${escapeHtml(request.company_name)}</strong> submitted a quote request from
       <strong>${escapeHtml(request.name)}</strong> (${escapeHtml(request.email)}).
@@ -676,14 +679,22 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
     <p style="margin:0 0 24px;color:#475569;font-size:15px;">
       WhatsApp: ${escapeHtml(request.whatsapp)} · Country: ${escapeHtml(request.country)}
     </p>
+  `
+    : `
+    <p style="margin:0 0 12px;font-size:16px;">
+      <strong>${escapeHtml(request.name)}</strong> (${escapeHtml(request.email)}) submitted an international order request.
+    </p>
+    <p style="margin:0 0 24px;color:#475569;font-size:15px;">
+      WhatsApp: ${escapeHtml(request.whatsapp)} · Country: ${escapeHtml(request.country)}
+    </p>
   `;
   const bodyHtml = `
     <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
-      ${wholesaleQuoteItemsHtml(request.items)}
+      ${wholesaleQuoteItemsHtml(request.items, isWholesale)}
     </table>
     ${
       estimatedTotalCents
-        ? `<p style="margin:0 0 20px;font-size:15px;"><strong>Est. wholesale total:</strong> ${escapeHtml(
+        ? `<p style="margin:0 0 20px;font-size:15px;"><strong>${isWholesale ? "Est. wholesale total:" : "Est. total:"}</strong> ${escapeHtml(
             formatMoney(estimatedTotalCents, "usd")
           )}</p>`
         : ""
@@ -709,16 +720,16 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
   `;
 
   const textLines = [
-    "Athletonic wholesale quote request",
+    isWholesale ? "Athletonic wholesale quote request" : "Athletonic international order request",
     "",
-    `Company: ${request.company_name}`,
+    ...(isWholesale ? [`Company: ${request.company_name}`] : []),
     `Contact: ${request.name} <${request.email}>`,
     `WhatsApp: ${request.whatsapp}`,
     `Country: ${request.country}`,
     "",
     "Items:",
-    ...wholesaleQuoteItemsText(request.items),
-    estimatedTotalCents ? `Est. wholesale total: ${formatMoney(estimatedTotalCents, "usd")}` : null,
+    ...wholesaleQuoteItemsText(request.items, isWholesale),
+    estimatedTotalCents ? `${isWholesale ? "Est. wholesale total" : "Est. total"}: ${formatMoney(estimatedTotalCents, "usd")}` : null,
     request.notes ? "" : null,
     request.notes ? `Notes:\n${request.notes}` : null,
     "",
@@ -729,11 +740,13 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
 
   return sendEmail({
     to: recipientEmail,
-    subject: `Athletonic wholesale quote request from ${request.company_name}`,
+    subject: isWholesale
+      ? `Athletonic wholesale quote request from ${request.company_name}`
+      : `Athletonic international order request from ${inquirerLabel}`,
     html: internationalEmailShell({
       siteUrl,
-      eyebrow: "Athletonic Wholesale",
-      title: "New wholesale inquiry",
+      eyebrow: isWholesale ? "Athletonic Wholesale" : "Athletonic International Orders",
+      title: isWholesale ? "New wholesale inquiry" : "New international order request",
       introHtml,
       bodyHtml,
       footerHtml,
@@ -745,7 +758,7 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
   });
 }
 
-async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDetails, sourcePage }) {
+async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDetails, sourcePage, isWholesale = true }) {
   if (!request || !request.email) return null;
 
   const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
@@ -753,8 +766,11 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
   const reference = quotePdf && quotePdf.reference ? quotePdf.reference : request.id;
   const estimatedTotalCents = quoteEstimatedTotalCents(request.items);
   const itemCount = request.items.length;
+  const totalLabel = isWholesale ? "estimated wholesale total" : "estimated total";
+  const confirmCopy = isWholesale ? "availability, MOQ, and shipping" : "availability and shipping";
 
-  const introHtml = `
+  const introHtml = isWholesale
+    ? `
     <p style="margin:0 0 12px;font-size:16px;">
       Hi ${escapeHtml(request.name)}, thank you for your wholesale inquiry from
       <strong>${escapeHtml(request.company_name)}</strong>.
@@ -763,20 +779,34 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
       Your quotation <strong>${escapeHtml(reference)}</strong> is attached as a PDF and detailed below. It covers
       ${escapeHtml(String(itemCount))} product line${itemCount === 1 ? "" : "s"}${
         estimatedTotalCents
-          ? ` with an estimated wholesale total of <strong>${escapeHtml(formatMoney(estimatedTotalCents, "usd"))}</strong>`
+          ? ` with an ${totalLabel} of <strong>${escapeHtml(formatMoney(estimatedTotalCents, "usd"))}</strong>`
           : ""
-      }. This is a proforma, not a final invoice — our sales team will confirm availability, MOQ, and shipping to
+      }. This is a proforma, not a final invoice — our sales team will confirm ${confirmCopy} to
+      ${escapeHtml(request.country)} before you pay.
+    </p>
+  `
+    : `
+    <p style="margin:0 0 12px;font-size:16px;">
+      Hi ${escapeHtml(request.name)}, thank you for your Athletonic order request.
+    </p>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#475569;">
+      Your order confirmation <strong>${escapeHtml(reference)}</strong> is attached as a PDF and detailed below. It covers
+      ${escapeHtml(String(itemCount))} product line${itemCount === 1 ? "" : "s"}${
+        estimatedTotalCents
+          ? ` with an ${totalLabel} of <strong>${escapeHtml(formatMoney(estimatedTotalCents, "usd"))}</strong>`
+          : ""
+      }. This is a proforma, not a final invoice — our sales team will confirm ${confirmCopy} to
       ${escapeHtml(request.country)} before you pay.
     </p>
   `;
   const bodyHtml = `
     <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
-      ${wholesaleQuoteItemsHtml(request.items)}
+      ${wholesaleQuoteItemsHtml(request.items, isWholesale)}
     </table>
     ${
       estimatedTotalCents
         ? `<div style="margin:0 0 24px;padding:20px;border:1px solid #e2e8f0;border-radius:18px;background:#f8fafc;">
-            <p style="margin:0;font-size:18px;font-weight:700;">Estimated wholesale total: ${escapeHtml(
+            <p style="margin:0;font-size:18px;font-weight:700;">${isWholesale ? "Estimated wholesale total" : "Estimated total"}: ${escapeHtml(
               formatMoney(estimatedTotalCents, "usd")
             )}</p>
           </div>`
@@ -795,12 +825,12 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
     }
     <p style="margin:0 0 16px;color:#475569;font-size:15px;line-height:1.7;">
       Our sales team will contact you shortly on WhatsApp (${escapeHtml(request.whatsapp)}) or by email to
-      confirm availability, MOQ, and shipping to ${escapeHtml(request.country)}. You can reach us any time at
+      confirm ${confirmCopy} to ${escapeHtml(request.country)}. You can reach us any time at
       <a href="mailto:${escapeHtml(salesEmail)}" style="color:#0f172a;font-weight:bold;">${escapeHtml(salesEmail)}</a>.
     </p>
     <p style="margin:0 0 8px;">
       <a href="${escapeHtml(catalogUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
-        Browse the wholesale catalog
+        ${isWholesale ? "Browse the wholesale catalog" : "Browse the international orders catalog"}
       </a>
     </p>
   `;
@@ -811,23 +841,27 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
   `;
 
   const textLines = [
-    "Athletonic Wholesale",
+    isWholesale ? "Athletonic Wholesale" : "Athletonic International Orders",
     "",
     `Hi ${request.name},`,
     "",
-    `Thank you for your wholesale inquiry from ${request.company_name}.`,
-    `Your quotation ${reference} is attached as a PDF (${itemCount} product line${itemCount === 1 ? "" : "s"}).`,
-    "This is a proforma, not a final invoice — our sales team will confirm availability, MOQ, and shipping before you pay.",
+    isWholesale
+      ? `Thank you for your wholesale inquiry from ${request.company_name}.`
+      : "Thank you for your Athletonic order request.",
+    isWholesale
+      ? `Your quotation ${reference} is attached as a PDF (${itemCount} product line${itemCount === 1 ? "" : "s"}).`
+      : `Your order confirmation ${reference} is attached as a PDF (${itemCount} product line${itemCount === 1 ? "" : "s"}).`,
+    `This is a proforma, not a final invoice — our sales team will confirm ${confirmCopy} before you pay.`,
     "",
     "Items:",
     ...wholesaleQuoteItemsText(request.items),
-    estimatedTotalCents ? `Estimated wholesale total: ${formatMoney(estimatedTotalCents, "usd")}` : null,
+    estimatedTotalCents ? `${isWholesale ? "Estimated wholesale total" : "Estimated total"}: ${formatMoney(estimatedTotalCents, "usd")}` : null,
     bankDetails ? "" : null,
     bankDetails ? "Payment instructions (ATHLETONIC LLC):" : null,
     ...(bankDetails ? bankDetailsText(bankDetails) : []),
     bankDetails ? WHOLESALE_PAYMENT_INSTRUCTIONS_NOTE : null,
     "",
-    `Our sales team will contact you shortly on WhatsApp (${request.whatsapp}) or by email to confirm availability, MOQ, and shipping to ${request.country}.`,
+    `Our sales team will contact you shortly on WhatsApp (${request.whatsapp}) or by email to confirm ${confirmCopy} to ${request.country}.`,
     `Contact us: ${salesEmail}`,
     "",
     `Catalog: ${catalogUrl}`,
@@ -837,11 +871,11 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
 
   return sendEmail({
     to: request.email,
-    subject: `Your Athletonic wholesale quotation ${reference}`,
+    subject: isWholesale ? `Your Athletonic wholesale quotation ${reference}` : `Your Athletonic order confirmation ${reference}`,
     html: internationalEmailShell({
       siteUrl,
-      eyebrow: "Athletonic Wholesale",
-      title: "Your quotation is ready",
+      eyebrow: isWholesale ? "Athletonic Wholesale" : "Athletonic International Orders",
+      title: isWholesale ? "Your quotation is ready" : "Your order confirmation",
       introHtml,
       bodyHtml,
       footerHtml,
