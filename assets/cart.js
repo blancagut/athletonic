@@ -1062,13 +1062,36 @@
     }
   }
 
+  function isSpanishPage() {
+    const htmlLang = String(document.documentElement.lang || "").toLowerCase();
+    if (htmlLang) return htmlLang.startsWith("es");
+    return /^\/es(\/|$)/.test(window.location.pathname);
+  }
+
+  const CHECKOUT_COPY = {
+    en: {
+      submit: "Submit order request",
+      pending: "Submitting your order request...",
+      note:
+        "International orders require a final review for customs, product availability, packaging, and destination-specific shipping costs. After you submit your order request, an Athletonic sales agent will contact you with the confirmed total, payment instructions, and next steps. Free shipping on orders over US$199 applies to Latin America only and does not apply to the U.S. or Canada.",
+    },
+    es: {
+      submit: "Enviar solicitud de pedido",
+      pending: "Enviando solicitud de pedido...",
+      note:
+        "Los pedidos internacionales requieren una revisión final por aduanas, disponibilidad del producto, embalaje y costos de envío según el destino. Después de enviar tu solicitud de pedido, un agente de ventas de Athletonic se contactará contigo con el total confirmado, instrucciones de pago y próximos pasos. El envío gratis en pedidos mayores a US$199 aplica solo para Latinoamérica y no aplica para Estados Unidos ni Canadá.",
+    },
+  };
+
+  function checkoutCopy() {
+    return isSpanishPage() ? CHECKOUT_COPY.es : CHECKOUT_COPY.en;
+  }
+
   function applyCheckoutLabels() {
-    if (checkoutSubmit) checkoutSubmit.textContent = "Submit order request";
+    const copy = checkoutCopy();
+    if (checkoutSubmit) checkoutSubmit.textContent = copy.submit;
     const note = checkoutForm ? $(".form-note", checkoutForm) : null;
-    if (note) {
-      note.textContent =
-        "International orders require a final review for customs, packaging, product availability, and destination-specific shipping costs. After submitting, an Athletonic sales agent will contact you with the confirmed total and payment instructions. Free shipping applies to orders over US$199 within Latin America — this offer does not apply to the United States or Canada.";
-    }
+    if (note) note.textContent = copy.note;
   }
 
   function readCookie(name) {
@@ -1613,7 +1636,7 @@
       hydrateEmailFields();
       checkoutBusy = true;
       if (checkoutSubmit) checkoutSubmit.disabled = true;
-      setFormStatus(checkoutStatus, "Submitting your order request...", "pending");
+      setFormStatus(checkoutStatus, checkoutCopy().pending, "pending");
       try {
         const checkout = await submitCheckout(email);
         storageSet(
