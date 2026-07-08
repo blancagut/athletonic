@@ -1063,11 +1063,11 @@
   }
 
   function applyCheckoutLabels() {
-    if (checkoutSubmit) checkoutSubmit.textContent = "Place order";
+    if (checkoutSubmit) checkoutSubmit.textContent = "Submit order request";
     const note = checkoutForm ? $(".form-note", checkoutForm) : null;
     if (note) {
       note.textContent =
-        "Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.";
+        "International orders require a final review for customs, packaging, product availability, and destination-specific shipping costs. After submitting, an Athletonic sales agent will contact you with the confirmed total and payment instructions. Free shipping applies to orders over US$199 within Latin America — this offer does not apply to the United States or Canada.";
     }
   }
 
@@ -1613,7 +1613,7 @@
       hydrateEmailFields();
       checkoutBusy = true;
       if (checkoutSubmit) checkoutSubmit.disabled = true;
-      setFormStatus(checkoutStatus, "Placing your order...", "pending");
+      setFormStatus(checkoutStatus, "Submitting your order request...", "pending");
       try {
         const checkout = await submitCheckout(email);
         storageSet(
