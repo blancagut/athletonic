@@ -739,6 +739,7 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
   ].filter((line) => line !== null);
 
   return sendEmail({
+    from: getSalesFromAddress(),
     to: recipientEmail,
     subject: isWholesale
       ? `Athletonic wholesale quote request from ${request.company_name}`
@@ -886,6 +887,7 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
   ].filter((line) => line !== null);
 
   return sendEmail({
+    from: getSalesFromAddress(),
     to: request.email,
     subject: isWholesale ? `Your Athletonic wholesale quotation ${reference}` : `Your Athletonic order confirmation ${reference}`,
     html: internationalEmailShell({
