@@ -255,7 +255,7 @@ module.exports = async function handler(req, res) {
       throw error;
     }
 
-    const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
+    const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "orders@athletonic.com";
     const recipientEmails = uniqueEmails([
       ...(await getSuperAdminNotificationEmails(supabase)),
       process.env.ATHLETONIC_SUPPORT_EMAIL,

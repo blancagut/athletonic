@@ -1648,7 +1648,7 @@
             LAST_TRANSFER_ORDER_KEY,
             JSON.stringify({
               ...checkout.order,
-              sales_email: checkout.sales_email || "sales@athletonic.com",
+              sales_email: checkout.sales_email || "orders@athletonic.com",
               customer_email_sent: checkout.customer_email_sent !== false,
             })
           );

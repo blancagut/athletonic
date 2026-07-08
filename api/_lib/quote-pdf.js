@@ -70,7 +70,7 @@ async function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWhole
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 48;
-  const contact = supportEmail || "sales@athletonic.com";
+  const contact = supportEmail || "orders@athletonic.com";
   const host = siteHost || "www.athletonic.com";
   const reference = quoteReference(request.id);
   const createdAt = request.created_at ? new Date(request.created_at) : new Date();

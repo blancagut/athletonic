@@ -21,7 +21,7 @@ const {
 const { getSupabaseAdmin } = require("../_lib/supabase");
 
 function getSalesEmail() {
-  return process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
+  return process.env.ATHLETONIC_SALES_EMAIL || "orders@athletonic.com";
 }
 
 function buildCheckoutCart(pricing) {

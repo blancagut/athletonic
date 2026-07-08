@@ -49,7 +49,7 @@ module.exports = async function handler(req, res) {
     const order = normalizeInternationalOrder(body);
     const siteUrl = getSiteUrl(req);
     const salesRecipients = uniqueEmails([
-      process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com",
+      process.env.ATHLETONIC_SALES_EMAIL || "orders@athletonic.com",
       process.env.ATHLETONIC_SUPPORT_EMAIL,
     ]);
 

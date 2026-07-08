@@ -109,7 +109,7 @@ async function handleWholesaleOrderRequest(req, res) {
       }
 
       const recipients = uniqueEmails([
-        process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com",
+        process.env.ATHLETONIC_SALES_EMAIL || "orders@athletonic.com",
         process.env.ATHLETONIC_SUPPORT_EMAIL,
       ]);
       if (recipients.length) {
@@ -144,7 +144,7 @@ async function handleWholesaleOrderRequest(req, res) {
         ok: false,
         error: "email_delivery_failed",
         message:
-          "We received the order, but could not email the invoice. Contact sales@athletonic.com with this reference.",
+          "We received the order, but could not email the invoice. Contact orders@athletonic.com with this reference.",
         request_id: savedOrder.id,
         invoice_reference: savedOrder.invoice_reference,
         buyer_email_sent: buyerEmailSent,

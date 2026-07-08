@@ -111,7 +111,7 @@ function buildWholesaleOrderInvoicePdf({ order, bankDetails, siteHost }) {
     { lineHeightFactor: 1.45, maxWidth: columnWidth }
   );
   doc.text(
-    [ATHLETONIC_OFFICE_ADDRESS_TEXT, "sales@athletonic.com", siteHost || "www.athletonic.com"],
+    [ATHLETONIC_OFFICE_ADDRESS_TEXT, "orders@athletonic.com", siteHost || "www.athletonic.com"],
     margin + columnWidth + 24,
     y + 18,
     { lineHeightFactor: 1.45, maxWidth: columnWidth }
@@ -212,7 +212,7 @@ function buildWholesaleOrderInvoicePdf({ order, bankDetails, siteHost }) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
-    doc.text(`Athletonic LLC - ${ATHLETONIC_OFFICE_ADDRESS_TEXT} - sales@athletonic.com`, margin, pageHeight - 38);
+    doc.text(`Athletonic LLC - ${ATHLETONIC_OFFICE_ADDRESS_TEXT} - orders@athletonic.com`, margin, pageHeight - 38);
     doc.text(`${reference} - Page ${page} of ${pageCount}`, pageWidth - margin, pageHeight - 38, { align: "right" });
   }
 

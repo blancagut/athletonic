@@ -12,7 +12,7 @@ process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase
 process.env.SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || "test-service-role-key";
 process.env.RESEND_API_KEY = process.env.RESEND_API_KEY || "test-resend-key";
-process.env.ATHLETONIC_SALES_EMAIL = process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
+process.env.ATHLETONIC_SALES_EMAIL = process.env.ATHLETONIC_SALES_EMAIL || "orders@athletonic.com";
 
 function createResponseCapture() {
   return {
@@ -217,7 +217,7 @@ test("POST /api/wholesale/order-requests stores order, proof, and emails invoice
   assert.ok(Buffer.isBuffer(buyerEmails[0].invoicePdf.buffer), "buyer email must include invoice PDF");
   assert.equal(buyerEmails[0].invoicePdf.buffer.subarray(0, 5).toString(), "%PDF-");
   assert.equal(salesEmails.length, 1);
-  assert.deepEqual(salesEmails[0].recipientEmail, ["sales@athletonic.com"]);
+  assert.deepEqual(salesEmails[0].recipientEmail, ["orders@athletonic.com"]);
   assert.ok(salesEmails[0].proofAttachment.content, "sales email must include proof attachment");
 });
 

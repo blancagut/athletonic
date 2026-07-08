@@ -45,7 +45,7 @@ function getFromAddress() {
 }
 
 function getSalesFromAddress() {
-  return process.env.ATHLETONIC_SALES_FROM_EMAIL || "Athletonic Sales <sales@athletonic.com>";
+  return process.env.ATHLETONIC_SALES_FROM_EMAIL || "Athletonic Sales <orders@athletonic.com>";
 }
 
 function getReplyToAddress() {
@@ -762,7 +762,7 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
 async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDetails, sourcePage, isWholesale = true }) {
   if (!request || !request.email) return null;
 
-  const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
+  const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "orders@athletonic.com";
   const catalogUrl = `${siteUrl}${sourcePage || "/catalog/wholesale-muay-thai"}`;
   const statusUrl = `${siteUrl}/order-status?ref=${encodeURIComponent(request.id)}`;
   const reference = quotePdf && quotePdf.reference ? quotePdf.reference : request.id;
@@ -1013,7 +1013,7 @@ async function sendWholesaleOrderBuyerEmail({ order, bankDetails, siteUrl, invoi
       <p style="margin:0 0 16px;color:#475569;">
         Athletonic sales will confirm availability, freight, taxes, and any line marked as pending.
         You can reply to this email or write to
-        <a href="mailto:sales@athletonic.com" style="color:#0f172a;font-weight:bold;">sales@athletonic.com</a>.
+        <a href="mailto:orders@athletonic.com" style="color:#0f172a;font-weight:bold;">orders@athletonic.com</a>.
       </p>
       <p style="margin:0;color:#64748b;font-size:13px;">
         Reference: ${escapeHtml(reference)} · ${escapeHtml(siteUrl)}
@@ -1035,7 +1035,7 @@ async function sendWholesaleOrderBuyerEmail({ order, bankDetails, siteUrl, invoi
     "",
     "Your payment proof was received and remains subject to bank reconciliation.",
     "Athletonic sales will confirm availability, freight, and taxes.",
-    "Contact: sales@athletonic.com",
+    "Contact: orders@athletonic.com",
   ].join("\n");
 
   return sendEmail({
@@ -1044,7 +1044,7 @@ async function sendWholesaleOrderBuyerEmail({ order, bankDetails, siteUrl, invoi
     subject: `Athletonic Invoice ${reference}`,
     html,
     text,
-    replyTo: process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com",
+    replyTo: process.env.ATHLETONIC_SALES_EMAIL || "orders@athletonic.com",
     ...(invoicePdf && invoicePdf.buffer
       ? { attachments: [{ filename: invoicePdf.filename, content: invoicePdf.buffer.toString("base64") }] }
       : {}),
@@ -1311,7 +1311,7 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
   `;
   const footerHtml = `
     <p style="margin:0;font-size:14px;color:#475569;">
-      Athletonic Sales · <a href="mailto:sales@athletonic.com" style="color:#0f172a;">sales@athletonic.com</a> ·
+      Athletonic Sales · <a href="mailto:orders@athletonic.com" style="color:#0f172a;">orders@athletonic.com</a> ·
       <a href="${escapeHtml(siteUrl)}/international_orders" style="color:#0f172a;">athletonic.com/international_orders</a>
     </p>
   `;
@@ -1352,7 +1352,7 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
       footerHtml,
     }),
     text,
-    replyTo: "sales@athletonic.com",
+    replyTo: "orders@athletonic.com",
   });
 }
 
