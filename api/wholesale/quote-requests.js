@@ -96,6 +96,54 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  if (req.method === "GET" && query.status_id) {
+    try {
+      requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
+      const statusId = String(query.status_id || "").trim();
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(statusId)) {
+        json(res, 400, { error: "invalid_reference", message: "Enter a valid order reference." });
+        return;
+      }
+      const supabase = getSupabaseAdmin();
+      const { data: request, error } = await supabase
+        .from("wholesale_quote_requests")
+        .select("id, status, created_at, updated_at, item_count, quantity_count, items, metadata")
+        .eq("id", statusId)
+        .maybeSingle();
+      if (error) {
+        error.statusCode = 500;
+        throw error;
+      }
+      if (!request || request.status === "spam") {
+        json(res, 404, { error: "not_found", message: "We could not find an order with that reference." });
+        return;
+      }
+      const items = Array.isArray(request.items) ? request.items : [];
+      json(res, 200, {
+        ok: true,
+        order: {
+          id: request.id,
+          status: request.status,
+          created_at: request.created_at,
+          updated_at: request.updated_at,
+          item_count: request.item_count,
+          quantity_count: request.quantity_count,
+          order_mode: (request.metadata && request.metadata.order_mode) || "wholesale",
+          items: items.map((item) => ({
+            name: item.name,
+            brand: item.brand,
+            quantity: item.quantity,
+            image_url: item.image_url || null,
+            selected_options: item.selected_options || {},
+          })),
+        },
+      });
+    } catch (error) {
+      handleError(res, error);
+    }
+    return;
+  }
+
   if (req.method !== "POST") {
     methodNotAllowed(res, ["GET", "POST"]);
     return;

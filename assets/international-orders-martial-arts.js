@@ -14,6 +14,7 @@
     category: document.querySelector("[data-filter-category]"),
     size: document.querySelector("[data-filter-size]"),
     color: document.querySelector("[data-filter-color]"),
+    categoryChips: document.querySelector("[data-category-chips]"),
     quoteOpen: document.querySelector("[data-quote-open]"),
     quoteClose: document.querySelector("[data-quote-close]"),
     quoteDrawer: document.querySelector("[data-quote-drawer]"),
@@ -200,6 +201,26 @@
       state.filters.color,
       "All colors"
     );
+    renderCategoryChips();
+  }
+
+  function renderCategoryChips() {
+    if (!els.categoryChips) return;
+    const categories = state.facets.categories || [];
+    if (!categories.length) {
+      els.categoryChips.innerHTML = "";
+      return;
+    }
+    const current = state.filters.category;
+    const chips = [{ value: "", label: "All" }].concat(categories.map((value) => ({ value, label: value })));
+    els.categoryChips.innerHTML = chips
+      .map(
+        (chip) => `
+          <button type="button" class="wholesale-chip" data-chip-category="${escapeHtml(chip.value)}"
+            aria-pressed="${chip.value === current ? "true" : "false"}">${escapeHtml(chip.label)}</button>
+        `
+      )
+      .join("");
   }
 
   function optionChips(values, label) {
@@ -572,6 +593,16 @@
       });
     }
     if (els.imageClose) els.imageClose.addEventListener("click", closeImagePreview);
+    if (els.categoryChips) {
+      els.categoryChips.addEventListener("click", (event) => {
+        const chip = event.target.closest("[data-chip-category]");
+        if (!chip) return;
+        if (els.category) els.category.value = chip.dataset.chipCategory || "";
+        state.filters.category = chip.dataset.chipCategory || "";
+        renderCategoryChips();
+        loadCatalog({ reset: true });
+      });
+    }
     if (els.imageModal) {
       els.imageModal.addEventListener("click", (event) => {
         if (event.target === els.imageModal) closeImagePreview();

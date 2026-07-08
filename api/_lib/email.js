@@ -751,6 +751,7 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
 
   const salesEmail = process.env.ATHLETONIC_SALES_EMAIL || "sales@athletonic.com";
   const catalogUrl = `${siteUrl}${sourcePage || "/catalog/wholesale-muay-thai"}`;
+  const statusUrl = `${siteUrl}/order-status?ref=${encodeURIComponent(request.id)}`;
   const reference = quotePdf && quotePdf.reference ? quotePdf.reference : request.id;
   const estimatedTotalCents = quoteEstimatedTotalCents(request.items);
   const itemCount = request.items.length;
@@ -817,9 +818,15 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
       <a href="mailto:${escapeHtml(salesEmail)}" style="color:#0f172a;font-weight:bold;">${escapeHtml(salesEmail)}</a>.
     </p>
     <p style="margin:0 0 8px;">
-      <a href="${escapeHtml(catalogUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;">
+      <a href="${escapeHtml(statusUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;margin:0 8px 8px 0;">
+        Track your order live
+      </a>
+      <a href="${escapeHtml(catalogUrl)}" style="display:inline-block;background:#ffffff;color:#0f172a;text-decoration:none;padding:12px 18px;border-radius:8px;border:1px solid #cbd5e1;margin:0 0 8px 0;">
         ${isWholesale ? "Browse the wholesale catalog" : "Browse the international orders catalog"}
       </a>
+    </p>
+    <p style="margin:0 0 8px;color:#64748b;font-size:13px;">
+      You can also scan the QR code on your attached PDF to see your order status at any time.
     </p>
   `;
   const footerHtml = `
@@ -852,6 +859,7 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
     `Our sales team will contact you shortly on WhatsApp (${request.whatsapp}) or by email to confirm ${confirmCopy} to ${request.country}.`,
     `Contact us: ${salesEmail}`,
     "",
+    `Track your order live: ${statusUrl}`,
     `Catalog: ${catalogUrl}`,
     `Reference: ${reference}`,
     ATHLETONIC_OFFICE_ADDRESS_TEXT,

@@ -2,6 +2,7 @@
 
 const { jsPDF } = require("jspdf");
 const { autoTable } = require("jspdf-autotable");
+const QRCode = require("qrcode");
 const { ATHLETONIC_OFFICE_ADDRESS_TEXT } = require("./wholesale-applications");
 
 const NAVY = [11, 31, 58];
@@ -76,6 +77,13 @@ async function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWhole
   const validUntil = new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1000);
   const fromLabel = isWholesale ? "Athletonic Wholesale" : "Athletonic International Orders";
   const preparedForLabel = String(request.company_name || request.name || "");
+  const statusUrl = `https://${host.replace(/^www\./, "www.")}/order-status?ref=${encodeURIComponent(request.id)}`;
+  let qrDataUrl = null;
+  try {
+    qrDataUrl = await QRCode.toDataURL(statusUrl, { width: 220, margin: 1, errorCorrectionLevel: "M" });
+  } catch {
+    // QR generation failure must never break the PDF.
+  }
   const itemImages = await Promise.all(request.items.map((item) => fetchItemImage(item && item.image_url)));
 
   // Letterhead band
@@ -95,10 +103,22 @@ async function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWhole
   doc.setFontSize(9);
   doc.text(
     [`Quote ref: ${reference}`, `Issued: ${formatPdfDate(createdAt)}`, `Valid until: ${formatPdfDate(validUntil)}`],
-    pageWidth - margin,
+    pageWidth - margin - (qrDataUrl ? 78 : 0),
     38,
     { align: "right", lineHeightFactor: 1.5 }
   );
+
+  // Live order-status QR code in the letterhead
+  if (qrDataUrl) {
+    try {
+      doc.addImage(qrDataUrl, "PNG", pageWidth - margin - 64, 22, 64, 64);
+      doc.setFontSize(6.5);
+      doc.setTextColor(191, 219, 254);
+      doc.text("SCAN FOR LIVE STATUS", pageWidth - margin - 32, 94, { align: "center" });
+    } catch {
+      // Ignore QR rendering failures.
+    }
+  }
 
   // Prepared for / From blocks
   let y = 136;
