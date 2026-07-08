@@ -613,6 +613,11 @@ function quoteEstimatedTotalCents(items) {
   }, 0);
 }
 
+function quoteBundleDiscountCents(request) {
+  const value = Number(request && request.bundle_discount_cents);
+  return Number.isInteger(value) && value > 0 ? value : 0;
+}
+
 function wholesaleQuoteItemsHtml(items, isWholesale = true) {
   const unitLabel = isWholesale ? "Wholesale / unit" : "Unit price";
   return (items || [])
@@ -666,6 +671,8 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
   if (!recipientEmail) return null;
 
   const estimatedTotalCents = quoteEstimatedTotalCents(request.items);
+  const bundleDiscountCents = quoteBundleDiscountCents(request);
+  const finalTotalCents = Math.max(0, estimatedTotalCents - bundleDiscountCents);
   const inquirerLabel = request.company_name || request.name;
 
   const introHtml = isWholesale
@@ -692,8 +699,12 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
     </table>
     ${
       estimatedTotalCents
-        ? `<p style="margin:0 0 20px;font-size:15px;"><strong>${isWholesale ? "Est. wholesale total:" : "Est. total:"}</strong> ${escapeHtml(
-            formatMoney(estimatedTotalCents, "usd")
+        ? `<p style="margin:0 0 20px;font-size:15px;">${
+            bundleDiscountCents
+              ? `<span style="color:#047857;">Bundle savings applied: -${escapeHtml(formatMoney(bundleDiscountCents, "usd"))}</span><br />`
+              : ""
+          }<strong>${isWholesale ? "Est. wholesale total:" : "Est. total:"}</strong> ${escapeHtml(
+            formatMoney(finalTotalCents, "usd")
           )}</p>`
         : ""
     }
@@ -719,7 +730,8 @@ async function sendWholesaleQuoteRequestEmail({ request, recipientEmail, siteUrl
     "",
     "Items:",
     ...wholesaleQuoteItemsText(request.items, isWholesale),
-    estimatedTotalCents ? `${isWholesale ? "Est. wholesale total" : "Est. total"}: ${formatMoney(estimatedTotalCents, "usd")}` : null,
+    bundleDiscountCents ? `Bundle savings applied: -${formatMoney(bundleDiscountCents, "usd")}` : null,
+    estimatedTotalCents ? `${isWholesale ? "Est. wholesale total" : "Est. total"}: ${formatMoney(finalTotalCents, "usd")}` : null,
     request.notes ? "" : null,
     request.notes ? `Notes:\n${request.notes}` : null,
     "",
@@ -754,6 +766,8 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
   const statusUrl = `${siteUrl}/order-status?ref=${encodeURIComponent(request.id)}`;
   const reference = quotePdf && quotePdf.reference ? quotePdf.reference : request.id;
   const estimatedTotalCents = quoteEstimatedTotalCents(request.items);
+  const bundleDiscountCents = quoteBundleDiscountCents(request);
+  const finalTotalCents = Math.max(0, estimatedTotalCents - bundleDiscountCents);
   const itemCount = request.items.length;
   const totalLabel = isWholesale ? "estimated wholesale total" : "estimated total";
   const confirmCopy = isWholesale ? "availability, MOQ, and shipping" : "availability and shipping";
@@ -768,7 +782,7 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
       Your quotation <strong>${escapeHtml(reference)}</strong> is attached as a PDF and detailed below. It covers
       ${escapeHtml(String(itemCount))} product line${itemCount === 1 ? "" : "s"}${
         estimatedTotalCents
-          ? ` with an ${totalLabel} of <strong>${escapeHtml(formatMoney(estimatedTotalCents, "usd"))}</strong>`
+          ? ` with an ${totalLabel} of <strong>${escapeHtml(formatMoney(finalTotalCents, "usd"))}</strong>`
           : ""
       }. This is a proforma, not a final invoice — our sales team will confirm ${confirmCopy} to
       ${escapeHtml(request.country)} before you pay.
@@ -782,7 +796,7 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
       Your order confirmation <strong>${escapeHtml(reference)}</strong> is attached as a PDF and detailed below. It covers
       ${escapeHtml(String(itemCount))} product line${itemCount === 1 ? "" : "s"}${
         estimatedTotalCents
-          ? ` with an ${totalLabel} of <strong>${escapeHtml(formatMoney(estimatedTotalCents, "usd"))}</strong>`
+          ? ` with an ${totalLabel} of <strong>${escapeHtml(formatMoney(finalTotalCents, "usd"))}</strong>`
           : ""
       }. This is a proforma, not a final invoice — our sales team will confirm ${confirmCopy} to
       ${escapeHtml(request.country)} before you pay.
@@ -795,8 +809,13 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
     ${
       estimatedTotalCents
         ? `<div style="margin:0 0 24px;padding:20px;border:1px solid #e2e8f0;border-radius:18px;background:#f8fafc;">
+            ${
+              bundleDiscountCents
+                ? `<p style="margin:0 0 6px;font-size:14px;color:#047857;font-weight:700;">Bundle savings applied: -${escapeHtml(formatMoney(bundleDiscountCents, "usd"))}</p>`
+                : ""
+            }
             <p style="margin:0;font-size:18px;font-weight:700;">${isWholesale ? "Estimated wholesale total" : "Estimated total"}: ${escapeHtml(
-              formatMoney(estimatedTotalCents, "usd")
+              formatMoney(finalTotalCents, "usd")
             )}</p>
           </div>`
         : ""
@@ -850,7 +869,8 @@ async function sendWholesaleQuoteBuyerEmail({ request, siteUrl, quotePdf, bankDe
     "",
     "Items:",
     ...wholesaleQuoteItemsText(request.items),
-    estimatedTotalCents ? `${isWholesale ? "Estimated wholesale total" : "Estimated total"}: ${formatMoney(estimatedTotalCents, "usd")}` : null,
+    bundleDiscountCents ? `Bundle savings applied: -${formatMoney(bundleDiscountCents, "usd")}` : null,
+    estimatedTotalCents ? `${isWholesale ? "Estimated wholesale total" : "Estimated total"}: ${formatMoney(finalTotalCents, "usd")}` : null,
     bankDetails ? "" : null,
     bankDetails ? "Payment instructions (ATHLETONIC LLC):" : null,
     ...(bankDetails ? bankDetailsText(bankDetails) : []),

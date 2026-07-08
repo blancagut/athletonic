@@ -10,6 +10,7 @@ const { sendWholesaleQuoteRequestEmail, sendWholesaleQuoteBuyerEmail } = require
 const { buildWholesaleQuotePdf } = require("../_lib/quote-pdf");
 const { BANK_DETAILS } = require("../_lib/wholesale-order");
 const { handleWholesaleOrderRequest } = require("../_lib/wholesale-order-handler");
+const { detectTwinsBundles } = require("../_lib/twins-bundles");
 
 function requestQuery(req) {
   if (req.query && typeof req.query === "object") return req.query;
@@ -213,6 +214,11 @@ module.exports = async function handler(req, res) {
       throw error;
     }
 
+    // Silent bundle pricing (international retail only): the system recognizes
+    // qualifying Twins combinations and applies the fixed bundle price.
+    const bundleInfo = isInternationalRetail ? detectTwinsBundles(items) : { discount_cents: 0, bundles: {} };
+    const bundleDiscountCents = bundleInfo.discount_cents || 0;
+
     const supabase = getSupabaseAdmin();
     const metadata = {
       client_ip: getClientIp(req),
@@ -220,6 +226,9 @@ module.exports = async function handler(req, res) {
       source_page: sourcePage,
       catalog_generated_at: manifest.generated_at,
       order_mode: isInternationalRetail ? "international_retail" : "wholesale",
+      ...(bundleDiscountCents > 0
+        ? { bundle_discount_cents: bundleDiscountCents, bundles: bundleInfo.bundles }
+        : {}),
     };
 
     const { data: quoteRequest, error } = await supabase
@@ -258,7 +267,7 @@ module.exports = async function handler(req, res) {
     let quotePdf = null;
     try {
       quotePdf = await buildWholesaleQuotePdf({
-        request: { id: quoteRequest.id, created_at: quoteRequest.created_at, ...body, items },
+        request: { id: quoteRequest.id, created_at: quoteRequest.created_at, ...body, items, bundle_discount_cents: bundleDiscountCents },
         supportEmail: salesEmail,
         siteHost: getSiteUrl(req).replace(/^https?:\/\//, ""),
         isWholesale,
@@ -272,7 +281,7 @@ module.exports = async function handler(req, res) {
     if (process.env.RESEND_API_KEY) {
       try {
         await sendWholesaleQuoteBuyerEmail({
-          request: { id: quoteRequest.id, ...body, items },
+          request: { id: quoteRequest.id, ...body, items, bundle_discount_cents: bundleDiscountCents },
           siteUrl: getSiteUrl(req),
           quotePdf,
           bankDetails: BANK_DETAILS,
@@ -293,6 +302,7 @@ module.exports = async function handler(req, res) {
             id: quoteRequest.id,
             ...body,
             items,
+            bundle_discount_cents: bundleDiscountCents,
           },
           recipientEmail: recipientEmails,
           siteUrl: getSiteUrl(req),

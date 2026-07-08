@@ -230,9 +230,12 @@ async function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWhole
     afterTable = margin;
   }
 
-  // Totals
+  // Totals (with optional silent bundle discount)
+  const bundleDiscountCents = Number(request.bundle_discount_cents) || 0;
+  const finalTotalCents = Math.max(0, estimatedTotalCents - bundleDiscountCents);
+  const totalsBoxHeight = bundleDiscountCents > 0 ? 62 : 44;
   doc.setFillColor(...NAVY);
-  doc.roundedRect(pageWidth - margin - 232, afterTable, 232, 44, 8, 8, "F");
+  doc.roundedRect(pageWidth - margin - 232, afterTable, 232, totalsBoxHeight, 8, 8, "F");
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(191, 219, 254);
@@ -243,10 +246,19 @@ async function buildWholesaleQuotePdf({ request, supportEmail, siteHost, isWhole
     afterTable + 17
   );
   doc.setCharSpace(0);
+  if (bundleDiscountCents > 0) {
+    doc.setFontSize(8);
+    doc.setTextColor(134, 239, 172);
+    doc.text(`Bundle savings applied: -${usd(bundleDiscountCents)}`, pageWidth - margin - 218, afterTable + 30);
+  }
   doc.setFont("helvetica", "bold");
   doc.setFontSize(15);
   doc.setTextColor(255, 255, 255);
-  doc.text(estimatedTotalCents ? usd(estimatedTotalCents) : "On quote", pageWidth - margin - 218, afterTable + 35);
+  doc.text(
+    estimatedTotalCents ? usd(finalTotalCents) : "On quote",
+    pageWidth - margin - 218,
+    afterTable + (bundleDiscountCents > 0 ? 50 : 35)
+  );
 
   // Terms
   const terms = [
