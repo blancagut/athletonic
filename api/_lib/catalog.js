@@ -1094,10 +1094,10 @@ function parseIntPositive(value) {
 
 function getShippingCents(subtotalCents, shipping = {}) {
   const shippingCents = parseIntPositive(
-    shipping.flat_amount_cents ?? process.env.ATHLETONIC_SHIPPING_AMOUNT_CENTS || "0"
+    shipping.flat_amount_cents ?? (process.env.ATHLETONIC_SHIPPING_AMOUNT_CENTS || "0")
   );
   const freeShippingMinCents = parseIntPositive(
-    shipping.free_shipping_min_cents ?? process.env.ATHLETONIC_FREE_SHIPPING_MIN_CENTS || "0"
+    shipping.free_shipping_min_cents ?? (process.env.ATHLETONIC_FREE_SHIPPING_MIN_CENTS || "0")
   );
 
   if (freeShippingMinCents > 0 && subtotalCents >= freeShippingMinCents) {
