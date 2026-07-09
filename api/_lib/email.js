@@ -45,7 +45,7 @@ function getFromAddress() {
 }
 
 function getSalesFromAddress() {
-  return process.env.ATHLETONIC_SALES_FROM_EMAIL || "Athletonic Sales <orders@athletonic.com>";
+  return process.env.ATHLETONIC_SALES_FROM_EMAIL || "Athletonic Orders <orders@athletonic.com>";
 }
 
 function getReplyToAddress() {
@@ -1311,7 +1311,7 @@ async function sendInternationalOrderCustomerEmail({ order, bankDetails, siteUrl
   `;
   const footerHtml = `
     <p style="margin:0;font-size:14px;color:#475569;">
-      Athletonic Sales · <a href="mailto:orders@athletonic.com" style="color:#0f172a;">orders@athletonic.com</a> ·
+      Athletonic Orders · <a href="mailto:orders@athletonic.com" style="color:#0f172a;">orders@athletonic.com</a> ·
       <a href="${escapeHtml(siteUrl)}/international_orders" style="color:#0f172a;">athletonic.com/international_orders</a>
     </p>
   `;
