@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { handleError, json, methodNotAllowed } = require("../_lib/http");
 const {
   collectWholesaleFacets,
@@ -7,6 +9,76 @@ const {
 } = require("../_lib/wholesale-muay-thai");
 
 const MAX_PAGE_SIZE = 5000;
+
+// Merchandising order for sort=category: what buyers want to see first.
+const CATEGORY_PRIORITY = [
+  "Training Gloves",
+  "Lace-Up & Fight Gloves",
+  "MMA & Grappling Gloves",
+  "Bag Gloves",
+  "Shin Guards",
+  "Shorts",
+  "Thai Pads & Kick Pads",
+  "Focus Mitts",
+  "Body Shields",
+  "Headgear",
+  "Belly Pads",
+  "Mouthguards",
+  "Groin Protectors",
+  "Ankle & Elbow Supports",
+  "Heavy Bags",
+  "Hand Wraps & Tape",
+  "Mongkol & Prajiad",
+  "Jump Ropes",
+  "Gym Bag",
+  "Boxing Oil & Care",
+  "Training Gear",
+];
+const CATEGORY_RANK = new Map(CATEGORY_PRIORITY.map((label, index) => [label.toLowerCase(), index]));
+
+const COLOR_WORDS = new Set([
+  "BLACK", "BLUE", "RED", "WHITE", "YELLOW", "PINK", "PURPLE", "KHAKI", "GOLD", "SILVER",
+  "GREEN", "ORANGE", "BEIGE", "GREY", "GRAY", "CREAM", "COPPER", "LIGHT", "DARK", "PEARL", "SKY", "NAVY",
+]);
+
+const LIST_EXCLUSION_FILES = {
+  muaythai_mma: path.join(__dirname, "..", "_lib", "muaythai-mma-excluded-ids.json"),
+};
+
+function listExcludedIds(listName) {
+  const file = LIST_EXCLUSION_FILES[String(listName || "").trim()];
+  if (!file || !fs.existsSync(file)) return [];
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function categoryRank(product) {
+  const rank = CATEGORY_RANK.get(String(product.category_label || "").trim().toLowerCase());
+  return Number.isInteger(rank) ? rank : CATEGORY_PRIORITY.length;
+}
+
+// Groups model families together (e.g. all Full Impact colorways) instead of
+// alphabetical color-first ordering.
+function familySortKey(product) {
+  const words = String(product.name || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9 ]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  const family = words.filter((word) => !COLOR_WORDS.has(word)).join(" ");
+  return `${family}|${words.join(" ")}`;
+}
+
+function sortByCategoryPriority(products) {
+  return products
+    .map((product, index) => ({ product, index, rank: categoryRank(product), key: familySortKey(product) }))
+    .sort((a, b) => a.rank - b.rank || a.key.localeCompare(b.key) || a.index - b.index)
+    .map((entry) => entry.product);
+}
 
 function normalizePageValue(value, fallback, maxValue) {
   const parsed = Number.parseInt(value, 10);
@@ -43,6 +115,7 @@ module.exports = async function handler(req, res) {
         .map((value) => value.trim())
         .filter(Boolean)
     );
+    for (const id of listExcludedIds(req.query.list)) excludedIds.add(String(id));
 
     const baseProducts = manifest.products.filter((product) => {
       if (allowedBrands.size && !allowedBrands.has(String(product.brand_slug || "").toLowerCase())) return false;
@@ -50,16 +123,33 @@ module.exports = async function handler(req, res) {
       return true;
     });
 
-    const filtered = baseProducts.filter((product) => matchesWholesaleFilters(product, filters));
+    const sortMode = String(req.query.sort || "").trim().toLowerCase();
+    let filtered = baseProducts.filter((product) => matchesWholesaleFilters(product, filters));
+    if (sortMode === "category") filtered = sortByCategoryPriority(filtered);
     const page = normalizePageValue(req.query.page, 1, 9999);
     const pageSize = normalizePageValue(req.query.page_size || req.query.limit, 24, MAX_PAGE_SIZE);
     const pagination = paginateWholesaleProducts(filtered, page, pageSize);
     const facets = collectWholesaleFacets(baseProducts);
+    if (sortMode === "category") {
+      facets.categories = [...facets.categories].sort(
+        (a, b) =>
+          (CATEGORY_RANK.get(String(a).toLowerCase()) ?? CATEGORY_PRIORITY.length) -
+            (CATEGORY_RANK.get(String(b).toLowerCase()) ?? CATEGORY_PRIORITY.length) ||
+          String(a).localeCompare(String(b))
+      );
+    }
+    const categoryCounts = {};
+    for (const product of filtered) {
+      const label = String(product.category_label || "").trim();
+      if (!label) continue;
+      categoryCounts[label] = (categoryCounts[label] || 0) + 1;
+    }
 
     json(res, 200, {
       generated_at: manifest.generated_at,
       product_count: manifest.products.length,
       filtered_count: filtered.length,
+      category_counts: categoryCounts,
       pagination: {
         page: pagination.page,
         page_size: pagination.pageSize,
