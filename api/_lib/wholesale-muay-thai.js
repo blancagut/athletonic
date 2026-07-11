@@ -724,7 +724,36 @@ function buildWholesaleProductRecord(productRow, variants = [], images = []) {
   };
 }
 
+const TOPKING_GLOVE_COLOR_WORDS = new Set([
+  "BLACK", "BLUE", "RED", "WHITE", "YELLOW", "PINK", "PURPLE", "KHAKI",
+  "GOLD", "SILVER", "GREEN", "ORANGE", "BEIGE", "GREY", "GRAY", "CREAM",
+]);
+
+// Owner-set retail prices for Top King boxing glove lines (2026-07-12).
+function topkingGloveRetailOverrideCents(product) {
+  if (String(product.brand_slug || "").trim() !== "topking") return null;
+  if (String(product.category_label || "").trim() !== "Training Gloves") return null;
+  const name = String(product.name || "").toUpperCase();
+  if (!name.includes("GLOVES")) return null;
+  if (name.includes("FULL IMPACT")) return 11500;
+  if (name.includes("MODERNITY")) return 13400;
+  if (name.includes("BLEND")) return 12900;
+  if (name.includes("AIR")) {
+    const colorCount = name
+      .replace(/[^A-Z0-9 ]/g, " ")
+      .split(/\s+/)
+      .filter((word) => TOPKING_GLOVE_COLOR_WORDS.has(word)).length;
+    if (colorCount === 1) return 11900;
+  }
+  return null;
+}
+
 function normalizeWholesaleCatalogProduct(product) {
+  const baseRetailCents =
+    Number.isInteger(product.retail_price_cents) && product.retail_price_cents > 0
+      ? product.retail_price_cents
+      : null;
+  const retailPriceCents = topkingGloveRetailOverrideCents(product) || baseRetailCents;
   return {
     id: String(product.id || ""),
     brand_slug: String(product.brand_slug || "").trim(),
@@ -742,11 +771,8 @@ function normalizeWholesaleCatalogProduct(product) {
     quote_enabled: product.quote_enabled !== false,
     available: Boolean(product.available),
     availability_status: String(product.availability_status || (product.available ? "Available" : "Out of stock")).trim(),
-    retail_price_cents:
-      Number.isInteger(product.retail_price_cents) && product.retail_price_cents > 0
-        ? product.retail_price_cents
-        : null,
-    wholesale_price_cents: wholesalePriceCents(product.retail_price_cents),
+    retail_price_cents: retailPriceCents,
+    wholesale_price_cents: wholesalePriceCents(retailPriceCents),
     wholesale_discount_bps: WHOLESALE_DISCOUNT_BPS,
     sizes: Array.isArray(product.sizes) ? normalizeTextList(product.sizes) : [],
     colors: Array.isArray(product.colors) ? normalizeTextList(product.colors) : [],
