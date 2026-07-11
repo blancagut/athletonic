@@ -1,7 +1,14 @@
 (function () {
+  const PAGE_CONFIG = (typeof window !== "undefined" && window.ATHLETONIC_INTL_CATALOG_CONFIG) || {};
   const API_URL = "/api/wholesale/catalog";
   const QUOTE_API_URL = "/api/wholesale/quote-requests";
-  const STORAGE_KEY = "athletonic-international-orders-martial-arts-quote-cart-v1";
+  const STORAGE_KEY = String(PAGE_CONFIG.storage_key || "athletonic-international-orders-martial-arts-quote-cart-v1");
+  const ALLOWED_BRANDS = Array.isArray(PAGE_CONFIG.brands)
+    ? PAGE_CONFIG.brands.map((value) => String(value || "").trim()).filter(Boolean)
+    : [];
+  const EXCLUDED_PRODUCT_IDS = Array.isArray(PAGE_CONFIG.excluded_product_ids)
+    ? PAGE_CONFIG.excluded_product_ids.map((value) => String(value || "").trim()).filter(Boolean)
+    : [];
   const PAGE_SIZE = 60;
 
   const els = {
@@ -393,7 +400,13 @@
 
     setLoading(true);
     try {
-      const query = params({ ...state.filters, page: state.page, page_size: state.pageSize });
+      const query = params({
+        ...state.filters,
+        brands: ALLOWED_BRANDS.join(","),
+        exclude_ids: EXCLUDED_PRODUCT_IDS.join(","),
+        page: state.page,
+        page_size: state.pageSize,
+      });
       const response = await fetch(`${API_URL}?${query}`, { headers: { Accept: "application/json" } });
       if (!response.ok) throw new Error(`Catalog request failed (${response.status})`);
       const payload = await response.json();
