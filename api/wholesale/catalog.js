@@ -31,11 +31,30 @@ module.exports = async function handler(req, res) {
       availability: String(req.query.availability || "").trim(),
     };
 
-    const filtered = manifest.products.filter((product) => matchesWholesaleFilters(product, filters));
+    const allowedBrands = new Set(
+      String(req.query.brands || "")
+        .split(",")
+        .map((value) => value.trim().toLowerCase())
+        .filter(Boolean)
+    );
+    const excludedIds = new Set(
+      String(req.query.exclude_ids || "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean)
+    );
+
+    const baseProducts = manifest.products.filter((product) => {
+      if (allowedBrands.size && !allowedBrands.has(String(product.brand_slug || "").toLowerCase())) return false;
+      if (excludedIds.size && excludedIds.has(String(product.id))) return false;
+      return true;
+    });
+
+    const filtered = baseProducts.filter((product) => matchesWholesaleFilters(product, filters));
     const page = normalizePageValue(req.query.page, 1, 9999);
     const pageSize = normalizePageValue(req.query.page_size || req.query.limit, 24, MAX_PAGE_SIZE);
     const pagination = paginateWholesaleProducts(filtered, page, pageSize);
-    const facets = collectWholesaleFacets(manifest.products);
+    const facets = collectWholesaleFacets(baseProducts);
 
     json(res, 200, {
       generated_at: manifest.generated_at,
