@@ -9,6 +9,8 @@
   const EXCLUDED_PRODUCT_IDS = Array.isArray(PAGE_CONFIG.excluded_product_ids)
     ? PAGE_CONFIG.excluded_product_ids.map((value) => String(value || "").trim()).filter(Boolean)
     : [];
+  const LIST_NAME = String(PAGE_CONFIG.list || "").trim();
+  const SORT_MODE = String(PAGE_CONFIG.sort || "").trim();
   const PAGE_SIZE = 60;
 
   const els = {
@@ -41,6 +43,8 @@
   const state = {
     filters: { search: "", brand: "", category: "", size: "", color: "" },
     facets: { brands: [], categories: [], sizes: [], colors: [] },
+    categoryCounts: {},
+    lastRenderedCategory: null,
     page: 1,
     pageSize: PAGE_SIZE,
     total: 0,
@@ -276,13 +280,34 @@
     `;
   }
 
+  function sectionHeadHtml(label) {
+    const count = Number(state.categoryCounts && state.categoryCounts[label]);
+    const countHtml = Number.isFinite(count) && count > 0 ? `<span>${count} products</span>` : "";
+    return `<div class="wholesale-section-head"><h2>${escapeHtml(label)}</h2>${countHtml}</div>`;
+  }
+
   function renderProducts(products, append) {
     if (!els.list) return;
-    const html = products
-      .map((product) => {
-        const sizeOptions = optionSelect(product.sizes, "Size", "data-card-size");
-        const colorOptions = optionSelect(product.colors, "Color", "data-card-color");
-        return `
+    if (!append) state.lastRenderedCategory = null;
+    const parts = [];
+    for (const product of products) {
+      const label = String(product.category_label || product.product_type || "").trim();
+      if (SORT_MODE === "category" && label && label !== state.lastRenderedCategory) {
+        parts.push(sectionHeadHtml(label));
+        state.lastRenderedCategory = label;
+      }
+      parts.push(productLineHtml(product));
+    }
+    const html = parts.join("");
+
+    if (append) els.list.insertAdjacentHTML("beforeend", html);
+    else els.list.innerHTML = html || '<p class="wholesale-empty">No matching products.</p>';
+  }
+
+  function productLineHtml(product) {
+    const sizeOptions = optionSelect(product.sizes, "Size", "data-card-size");
+    const colorOptions = optionSelect(product.colors, "Color", "data-card-color");
+    return `
           <article class="wholesale-line" data-product-id="${escapeHtml(product.id)}">
             <button type="button" class="wholesale-line__photo" data-preview-image aria-label="View image for ${escapeHtml(product.name)}">
               <img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async" />
@@ -310,11 +335,6 @@
             <button type="button" class="wholesale-line__add" data-add-to-quote>Add to Quote</button>
           </article>
         `;
-      })
-      .join("");
-
-    if (append) els.list.insertAdjacentHTML("beforeend", html);
-    else els.list.innerHTML = html || '<p class="wholesale-empty">No matching products.</p>';
   }
 
   function renderQuoteCart() {
@@ -404,6 +424,8 @@
         ...state.filters,
         brands: ALLOWED_BRANDS.join(","),
         exclude_ids: EXCLUDED_PRODUCT_IDS.join(","),
+        list: LIST_NAME,
+        sort: SORT_MODE,
         page: state.page,
         page_size: state.pageSize,
       });
@@ -413,6 +435,7 @@
       const incoming = Array.isArray(payload.products) ? payload.products : [];
 
       state.facets = payload.facets || state.facets;
+      state.categoryCounts = payload.category_counts || {};
       state.total = Number(payload.filtered_count || (payload.pagination && payload.pagination.total) || 0);
       state.hasMore = Boolean(payload.pagination && payload.pagination.has_more);
       state.products = reset ? incoming : state.products.concat(incoming);
