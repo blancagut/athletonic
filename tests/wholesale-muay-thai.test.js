@@ -212,7 +212,7 @@ test("Thai adult glove ounce runs include 16oz without inventing S/M/L bag glove
   assert.ok(hasOzSize(topKingProGlove.sizes, 16), "expected Top King glove to include 16oz");
 
   const twinsGlove = catalogData.products.find(
-    (product) => product.brand_slug === "twins_special" && /TWINS Boxing Gloves/i.test(product.name)
+    (product) => product.brand_slug === "twins_special" && /Twins Special Boxing Gloves BGVL3 Black/i.test(product.name)
   );
   assert.ok(twinsGlove, "expected Twins Special glove in wholesale catalog");
   assert.ok(hasOzSize(twinsGlove.sizes, 16), "expected Twins Special glove to include 16oz");
