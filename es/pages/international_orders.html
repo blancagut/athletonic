@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>International Orders | Athletonic</title>
+    <meta
+      name="description"
+      content="Build an Athletonic international order request for boxing, Muay Thai, and training gear. Our team reviews availability, shipping, customs, duties, and final landed cost by email."
+    />
+    <link rel="canonical" href="https://athletonic.com/es/pages/international_orders.html" />
+    <!-- hreflang:start -->
+    <link rel="alternate" hreflang="en" href="https://athletonic.com/pages/international_orders.html" />
+    <link rel="alternate" hreflang="es" href="https://athletonic.com/es/pages/international_orders.html" />
+    <link rel="alternate" hreflang="x-default" href="https://athletonic.com/pages/international_orders.html" />
+    <!-- hreflang:end -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/assets/international-orders.js" defer></script>
+    <style>
+      :root {
+        --io-bg: #f5f7f3;
+        --io-ink: #0f172a;
+        --io-muted: #475569;
+        --io-panel: rgba(255, 255, 255, 0.92);
+        --io-border: rgba(15, 23, 42, 0.12);
+        --io-accent: #c2410c;
+        --io-accent-soft: #ffedd5;
+        --io-dark: #111827;
+      }
+
+      body.io-body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        color: var(--io-ink);
+        background: linear-gradient(180deg, #fbfcfa 0%, var(--io-bg) 100%);
+      }
+
+      .io-shell {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 32px 20px 56px;
+      }
+
+      .io-topbar,
+      .io-panel,
+      .io-card,
+      .io-search-results,
+      .io-success {
+        backdrop-filter: blur(12px);
+        background: var(--io-panel);
+        border: 1px solid var(--io-border);
+        box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+      }
+
+      .io-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 18px 20px;
+        border-radius: 22px;
+      }
+
+      .io-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--io-ink);
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .io-brand img {
+        width: 138px;
+        height: auto;
+        display: block;
+      }
+
+      .io-topbar-links {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .io-topbar-links a {
+        color: var(--io-muted);
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .io-hero {
+        display: grid;
+        grid-template-columns: 1.3fr .9fr;
+        gap: 24px;
+        margin-top: 24px;
+      }
+
+      .io-hero-copy,
+      .io-hero-metrics {
+        padding: 28px;
+        border-radius: 30px;
+      }
+
+      .io-hero-copy {
+        background: linear-gradient(135deg, #111827 0%, #1f2937 55%, #7c2d12 100%);
+        color: #fff;
+      }
+
+      .io-kicker {
+        margin: 0 0 12px;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+
+      .io-hero h1 {
+        margin: 0 0 14px;
+        font-size: clamp(34px, 5vw, 56px);
+        line-height: 1.02;
+      }
+
+      .io-hero p {
+        margin: 0;
+        line-height: 1.7;
+        font-size: 16px;
+      }
+
+      .io-hero-metrics {
+        background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,245,235,.94));
+        border-radius: 30px;
+      }
+
+      .io-metric-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .io-metric {
+        padding: 16px;
+        border-radius: 20px;
+        background: rgba(255,255,255,.75);
+        border: 1px solid rgba(15,23,42,.08);
+      }
+
+      .io-metric small {
+        display: block;
+        color: var(--io-muted);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 11px;
+      }
+
+      .io-metric strong {
+        font-size: 22px;
+      }
+
+      .io-grid {
+        display: grid;
+        grid-template-columns: 1.3fr .9fr;
+        gap: 24px;
+        margin-top: 24px;
+        align-items: start;
+      }
+
+      .io-column {
+        display: grid;
+        gap: 24px;
+      }
+
+      .io-panel {
+        border-radius: 28px;
+        padding: 26px;
+      }
+
+      .io-panel h2 {
+        margin: 0 0 10px;
+        font-size: 28px;
+      }
+
+      .io-panel > p {
+        margin: 0 0 18px;
+        color: var(--io-muted);
+        line-height: 1.7;
+      }
+
+      .io-search {
+        position: relative;
+      }
+
+      .io-search-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 18px 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(15,23,42,.12);
+        font-size: 16px;
+        background: #fff;
+      }
+
+      .io-search-hint,
+      .io-status,
+      .io-empty {
+        margin-top: 12px;
+        color: var(--io-muted);
+        font-size: 14px;
+      }
+
+      .io-search-results {
+        position: absolute;
+        inset: calc(100% + 10px) 0 auto;
+        z-index: 20;
+        border-radius: 20px;
+        overflow: hidden;
+        display: none;
+      }
+
+      .io-search-results[data-open="true"] {
+        display: block;
+      }
+
+      .io-result {
+        display: grid;
+        grid-template-columns: 72px 1fr auto;
+        gap: 14px;
+        width: 100%;
+        padding: 14px 16px;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .io-result + .io-result {
+        border-top: 1px solid rgba(15,23,42,.08);
+      }
+
+      .io-result[aria-selected="true"],
+      .io-result:hover {
+        background: rgba(255,237,213,.65);
+      }
+
+      .io-result img,
+      .io-line-thumb,
+      .io-summary-thumb {
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+        object-fit: cover;
+        background: #f8fafc;
+        border: 1px solid rgba(15,23,42,.08);
+      }
+
+      .io-result-name,
+      .io-line-title {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .io-result-meta,
+      .io-line-meta,
+      .io-line-note,
+      .io-summary-note {
+        margin-top: 4px;
+        color: var(--io-muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .io-result-price,
+      .io-pill,
+      .io-remove {
+        white-space: nowrap;
+      }
+
+      .io-lines {
+        display: grid;
+        gap: 18px;
+      }
+
+      .io-card {
+        border-radius: 24px;
+        padding: 18px;
+      }
+
+      .io-line {
+        display: grid;
+        grid-template-columns: 86px 1fr;
+        gap: 16px;
+      }
+
+      .io-line-head {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .io-line-actions {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .io-field,
+      .io-summary-block label {
+        display: grid;
+        gap: 7px;
+        font-size: 13px;
+        color: var(--io-muted);
+      }
+
+      .io-field input,
+      .io-field select,
+      .io-field textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid rgba(15,23,42,.12);
+        background: #fff;
+        border-radius: 14px;
+        padding: 12px 13px;
+        font: inherit;
+        color: var(--io-ink);
+      }
+
+      .io-field textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      .io-remove,
+      .io-submit,
+      .io-secondary {
+        border: 0;
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .io-submit,
+      .io-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        border-radius: 999px;
+        padding: 0 20px;
+        font-weight: 700;
+      }
+
+      .io-submit {
+        background: linear-gradient(135deg, #111827 0%, #7c2d12 100%);
+        color: #fff;
+      }
+
+      .io-secondary {
+        background: #fff;
+        color: var(--io-ink);
+        border: 1px solid rgba(15,23,42,.12);
+      }
+
+      .io-remove {
+        background: #fff1f2;
+        color: #be123c;
+        border-radius: 999px;
+        padding: 10px 14px;
+      }
+
+      .io-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: var(--io-accent-soft);
+        color: var(--io-accent);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .io-summary-items {
+        display: grid;
+        gap: 16px;
+      }
+
+      .io-summary-item {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .io-summary-block,
+      .io-success {
+        border-radius: 24px;
+      }
+
+      .io-summary-block {
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(15,23,42,.08);
+      }
+
+      .io-summary-total {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 12px;
+        font-weight: 700;
+      }
+
+      .io-review-card {
+        padding: 20px;
+        border-radius: 24px;
+        background: #f8fafc;
+        border: 1px solid rgba(15,23,42,.08);
+      }
+
+      .io-review-card p {
+        color: var(--io-muted);
+        line-height: 1.6;
+      }
+
+      .io-form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .io-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .io-span-2 {
+        grid-column: 1 / -1;
+      }
+
+      .io-success {
+        margin-top: 20px;
+        padding: 22px;
+        display: none;
+      }
+
+      .io-success[data-open="true"] {
+        display: block;
+      }
+
+      .io-footer {
+        margin-top: 28px;
+        color: var(--io-muted);
+        font-size: 14px;
+        text-align: center;
+      }
+
+      @media (max-width: 980px) {
+        .io-hero,
+        .io-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .io-line-actions,
+        .io-form-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .io-shell {
+          padding-inline: 14px;
+        }
+
+        .io-topbar {
+          flex-direction: column;
+          align-items: start;
+        }
+
+        .io-hero-copy,
+        .io-hero-metrics,
+        .io-panel {
+          padding: 22px;
+        }
+
+        .io-line {
+          grid-template-columns: 1fr;
+        }
+
+        .io-line-actions,
+        .io-form-grid,
+        .io-summary-item,
+        .io-result {
+          grid-template-columns: 1fr;
+        }
+
+        .io-summary-item {
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body class="io-body">
+    <main class="io-shell">
+      <header class="io-topbar">
+        <a class="io-brand" href="/es/" aria-label="Inicio de Athletonic">
+          <img src="/assets/logo.png" alt="Athletonic" />
+          <span>INTERNATIONAL ORDERS</span>
+        </a>
+        <nav class="io-topbar-links" aria-label="International order navigation">
+          <a href="/es/pages/contact.html">Contact</a>
+          <a href="mailto:sales@athletonic.com">sales@athletonic.com</a>
+          <a href="/es/pages/catalog.html">Catálogo</a>
+        </nav>
+      </header>
+
+      <section class="io-hero">
+        <article class="io-hero-copy">
+          <p class="io-kicker">Athletonic International Orders</p>
+          <h1>International Boxing &amp; Muay Thai Gear Orders</h1>
+          <p>
+            Build your request. We review shipping, customs and final quote by email.
+            Arma tu solicitud de pedido internacional. Nuestro equipo revisara disponibilidad, envio, aduanas, impuestos y costo final antes de enviarte la cotizacion oficial.
+          </p>
+        </article>
+        <aside class="io-hero-metrics" aria-label="Quick order summary">
+          <div class="io-metric-list">
+            <div class="io-metric">
+              <small>Buscar</small>
+              <strong>Live catalog</strong>
+            </div>
+            <div class="io-metric">
+              <small>Trust</small>
+              <strong>Latin America shipping</strong>
+            </div>
+            <div class="io-metric">
+              <small>Orders</small>
+              <strong>Gyms, teams and resellers welcome</strong>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="io-grid">
+        <div class="io-column">
+          <section class="io-panel">
+            <p class="io-kicker">1. Add products</p>
+            <h2>Search the real catalog</h2>
+            <p>
+              Athletonic ships boxing gloves, Muay Thai gear, shin guards, shorts, pads, focus mitts, hand wraps and training accessories to Latin America and international customers.
+            </p>
+
+            <div class="io-search" data-search-root>
+              <input
+                class="io-search-input"
+                type="search"
+                placeholder="Windy gloves, pads, Twins Special, BGV1, FSGL10-49..."
+                aria-label="Search products"
+                data-search-input
+                autocomplete="off"
+              />
+              <div class="io-search-results" data-search-results role="listbox" aria-label="Product suggestions"></div>
+            </div>
+            <div class="io-search-hint">Uses the live Athletonic catalog search engine.</div>
+            <div class="io-status" data-search-status>Search for your first product.</div>
+          </section>
+
+          <section class="io-panel">
+            <div style="display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap;">
+              <div>
+                <p class="io-kicker">2. Review lines</p>
+              <h2>Your request cart</h2>
+              <p>Each product is added as its own block so variants, sizes, ounces, colors, and quantities stay clear.</p>
+              </div>
+              <button class="io-secondary" type="button" data-clear-lines>Clear all lines</button>
+            </div>
+            <div class="io-empty" data-lines-empty>Add a product to begin.</div>
+            <div class="io-lines" data-order-lines></div>
+          </section>
+
+          <section class="io-panel">
+            <p class="io-kicker">3. Customer details</p>
+            <h2>Shipping and contact information</h2>
+            <p>These details will appear in your request summary and help sales review shipping options, customs, and final landed cost.</p>
+            <form class="io-form" data-order-form>
+              <div class="io-form-grid">
+                <label class="io-field">
+                  <span>Name</span>
+                  <input name="name" autocomplete="name" required />
+                </label>
+                <label class="io-field">
+                  <span>Correo electrónico</span>
+                  <input name="email" type="email" autocomplete="email" required />
+                </label>
+                <label class="io-field">
+                  <span>WhatsApp or phone</span>
+                  <input name="phone" type="tel" autocomplete="tel" required />
+                </label>
+                <label class="io-field">
+                  <span>Country</span>
+                  <input name="country" autocomplete="country-name" required />
+                </label>
+                <label class="io-field">
+                  <span>City</span>
+                  <input name="city" autocomplete="address-level2" required />
+                </label>
+                <label class="io-field io-span-2">
+                  <span>Shipping address</span>
+                  <textarea name="shipping_address" autocomplete="street-address" required></textarea>
+                </label>
+                <label class="io-field io-span-2">
+                  <span>Optional notes</span>
+                  <textarea name="notes" placeholder="Preferred substitutions, customs notes, delivery instructions, or anything else we should know."></textarea>
+                </label>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <aside class="io-column">
+          <section class="io-panel">
+            <p class="io-kicker">Order summary</p>
+            <h2>Summary</h2>
+            <div class="io-summary-items" data-summary-items></div>
+            <div class="io-summary-block">
+              <div class="io-summary-total"><span data-summary-subtotal-label>Estimated product subtotal</span><span data-summary-subtotal>$0.00</span></div>
+              <p class="io-status" style="margin-bottom:0;">Final quote pending manual review.</p>
+              <p class="io-status" style="margin-bottom:0;">Final quote will be confirmed after shipping, customs, duties and availability review.</p>
+            </div>
+          </section>
+
+          <section class="io-panel">
+            <p class="io-kicker">4. Manual review</p>
+            <h2>Quote pending review</h2>
+            <div class="io-review-card">
+              <p style="margin-top:0;font-weight:700;color:var(--io-ink);">
+                Build your international order request. Our team will review availability, shipping, customs, duties and final landed cost before sending your official quote.
+              </p>
+              <p style="margin-bottom:0;">
+                This page does not charge, does not use checkout, and does not ask for a receipt before submission. Banking instructions are sent by email after your request is received.
+              </p>
+            </div>
+          </section>
+
+          <section class="io-panel">
+            <p class="io-kicker">5. Submit</p>
+            <h2>Request official quote</h2>
+            <p>The customer email and the internal sales email will include product photos, selected variants, color notes, and post-submit banking instructions.</p>
+            <button class="io-submit" type="button" data-submit-order>Request Official Quote</button>
+            <div class="io-status" data-submit-status>Ready when you are.</div>
+            <div class="io-success" data-success-box aria-live="polite">
+              <strong data-success-title>Your request was received.</strong>
+              <p data-success-copy style="margin:10px 0 0;"></p>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <p class="io-footer">
+        This page is for international orders only. It does not affect the normal Athletonic cart or checkout.
+      </p>
+    </main>
+  </body>
+</html>

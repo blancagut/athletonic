@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import {
   existsSync,
   readFileSync,
@@ -7,6 +8,8 @@ import {
   readdirSync,
   rmSync,
 } from "node:fs";
+
+const cjsRequire = createRequire(import.meta.url);
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
 import {
   esPathFor,
@@ -40,6 +43,25 @@ const excludedBrands = [
   "fifa_store",
   "azteca_soccer",
   "football_town",
+  // Twins Special retail now comes exclusively from the official wholesale
+  // catalog records (superexportshop fetch) — legacy twins-special.com db rows
+  // are retired so retail always mirrors the wholesale catalog.
+  "twins_special",
+  // Owner-pruned brands (2026-07-07 commit bee94b30e7 removed them from the
+  // published data files only; excluded here so regeneration never resurrects
+  // them from products.db).
+  "bear_komplex",
+  "codeage",
+  "everlast",
+  "first_phorm",
+  "five_percent_nutrition",
+  "goli",
+  "hayabusa",
+  "inno_supps",
+  "jshealth_vitamins",
+  "maryruth_organics",
+  "rival_boxing",
+  "true_nutrition",
 ];
 
 const excludedProductIds = new Set([
@@ -149,6 +171,12 @@ function isTwinsSpecialBrand(value) {
 }
 
 function twinsSpecialPricingRule(productLike) {
+  // Retired 2026-07-12: Twins Special pricing is now authoritative in
+  // data/wholesale-muay-thai-catalog.json (owner-set per product). Retail
+  // records mirror those prices exactly, so the legacy name-pattern price
+  // table must never override them.
+  return null;
+  // eslint-disable-next-line no-unreachable
   const brand = productLike?.brand_slug || productLike?.brand;
   if (!isTwinsSpecialBrand(brand)) return null;
 
@@ -2791,14 +2819,32 @@ function officialCatalogPrice(product, fallbackPrice) {
   return fallbackPrice;
 }
 
+function loadWholesaleManifestProducts() {
+  try {
+    const { loadWholesaleCatalogManifest } = cjsRequire("../api/_lib/wholesale-muay-thai.js");
+    const manifest = loadWholesaleCatalogManifest();
+    return Array.isArray(manifest?.products) ? manifest.products : [];
+  } catch (error) {
+    console.warn("wholesale manifest unavailable for retail price sync:", error?.message || error);
+    return [];
+  }
+}
+
 function loadOfficialCatalogSearchRecords() {
   const sources = [
     { brandSlug: "boon", file: new URL("../data/boon-products.json", import.meta.url) },
     { brandSlug: "topking", file: new URL("../data/topking-products.json", import.meta.url) },
     { brandSlug: "yokkao", file: new URL("../data/yokkao-products.json", import.meta.url) },
     { brandSlug: "primo", file: new URL("../data/primo-products.json", import.meta.url) },
-    { brandSlug: "twins_special", file: new URL("../data/twins-special-shinguards.json", import.meta.url) },
   ];
+  // Retail prices must mirror the wholesale catalog (owner-set, includes the
+  // Top King glove overrides applied at manifest load).
+  const wholesaleManifestProducts = loadWholesaleManifestProducts();
+  const wholesaleRetailCentsById = new Map(
+    wholesaleManifestProducts
+      .filter((p) => Number.isInteger(p?.retail_price_cents) && p.retail_price_cents > 0)
+      .map((p) => [String(p.id), p.retail_price_cents])
+  );
   const records = [];
   for (const source of sources) {
     if (!existsSync(source.file)) continue;
@@ -2819,6 +2865,9 @@ function loadOfficialCatalogSearchRecords() {
       const idSeed = product?.sku || product?.product_name || url;
       const id = `official-${source.brandSlug}-${slugifyIndexToken(idSeed)}`;
       const internalUrl = `/product/${id}.html`;
+      const wholesaleCents = wholesaleRetailCentsById.get(id);
+      const priceCents =
+        Number.isInteger(wholesaleCents) && wholesaleCents > 0 ? wholesaleCents : Math.round(price * 100);
       const draftRecord = {
         available_sizes: Array.isArray(product?.available_sizes) ? product.available_sizes : [],
         available_colors: Array.isArray(product?.available_colors) ? product.available_colors : [],
@@ -2826,7 +2875,7 @@ function loadOfficialCatalogSearchRecords() {
         id,
         image,
         images: Array.isArray(product?.images) ? product.images.filter(Boolean) : [],
-        price_cents: Math.round(price * 100),
+        price_cents: priceCents,
         sku: product?.sku || null,
       };
       const variantCount = officialCatalogVariantRecords(draftRecord).length;
@@ -2849,7 +2898,7 @@ function loadOfficialCatalogSearchRecords() {
         image,
         image_width: 640,
         image_height: 640,
-        price_cents: Math.round(price * 100),
+        price_cents: priceCents,
         search: [name, brandLabel, sectionTitleForCatalogId(category), category, product?.category]
           .filter(Boolean)
           .join(" ")
@@ -2859,6 +2908,65 @@ function loadOfficialCatalogSearchRecords() {
         requires_variant_selection: variantCount > 1,
       }));
     }
+  }
+  // Twins Special retail records come straight from the wholesale catalog
+  // manifest (superexportshop fetch + owner price edits) so both storefronts
+  // always sell the exact same products at the exact same prices.
+  for (const product of wholesaleManifestProducts) {
+    if (String(product?.brand_slug || "") !== "twins_special") continue;
+    const id = String(product?.id || "").trim();
+    const name = String(product?.name || "").trim();
+    const image = String(product?.image_url || "").trim();
+    const priceCents = Number(product?.retail_price_cents || 0);
+    if (!id || !name || !image || !Number.isInteger(priceCents) || priceCents <= 0) continue;
+    if (product?.available === false) continue;
+    const category = categoryForOfficialCatalogProduct({
+      product_name: name,
+      category: product?.category_label,
+      brand: "Twins Special",
+    });
+    const sizes = Array.isArray(product?.sizes) ? product.sizes.filter(Boolean) : [];
+    const colors = Array.isArray(product?.colors) ? product.colors.filter(Boolean) : [];
+    const others = Array.isArray(product?.other_options) ? product.other_options.filter(Boolean) : [];
+    const draftRecord = {
+      available_sizes: sizes,
+      available_colors: colors,
+      available_variants: others,
+      id,
+      image,
+      images: [image],
+      price_cents: priceCents,
+      sku: null,
+    };
+    const variantCount = officialCatalogVariantRecords(draftRecord).length;
+    records.push({
+      id,
+      name,
+      brand: String(product?.brand || "Twins Special").trim() || "Twins Special",
+      brand_slug: "twins_special",
+      sku: null,
+      category_text: product?.category_label || null,
+      short_description: null,
+      full_description: null,
+      available_sizes: sizes,
+      available_colors: colors,
+      available_variants: others,
+      images: [image],
+      section_id: category,
+      url: `/product/${id}.html`,
+      external_url: null,
+      image,
+      image_width: Number(product?.image_width || 0) || 640,
+      image_height: Number(product?.image_height || 0) || 640,
+      price_cents: priceCents,
+      search: [name, "Twins Special", sectionTitleForCatalogId(category), category, product?.category_label]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase(),
+      has_pdp: true,
+      external_only: false,
+      requires_variant_selection: variantCount > 1,
+    });
   }
   return records;
 }
