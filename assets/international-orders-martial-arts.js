@@ -12,6 +12,13 @@
   const LIST_NAME = String(PAGE_CONFIG.list || "").trim();
   const SORT_MODE = String(PAGE_CONFIG.sort || "").trim();
   const PAGE_SIZE = 60;
+  // Category views load the ENTIRE category in one request so "Shin Guards"
+  // really shows every shin guard (API caps page_size at 5000).
+  const CATEGORY_PAGE_SIZE = 5000;
+  // v2 buying UI (mobile card grid, quick-add sheet, sticky quote bar) is only
+  // styled on pages that opt in via the muaythai-mma-body class.
+  const UI_V2 = document.body.classList.contains("muaythai-mma-body");
+  const mobileMedia = window.matchMedia("(max-width: 700px)");
 
   const els = {
     resultCount: document.querySelector("[data-result-count]"),
@@ -24,6 +31,8 @@
     size: document.querySelector("[data-filter-size]"),
     color: document.querySelector("[data-filter-color]"),
     categoryChips: document.querySelector("[data-category-chips]"),
+    brandChips: document.querySelector("[data-brand-chips]"),
+    filtersPanel: document.querySelector(".wholesale-filters"),
     quoteOpen: document.querySelector("[data-quote-open]"),
     quoteClose: document.querySelector("[data-quote-close]"),
     quoteDrawer: document.querySelector("[data-quote-drawer]"),
@@ -67,7 +76,7 @@
     Object.entries(values).forEach(([key, value]) => {
       if (String(value || "").trim()) out.set(key, String(value).trim());
     });
-    return out.toString();
+    return out.toString().replaceAll("+", "%20");
   }
 
   function loadQuoteCart() {
@@ -176,6 +185,24 @@
       const totalCents = estimatedRetailTotalCents();
       els.quoteEstimate.textContent = totalCents > 0 ? formatUsd(totalCents) : "\u2014";
     }
+    updateQuoteBar();
+  }
+
+  function updateQuoteBar() {
+    const bar = document.querySelector("[data-quote-bar]");
+    if (!bar) return;
+    const lineCount = state.quoteCart.length;
+    const unitCount = totalUnits();
+    const totalCents = estimatedRetailTotalCents();
+    bar.hidden = lineCount === 0;
+    document.body.classList.toggle("has-quote-bar", lineCount > 0);
+    const summary = bar.querySelector("[data-quote-bar-summary]");
+    if (summary) {
+      const itemsLabel = `${lineCount} ${lineCount === 1 ? "item" : "items"}`;
+      const estimate = totalCents > 0 ? ` \u00b7 Est. ${formatUsd(totalCents)}` : "";
+      const unitDetail = unitCount !== lineCount ? ` \u00b7 ${unitCount} units` : "";
+      summary.textContent = `${itemsLabel}${estimate}${unitDetail}`;
+    }
   }
 
   function renderSelect(selectEl, items, currentValue, placeholder) {
@@ -213,25 +240,94 @@
       "All colors"
     );
     renderCategoryChips();
+    renderBrandChips();
   }
 
-  function renderCategoryChips() {
-    if (!els.categoryChips) return;
-    const categories = state.facets.categories || [];
-    if (!categories.length) {
-      els.categoryChips.innerHTML = "";
+  const PREFERRED_BRAND_ORDER = ["twins_special", "topking", "boon"];
+  const QUICK_CATEGORY_ALIASES = [
+    { value: "Training Gloves", label: "Training Gloves" },
+    { value: "Lace-Up & Fight Gloves", label: "Lace-Up Gloves" },
+    { value: "Bag Gloves", label: "Bag Gloves" },
+    { value: "MMA & Grappling Gloves", label: "MMA Gloves" },
+  ];
+
+  function renderBrandChips() {
+    if (!els.brandChips) return;
+    const brands = (state.facets.brands || []).slice().sort((a, b) => {
+      const ai = PREFERRED_BRAND_ORDER.indexOf(String(a.slug || a.value || ""));
+      const bi = PREFERRED_BRAND_ORDER.indexOf(String(b.slug || b.value || ""));
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+    if (!brands.length) {
+      els.brandChips.innerHTML = "";
       return;
     }
-    const current = state.filters.category;
-    const chips = [{ value: "", label: "All" }].concat(categories.map((value) => ({ value, label: value })));
-    els.categoryChips.innerHTML = chips
+    const current = state.filters.brand;
+    const chips = [{ value: "", label: "All brands" }].concat(
+      brands.map((brand) => ({ value: brand.slug || brand.value || "", label: brand.name || brand.label || "" }))
+    );
+    els.brandChips.innerHTML = chips
       .map(
         (chip) => `
-          <button type="button" class="wholesale-chip" data-chip-category="${escapeHtml(chip.value)}"
+          <button type="button" class="wholesale-chip wholesale-chip--brand" data-chip-brand="${escapeHtml(chip.value)}"
             aria-pressed="${chip.value === current ? "true" : "false"}">${escapeHtml(chip.label)}</button>
         `
       )
       .join("");
+  }
+
+  function renderCategoryChips() {
+    if (!els.categoryChips) return;
+    let categories = state.facets.categories || [];
+    if (!categories.length) {
+      els.categoryChips.innerHTML = "";
+      return;
+    }
+    // Keep chips in the merchandising order the API sorts products by
+    // (gloves first) when category counts are available.
+    const countKeys = Object.keys(state.categoryCounts || {});
+    if (countKeys.length) {
+      const rank = new Map(countKeys.map((key, index) => [key, index]));
+      categories = categories
+        .slice()
+        .sort((a, b) => (rank.has(a) ? rank.get(a) : 99) - (rank.has(b) ? rank.get(b) : 99));
+    }
+    const current = state.filters.category;
+    const quickValues = new Set();
+    const quickChips = QUICK_CATEGORY_ALIASES.filter((chip) => categories.includes(chip.value)).map((chip) => {
+      quickValues.add(chip.value);
+      return {
+        value: chip.value,
+        label: chip.label,
+        count: Number(state.categoryCounts && state.categoryCounts[chip.value]) || null,
+        quick: true,
+      };
+    });
+    const categoryChips = categories
+      .filter((value) => !quickValues.has(value))
+      .map((value) => ({
+        value,
+        label: value,
+        count: Number(state.categoryCounts && state.categoryCounts[value]) || null,
+        quick: false,
+      }));
+    const chips = [{ value: "", label: "All", count: null, quick: false }].concat(quickChips, categoryChips);
+    els.categoryChips.innerHTML = chips
+      .map(
+        (chip) => `
+          <button type="button" class="wholesale-chip${chip.quick ? " wholesale-chip--quick" : ""}" data-chip-category="${escapeHtml(
+            chip.value
+          )}"
+            aria-pressed="${chip.value === current ? "true" : "false"}">${escapeHtml(chip.label)}${
+              chip.count ? `<span class="wholesale-chip__count">(${chip.count})</span>` : ""
+            }</button>
+        `
+      )
+      .join("");
+    const active = els.categoryChips.querySelector('[aria-pressed="true"]');
+    if (active && typeof active.scrollIntoView === "function") {
+      active.scrollIntoView({ block: "nearest", inline: "center" });
+    }
   }
 
   function optionChips(values, label) {
@@ -330,7 +426,11 @@
             ${priceCellHtml(product)}
             <label class="wholesale-line__qty">
               <span>Qty</span>
-              <input type="number" min="1" max="999" step="1" value="1" data-card-qty />
+              <span class="wholesale-qty-stepper">
+                <button type="button" data-qty-minus aria-label="Decrease quantity">&minus;</button>
+                <input type="number" min="1" max="999" step="1" value="1" data-card-qty inputmode="numeric" />
+                <button type="button" data-qty-plus aria-label="Increase quantity">+</button>
+              </span>
             </label>
             <button type="button" class="wholesale-line__add" data-add-to-quote>Add to Quote</button>
           </article>
@@ -427,7 +527,7 @@
         list: LIST_NAME,
         sort: SORT_MODE,
         page: state.page,
-        page_size: state.pageSize,
+        page_size: state.filters.category ? CATEGORY_PAGE_SIZE : state.pageSize,
       });
       const response = await fetch(`${API_URL}?${query}`, { headers: { Accept: "application/json" } });
       if (!response.ok) throw new Error(`Catalog request failed (${response.status})`);
@@ -477,7 +577,8 @@
     return Number.isInteger(value) && value > 0 ? Math.min(value, 999) : 1;
   }
 
-  function addOrUpdateCartItem(product, selectedOptions, quantity) {
+  function addOrUpdateCartItem(product, selectedOptions, quantity, options) {
+    const opts = options || {};
     const draft = { product_id: product.id, selected_options: selectedOptions };
     const key = quoteItemKey(draft);
     const existing = state.quoteCart.find((item) => quoteItemKey(item) === key);
@@ -501,8 +602,27 @@
     saveQuoteCart();
     renderQuoteCart();
     updateQuoteBadges();
-    openQuoteDrawer();
     setQuoteStatus("Added.");
+    if (opts.button) flashAddedFeedback(opts.button);
+    if (opts.openDrawer !== false && !UI_V2) openQuoteDrawer();
+  }
+
+  function flashAddedFeedback(button) {
+    if (!button || button.dataset.flashing === "true") return;
+    const original = button.textContent;
+    button.dataset.flashing = "true";
+    button.classList.add("is-added");
+    button.textContent = "Added \u2713";
+    if (els.quoteOpen) {
+      els.quoteOpen.classList.remove("quote-pulse");
+      void els.quoteOpen.offsetWidth;
+      els.quoteOpen.classList.add("quote-pulse");
+    }
+    window.setTimeout(() => {
+      button.classList.remove("is-added");
+      button.textContent = original;
+      delete button.dataset.flashing;
+    }, 1200);
   }
 
   function handleLineClick(event) {
@@ -511,13 +631,112 @@
     const product = productById(line.dataset.productId);
     if (!product) return;
 
+    const stepButton = event.target.closest("[data-qty-minus],[data-qty-plus]");
+    if (stepButton) {
+      const input = line.querySelector("[data-card-qty]");
+      if (input) {
+        const current = Number.parseInt(input.value, 10) || 1;
+        const next = stepButton.matches("[data-qty-plus]") ? current + 1 : current - 1;
+        input.value = String(Math.max(1, Math.min(999, next)));
+      }
+      return;
+    }
+
     if (event.target.closest("[data-preview-image]")) {
       openImagePreview(product);
       return;
     }
 
     if (event.target.closest("[data-add-to-quote]")) {
-      addOrUpdateCartItem(product, selectedOptionsForLine(line, product), quantityForLine(line));
+      const button = event.target.closest("[data-add-to-quote]");
+      if (UI_V2 && mobileMedia.matches && productNeedsOptions(product)) {
+        openQuickAdd(product);
+        return;
+      }
+      addOrUpdateCartItem(product, selectedOptionsForLine(line, product), quantityForLine(line), { button });
+    }
+  }
+
+  function productNeedsOptions(product) {
+    const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+    const colors = Array.isArray(product.colors) ? product.colors : [];
+    return sizes.length > 1 || colors.length > 1 || isBgvl3Product(product);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Mobile quick-add bottom sheet (UI v2): big photo + size/color + qty in the
+  // thumb zone, so variant products are easy to configure on a phone.
+  // ---------------------------------------------------------------------------
+  let quickAddEl = null;
+
+  function ensureQuickAddSheet() {
+    if (quickAddEl) return quickAddEl;
+    quickAddEl = document.createElement("div");
+    quickAddEl.className = "wholesale-quickadd";
+    quickAddEl.hidden = true;
+    quickAddEl.innerHTML =
+      '<div class="wholesale-quickadd__backdrop" data-quickadd-close></div>' +
+      '<div class="wholesale-quickadd__sheet" role="dialog" aria-modal="true" aria-label="Add to quote" data-quickadd-body></div>';
+    document.body.appendChild(quickAddEl);
+    quickAddEl.addEventListener("click", (event) => {
+      if (event.target.closest("[data-quickadd-close]")) closeQuickAdd();
+    });
+    return quickAddEl;
+  }
+
+  function openQuickAdd(product) {
+    const root = ensureQuickAddSheet();
+    const body = root.querySelector("[data-quickadd-body]");
+    const sizeOptions = optionSelect(product.sizes, "Size", "data-card-size");
+    const colorOptions = optionSelect(product.colors, "Color", "data-card-color");
+    const retail = formatUsd(product.retail_price_cents);
+    body.innerHTML = `
+      <button type="button" class="wholesale-quickadd__close" data-quickadd-close aria-label="Close">&times;</button>
+      <div class="wholesale-quickadd__media">
+        <img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" decoding="async" />
+      </div>
+      <div class="wholesale-quickadd__info">
+        <span class="wholesale-quickadd__brand">${escapeHtml(product.brand)}</span>
+        <strong>${escapeHtml(product.name)}</strong>
+        ${retail ? `<span class="wholesale-quickadd__price">${retail} <b>/ unit</b></span>` : '<span class="wholesale-quickadd__price wholesale-muted">Price on quote</span>'}
+      </div>
+      <div class="wholesale-quickadd__selectors">${sizeOptions}${colorOptions}${colorNoteHtml(product)}</div>
+      <div class="wholesale-quickadd__footer">
+        <span class="wholesale-qty-stepper">
+          <button type="button" data-qty-minus aria-label="Decrease quantity">&minus;</button>
+          <input type="number" min="1" max="999" step="1" value="1" data-card-qty inputmode="numeric" />
+          <button type="button" data-qty-plus aria-label="Increase quantity">+</button>
+        </span>
+        <button type="button" class="wholesale-quickadd__add" data-quickadd-add>Add to Quote</button>
+      </div>
+    `;
+    body.querySelectorAll("[data-qty-minus],[data-qty-plus]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const input = body.querySelector("[data-card-qty]");
+        if (!input) return;
+        const current = Number.parseInt(input.value, 10) || 1;
+        const next = btn.matches("[data-qty-plus]") ? current + 1 : current - 1;
+        input.value = String(Math.max(1, Math.min(999, next)));
+      });
+    });
+    const addButton = body.querySelector("[data-quickadd-add]");
+    if (addButton) {
+      addButton.addEventListener("click", () => {
+        addOrUpdateCartItem(product, selectedOptionsForLine(body, product), quantityForLine(body), {
+          openDrawer: false,
+        });
+        closeQuickAdd();
+      });
+    }
+    root.hidden = false;
+    document.body.classList.add("wholesale-drawer-open");
+  }
+
+  function closeQuickAdd() {
+    if (!quickAddEl) return;
+    quickAddEl.hidden = true;
+    if ((!els.quoteDrawer || els.quoteDrawer.hidden) && (!els.imageModal || els.imageModal.hidden)) {
+      document.body.classList.remove("wholesale-drawer-open");
     }
   }
 
@@ -637,6 +856,18 @@
         state.filters.category = chip.dataset.chipCategory || "";
         renderCategoryChips();
         loadCatalog({ reset: true });
+        scrollToCatalogTop();
+      });
+    }
+    if (els.brandChips) {
+      els.brandChips.addEventListener("click", (event) => {
+        const chip = event.target.closest("[data-chip-brand]");
+        if (!chip) return;
+        if (els.brand) els.brand.value = chip.dataset.chipBrand || "";
+        state.filters.brand = chip.dataset.chipBrand || "";
+        renderBrandChips();
+        loadCatalog({ reset: true });
+        scrollToCatalogTop();
       });
     }
     if (els.imageModal) {
@@ -646,13 +877,56 @@
     }
     document.addEventListener("keydown", (event) => {
       if (event.key !== "Escape") return;
-      if (els.imageModal && !els.imageModal.hidden) closeImagePreview();
+      if (quickAddEl && !quickAddEl.hidden) closeQuickAdd();
+      else if (els.imageModal && !els.imageModal.hidden) closeImagePreview();
       else if (els.quoteDrawer && !els.quoteDrawer.hidden) closeQuoteDrawer();
     });
   }
 
+  function scrollToCatalogTop() {
+    const sheet = document.querySelector(".wholesale-line-sheet");
+    if (sheet && typeof sheet.scrollIntoView === "function") {
+      sheet.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  // Auto-load the next page as the shopper approaches the end of the list so
+  // categories always feel complete (the button stays as a no-JS fallback).
+  function bindInfiniteScroll() {
+    if (!els.loadMore || typeof IntersectionObserver !== "function") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          if (state.loading || !state.hasMore) continue;
+          state.page += 1;
+          loadCatalog({ reset: false });
+        }
+      },
+      { rootMargin: "900px 0px" }
+    );
+    observer.observe(els.loadMore);
+  }
+
+  // Sticky quote bar: persistent "review quote" affordance in the thumb zone.
+  function injectQuoteBar() {
+    if (!UI_V2 || document.querySelector("[data-quote-bar]")) return;
+    const bar = document.createElement("div");
+    bar.className = "wholesale-quote-bar";
+    bar.hidden = true;
+    bar.setAttribute("data-quote-bar", "");
+    bar.innerHTML =
+      '<span data-quote-bar-summary></span>' +
+      '<button type="button" data-quote-bar-open>Review quote &rarr;</button>';
+    document.body.appendChild(bar);
+    const open = bar.querySelector("[data-quote-bar-open]");
+    if (open) open.addEventListener("click", openQuoteDrawer);
+  }
+
   function boot() {
     bindEvents();
+    bindInfiniteScroll();
+    injectQuoteBar();
     renderQuoteCart();
     updateQuoteBadges();
     loadCatalog({ reset: true });
