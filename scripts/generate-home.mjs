@@ -1390,9 +1390,14 @@ const PRIORITY_SITELINKS = [
     pathname: "/pages/boxing-gloves.html",
   },
   {
-    label: "Top King & Boon",
-    href: "pages/top-king-boon.html",
-    pathname: "/pages/top-king-boon.html",
+    label: "Top King",
+    href: "pages/top-king.html",
+    pathname: "/pages/top-king.html",
+  },
+  {
+    label: "Boon",
+    href: "pages/boon.html",
+    pathname: "/pages/boon.html",
   },
   {
     label: "Pads & Punch Mitts",
@@ -1429,13 +1434,13 @@ function departmentNavHtml(pathPrefix = "./") {
   const departments = [
     ["Twins Special", "pages/twins-special.html"],
     ["Boxing Gloves", "pages/boxing-gloves.html"],
-    ["Top King & Boon", "pages/top-king-boon.html"],
+    ["Top King", "pages/top-king.html"],
+    ["Boon", "pages/boon.html"],
     ["Muay Thai Shorts", "pages/muay-thai-shorts.html"],
     ["Shin Guards", "pages/shin-guards.html"],
     ["Pads & Punch Mitts", "pages/pads-punch-mitts.html"],
     ["Heavy Bags", "pages/heavy-bags.html"],
     ["Gym Equipment", "pages/gym-equipment.html"],
-    ["Fight Clothing", "pages/fight-clothing.html"],
   ];
   const links = departments
     .map(
@@ -1447,8 +1452,18 @@ function departmentNavHtml(pathPrefix = "./") {
     BRANDS_PAGE_HREF === "#brands"
       ? `${pathPrefix}#brands`
       : `${pathPrefix}${BRANDS_PAGE_HREF}`;
+  const clothingMenu = `<details class="department-submenu">
+          <summary>Clothing &amp; Shoes</summary>
+          <div class="department-submenu-panel">
+            <a href="${html(resolveSiteHref("pages/fight-clothing.html", pathPrefix))}">Fight Clothing</a>
+            <a href="${html(resolveSiteHref("pages/footwear.html", pathPrefix))}">Nike &amp; Footwear</a>
+            <a href="${html(resolveSiteHref("pages/training-apparel.html", pathPrefix))}">Training Apparel</a>
+          </div>
+        </details>`;
   return `<nav class="department-nav" id="department-nav" data-department-nav aria-label="Department navigation">
         ${links}
+        ${clothingMenu}
+        <a href="${html(resolveSiteHref("pages/supplements.html", pathPrefix))}">Supplements</a>
         <a href="${html(brandsHref)}">Brands</a>
       </nav>`;
 }
@@ -2922,6 +2937,21 @@ function officialCatalogPrice(product, fallbackPrice) {
   return fallbackPrice;
 }
 
+function isBlockedDecorativeCatalogProduct(product) {
+  const text = [
+    product?.name,
+    product?.title,
+    product?.product_name,
+    product?.sku,
+    product?.category,
+    product?.search,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return /\bhanging mirror boxing gloves?\b/i.test(text) ||
+    /\brear view mirror heavy bag\b/i.test(text);
+}
+
 function loadWholesaleManifestProducts() {
   try {
     const { loadWholesaleCatalogManifest } = cjsRequire("../api/_lib/wholesale-muay-thai.js");
@@ -2958,6 +2988,7 @@ function loadOfficialCatalogSearchRecords() {
       continue;
     }
     for (const product of products) {
+      if (isBlockedDecorativeCatalogProduct(product)) continue;
       const name = cleanProductName(product?.product_name, source.brandSlug);
       const image = Array.isArray(product?.images) ? product.images.find(Boolean) : null;
       const url = String(product?.product_url ?? "").trim();
@@ -5230,12 +5261,20 @@ const twinsSpecialProducts = sortMerchFirst(
   { terms: ["boxing gloves", "bgvl", "shin guards", "thai pads", "muay thai shorts"] }
 );
 
-const topKingBoonProducts = sortMerchFirst(
+const topKingProducts = sortMerchFirst(
   catalogHomeProducts.filter(
-    (product) => cleanFightProduct(product) && ["topking", "boon"].includes(product.brand)
+    (product) => cleanFightProduct(product) && product.brand === "topking"
   ),
   {
-    brands: ["topking", "boon"],
+    terms: ["boxing gloves", "muay thai", "shin guards", "thai pads", "shorts"],
+  }
+);
+
+const boonProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) => cleanFightProduct(product) && product.brand === "boon"
+  ),
+  {
     terms: ["boxing gloves", "muay thai", "shin guards", "thai pads", "shorts"],
   }
 );
@@ -5319,13 +5358,23 @@ const initialHomeShelvesDraft = [
   }),
   customShelf({
     eyebrow: "Thai fight gear",
-    title: "Top King & Boon",
-    description: "Our next priority brands for authentic Muay Thai equipment and apparel.",
-    products: topKingBoonProducts,
-    limit: 16,
-    maxPerBrand: 8,
+    title: "Top King",
+    description: "Authentic Top King gloves, protection, pads, shorts, and Muay Thai equipment.",
+    products: topKingProducts,
+    limit: 12,
+    maxPerBrand: 12,
     maxGlobalBrand: 20,
-    minUniqueBrands: 2,
+    minUniqueBrands: 1,
+  }),
+  customShelf({
+    eyebrow: "Thai fight gear",
+    title: "Boon",
+    description: "Authentic Boon gloves, pads, shorts, protection, and training equipment.",
+    products: boonProducts,
+    limit: 12,
+    maxPerBrand: 12,
+    maxGlobalBrand: 20,
+    minUniqueBrands: 1,
   }),
   customShelf({
     eyebrow: "Fight essentials",
@@ -5422,9 +5471,14 @@ const categoryCards = [
     description: "Twins, Top King, Boon, and leading Thai glove brands.",
   },
   {
-    title: "Top King & Boon",
-    href: "./pages/top-king-boon.html",
-    description: "Priority Muay Thai gear after Twins Special.",
+    title: "Top King",
+    href: "./pages/top-king.html",
+    description: "Thai gloves, pads, protection, shorts, and training gear.",
+  },
+  {
+    title: "Boon",
+    href: "./pages/boon.html",
+    description: "Authentic Boon fight gear in its own dedicated collection.",
   },
   {
     title: "Pads & Punch Mitts",
@@ -5608,6 +5662,26 @@ console.log(
   `Generated ${totalProducts} products across ${populatedSections.length} sections.`
 );
 
+const fightDiscoveryLinks = [
+  { label: "Twins Special", href: "pages/twins-special.html" },
+  { label: "Top King", href: "pages/top-king.html" },
+  { label: "Boon", href: "pages/boon.html" },
+  { label: "Boxing Gloves", href: "pages/boxing-gloves.html" },
+  { label: "Shin Guards", href: "pages/shin-guards.html" },
+  { label: "Pads & Mitts", href: "pages/pads-punch-mitts.html" },
+  { label: "Clothing & Shoes", href: "pages/fight-clothing.html" },
+];
+
+const supplementDiscoveryLinks = [
+  { label: "Protein", href: "pages/protein.html" },
+  { label: "Creatine", href: "pages/creatine.html" },
+  { label: "Pre-workout", href: "pages/pre-workout.html" },
+  { label: "Hydration", href: "pages/hydration.html" },
+  { label: "Vitamins", href: "pages/vitamins.html" },
+  { label: "Greens", href: "pages/greens.html" },
+  { label: "Bars & Shakes", href: "pages/bars-shakes.html" },
+];
+
 const staticPages = [
   {
     slug: "catalog",
@@ -5650,6 +5724,8 @@ const staticPages = [
     title: "Twins Special",
     eyebrow: "Athletonic Flagship Brand",
     summary: "Shop Athletonic's largest priority collection of authentic Twins Special gloves, pads, guards, shorts, and training equipment.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
     productSections: [customShelf({ eyebrow: "Twins Special", title: "Shop Twins Special", description: "Authentic Thai fight gear led by the signature Athletonic brand.", products: twinsSpecialProducts, limit: 48 })],
   },
   {
@@ -5657,20 +5733,45 @@ const staticPages = [
     title: "Boxing & Muay Thai Gloves",
     eyebrow: "Fight Essentials",
     summary: "Shop boxing and Muay Thai gloves with Twins Special first, followed by Top King, Boon, and other established Thai brands.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
     productSections: [customShelf({ eyebrow: "Gloves", title: "Boxing & Muay Thai Gloves", description: "Thai-brand gloves for bag work, pads, sparring, and competition.", products: boxingGloveProducts, limit: 48 })],
   },
   {
     slug: "top-king-boon",
-    title: "Top King & Boon",
-    eyebrow: "Priority Thai Brands",
-    summary: "Shop authentic Top King and Boon gloves, pads, guards, shorts, and Muay Thai training gear.",
-    productSections: [customShelf({ eyebrow: "Thai fight gear", title: "Top King & Boon", description: "Two core Athletonic Muay Thai brands after Twins Special.", products: topKingBoonProducts, limit: 48 })],
+    title: "Top King and Boon Collections",
+    eyebrow: "Choose a Brand",
+    summary: "Top King and Boon now have separate collections so products and pricing are never mixed.",
+    links: [
+      { label: "Shop Top King", href: "pages/top-king.html" },
+      { label: "Shop Boon", href: "pages/boon.html" },
+    ],
+  },
+  {
+    slug: "top-king",
+    title: "Top King",
+    eyebrow: "Thai Fight Brand",
+    summary: "Shop Top King gloves, pads, protection, shorts, and authentic Muay Thai training equipment.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
+    productSections: [customShelf({ eyebrow: "Top King", title: "Shop Top King", description: "A dedicated Top King collection with no Boon products mixed in.", products: topKingProducts, limit: 48 })],
+  },
+  {
+    slug: "boon",
+    title: "Boon",
+    eyebrow: "Thai Fight Brand",
+    summary: "Shop Boon gloves, pads, protection, shorts, and authentic Muay Thai training equipment.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
+    productSections: [customShelf({ eyebrow: "Boon", title: "Shop Boon", description: "A dedicated Boon collection with no Top King products mixed in.", products: boonProducts, limit: 48 })],
   },
   {
     slug: "muay-thai-shorts",
     title: "Muay Thai Shorts",
     eyebrow: "Fight Clothing",
     summary: "Shop authentic Muay Thai and boxing shorts led by Twins Special, Top King, and Boon.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
     productSections: [customShelf({ eyebrow: "Fight apparel", title: "Muay Thai Shorts", description: "Thai shorts for training, competition, and fight-gym style.", products: muayThaiClothingProducts.filter((product) => productNameMatchesTerms(product, ["shorts", "skirt"])), limit: 48 })],
   },
   {
@@ -5678,6 +5779,8 @@ const staticPages = [
     title: "Shin Guards & Protection",
     eyebrow: "Training Protection",
     summary: "Shop shin guards, headgear, wraps, mouthguards, and protective equipment from Thai fight brands.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
     productSections: [customShelf({ eyebrow: "Protection", title: "Shin Guards & Protective Gear", description: "Protection for sparring, drills, and daily Muay Thai training.", products: protectiveGearProducts, limit: 48 })],
   },
   {
@@ -5685,6 +5788,8 @@ const staticPages = [
     title: "Pads & Punch Mitts",
     eyebrow: "Coach Equipment",
     summary: "Shop Thai pads, focus mitts, kick pads, shields, and coaching equipment for fight training.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
     productSections: [customShelf({ eyebrow: "Coach gear", title: "Pads & Punch Mitts", description: "Training tools for boxing and Muay Thai coaches.", products: padsMittsProducts, limit: 48 })],
   },
   {
@@ -5692,6 +5797,8 @@ const staticPages = [
     title: "Heavy Bags",
     eyebrow: "Fight Gym Equipment",
     summary: "Shop heavy bags, banana bags, uppercut bags, wall pads, and striking equipment.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
     productSections: [customShelf({ eyebrow: "Gym setup", title: "Heavy Bags", description: "Striking equipment for commercial gyms and home training spaces.", products: gymEquipmentProducts.filter((product) => productNameMatchesTerms(product, ["bag", "wall pad"])), limit: 48 })],
   },
   {
@@ -5699,6 +5806,8 @@ const staticPages = [
     title: "Fight Gym Equipment",
     eyebrow: "Gym Setup",
     summary: "Shop heavy bags, wall pads, training mats, striking stations, and equipment for Muay Thai and boxing gyms.",
+    productFinder: true,
+    discoveryLinks: fightDiscoveryLinks,
     productSections: [customShelf({ eyebrow: "Equipment", title: "Fight Gym Equipment", description: "Build a serious training space with authentic fight-gym equipment.", products: gymEquipmentProducts, limit: 48 })],
   },
   {
@@ -5706,7 +5815,26 @@ const staticPages = [
     title: "Fight Clothing",
     eyebrow: "Muay Thai Apparel",
     summary: "Shop Muay Thai shorts, boxing shorts, shirts, tanks, and authentic Thai fight-gym clothing.",
+    productFinder: true,
+    discoveryLinks: [
+      { label: "Fight Clothing", href: "pages/fight-clothing.html" },
+      { label: "Nike & Footwear", href: "pages/footwear.html" },
+      { label: "Training Apparel", href: "pages/training-apparel.html" },
+      ...fightDiscoveryLinks.slice(0, 3),
+    ],
     productSections: [customShelf({ eyebrow: "Apparel", title: "Fight Clothing", description: "Training and lifestyle clothing from Twins Special and leading Thai brands.", products: muayThaiClothingProducts, limit: 48 })],
+  },
+  {
+    slug: "supplements",
+    title: "Supplements",
+    eyebrow: "Sports Nutrition",
+    summary: "Shop protein, creatine, pre-workout, hydration, vitamins, greens, bars, and shakes from the Athletonic catalog.",
+    productFinder: true,
+    discoveryLinks: supplementDiscoveryLinks,
+    productSections: [
+      customShelf({ eyebrow: "Priority brands", title: "Optimum Nutrition & MuscleTech", description: "Priority protein and performance nutrition brands.", products: optimumMuscletechProducts, limit: 24 }),
+      customShelf({ eyebrow: "Supplements", title: "More Sports Nutrition", description: "Protein, creatine, hydration, wellness, and training support.", sectionIds: ["protein", "creatine", "pre-workout", "hydration", "vitamins", "greens", "bars-shakes"], limit: 48 }),
+    ],
   },
   {
     slug: "optimum-muscletech",
@@ -6121,6 +6249,12 @@ const staticPages = [
       "Shop training apparel, gym wear, tees, shorts, leggings, hoodies, and active layers.",
     dynamicSearch: true,
     dynamicCategory: "apparel",
+    productFinder: true,
+    discoveryLinks: [
+      { label: "Fight Clothing", href: "pages/fight-clothing.html" },
+      { label: "Nike & Footwear", href: "pages/footwear.html" },
+      { label: "Training Apparel", href: "pages/training-apparel.html" },
+    ],
     productSections: [shelfFromSection("apparel")],
     sections: [
       {
@@ -6138,6 +6272,12 @@ const staticPages = [
       "Shop running, training, trail, and performance footwear.",
     dynamicSearch: true,
     dynamicCategory: "shoes",
+    productFinder: true,
+    discoveryLinks: [
+      { label: "Nike & Footwear", href: "pages/footwear.html" },
+      { label: "Fight Clothing", href: "pages/fight-clothing.html" },
+      { label: "Training Apparel", href: "pages/training-apparel.html" },
+    ],
     productSections: [shelfFromSection("shoes")],
     sections: [
       {
@@ -7433,6 +7573,29 @@ ${shelf.products
       </div>`;
 }
 
+function renderProductFinder(pageInfo, pathPrefix = "../") {
+  if (!pageInfo.productFinder) return "";
+  const links = Array.isArray(pageInfo.discoveryLinks) ? pageInfo.discoveryLinks : [];
+  return `
+      <section class="listing-finder" aria-label="Find products on this page">
+        <div class="listing-finder-search">
+          <label for="listing-product-search">Search this collection</label>
+          <div>
+            <input id="listing-product-search" type="search" inputmode="search" autocomplete="off" placeholder="Search products, brands, or equipment..." data-listing-filter />
+            <button type="button" data-listing-clear>Clear</button>
+          </div>
+          <p data-listing-count aria-live="polite">Showing all products</p>
+        </div>
+        <nav class="listing-quick-links" aria-label="Related shopping categories">
+          ${links
+            .map(
+              (link) => `<a href="${html(resolveSiteHref(link.href, pathPrefix))}">${html(link.label)}</a>`
+            )
+            .join("\n          ")}
+        </nav>
+      </section>`;
+}
+
 function infoPage(pageInfo) {
   const pathPrefix = "../";
   const hasExtendedContent =
@@ -7466,6 +7629,7 @@ ${renderDrawers()}
         <p>${html(pageInfo.summary)}</p>
         ${renderInfoLinks(pageInfo.links, pathPrefix)}
       </section>
+${renderProductFinder(pageInfo, pathPrefix)}
       ${
         pageInfo.dynamicSearch
           ? `<p class="search-status" id="catalog" aria-live="polite" hidden></p>
@@ -7490,6 +7654,38 @@ ${renderFooter(pathPrefix)}
       window.ATHLETONIC_SUPABASE_KEY = "${html(SUPABASE_PUBLIC_KEY)}";
     </script>
     <script src="${pathPrefix}assets/cart.js" defer></script>
+    ${
+      pageInfo.productFinder
+        ? `<script>
+      (function () {
+        var input = document.querySelector("[data-listing-filter]");
+        var clear = document.querySelector("[data-listing-clear]");
+        var count = document.querySelector("[data-listing-count]");
+        var cards = Array.from(document.querySelectorAll(".listing-sections .product-card"));
+        if (!input || !cards.length) return;
+        function applyFilter() {
+          var query = input.value.trim().toLowerCase();
+          var visible = 0;
+          cards.forEach(function (card) {
+            var matches = !query || String(card.dataset.search || "").indexOf(query) !== -1;
+            card.hidden = !matches;
+            if (matches) visible += 1;
+          });
+          if (count) count.textContent = query
+            ? visible + " product" + (visible === 1 ? "" : "s") + " found"
+            : "Showing " + visible + " products";
+        }
+        input.addEventListener("input", applyFilter);
+        if (clear) clear.addEventListener("click", function () {
+          input.value = "";
+          applyFilter();
+          input.focus();
+        });
+        applyFilter();
+      })();
+    </script>`
+        : ""
+    }
   </body>
 </html>
 `;
@@ -8036,7 +8232,7 @@ const checkoutCatalogCandidates = [
   ...curatedCatalogRecords,
   ...officialCatalogRecords,
   ...checkoutCatalogExtraRecords,
-];
+].filter((product) => !isBlockedDecorativeCatalogProduct(product));
 const checkoutIds = new Map();
 for (const product of checkoutCatalogCandidates) {
   const id = String(product?.id || "").trim();
@@ -8090,7 +8286,9 @@ writeFileSync(
 const finalCatalogUrl = new URL("final/catalog.published.json", commerceCatalogDir);
 const previousFinalCatalog = JSON.parse(readFileSync(finalCatalogUrl, "utf8"));
 const publishedProductsById = new Map(
-  (previousFinalCatalog.products || []).map((product) => [String(product.id), product])
+  (previousFinalCatalog.products || [])
+    .filter((product) => !isBlockedDecorativeCatalogProduct(product))
+    .map((product) => [String(product.id), product])
 );
 for (const product of checkoutCatalogRecords) publishedProductsById.set(String(product.id), product);
 writeFileSync(
@@ -8105,7 +8303,9 @@ writeFileSync(
 const finalSearchUrl = new URL("final/search-index.published.json", commerceCatalogDir);
 const previousFinalSearch = JSON.parse(readFileSync(finalSearchUrl, "utf8"));
 const publishedSearchById = new Map(
-  (previousFinalSearch.products || []).map((product) => [String(product.id), product])
+  (previousFinalSearch.products || [])
+    .filter((product) => !isBlockedDecorativeCatalogProduct(product))
+    .map((product) => [String(product.id), product])
 );
 for (const product of searchIndexRecords) publishedSearchById.set(String(product.id), product);
 writeFileSync(

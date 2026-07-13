@@ -78,13 +78,22 @@
       <nav class="department-nav" id="department-nav" data-department-nav aria-label="Department navigation">
         <a href="../pages/twins-special.html">Twins Special</a>
         <a href="../pages/boxing-gloves.html">Boxing Gloves</a>
-        <a href="../pages/top-king-boon.html">Top King &amp; Boon</a>
+        <a href="../pages/top-king.html">Top King</a>
+        <a href="../pages/boon.html">Boon</a>
         <a href="../pages/muay-thai-shorts.html">Muay Thai Shorts</a>
         <a href="../pages/shin-guards.html">Shin Guards</a>
         <a href="../pages/pads-punch-mitts.html">Pads &amp; Punch Mitts</a>
         <a href="../pages/heavy-bags.html">Heavy Bags</a>
         <a href="../pages/gym-equipment.html">Gym Equipment</a>
-        <a href="../pages/fight-clothing.html">Fight Clothing</a>
+        <details class="department-submenu">
+          <summary>Clothing &amp; Shoes</summary>
+          <div class="department-submenu-panel">
+            <a href="../pages/fight-clothing.html">Fight Clothing</a>
+            <a href="../pages/footwear.html">Nike &amp; Footwear</a>
+            <a href="../pages/training-apparel.html">Training Apparel</a>
+          </div>
+        </details>
+        <a href="../pages/supplements.html">Supplements</a>
         <a href="../pages/brands.html">Brands</a>
       </nav>
     </header>
@@ -145,6 +154,26 @@
         <h1>Boxing &amp; Muay Thai Gloves</h1>
         <p>Shop boxing and Muay Thai gloves with Twins Special first, followed by Top King, Boon, and other established Thai brands.</p>
 
+      </section>
+
+      <section class="listing-finder" aria-label="Find products on this page">
+        <div class="listing-finder-search">
+          <label for="listing-product-search">Search this collection</label>
+          <div>
+            <input id="listing-product-search" type="search" inputmode="search" autocomplete="off" placeholder="Search products, brands, or equipment..." data-listing-filter />
+            <button type="button" data-listing-clear>Clear</button>
+          </div>
+          <p data-listing-count aria-live="polite">Showing all products</p>
+        </div>
+        <nav class="listing-quick-links" aria-label="Related shopping categories">
+          <a href="../pages/twins-special.html">Twins Special</a>
+          <a href="../pages/top-king.html">Top King</a>
+          <a href="../pages/boon.html">Boon</a>
+          <a href="../pages/boxing-gloves.html">Boxing Gloves</a>
+          <a href="../pages/shin-guards.html">Shin Guards</a>
+          <a href="../pages/pads-punch-mitts.html">Pads &amp; Mitts</a>
+          <a href="../pages/fight-clothing.html">Clothing &amp; Shoes</a>
+        </nav>
       </section>
       <p class="search-status" id="catalog" aria-live="polite" hidden></p>
       <div>
@@ -1155,5 +1184,33 @@
       window.ATHLETONIC_SUPABASE_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
     </script>
     <script src="../assets/cart.js" defer></script>
+    <script>
+      (function () {
+        var input = document.querySelector("[data-listing-filter]");
+        var clear = document.querySelector("[data-listing-clear]");
+        var count = document.querySelector("[data-listing-count]");
+        var cards = Array.from(document.querySelectorAll(".listing-sections .product-card"));
+        if (!input || !cards.length) return;
+        function applyFilter() {
+          var query = input.value.trim().toLowerCase();
+          var visible = 0;
+          cards.forEach(function (card) {
+            var matches = !query || String(card.dataset.search || "").indexOf(query) !== -1;
+            card.hidden = !matches;
+            if (matches) visible += 1;
+          });
+          if (count) count.textContent = query
+            ? visible + " product" + (visible === 1 ? "" : "s") + " found"
+            : "Showing " + visible + " products";
+        }
+        input.addEventListener("input", applyFilter);
+        if (clear) clear.addEventListener("click", function () {
+          input.value = "";
+          applyFilter();
+          input.focus();
+        });
+        applyFilter();
+      })();
+    </script>
   </body>
 </html>
