@@ -2622,7 +2622,7 @@ function resolveSiteHref(href, pathPrefix = "./") {
   const value = String(href ?? "").trim();
   if (!value) return "#";
   if (/^(https?:|mailto:|tel:)/i.test(value)) return value;
-  if (value.startsWith("#")) return `${pathPrefix}${value}`;
+  if (value.startsWith("#")) return value;
   if (value.startsWith("./") || value.startsWith("../") || value.startsWith("/")) {
     return value;
   }
@@ -5345,6 +5345,63 @@ const protectiveGearProducts = sortMerchFirst(
   { brands: ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy", "primo"] }
 );
 
+function productsFromBrands(products, brands) {
+  const allowed = new Set(brands);
+  return products.filter((product) => allowed.has(product.brand));
+}
+
+function productsWithoutBrands(products, brands) {
+  const excluded = new Set(brands);
+  return products.filter((product) => !excluded.has(product.brand));
+}
+
+const coreThaiBrandSlugs = ["twins_special", "topking", "boon"];
+const muayThaiShortProducts = muayThaiClothingProducts.filter((product) =>
+  productNameMatchesTerms(product, ["muay thai shorts", "boxing shorts", "shorts", "skirt"])
+);
+const shinGuardProducts = protectiveGearProducts.filter((product) =>
+  productNameMatchesTerms(product, ["shin guard", "shinguard", "shin pad"])
+);
+const otherProtectionProducts = protectiveGearProducts.filter(
+  (product) => !shinGuardProducts.includes(product)
+);
+const thaiPadProducts = padsMittsProducts.filter((product) =>
+  productNameMatchesTerms(product, ["thai pad", "kick pad", "kicking pad", "pao"])
+);
+const focusMittProducts = padsMittsProducts.filter((product) =>
+  productNameMatchesTerms(product, ["focus mitt", "punch mitt"])
+);
+const shieldsAndProtectors = padsMittsProducts.filter((product) =>
+  productNameMatchesTerms(product, ["kick shield", "belly pad", "body protector"])
+);
+const heavyBagProducts = gymEquipmentProducts.filter((product) =>
+  productNameMatchesTerms(product, ["heavy bag", "punching bag", "banana bag", "uppercut bag"])
+);
+const wallPadAndMatProducts = gymEquipmentProducts.filter((product) =>
+  productNameMatchesTerms(product, ["wall pad", "floor mat", "training mat"])
+);
+const fightTopProducts = muayThaiClothingProducts.filter((product) =>
+  productNameMatchesTerms(product, ["t-shirt", "shirt", "tank", "tee"])
+);
+
+const priorityFightBrandShelves = [
+  { slug: "twins-special", title: "Twins Special", products: twinsSpecialProducts },
+  { slug: "top-king", title: "Top King", products: topKingProducts },
+  { slug: "boon", title: "Boon", products: boonProducts },
+  { slug: "fairtex", title: "Fairtex", products: otherThaiFightProducts.filter((product) => product.brand === "fairtex") },
+  { slug: "yokkao", title: "YOKKAO", products: otherThaiFightProducts.filter((product) => product.brand === "yokkao") },
+  { slug: "windy-primo", title: "Windy & Primo", products: productsFromBrands(otherThaiFightProducts, ["windy", "primo"]) },
+]
+  .filter((entry) => entry.products.length)
+  .map((entry) => customShelf({
+    anchor: entry.slug,
+    eyebrow: "Shop by brand",
+    title: entry.title,
+    description: `Selected ${entry.title} products from the current Athletonic catalog.`,
+    products: entry.products,
+    limit: 8,
+  }));
+
 const initialHomeShelvesDraft = [
   customShelf({
     eyebrow: "Flagship brand",
@@ -5708,9 +5765,14 @@ const staticPages = [
       "Explore the performance, wellness, recovery, apparel, footwear, and training brands represented in the Athletonic catalog.",
     directoryGroups: [
       { title: "Featured Brands", items: featuredBrandItems },
-      { title: "All Catalog Brands", items: catalogBrandItems },
+      { title: "All Catalog Brands", items: catalogBrandItems, collapsible: true },
     ],
-    productSections: brandSpotlightShelves,
+    productFinder: true,
+    discoveryLinks: priorityFightBrandShelves.map((shelf) => ({
+      label: shelf.title,
+      href: `#${shelf.anchor}`,
+    })),
+    productSections: priorityFightBrandShelves,
     sections: [
       {
         heading: "Brand Quality",
@@ -5734,17 +5796,38 @@ const staticPages = [
     eyebrow: "Fight Essentials",
     summary: "Shop boxing and Muay Thai gloves with Twins Special first, followed by Top King, Boon, and other established Thai brands.",
     productFinder: true,
-    discoveryLinks: fightDiscoveryLinks,
-    productSections: [customShelf({ eyebrow: "Gloves", title: "Boxing & Muay Thai Gloves", description: "Thai-brand gloves for bag work, pads, sparring, and competition.", products: boxingGloveProducts, limit: 48 })],
+    discoveryLinks: [
+      { label: "Twins Gloves", href: "#twins-gloves" },
+      { label: "Top King Gloves", href: "#top-king-gloves" },
+      { label: "Boon Gloves", href: "#boon-gloves" },
+      { label: "Other Thai Brands", href: "#other-gloves" },
+    ],
+    productSections: [
+      customShelf({ anchor: "twins-gloves", eyebrow: "Flagship brand", title: "Twins Special Gloves", description: "Twins gloves for pads, bag work, sparring, and competition.", products: productsFromBrands(boxingGloveProducts, ["twins_special"]), limit: 12 }),
+      customShelf({ anchor: "top-king-gloves", eyebrow: "Thai brand", title: "Top King Gloves", description: "Top King boxing and Muay Thai gloves in a dedicated section.", products: productsFromBrands(boxingGloveProducts, ["topking"]), limit: 12 }),
+      customShelf({ anchor: "boon-gloves", eyebrow: "Thai brand", title: "Boon Gloves", description: "Boon boxing and Muay Thai gloves in a dedicated section.", products: productsFromBrands(boxingGloveProducts, ["boon"]), limit: 12 }),
+      customShelf({ anchor: "other-gloves", eyebrow: "More brands", title: "More Boxing Gloves", description: "Gloves from Fairtex, Windy, Sanabul, and other established brands.", products: productsWithoutBrands(boxingGloveProducts, coreThaiBrandSlugs), limit: 12 }),
+    ],
   },
   {
     slug: "top-king-boon",
     title: "Top King and Boon Collections",
     eyebrow: "Choose a Brand",
     summary: "Top King and Boon now have separate collections so products and pricing are never mixed.",
+    productFinder: true,
+    discoveryLinks: [
+      { label: "Top King Products", href: "#top-king-products" },
+      { label: "Boon Products", href: "#boon-products" },
+      { label: "Top King Page", href: "pages/top-king.html" },
+      { label: "Boon Page", href: "pages/boon.html" },
+    ],
     links: [
       { label: "Shop Top King", href: "pages/top-king.html" },
       { label: "Shop Boon", href: "pages/boon.html" },
+    ],
+    productSections: [
+      customShelf({ anchor: "top-king-products", eyebrow: "Separate collection", title: "Top King", description: "Top King products only; Boon products are not mixed into this section.", products: topKingProducts, limit: 16 }),
+      customShelf({ anchor: "boon-products", eyebrow: "Separate collection", title: "Boon", description: "Boon products only; Top King products are not mixed into this section.", products: boonProducts, limit: 16 }),
     ],
   },
   {
@@ -5771,8 +5854,18 @@ const staticPages = [
     eyebrow: "Fight Clothing",
     summary: "Shop authentic Muay Thai and boxing shorts led by Twins Special, Top King, and Boon.",
     productFinder: true,
-    discoveryLinks: fightDiscoveryLinks,
-    productSections: [customShelf({ eyebrow: "Fight apparel", title: "Muay Thai Shorts", description: "Thai shorts for training, competition, and fight-gym style.", products: muayThaiClothingProducts.filter((product) => productNameMatchesTerms(product, ["shorts", "skirt"])), limit: 48 })],
+    discoveryLinks: [
+      { label: "Twins Shorts", href: "#twins-shorts" },
+      { label: "Top King Shorts", href: "#top-king-shorts" },
+      { label: "Boon Shorts", href: "#boon-shorts" },
+      { label: "Other Brands", href: "#other-shorts" },
+    ],
+    productSections: [
+      customShelf({ anchor: "twins-shorts", eyebrow: "Flagship brand", title: "Twins Special Shorts", description: "Twins Special Muay Thai and boxing shorts.", products: productsFromBrands(muayThaiShortProducts, ["twins_special"]), limit: 12 }),
+      customShelf({ anchor: "top-king-shorts", eyebrow: "Thai brand", title: "Top King Shorts", description: "Top King Muay Thai and boxing shorts.", products: productsFromBrands(muayThaiShortProducts, ["topking"]), limit: 12 }),
+      customShelf({ anchor: "boon-shorts", eyebrow: "Thai brand", title: "Boon Shorts", description: "Boon Muay Thai and boxing shorts.", products: productsFromBrands(muayThaiShortProducts, ["boon"]), limit: 12 }),
+      customShelf({ anchor: "other-shorts", eyebrow: "More brands", title: "More Fight Shorts", description: "Fight shorts from Fairtex, YOKKAO, Windy, Primo, and other Thai brands.", products: productsWithoutBrands(muayThaiShortProducts, coreThaiBrandSlugs), limit: 12 }),
+    ],
   },
   {
     slug: "shin-guards",
@@ -5780,8 +5873,18 @@ const staticPages = [
     eyebrow: "Training Protection",
     summary: "Shop shin guards, headgear, wraps, mouthguards, and protective equipment from Thai fight brands.",
     productFinder: true,
-    discoveryLinks: fightDiscoveryLinks,
-    productSections: [customShelf({ eyebrow: "Protection", title: "Shin Guards & Protective Gear", description: "Protection for sparring, drills, and daily Muay Thai training.", products: protectiveGearProducts, limit: 48 })],
+    discoveryLinks: [
+      { label: "Twins Shin Guards", href: "#twins-shin-guards" },
+      { label: "Top King & Boon", href: "#top-king-boon-shin-guards" },
+      { label: "Other Shin Guards", href: "#other-shin-guards" },
+      { label: "More Protection", href: "#more-protection" },
+    ],
+    productSections: [
+      customShelf({ anchor: "twins-shin-guards", eyebrow: "Flagship brand", title: "Twins Special Shin Guards", description: "Twins Special shin protection for sparring and drills.", products: productsFromBrands(shinGuardProducts, ["twins_special"]), limit: 12 }),
+      customShelf({ anchor: "top-king-boon-shin-guards", eyebrow: "Thai brands", title: "Top King & Boon Shin Guards", description: "Top King and Boon are grouped only within this shin-guard comparison section.", products: productsFromBrands(shinGuardProducts, ["topking", "boon"]), limit: 12 }),
+      customShelf({ anchor: "other-shin-guards", eyebrow: "More brands", title: "More Shin Guards", description: "Shin guards from Fairtex, YOKKAO, Windy, Primo, and other fight brands.", products: productsWithoutBrands(shinGuardProducts, coreThaiBrandSlugs), limit: 12 }),
+      customShelf({ anchor: "more-protection", eyebrow: "Protection", title: "Headgear, Wraps & Guards", description: "Additional training protection organized separately from shin guards.", products: otherProtectionProducts, limit: 12 }),
+    ],
   },
   {
     slug: "pads-punch-mitts",
@@ -5789,8 +5892,18 @@ const staticPages = [
     eyebrow: "Coach Equipment",
     summary: "Shop Thai pads, focus mitts, kick pads, shields, and coaching equipment for fight training.",
     productFinder: true,
-    discoveryLinks: fightDiscoveryLinks,
-    productSections: [customShelf({ eyebrow: "Coach gear", title: "Pads & Punch Mitts", description: "Training tools for boxing and Muay Thai coaches.", products: padsMittsProducts, limit: 48 })],
+    discoveryLinks: [
+      { label: "Thai Pads", href: "#thai-pads" },
+      { label: "Focus Mitts", href: "#focus-mitts" },
+      { label: "Shields & Protectors", href: "#shields-protectors" },
+      { label: "All Coach Gear", href: "#all-coach-gear" },
+    ],
+    productSections: [
+      customShelf({ anchor: "thai-pads", eyebrow: "Coach gear", title: "Thai Pads & Kick Pads", description: "Thai pads and kick pads for Muay Thai training.", products: thaiPadProducts, limit: 12 }),
+      customShelf({ anchor: "focus-mitts", eyebrow: "Boxing training", title: "Focus Mitts & Punch Mitts", description: "Compact mitts for accuracy, speed, and combinations.", products: focusMittProducts, limit: 12 }),
+      customShelf({ anchor: "shields-protectors", eyebrow: "Power training", title: "Kick Shields & Body Protectors", description: "Larger targets and body protection for power work.", products: shieldsAndProtectors, limit: 12 }),
+      customShelf({ anchor: "all-coach-gear", eyebrow: "More equipment", title: "More Pads & Coaching Gear", description: "Additional pads and coaching equipment from the current catalog.", products: padsMittsProducts, limit: 12 }),
+    ],
   },
   {
     slug: "heavy-bags",
@@ -5798,8 +5911,14 @@ const staticPages = [
     eyebrow: "Fight Gym Equipment",
     summary: "Shop heavy bags, banana bags, uppercut bags, wall pads, and striking equipment.",
     productFinder: true,
-    discoveryLinks: fightDiscoveryLinks,
-    productSections: [customShelf({ eyebrow: "Gym setup", title: "Heavy Bags", description: "Striking equipment for commercial gyms and home training spaces.", products: gymEquipmentProducts.filter((product) => productNameMatchesTerms(product, ["bag", "wall pad"])), limit: 48 })],
+    discoveryLinks: [
+      { label: "Heavy Bags", href: "#heavy-bags" },
+      { label: "Wall Pads", href: "#wall-pads" },
+    ],
+    productSections: [
+      customShelf({ anchor: "heavy-bags", eyebrow: "Striking equipment", title: "Heavy & Punching Bags", description: "Full-size heavy, banana, punching, and uppercut bags.", products: heavyBagProducts, limit: 16 }),
+      customShelf({ anchor: "wall-pads", eyebrow: "Gym installation", title: "Wall Pads & Training Surfaces", description: "Wall-mounted and floor protection for gym spaces.", products: wallPadAndMatProducts, limit: 12 }),
+    ],
   },
   {
     slug: "gym-equipment",
@@ -5807,8 +5926,16 @@ const staticPages = [
     eyebrow: "Gym Setup",
     summary: "Shop heavy bags, wall pads, training mats, striking stations, and equipment for Muay Thai and boxing gyms.",
     productFinder: true,
-    discoveryLinks: fightDiscoveryLinks,
-    productSections: [customShelf({ eyebrow: "Equipment", title: "Fight Gym Equipment", description: "Build a serious training space with authentic fight-gym equipment.", products: gymEquipmentProducts, limit: 48 })],
+    discoveryLinks: [
+      { label: "Heavy Bags", href: "#gym-heavy-bags" },
+      { label: "Wall Pads & Mats", href: "#gym-surfaces" },
+      { label: "All Equipment", href: "#all-gym-equipment" },
+    ],
+    productSections: [
+      customShelf({ anchor: "gym-heavy-bags", eyebrow: "Gym essentials", title: "Heavy Bags", description: "Heavy and punching bags for commercial and home gyms.", products: heavyBagProducts, limit: 12 }),
+      customShelf({ anchor: "gym-surfaces", eyebrow: "Gym installation", title: "Wall Pads & Mats", description: "Training surfaces and wall protection for serious gym spaces.", products: wallPadAndMatProducts, limit: 12 }),
+      customShelf({ anchor: "all-gym-equipment", eyebrow: "More equipment", title: "More Fight Gym Equipment", description: "Additional fight-gym products from the current catalog.", products: gymEquipmentProducts, limit: 12 }),
+    ],
   },
   {
     slug: "fight-clothing",
@@ -5817,12 +5944,15 @@ const staticPages = [
     summary: "Shop Muay Thai shorts, boxing shorts, shirts, tanks, and authentic Thai fight-gym clothing.",
     productFinder: true,
     discoveryLinks: [
-      { label: "Fight Clothing", href: "pages/fight-clothing.html" },
+      { label: "Muay Thai Shorts", href: "#fight-shorts" },
+      { label: "Shirts & Tanks", href: "#fight-tops" },
       { label: "Nike & Footwear", href: "pages/footwear.html" },
       { label: "Training Apparel", href: "pages/training-apparel.html" },
-      ...fightDiscoveryLinks.slice(0, 3),
     ],
-    productSections: [customShelf({ eyebrow: "Apparel", title: "Fight Clothing", description: "Training and lifestyle clothing from Twins Special and leading Thai brands.", products: muayThaiClothingProducts, limit: 48 })],
+    productSections: [
+      customShelf({ anchor: "fight-shorts", eyebrow: "Fight apparel", title: "Muay Thai & Boxing Shorts", description: "Fight shorts from Twins Special and leading Thai brands.", products: muayThaiShortProducts, limit: 16 }),
+      customShelf({ anchor: "fight-tops", eyebrow: "Training clothing", title: "Fight Shirts & Tanks", description: "T-shirts, training shirts, and tanks from fight brands.", products: fightTopProducts, limit: 16 }),
+    ],
   },
   {
     slug: "supplements",
@@ -7525,8 +7655,27 @@ function renderDirectoryGroups(groups = [], pathPrefix = "../") {
   return `
       <div class="directory-groups">
         ${visibleGroups
-          .map(
-            (group) => `<section class="directory-group">
+          .map((group) => {
+            const content = `<h2>${html(group.title)}</h2>
+          <div class="directory-grid">
+            ${group.items
+              .map(
+                (item) => `<a class="directory-card" href="${html(
+                  resolveSiteHref(item.href, pathPrefix)
+                )}"${item.id ? ` id="${html(item.id)}"` : ""}>
+              <span>${html(item.label)}</span>
+              ${item.description ? `<small>${html(item.description)}</small>` : ""}
+            </a>`
+              )
+              .join("\n            ")}
+          </div>`;
+            if (group.collapsible) {
+              return `<details class="directory-group directory-group-collapsible">
+          <summary>${html(group.title)} <span>${group.items.length} brands</span></summary>
+          ${content.replace(`<h2>${html(group.title)}</h2>`, "")}
+        </details>`;
+            }
+            return `<section class="directory-group">
           <h2>${html(group.title)}</h2>
           <div class="directory-grid">
             ${group.items
@@ -7540,8 +7689,8 @@ function renderDirectoryGroups(groups = [], pathPrefix = "../") {
               )
               .join("\n            ")}
           </div>
-        </section>`
-          )
+        </section>`;
+          })
           .join("\n        ")}
       </div>`;
 }
@@ -7553,7 +7702,9 @@ function renderProductShelves(shelves = [], pathPrefix = "../") {
       <div class="listing-sections">
         ${visibleShelves
           .map(
-            (shelf) => `<section class="market-section listing-section">
+            (shelf) => `<section class="market-section listing-section" id="${html(
+              shelf.anchor || slugifyIndexToken(shelf.title)
+            )}">
           <div class="section-title">
             <div>
               <p class="eyebrow">${html(shelf.eyebrow)}</p>

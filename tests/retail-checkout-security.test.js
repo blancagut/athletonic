@@ -129,6 +129,15 @@ test("only one canonical primaryProductHref remains and internal URLs are canoni
     assert.match(categoryPage, /class="product-card"/);
     assert.match(categoryPage, /data-listing-filter/);
   }
+  for (const slug of ["boxing-gloves", "top-king-boon", "muay-thai-shorts", "shin-guards", "pads-punch-mitts", "heavy-bags", "gym-equipment", "fight-clothing", "brands"]) {
+    const categoryPage = fs.readFileSync(path.join(__dirname, `../pages/${slug}.html`), "utf8");
+    const shelfCount = (categoryPage.match(/class="market-section listing-section"/g) || []).length;
+    const quickLinkCount = (categoryPage.match(/class="listing-quick-links"/g) || []).length;
+    assert.ok(shelfCount >= 2, `${slug} should be organized into at least two product sections`);
+    assert.equal(quickLinkCount, 1, `${slug} should have one collection navigation toolbar`);
+    assert.match(categoryPage, /href="#[^"]+"/, `${slug} should include in-page category buttons`);
+  }
+  assert.match(fs.readFileSync(path.join(__dirname, "../pages/brands.html"), "utf8"), /directory-group-collapsible/);
   for (const file of ["data/checkout-catalog.json", "data/search-index.json", "data/final/catalog.published.json", "data/final/search-index.published.json"]) {
     const catalogSource = fs.readFileSync(path.join(__dirname, "..", file), "utf8");
     assert.doesNotMatch(catalogSource, /hanging mirror boxing gloves|rear view mirror heavy bag/i);
