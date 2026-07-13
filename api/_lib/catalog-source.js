@@ -80,8 +80,10 @@ function loadMasterCatalog() {
 }
 
 function loadCheckoutCompatCatalog() {
-  const primary = loadWithFallback(FINAL_PUBLISHED_CATALOG_PATH, LEGACY_CHECKOUT_CATALOG_PATH);
-  return mergeLegacyCheckoutExtras(primary);
+  // Retail checkout is authoritative from the published final catalog. Legacy
+  // identifiers are handled only through explicit aliases in catalog.js; raw
+  // compatibility rows must never override or extend canonical products.
+  return loadWithFallback(FINAL_PUBLISHED_CATALOG_PATH, LEGACY_CHECKOUT_CATALOG_PATH);
 }
 
 function loadCatalog() {

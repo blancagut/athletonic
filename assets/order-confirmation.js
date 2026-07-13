@@ -78,10 +78,11 @@
     if (summaryEl) {
       summaryEl.innerHTML = `
         <dl class="order-totals">
-          <div><dt>${isBankTransfer ? "Cart subtotal" : "Subtotal"}</dt><dd>${formatMoney(amounts.subtotal_cents, order.currency)}</dd></div>
-          <div><dt>Shipping</dt><dd>${isBankTransfer ? "To be confirmed" : formatMoney(amounts.shipping_cents, order.currency)}</dd></div>
-          <div><dt>Taxes</dt><dd>${isBankTransfer ? "To be confirmed" : formatMoney(amounts.tax_cents, order.currency)}</dd></div>
-          <div><dt>${isBankTransfer ? "Estimated item total" : "Total"}</dt><dd>${formatMoney(amounts.total_cents, order.currency)}</dd></div>
+          <div><dt>Subtotal</dt><dd>${formatMoney(amounts.subtotal_cents, order.currency)}</dd></div>
+          ${Number(amounts.discount_cents || 0) ? `<div><dt>Discount</dt><dd>-${formatMoney(amounts.discount_cents, order.currency)}</dd></div>` : ""}
+          <div><dt>Shipping</dt><dd>${formatMoney(amounts.shipping_cents, order.currency)}</dd></div>
+          ${Number(amounts.tax_cents || 0) ? `<div><dt>Tax</dt><dd>${formatMoney(amounts.tax_cents, order.currency)}</dd></div>` : ""}
+          <div><dt>Final total</dt><dd>${formatMoney(amounts.total_cents, order.currency)}</dd></div>
         </dl>
         <div class="order-status-grid">
       <span><small>Order</small>${escapeHtml(String(order.order_status || "pending_payment").replaceAll("_", " "))}</span>
@@ -140,14 +141,12 @@
 
   async function loadOrder(attempt) {
     if (isTransferOrder) {
-      renderTransferOrder();
+      await renderTransferOrder();
       return;
     }
 
     setStatus("Use order tracking with your Athletonic reference.", "error");
   }
-
-  loadOrder(0);
 
   function storedTransferOrder(reference) {
     try {
@@ -160,30 +159,36 @@
     }
   }
 
-  function renderTransferOrder() {
+  async function renderTransferOrder() {
     const stored = storedTransferOrder(transferReference);
-    if (stored) {
-      renderOrder(stored);
+    const reference =
+      transferReference || (stored && stored.order_reference) || localStorage.getItem(LAST_ORDER_REFERENCE_KEY) || "";
+    const email = String((stored && stored.customer_email) || localStorage.getItem(GUEST_EMAIL_KEY) || "").trim();
+    if (referenceEl) referenceEl.textContent = reference || "Pending";
+    if (emailEl) emailEl.textContent = email || "Your checkout email";
+    setStatus("Verifying your stored order…", "pending");
+
+    if (!reference || !email) {
+      setStatus("This order cannot be verified. Use order tracking with your reference and checkout email.", "error");
       return;
     }
 
-    const reference =
-      transferReference || localStorage.getItem(LAST_ORDER_REFERENCE_KEY) || "Pending";
-    const email = localStorage.getItem(GUEST_EMAIL_KEY) || "Your checkout email";
-    renderOrder({
-      order_reference: reference,
-      customer_email: email,
-      currency: "USD",
-      payment_method: "bank_transfer",
-      payment_status: "pending",
-      order_status: "pending_payment",
-      fulfillment_status: "not_started",
-      amounts: {},
-      timestamps: {
-        created_at: new Date().toISOString(),
-      },
-      items: [],
-      events: [],
-    });
+    try {
+      const response = await fetch("/api/orders/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_reference: reference, email: email }),
+      });
+      const payload = await response.json().catch(function () { return {}; });
+      if (!response.ok || !payload.order) throw new Error("order_not_verified");
+      renderOrder(payload.order);
+    } catch {
+      setStatus("This order cannot be verified. Use order tracking with your reference and checkout email.", "error");
+      if (summaryEl) summaryEl.innerHTML = "";
+      if (itemsEl) itemsEl.innerHTML = "";
+      if (timelineEl) timelineEl.innerHTML = "";
+    }
   }
+
+  loadOrder(0);
 })();

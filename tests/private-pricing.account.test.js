@@ -130,13 +130,13 @@ const SAMPLE_ITEMS = [
   },
   {
     product_id: "p-gear",
-    section_id: "lifting-gear",
+    section_id: "combat-sports",
     quantity: 1,
     unit_amount_cents: 4000,
   },
 ];
 
-// supplements 5000bps on 10000 => 5000; rest 4000bps on 4000 => 1600.
+// Supplements receive 50%; explicitly classified combat receives 40%.
 const EXPECTED_DISCOUNT_CENTS = 5000 + 1600;
 
 function futureIso() {

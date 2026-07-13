@@ -68,9 +68,6 @@ function explicitBoolean(value) {
 
 function resolveAvailability(value, fallback, priceCents = 0) {
   const explicit = explicitBoolean(value);
-  if (explicit === false && intCents(priceCents) > 0) {
-    return true;
-  }
   return explicit === null ? fallback : explicit;
 }
 
@@ -377,6 +374,11 @@ function applyProductOverride(product, override) {
         ? resolveAvailability(patch.available, fallbackAvailable, next.price_cents)
         : explicitBoolean(patch.available)
       : resolveAvailability(next.available, fallbackAvailable, next.price_cents);
+
+  if (override.hidden === true) {
+    next.available = false;
+    next.purchasable = false;
+  }
 
   return next;
 }
@@ -745,18 +747,65 @@ function evaluateCartAgainstIndexes(
     let variant = null;
     let variantResolution = "";
 
+    if (product.requires_variant_selection && !product.has_variants) {
+      const failure = buildLineFailure({
+        index,
+        rawItem,
+        productId,
+        quantity,
+        code: "variant_required",
+        message: "Choose the required product options before checkout.",
+        selectedOptions: mergedSelectedOptions,
+        variantLabel: clientVariantLabel,
+        suppliedVariantId: suppliedVariantId || null,
+      });
+      lineItems.push(failure);
+      if (!topLevelCode) {
+        topLevelCode = failure.code;
+        topLevelMessage = failure.message;
+      }
+      continue;
+    }
+
+    if (product.has_variants && !suppliedVariantId) {
+      const failure = buildLineFailure({
+        index,
+        rawItem,
+        productId,
+        quantity,
+        code: "variant_required",
+        message: "Choose the required product options before checkout.",
+        selectedOptions: mergedSelectedOptions,
+        variantLabel: clientVariantLabel,
+        suppliedVariantId: null,
+      });
+      lineItems.push(failure);
+      if (!topLevelCode) {
+        topLevelCode = failure.code;
+        topLevelMessage = failure.message;
+      }
+      continue;
+    }
+
     if (suppliedVariantId) {
       variant = activeVariantsByProductAndId.get(`${productId}::${suppliedVariantId}`) || null;
       variantResolution = variant ? "id" : "";
       if (!variant) {
         if (!allowManualOrder) {
+          const belongsToAnotherProduct = Array.from(activeVariantsByProductAndId.values()).some(
+            (candidate) =>
+              String(candidate.variant_id || "") === suppliedVariantId &&
+              String(candidate.product_id || "") !== productId
+          );
           const failure = buildLineFailure({
             index,
             rawItem,
             productId,
             quantity,
-            code: "variant_unavailable",
-            message: "One of the selected product variants is no longer available.",
+            code: belongsToAnotherProduct ? "invalid_variant" : "variant_unavailable",
+            message: belongsToAnotherProduct
+              ? "One of the selected product variants does not belong to that product."
+              : "One of the selected product variants is no longer available.",
             selectedOptions: mergedSelectedOptions,
             variantLabel: clientVariantLabel,
             suppliedVariantId,
@@ -791,37 +840,6 @@ function evaluateCartAgainstIndexes(
         continue;
       }
     } else {
-      if (selectedOptionsProvided) {
-        variant = findVariantBySelectedOptions(product, mergedSelectedOptions);
-        variantResolution = variant ? "selected_options" : "";
-      }
-
-      if (!variant && clientVariantLabel) {
-        variant = findVariantByLabel(product, clientVariantLabel, aliasContext);
-        variantResolution = variant ? "label" : variantResolution;
-      }
-
-      // Products that carry variants only for catalog structure (a single
-      // default variant with requires_variant_selection === false) are added to
-      // the cart straight from category cards without any variant metadata.
-      // Fall back to the default/available variant instead of blocking checkout.
-      if (
-        !variant &&
-        !selectedOptionsProvided &&
-        !clientVariantLabel &&
-        product.requires_variant_selection === false
-      ) {
-        const defaultVariant =
-          activeVariantsByProductAndId.get(`${productId}::${product.default_variant_id}`) || null;
-        variant =
-          (defaultVariant && defaultVariant.available !== false ? defaultVariant : null) ||
-          product.variants.find((candidate) => candidate.available !== false) ||
-          defaultVariant ||
-          product.variants[0] ||
-          null;
-        variantResolution = variant ? "default" : variantResolution;
-      }
-
       if (!variant && allowManualOrder) {
         variantResolution = variantResolution || "manual_order";
       } else if (!variant) {
@@ -1138,6 +1156,7 @@ module.exports = {
   getShippingCents,
   getTaxCents,
   loadProductsWithOverrides,
+  normalizeProductId,
   normalizeAttribution,
   normalizeEmail,
   validateCart,

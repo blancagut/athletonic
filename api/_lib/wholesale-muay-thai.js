@@ -787,7 +787,18 @@ function loadWholesaleCatalogManifest() {
   }
 
   const manifest = JSON.parse(fs.readFileSync(WHOLESALE_CATALOG_PATH, "utf8"));
-  const products = Array.isArray(manifest.products) ? manifest.products.map(normalizeWholesaleCatalogProduct) : [];
+  const products = Array.isArray(manifest.products)
+    ? manifest.products
+        .filter((product) =>
+          APPROVED_WHOLESALE_BRANDS.has(String(product.brand_slug || "").trim().toLowerCase()) &&
+          scoreWholesaleProduct(
+            product,
+            product.image_url ? [{ url: product.image_url }] : [],
+            []
+          ).score >= 4
+        )
+        .map(normalizeWholesaleCatalogProduct)
+    : [];
   return {
     generated_at: manifest.generated_at || null,
     source_db: manifest.source_db || null,

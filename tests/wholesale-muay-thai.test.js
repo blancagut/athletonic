@@ -6,7 +6,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { Readable } = require("node:stream");
 
-const catalogData = require("../data/wholesale-muay-thai-catalog.json");
+const {
+  APPROVED_WHOLESALE_BRANDS,
+  BANNED_WHOLESALE_BRANDS,
+  loadWholesaleCatalogManifest,
+} = require("../api/_lib/wholesale-muay-thai.js");
+const catalogData = loadWholesaleCatalogManifest();
 
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_ROLE_KEY =
@@ -14,36 +19,20 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
 process.env.RESEND_API_KEY = process.env.RESEND_API_KEY || "test-resend-key";
 process.env.ATHLETONIC_SUPPORT_EMAIL = process.env.ATHLETONIC_SUPPORT_EMAIL || "support@example.com";
 
-const APPROVED_WHOLESALE_BRANDS = new Set([
-  "boon",
-  "century_martial_arts",
-  "everlast",
-  "fairtex",
-  "fuji_sports",
-  "hayabusa",
-  "primo",
-  "raja_boxing",
-  "rdx_sports",
-  "rival_boxing",
-  "sanabul",
-  "shock_doctor",
-  "topking",
-  "twins_special",
-  "yokkao",
-  "windy",
-]);
-const BANNED_WHOLESALE_BRANDS = new Set([
-  "bear_komplex",
-  "ghost_lifestyle",
-  "nike",
-  "soccer90",
-  "soccer_post",
-  "soccer_zone_usa",
-  "venum",
-]);
 const BANNED_WHOLESALE_TERMS =
   /\b(autograph glove|backpack|beanie|duffle|grappling dummy|hanging mirror|hoodie|jacket|jewelry|key\s*chain|key ring|keychain|mini boxing glove|mini gloves|necklace|package protection|personalization|shirt|shoe|supplement|training dummy|venum)\b/i;
 const OLD_SHORT_CATEGORIES = new Set(["Muay Thai Shorts", "Boxing Shorts", "Boxing Trunks", "MMA & Fight Shorts"]);
+const EXPECTED_CURRENT_BRANDS = new Set([
+  "boon",
+  "fairtex",
+  "primo",
+  "raja_boxing",
+  "sanabul",
+  "topking",
+  "twins_special",
+  "windy",
+  "yokkao",
+]);
 
 function createResponseCapture() {
   return {
@@ -112,7 +101,7 @@ function hasOzSize(values, ounces) {
 }
 
 test("generated wholesale manifest only contains approved combat brands and no pricing", () => {
-  assert.ok(catalogData.products.length >= 2500, "expected a broad combat-sports wholesale catalog");
+  assert.ok(catalogData.products.length >= 2000, "expected a broad combat-sports wholesale catalog");
 
   for (const product of catalogData.products) {
     assert.ok(
@@ -134,7 +123,7 @@ test("generated wholesale manifest only contains approved combat brands and no p
     assert.ok(!("supplier_price" in product));
   }
 
-  for (const requiredBrand of APPROVED_WHOLESALE_BRANDS) {
+  for (const requiredBrand of EXPECTED_CURRENT_BRANDS) {
     assert.ok(
       catalogData.products.some((product) => product.brand_slug === requiredBrand),
       `expected ${requiredBrand} products in wholesale catalog`

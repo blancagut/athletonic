@@ -27,12 +27,25 @@ function getSalesEmail() {
 function buildCheckoutCart(pricing) {
   return pricing.items.map((item) => ({
     id: item.product_id,
+    product_id: item.product_id,
+    variant_id: item.variant_id || null,
+    sku: item.sku || null,
     brand: item.brand,
     name: item.name,
     variant: item.variant || null,
+    selected_options: item.product_snapshot?.selected_options || {},
+    url: item.product_snapshot?.url || null,
+    image_url: item.image_url || item.product_snapshot?.image_url || null,
     price: item.unit_amount_cents / 100,
     public_price: item.public_unit_amount_cents / 100,
     regular_price: item.regular_unit_amount_cents / 100,
+    unit_amount_cents: item.unit_amount_cents,
+    public_price_cents: item.public_unit_amount_cents,
+    regular_price_cents: item.regular_unit_amount_cents,
+    discount: pricing.lineDiscounts.find((line) =>
+      line.product_id === item.product_id &&
+      (line.variant_id || null) === (item.variant_id || null)
+    ) || null,
     section_id: item.section_id || null,
     currency: pricing.currency,
     quantity: item.quantity,
@@ -40,19 +53,36 @@ function buildCheckoutCart(pricing) {
 }
 
 function buildOrderItems(pricing) {
-  return pricing.items.map((item) => ({
-    product_id: item.product_id,
-    sku: item.sku || null,
-    brand: item.brand,
-    name: item.name,
-    variant: item.variant || null,
-    image_url: item.image_url || null,
-    quantity: item.quantity,
-    unit_amount_cents: item.unit_amount_cents,
-    line_subtotal_cents: item.quantity * item.unit_amount_cents,
-    currency: pricing.currency,
-    product_snapshot: item.product_snapshot || {},
-  }));
+  return pricing.items.map((item) => {
+    const discount = pricing.lineDiscounts.find((line) =>
+      line.product_id === item.product_id &&
+      (line.variant_id || null) === (item.variant_id || null)
+    ) || null;
+    return {
+      product_id: item.product_id,
+      sku: item.sku || null,
+      brand: item.brand,
+      name: item.name,
+      variant: item.variant || null,
+      image_url: item.image_url || null,
+      quantity: item.quantity,
+      unit_amount_cents: item.unit_amount_cents,
+      line_subtotal_cents: item.quantity * item.unit_amount_cents,
+      currency: pricing.currency,
+      product_snapshot: {
+        ...(item.product_snapshot || {}),
+        product_id: item.product_id,
+        variant_id: item.variant_id || null,
+        sku: item.sku || null,
+        selected_options: item.product_snapshot?.selected_options || {},
+        unit_amount_cents: item.unit_amount_cents,
+        public_unit_amount_cents: item.public_unit_amount_cents,
+        regular_unit_amount_cents: item.regular_unit_amount_cents,
+        discount,
+        currency: pricing.currency,
+      },
+    };
+  });
 }
 
 function buildTransferOrder({ createdOrder, customerEmail, pricing }) {
@@ -199,7 +229,7 @@ module.exports = async function handler(req, res) {
       accessCode: body.access_code,
       clientIp,
       authUserId: authedUser ? authedUser.id : null,
-      allowManualOrder: true,
+      allowManualOrder: false,
     });
 
     const checkoutCart = buildCheckoutCart(pricing);
@@ -287,3 +317,6 @@ module.exports = async function handler(req, res) {
     handleError(res, error);
   }
 };
+
+module.exports.buildCheckoutCart = buildCheckoutCart;
+module.exports.buildOrderItems = buildOrderItems;

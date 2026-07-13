@@ -51,6 +51,7 @@ export const ATHLETONIC_SOURCE_OF_TRUTH = {
 
   featuredBrandSlugs: [
     "optimum_nutrition",
+    "muscletech",
     "ghost_lifestyle",
     "gorilla_mind",
     "raw_nutrition",

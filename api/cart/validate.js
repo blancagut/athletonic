@@ -20,10 +20,10 @@ module.exports = async function handler(req, res) {
     const cart = Array.isArray(body.cart) ? body.cart : [];
     const validation = hasSupabaseEnv()
       ? await evaluateCartWithOverrides(cart, {
-          allowManualOrder: true,
+          allowManualOrder: false,
           supabase: getSupabaseAdmin(),
         })
-      : evaluateCart(cart, { allowManualOrder: true });
+      : evaluateCart(cart, { allowManualOrder: false });
 
     json(res, 200, {
       valid: validation.valid,

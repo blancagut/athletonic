@@ -14,19 +14,23 @@ const assert = require("node:assert/strict");
 // (same resolved path), so this mutation is visible to it. Done at module top
 // level, which runs before any test registers. Must mirror catalog.js: it loads
 // the authoritative checkout catalog first, curated catalog as fallback.
-let catalogData;
-try {
-  catalogData = require("../data/checkout-catalog.json");
-} catch (error) {
-  catalogData = require("../data/athletonic-catalog.json");
-}
+const catalogData = require("../data/final/catalog.published.json");
 
 const SYN_UNPURCHASABLE = "__test_unpurchasable__";
 const SYN_UNAVAILABLE = "__test_unavailable__";
 const SYN_FLAGGED_UNAVAILABLE_WITH_PRICE = "__test_flagged_unavailable_with_price__";
 const SYN_VARIANT = "__test_variant_required__";
 const SYN_MANUAL_VARIANT = "__test_manual_order_variant__";
+const SYN_SIMPLE = "__test_simple_product__";
 
+catalogData.products.push({
+  id: SYN_SIMPLE,
+  brand: "Test",
+  name: "Synthetic Simple Product",
+  price_cents: 1799,
+  currency: "USD",
+  available: true,
+});
 catalogData.products.push({
   id: SYN_UNPURCHASABLE,
   brand: "Test",
@@ -213,12 +217,11 @@ test("an unavailable product is rejected", () => {
   expectReject([{ productId: SYN_UNAVAILABLE, quantity: 1 }], "product_unavailable");
 });
 
-test("a priced product validates even when an old availability flag is false", () => {
-  const result = validateCart([
-    { productId: SYN_FLAGGED_UNAVAILABLE_WITH_PRICE, quantity: 1 },
-  ]);
-  assert.equal(result.items.length, 1);
-  assert.equal(result.items[0].unit_amount_cents, 1234);
+test("an explicitly unavailable priced product remains unavailable", () => {
+  expectReject(
+    [{ productId: SYN_FLAGGED_UNAVAILABLE_WITH_PRICE, quantity: 1 }],
+    "product_unavailable"
+  );
 });
 
 test("a variant-required product with no chosen option is rejected", () => {
@@ -229,15 +232,11 @@ test("a variant-required product with no chosen option is rejected", () => {
   );
 });
 
-test("a variant-required product with a chosen option validates and carries the label", () => {
-  const result = validateCart([
-    { productId: SYN_VARIANT, quantity: 1, variant: "Cookies N Cream" },
-  ]);
-  assert.equal(result.items.length, 1);
-  assert.equal(result.items[0].variant, "Cookies N Cream");
-  // Price is the flat catalog price regardless of the chosen option.
-  assert.equal(result.items[0].unit_amount_cents, 4999);
-  assert.equal(result.items[0].product_snapshot.variant_title, "Cookies N Cream");
+test("free-form option labels cannot stand in for a canonical variant", () => {
+  expectReject(
+    [{ productId: SYN_VARIANT, quantity: 1, variant: "Cookies N Cream" }],
+    "variant_required"
+  );
 });
 
 test("manual order mode accepts a stale selected variant without changing strict checkout validation", () => {
@@ -271,14 +270,10 @@ test("manual order mode accepts a stale selected variant without changing strict
   assert.equal(result.subtotalCents, 5000);
 });
 
-test("distinct chosen options of the same product stay separate lines", () => {
-  const result = validateCart([
-    { productId: SYN_VARIANT, quantity: 1, variant: "Vanilla" },
-    { productId: SYN_VARIANT, quantity: 1, variant: "Chocolate" },
-  ]);
-  assert.equal(result.items.length, 2);
-  const labels = result.items.map((i) => i.variant).sort();
-  assert.deepEqual(labels, ["Chocolate", "Vanilla"]);
+test("a product with no variants and no variant requirement is accepted", () => {
+  const result = validateCart([{ productId: SYN_SIMPLE, quantity: 1 }]);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].unit_amount_cents, 1799);
 });
 
 test("evaluateCart returns structured line validation and partial subtotal", () => {

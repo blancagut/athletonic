@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import {
   existsSync,
   readFileSync,
@@ -7,6 +8,8 @@ import {
   readdirSync,
   rmSync,
 } from "node:fs";
+
+const cjsRequire = createRequire(import.meta.url);
 import { ATHLETONIC_SOURCE_OF_TRUTH } from "../src/source-of-truth/athletonic.mjs";
 import {
   esPathFor,
@@ -40,6 +43,25 @@ const excludedBrands = [
   "fifa_store",
   "azteca_soccer",
   "football_town",
+  // Twins Special retail now comes exclusively from the official wholesale
+  // catalog records (superexportshop fetch) — legacy twins-special.com db rows
+  // are retired so retail always mirrors the wholesale catalog.
+  "twins_special",
+  // Owner-pruned brands (2026-07-07 commit bee94b30e7 removed them from the
+  // published data files only; excluded here so regeneration never resurrects
+  // them from products.db).
+  "bear_komplex",
+  "codeage",
+  "everlast",
+  "first_phorm",
+  "five_percent_nutrition",
+  "goli",
+  "hayabusa",
+  "inno_supps",
+  "jshealth_vitamins",
+  "maryruth_organics",
+  "rival_boxing",
+  "true_nutrition",
 ];
 
 const excludedProductIds = new Set([
@@ -149,6 +171,12 @@ function isTwinsSpecialBrand(value) {
 }
 
 function twinsSpecialPricingRule(productLike) {
+  // Retired 2026-07-12: Twins Special pricing is now authoritative in
+  // data/wholesale-muay-thai-catalog.json (owner-set per product). Retail
+  // records mirror those prices exactly, so the legacy name-pattern price
+  // table must never override them.
+  return null;
+  // eslint-disable-next-line no-unreachable
   const brand = productLike?.brand_slug || productLike?.brand;
   if (!isTwinsSpecialBrand(brand)) return null;
 
@@ -1892,7 +1920,7 @@ function priceToCents(value) {
 
 function storefrontAvailability(value, priceCents) {
   const explicit = parseAvailabilityFlag(value);
-  if (explicit === true) return priceCents > 0;
+  if (explicit === false) return false;
   return priceCents > 0;
 }
 
@@ -1917,12 +1945,48 @@ function selectedOptionsFromEntries(entries = []) {
   }, {});
 }
 
+function variableVariantOptionIndexes(options = []) {
+  return options
+    .map((option, index) => ({ option, index }))
+    .filter(({ option }) => Array.isArray(option?.values) && option.values.length > 1)
+    .map(({ index }) => index);
+}
+
+function removeFixedVariantOptions(variant, variableIndexes = []) {
+  if (!variant || !variableIndexes.length) return variant;
+  const optionValues = variableIndexes
+    .map((index) => variant.optionValues[index])
+    .filter(Boolean);
+  const optionEntries = variableIndexes
+    .map((index) => variant.option_values[index])
+    .filter(Boolean)
+    .map((entry, index) => ({ ...entry, position: index + 1 }));
+  if (!optionValues.length) return variant;
+  const rawTitle = optionValues.join(" / ");
+  const title = /^\d+$/.test(rawTitle) && optionEntries.length === 1
+    ? `${rawTitle} ${optionEntries[0].name}`
+    : rawTitle;
+  return {
+    ...variant,
+    key: title,
+    title,
+    optionValues,
+    option_values: optionEntries,
+    selected_options: selectedOptionsFromEntries(optionEntries),
+  };
+}
+
 function variantValueTokenGroup(value) {
   const words = String(value == null ? "" : value).toLowerCase().match(/[a-z0-9]+/g) || [];
   return {
     compact: words.join(""),
     words: words.filter((word) => word.length >= 3),
     stems: words.filter((word) => word.length >= 5).map((word) => word.slice(0, 5)),
+    abbreviations: [
+      ...words.filter((word) => word.length >= 5).map((word) => word.slice(0, 3)),
+      words.filter((word) => word.length >= 3).map((word) => word[0]).join(""),
+      words.slice(-2).filter((word) => word.length >= 3).map((word) => word[0]).join(""),
+    ].filter((token) => token.length >= 2),
   };
 }
 
@@ -1935,21 +1999,32 @@ function pickGalleryImageForOptionValues(galleryImages = [], values = []) {
   for (const image of galleryImages) {
     const blob = String(image?.t || "");
     if (!blob) continue;
-    let score = 0;
+    let optionScore = 0;
+    let sizeScore = 0;
     for (const group of groups) {
       // Size-like values ("2 lb.", "30 servings") are weak signals; flavor-
       // like values dominate so "French Vanilla Cream" can never lose to
       // "cookies-cream" via a shared word + matching size.
-      const full = /\d/.test(group.compact) ? 1 : 4;
+      const isSize = /\d/.test(group.compact);
+      const full = isSize ? 1 : 4;
+      let groupScore = 0;
       if (group.compact && blob.includes(group.compact)) {
-        score += full;
-        continue;
+        groupScore = full;
+      } else {
+        const pool = group.words.length ? group.words : group.stems;
+        const matchedWeight = pool.reduce(
+          (sum, word, index) => sum + (blob.includes(word) ? 1 / (index + 1) : 0),
+          0
+        );
+        if (matchedWeight > 0) groupScore = full * 0.75 * matchedWeight;
+        else if (!isSize && group.abbreviations.some((token) => blob.includes(token))) {
+          groupScore = 1;
+        }
       }
-      const pool = group.words.length ? group.words : group.stems;
-      if (!pool.length) continue;
-      const matched = pool.filter((word) => blob.includes(word)).length;
-      if (matched > 0) score += (full * 0.75 * matched) / pool.length;
+      if (isSize) sizeScore += groupScore;
+      else optionScore += groupScore;
     }
+    const score = optionScore * 100 + sizeScore;
     if (score > bestScore) {
       bestScore = score;
       best = image?.src || null;
@@ -1960,6 +2035,34 @@ function pickGalleryImageForOptionValues(galleryImages = [], values = []) {
   const hasNonSize = groups.some((group) => !/\d/.test(group.compact));
   const threshold = hasNonSize ? 1 : 0.5;
   return bestScore >= threshold ? best : null;
+}
+
+const KNOWN_VARIANT_IMAGE_OVERRIDES = new Map([
+  [
+    "174::4 lb. / French Vanilla Bean",
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/NitroTech-Ripped-4lb-van.jpg",
+  ],
+  [
+    "196::Citrus Punch / 3 lb.",
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/celltech-citrus-3lb_aa616c64-0d61-4104-a07a-e8b6cc84ad27.jpg",
+  ],
+  [
+    "200::Double Rich Chocolate / 2 lb.",
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/mt-nitro-tech-100-whey-gold-chocolate-2lb.png",
+  ],
+  [
+    "200::Chocolate Peanut Butter / 2 lb.",
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-nitrotech-whey-gold-pb-2lb_296a931b-f6dc-42b3-99ac-ed8aefb0400d.png",
+  ],
+  [
+    "200::Chocolate Peanut Butter / 5 lb.",
+    "https://cdn.shopify.com/s/files/1/1214/7132/files/muscletech-nitrotech-whey-gold-pb-5lb_7fd4821c-139e-45a4-9619-0310705724a4.png",
+  ],
+]);
+
+function applyKnownVariantImage(productId, variant) {
+  const imageUrl = KNOWN_VARIANT_IMAGE_OVERRIDES.get(`${productId}::${variant?.key || ""}`);
+  return imageUrl ? { ...variant, image_url: imageUrl } : variant;
 }
 
 function normalizedVariantRecord(row, optionNames = [], galleryImageMeta = []) {
@@ -1973,7 +2076,10 @@ function normalizedVariantRecord(row, optionNames = [], galleryImageMeta = []) {
   // (e.g. a single "Default" variant) shows nothing rather than an ugly
   // "TW49-BOXING-GLOVES-…" string in the cart/checkout. `key` keeps the id
   // fallback so the variant stays identifiable and is never filtered out.
-  const label = variantLabelFromRow(row);
+  const rawLabel = variantLabelFromRow(row);
+  const label = /^\d+$/.test(rawLabel) && optionEntries.length === 1
+    ? `${rawLabel} ${optionEntries[0].name}`
+    : rawLabel;
   const variantId = String(row?.variant_id || "").trim();
   const key = label || variantId;
   if (!key || priceCents <= 0) return null;
@@ -2005,11 +2111,26 @@ function normalizedCatalogProductRecord(product, fullRow, imageList = [], varian
     options
   );
   const optionNames = normalizedPdpOptions.map((option) => String(option?.name || "").trim()).filter(Boolean);
+  const variableOptionIndexes = variableVariantOptionIndexes(normalizedPdpOptions);
   const images = pdpGalleryImages(product, imageList);
   const galleryImageMeta = pdpGalleryImageMeta(images, imageList);
-  const variants = variantRows
+  let variants = variantRows
     .map((variant) => normalizedVariantRecord(variant, optionNames, galleryImageMeta))
     .filter(Boolean);
+  // A canonical variant always needs a stable shopper-facing snapshot. Source
+  // feeds frequently omit per-variant media and use "Default" as the only
+  // title; use the product snapshot in those cases without changing identity,
+  // options, availability, or price.
+  variants = variants.map((variant) => {
+    const normalized = removeFixedVariantOptions(variant, variableOptionIndexes);
+    return applyKnownVariantImage(product.id, {
+      ...normalized,
+      title:
+        normalized.title ||
+        (variants.length === 1 ? String(product.displayName ?? product.name ?? "").trim() : ""),
+      image_url: normalized.image_url || images[0] || product.image || null,
+    });
+  });
   const availableVariants = variants.filter((variant) => variant.available);
   const pricedVariants = variants.filter((variant) => variant.price_cents > 0);
   const defaultVariant = availableVariants[0] || pricedVariants[0] || variants[0] || null;
@@ -2018,7 +2139,9 @@ function normalizedCatalogProductRecord(product, fullRow, imageList = [], varian
     product.deal?.original_price ?? fullRow?.compare_at_price ?? 0
   );
   const productSourceAvailable = parseAvailabilityFlag(fullRow?.available);
-  const available = availableVariants.length > 0 || storefrontAvailability(fullRow?.available, basePriceCents);
+  const available = variants.length > 0
+    ? availableVariants.length > 0
+    : storefrontAvailability(fullRow?.available, basePriceCents);
   const variantSelectionRequired =
     Boolean(product.purchaseMeta?.requiresVariantSelection) ||
     Boolean(standardGloveSizeProfile(product)) ||
@@ -2791,14 +2914,32 @@ function officialCatalogPrice(product, fallbackPrice) {
   return fallbackPrice;
 }
 
+function loadWholesaleManifestProducts() {
+  try {
+    const { loadWholesaleCatalogManifest } = cjsRequire("../api/_lib/wholesale-muay-thai.js");
+    const manifest = loadWholesaleCatalogManifest();
+    return Array.isArray(manifest?.products) ? manifest.products : [];
+  } catch (error) {
+    console.warn("wholesale manifest unavailable for retail price sync:", error?.message || error);
+    return [];
+  }
+}
+
 function loadOfficialCatalogSearchRecords() {
   const sources = [
     { brandSlug: "boon", file: new URL("../data/boon-products.json", import.meta.url) },
     { brandSlug: "topking", file: new URL("../data/topking-products.json", import.meta.url) },
     { brandSlug: "yokkao", file: new URL("../data/yokkao-products.json", import.meta.url) },
     { brandSlug: "primo", file: new URL("../data/primo-products.json", import.meta.url) },
-    { brandSlug: "twins_special", file: new URL("../data/twins-special-shinguards.json", import.meta.url) },
   ];
+  // Retail prices must mirror the wholesale catalog (owner-set, includes the
+  // Top King glove overrides applied at manifest load).
+  const wholesaleManifestProducts = loadWholesaleManifestProducts();
+  const wholesaleRetailCentsById = new Map(
+    wholesaleManifestProducts
+      .filter((p) => Number.isInteger(p?.retail_price_cents) && p.retail_price_cents > 0)
+      .map((p) => [String(p.id), p.retail_price_cents])
+  );
   const records = [];
   for (const source of sources) {
     if (!existsSync(source.file)) continue;
@@ -2819,6 +2960,9 @@ function loadOfficialCatalogSearchRecords() {
       const idSeed = product?.sku || product?.product_name || url;
       const id = `official-${source.brandSlug}-${slugifyIndexToken(idSeed)}`;
       const internalUrl = `/product/${id}.html`;
+      const wholesaleCents = wholesaleRetailCentsById.get(id);
+      const priceCents =
+        Number.isInteger(wholesaleCents) && wholesaleCents > 0 ? wholesaleCents : Math.round(price * 100);
       const draftRecord = {
         available_sizes: Array.isArray(product?.available_sizes) ? product.available_sizes : [],
         available_colors: Array.isArray(product?.available_colors) ? product.available_colors : [],
@@ -2826,7 +2970,7 @@ function loadOfficialCatalogSearchRecords() {
         id,
         image,
         images: Array.isArray(product?.images) ? product.images.filter(Boolean) : [],
-        price_cents: Math.round(price * 100),
+        price_cents: priceCents,
         sku: product?.sku || null,
       };
       const variantCount = officialCatalogVariantRecords(draftRecord).length;
@@ -2849,7 +2993,7 @@ function loadOfficialCatalogSearchRecords() {
         image,
         image_width: 640,
         image_height: 640,
-        price_cents: Math.round(price * 100),
+        price_cents: priceCents,
         search: [name, brandLabel, sectionTitleForCatalogId(category), category, product?.category]
           .filter(Boolean)
           .join(" ")
@@ -2859,6 +3003,65 @@ function loadOfficialCatalogSearchRecords() {
         requires_variant_selection: variantCount > 1,
       }));
     }
+  }
+  // Twins Special retail records come straight from the wholesale catalog
+  // manifest (superexportshop fetch + owner price edits) so both storefronts
+  // always sell the exact same products at the exact same prices.
+  for (const product of wholesaleManifestProducts) {
+    if (String(product?.brand_slug || "") !== "twins_special") continue;
+    const id = String(product?.id || "").trim();
+    const name = String(product?.name || "").trim();
+    const image = String(product?.image_url || "").trim();
+    const priceCents = Number(product?.retail_price_cents || 0);
+    if (!id || !name || !image || !Number.isInteger(priceCents) || priceCents <= 0) continue;
+    if (product?.available === false) continue;
+    const category = categoryForOfficialCatalogProduct({
+      product_name: name,
+      category: product?.category_label,
+      brand: "Twins Special",
+    });
+    const sizes = Array.isArray(product?.sizes) ? product.sizes.filter(Boolean) : [];
+    const colors = Array.isArray(product?.colors) ? product.colors.filter(Boolean) : [];
+    const others = Array.isArray(product?.other_options) ? product.other_options.filter(Boolean) : [];
+    const draftRecord = {
+      available_sizes: sizes,
+      available_colors: colors,
+      available_variants: others,
+      id,
+      image,
+      images: [image],
+      price_cents: priceCents,
+      sku: null,
+    };
+    const variantCount = officialCatalogVariantRecords(draftRecord).length;
+    records.push({
+      id,
+      name,
+      brand: String(product?.brand || "Twins Special").trim() || "Twins Special",
+      brand_slug: "twins_special",
+      sku: null,
+      category_text: product?.category_label || null,
+      short_description: null,
+      full_description: null,
+      available_sizes: sizes,
+      available_colors: colors,
+      available_variants: others,
+      images: [image],
+      section_id: category,
+      url: `/product/${id}.html`,
+      external_url: null,
+      image,
+      image_width: Number(product?.image_width || 0) || 640,
+      image_height: Number(product?.image_height || 0) || 640,
+      price_cents: priceCents,
+      search: [name, "Twins Special", sectionTitleForCatalogId(category), category, product?.category_label]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase(),
+      has_pdp: true,
+      external_only: false,
+      requires_variant_selection: variantCount > 1,
+    });
   }
   return records;
 }
@@ -3550,7 +3753,7 @@ function renderDrawers() {
           <strong data-cart-subtotal>$0.00</strong>
         </div>
         <button type="submit" data-checkout-submit>Place order</button>
-        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
+        <p class="form-note checkout-international-notice">International order notice: This is not a pricing error. Shipping, customs duties, and local taxes vary by destination, so the amount shown is the merchandise subtotal only. Submit your order request and an Athletonic sales agent will contact you with the confirmed final total and payment instructions before you pay.</p>
       </form>
     </aside>`;
 }
@@ -3577,6 +3780,9 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
     : "";
 
   const images = pdpGalleryImages(curated, imageList);
+  for (const [key, imageUrl] of KNOWN_VARIANT_IMAGE_OVERRIDES) {
+    if (key.startsWith(`${curated.id}::`) && !images.includes(imageUrl)) images.push(imageUrl);
+  }
   const galleryImageMeta = pdpGalleryImageMeta(images, imageList);
   const galleryImageMetaJson = JSON.stringify(galleryImageMeta).replace(/</g, "\\u003c");
 
@@ -3591,11 +3797,31 @@ function productPage(curated, fullRow, imageList, relatedProducts, variantRows =
   const optionNames = normalizedPdpOptions
     .map((option) => String(option?.name || "").trim())
     .filter(Boolean);
-  const variantPricing = variantRows
+  const variableOptionIndexes = variableVariantOptionIndexes(normalizedPdpOptions);
+  let variantPricing = variantRows
     .map((variant) => normalizedVariantRecord(variant, optionNames, galleryImageMeta))
-    .filter((variant) => variant?.key && variant?.price_cents > 0);
+    .map((variant) => removeFixedVariantOptions(variant, variableOptionIndexes))
+    .filter((variant) => variant?.key && variant?.price_cents > 0)
+    .map((variant) => applyKnownVariantImage(curated.id, variant));
+  variantPricing = variantPricing.map((variant) => ({
+    ...variant,
+    title:
+      variant.title ||
+      (variantPricing.length === 1 ? String(name || "").trim() : ""),
+    image_url: variant.image_url || images[0] || curated.image || null,
+  }));
+  if (variantPricing.length === 1) {
+    variantPricing[0] = {
+      ...variantPricing[0],
+      key: String(name || "").trim(),
+      title: String(name || "").trim(),
+      optionValues: [],
+      option_values: [],
+      selected_options: {},
+    };
+  }
   const variantPricingJson = JSON.stringify(variantPricing).replace(/</g, "\\u003c");
-  const variantOptions = normalizedPdpOptions.filter(
+  const variantOptions = (variantPricing.length === 1 ? [] : normalizedPdpOptions).filter(
     (opt) =>
       opt &&
       typeof opt === "object" &&
@@ -4831,12 +5057,12 @@ const boxingGloveProducts = sortMerchFirst(
   catalogHomeProducts.filter(
     (product) =>
       cleanHomeProduct(product) &&
-      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      ["boon", "fairtex", "fuji_sports", "hayabusa", "rival_boxing", "sanabul", "topking", "twins_special", "venum", "windy"].includes(product.brand) &&
       productNameMatchesTerms(product, ["boxing glove", "boxing gloves", "muay thai glove", "bgv", "gloves", "glove"]) &&
       !productMatchesTerms(product, ["kids", "insert", "key chain", "t-shirt", "rashguard"])
   ),
   {
-    brands: ["fairtex", "twins_special", "windy", "hayabusa", "rival_boxing", "everlast", "venum", "sanabul"],
+    brands: ["twins_special", "boon", "topking", "fairtex", "windy", "hayabusa", "rival_boxing", "venum", "sanabul"],
     terms: ["bgv", "boxing gloves", "muay thai", "glove"],
   }
 );
@@ -4845,7 +5071,7 @@ const bagsMittsPadsProducts = sortDealsFirst(
   officialHomeProducts.filter(
     (product) =>
       cleanHomeProduct(product) &&
-      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "century_martial_arts", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      ["boon", "century_martial_arts", "fairtex", "fuji_sports", "hayabusa", "rival_boxing", "sanabul", "topking", "twins_special", "venum", "windy"].includes(product.brand) &&
       productNameMatchesTerms(product, [
         "heavy bag",
         "punching bag",
@@ -4867,7 +5093,7 @@ const wrapsGuardsFightAccessoriesProducts = sortDealsFirst(
   officialHomeProducts.filter(
     (product) =>
       cleanHomeProduct(product) &&
-      ["hayabusa", "rival_boxing", "everlast", "fairtex", "venum", "sanabul", "fuji_sports", "twins_special", "windy"].includes(product.brand) &&
+      ["boon", "fairtex", "fuji_sports", "hayabusa", "rival_boxing", "sanabul", "topking", "twins_special", "venum", "windy"].includes(product.brand) &&
       productNameMatchesTerms(product, [
         "hand wrap",
         "quick wraps",
@@ -5009,6 +5235,38 @@ const initialHomeShelvesDraft = [
     minUniqueBrands: 5,
   }),
   customShelf({
+    eyebrow: "Athletonic essentials",
+    title: "Featured Combat & Nutrition Brands",
+    description: "Shop current picks from Twins Special, Boon, Top King, Optimum Nutrition, and MuscleTech.",
+    products: sortMerchFirst(
+      catalogHomeProducts.filter(
+        (product) =>
+          cleanHomeProduct(product) &&
+          ["twins_special", "boon", "topking", "optimum_nutrition", "muscletech"].includes(product.brand)
+      ),
+      {
+        brands: ["twins_special", "boon", "topking", "optimum_nutrition", "muscletech"],
+        terms: ["boxing gloves", "muay thai", "whey", "protein", "creatine", "mass gainer"],
+      }
+    ),
+    limit: 15,
+    maxPerBrand: 3,
+    maxGlobalBrand: 6,
+    maxPerSection: 9,
+    minUniqueBrands: 5,
+  }),
+  customShelf({
+    eyebrow: "Combat sports",
+    title: "Boxing & Muay Thai Gloves",
+    description: "Boxing gloves and Muay Thai gloves from real fight-gear inventory.",
+    products: boxingGloveProducts,
+    limit: 12,
+    maxPerBrand: 3,
+    maxGlobalBrand: 5,
+    maxPerSection: 12,
+    minUniqueBrands: 3,
+  }),
+  customShelf({
     eyebrow: "Protein",
     title: "Protein Essentials",
     description: "Core whey, isolate, mass gainer, and Gold Standard protein basics.",
@@ -5074,17 +5332,6 @@ const initialHomeShelvesDraft = [
     maxGlobalBrand: 4,
     maxPerSection: 12,
     minUniqueBrands: 5,
-  }),
-  customShelf({
-    eyebrow: "Combat sports",
-    title: "Boxing & Muay Thai Gloves",
-    description: "Boxing gloves and Muay Thai gloves from real fight-gear inventory.",
-    products: boxingGloveProducts,
-    limit: 12,
-    maxPerBrand: 3,
-    maxGlobalBrand: 5,
-    maxPerSection: 12,
-    minUniqueBrands: 3,
   }),
   customShelf({
     eyebrow: "Supplements",
@@ -5328,7 +5575,7 @@ const page = `<!doctype html>
           <strong data-cart-subtotal>$0.00</strong>
         </div>
         <button type="submit" data-checkout-submit>Place order</button>
-        <p class="form-note">Sorry for the extra step: shipping, duties, and local taxes vary by country in Latin America. Place your order and Athletonic will email the final cost and bank transfer instructions before payment.</p>
+        <p class="form-note checkout-international-notice">International order notice: This is not a pricing error. Shipping, customs duties, and local taxes vary by destination, so the amount shown is the merchandise subtotal only. Submit your order request and an Athletonic sales agent will contact you with the confirmed final total and payment instructions before you pay.</p>
       </form>
     </aside>
 
@@ -7622,7 +7869,7 @@ const expectedPdpIds = new Set([
   ...searchIndexRecords.map((record) => String(record.id)),
 ]);
 const stalePdpFiles = readdirSync(pdpDir)
-  .filter((name) => /^\d+\.html$/.test(name))
+  .filter((name) => name.endsWith(".html"))
   .filter((name) => !expectedPdpIds.has(name.replace(/\.html$/, "")));
 for (const name of stalePdpFiles) {
   rmSync(new URL(name, pdpDir));
@@ -7723,11 +7970,91 @@ console.log(
 // lightweight preview catalog; every other active storefront product is appended
 // with full variant/pricing data. Written minified because it is server-only.
 // ---------------------------------------------------------------------------
-const checkoutCatalogRecords = [
+const checkoutCatalogCandidates = [
   ...curatedCatalogRecords,
   ...officialCatalogRecords,
   ...checkoutCatalogExtraRecords,
 ];
+const checkoutIds = new Map();
+for (const product of checkoutCatalogCandidates) {
+  const id = String(product?.id || "").trim();
+  if (!checkoutIds.has(id)) checkoutIds.set(id, []);
+  checkoutIds.get(id).push(product);
+}
+const duplicateCheckoutIds = new Set(
+  [...checkoutIds].filter(([id, products]) => !id || products.length !== 1).map(([id]) => id)
+);
+const checkoutUrls = new Map();
+for (const [id, products] of checkoutIds) {
+  if (duplicateCheckoutIds.has(id)) continue;
+  const canonicalUrl = normalizedIndexUrl(products[0].url);
+  if (!canonicalUrl) continue;
+  if (!checkoutUrls.has(canonicalUrl)) checkoutUrls.set(canonicalUrl, []);
+  checkoutUrls.get(canonicalUrl).push(id);
+}
+const ambiguousUrlIds = new Set(
+  [...checkoutUrls.values()].filter((ids) => ids.length > 1).flat()
+);
+const checkoutCatalogRecords = [...checkoutIds]
+  .filter(([id]) => !duplicateCheckoutIds.has(id) && !ambiguousUrlIds.has(id))
+  .map(([, products]) => products[0]);
+
+const checkoutById = new Map(checkoutCatalogRecords.map((product) => [String(product.id), product]));
+for (const record of searchIndexRecords) {
+  const product = checkoutById.get(String(record.id));
+  const variants = Array.isArray(product?.variants) ? product.variants : [];
+  if (variants.length > 0 && product.default_variant_id) {
+    record.has_variants = true;
+    record.default_variant_id = product.default_variant_id;
+    record.variant_count = variants.length;
+    record.requires_variant_selection = product.requires_variant_selection === true;
+  } else {
+    delete record.has_variants;
+    delete record.default_variant_id;
+    delete record.variant_count;
+    delete record.requires_variant_selection;
+  }
+}
+writeFileSync(
+  new URL("search-index.json", commerceCatalogDir),
+  JSON.stringify({
+    generated_at: new Date().toISOString(),
+    currency: ATHLETONIC_SOURCE_OF_TRUTH.marketplace.currency,
+    count: searchIndexRecords.length,
+    products: searchIndexRecords,
+  })
+);
+
+const finalCatalogUrl = new URL("final/catalog.published.json", commerceCatalogDir);
+const previousFinalCatalog = JSON.parse(readFileSync(finalCatalogUrl, "utf8"));
+const publishedProductsById = new Map(
+  (previousFinalCatalog.products || []).map((product) => [String(product.id), product])
+);
+for (const product of checkoutCatalogRecords) publishedProductsById.set(String(product.id), product);
+writeFileSync(
+  finalCatalogUrl,
+  JSON.stringify({
+    ...previousFinalCatalog,
+    generated_at: new Date().toISOString(),
+    products: [...publishedProductsById.values()],
+  })
+);
+
+const finalSearchUrl = new URL("final/search-index.published.json", commerceCatalogDir);
+const previousFinalSearch = JSON.parse(readFileSync(finalSearchUrl, "utf8"));
+const publishedSearchById = new Map(
+  (previousFinalSearch.products || []).map((product) => [String(product.id), product])
+);
+for (const product of searchIndexRecords) publishedSearchById.set(String(product.id), product);
+writeFileSync(
+  finalSearchUrl,
+  JSON.stringify({
+    ...previousFinalSearch,
+    generated_at: new Date().toISOString(),
+    products: [...publishedSearchById.values()],
+  })
+);
+
 writeFileSync(
   new URL("checkout-catalog.json", commerceCatalogDir),
   JSON.stringify({
@@ -7803,6 +8130,12 @@ const productSitemapPaths = readdirSync(pdpDir)
   .filter((file) => /^[A-Za-z0-9_-]+\.html$/.test(file))
   .sort()
   .map((file) => `/product/${file}`);
+const repositoryRoot = new URL("../", import.meta.url);
+for (const file of readdirSync(repositoryRoot)) {
+  if (/^sitemap-products-\d+\.xml$/.test(file)) {
+    rmSync(new URL(file, repositoryRoot));
+  }
+}
 const productSitemapFiles = [];
 for (let i = 0; i < productSitemapPaths.length; i += PRODUCT_SITEMAP_SHARD_SIZE) {
   const shard = productSitemapPaths.slice(i, i + PRODUCT_SITEMAP_SHARD_SIZE);

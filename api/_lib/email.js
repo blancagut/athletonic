@@ -250,6 +250,31 @@ function bankTransferItemsText(order) {
   );
 }
 
+function bankTransferAmountsText(order) {
+  const amounts = order.amounts || {};
+  const lines = [
+    `Subtotal: ${formatMoney(amounts.subtotal_cents, order.currency)}`,
+  ];
+  if (Number(amounts.discount_cents || 0) > 0) {
+    lines.push(`Discount: -${formatMoney(amounts.discount_cents, order.currency)}`);
+  }
+  lines.push(`Shipping: ${formatMoney(amounts.shipping_cents, order.currency)}`);
+  if (Number(amounts.tax_cents || 0) > 0) {
+    lines.push(`Tax: ${formatMoney(amounts.tax_cents, order.currency)}`);
+  }
+  lines.push(`Final total: ${formatMoney(amounts.total_cents, order.currency)}`);
+  return lines;
+}
+
+function bankTransferAmountsHtml(order) {
+  return bankTransferAmountsText(order)
+    .map((line) => {
+      const separator = line.indexOf(":");
+      return `<p style="margin:0 0 8px;"><strong>${escapeHtml(line.slice(0, separator))}:</strong>${escapeHtml(line.slice(separator + 1))}</p>`;
+    })
+    .join("");
+}
+
 async function sendBankTransferOrderCustomerEmail({ order, siteUrl, salesEmail }) {
   const confirmationUrl = `${siteUrl}/pages/order-confirmation.html?transfer=1&order_reference=${encodeURIComponent(
     order.order_reference
@@ -278,9 +303,7 @@ async function sendBankTransferOrderCustomerEmail({ order, siteUrl, salesEmail }
         ${bankTransferItemsHtml(order)}
       </table>
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin:0 0 20px;">
-        <p style="margin:0 0 8px;"><strong>Cart subtotal:</strong> ${escapeHtml(
-          formatMoney(order.amounts.total_cents, order.currency)
-        )}</p>
+        ${bankTransferAmountsHtml(order)}
         <p style="margin:0 0 8px;"><strong>Payment method:</strong> Bank transfer to Athletonic after final cost confirmation</p>
         <ul style="margin:10px 0 0;padding-left:20px;color:#475569;">
           ${instructionsHtml}
@@ -302,7 +325,7 @@ async function sendBankTransferOrderCustomerEmail({ order, siteUrl, salesEmail }
   const text = [
     `Athletonic order received: ${order.order_reference}`,
     "",
-    `Cart subtotal: ${formatMoney(order.amounts.total_cents, order.currency)}`,
+    ...bankTransferAmountsText(order),
     "Payment method: Bank transfer to Athletonic after final cost confirmation",
     "",
     "Items:",
@@ -340,7 +363,7 @@ async function sendBankTransferOrderSalesEmail({ order, siteUrl, salesEmail }) {
         <a href="mailto:${escapeHtml(order.customer_email)}" style="color:#0f172a;font-weight:bold;">${escapeHtml(order.customer_email)}</a>.
       </p>
       <p style="margin:0 0 20px;color:#475569;">
-        Cart subtotal ${escapeHtml(formatMoney(order.amounts.total_cents, order.currency))} · ${escapeHtml(order.items.length)} line${order.items.length === 1 ? "" : "s"}
+        Final total ${escapeHtml(formatMoney(order.amounts.total_cents, order.currency))} · ${escapeHtml(order.items.length)} line${order.items.length === 1 ? "" : "s"}
       </p>
       <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
         ${bankTransferItemsHtml(order)}
@@ -363,7 +386,7 @@ async function sendBankTransferOrderSalesEmail({ order, siteUrl, salesEmail }) {
     `New bank transfer order: ${order.order_reference}`,
     "",
     `Customer: ${order.customer_email}`,
-    `Cart subtotal: ${formatMoney(order.amounts.total_cents, order.currency)}`,
+    ...bankTransferAmountsText(order),
     "",
     "Items:",
     ...bankTransferItemsText(order),
@@ -1428,6 +1451,8 @@ async function sendInternationalOrderSalesEmail({ order, bankDetails, siteUrl, r
 }
 
 module.exports = {
+  bankTransferAmountsHtml,
+  bankTransferAmountsText,
   sendNewsletterWelcomeEmail,
   sendOrderConfirmationEmail,
   sendBankTransferOrderCustomerEmail,

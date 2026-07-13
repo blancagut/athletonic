@@ -10,6 +10,13 @@ const SUPPLEMENT_SECTION_IDS = new Set([
   "bars-shakes",
   "sleep",
 ]);
+const COMBAT_SECTION_IDS = new Set([
+  "combat-sports",
+  "muay-thai",
+  "muaythai-mma",
+  "boxing",
+  "martial-arts",
+]);
 
 const PRIVATE_PRICING_RULES_VERSION = "private_pricing_v1";
 const SUPPLEMENT_DISCOUNT_BPS = 5000;
@@ -301,9 +308,10 @@ async function recordPrivatePricingUsage(supabase, grantId) {
 }
 
 function discountBpsForSection(sectionId) {
-  return SUPPLEMENT_SECTION_IDS.has(String(sectionId || "")) ?
-    SUPPLEMENT_DISCOUNT_BPS :
-    DEFAULT_DISCOUNT_BPS;
+  const normalized = String(sectionId || "").trim().toLowerCase();
+  if (SUPPLEMENT_SECTION_IDS.has(normalized)) return SUPPLEMENT_DISCOUNT_BPS;
+  if (COMBAT_SECTION_IDS.has(normalized)) return DEFAULT_DISCOUNT_BPS;
+  return 0;
 }
 
 function applyPrivatePricing(items, grant) {
@@ -322,6 +330,7 @@ function applyPrivatePricing(items, grant) {
     const discountCents = Math.round((lineSubtotalCents * bps) / 10000);
     return {
       product_id: item.product_id,
+      variant_id: item.variant_id || null,
       section_id: sectionId,
       quantity: item.quantity,
       base_unit_amount_cents: item.unit_amount_cents,
@@ -352,6 +361,7 @@ function applyPrivatePricing(items, grant) {
 
 module.exports = {
   DEFAULT_DISCOUNT_BPS,
+  COMBAT_SECTION_IDS,
   PRIVATE_PRICING_RULES_VERSION,
   SUPPLEMENT_DISCOUNT_BPS,
   accessCodeProvided,

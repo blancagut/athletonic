@@ -126,6 +126,8 @@
   const accountOpenButtons = $$("[data-account-open]");
 
   let cart = loadCart();
+  // Persist normalized legacy arrays immediately as the v2 identity-only shape.
+  saveCart();
   let cartValidation = {
     status: cart.length ? "valid" : "empty",
     valid: cart.length > 0,
@@ -409,10 +411,11 @@
     const productId = normalizeProductId(item.productId || rawId);
     if (!productId) return null;
 
+    const display = item.display && typeof item.display === "object" ? item.display : item;
     const storedVariant =
-      rawId.includes("::") && !item.variant
+      rawId.includes("::") && !display.variant
         ? rawId.slice(rawId.indexOf("::") + 2)
-        : item.variant;
+        : display.variant;
     const variantId = String(item.variantId || item.variant_id || "").trim();
     const selectedOptions = normalizeSelectedOptions(item.selectedOptions || item.selected_options);
     const variant = selectedOptionsLabel(selectedOptions) || String(storedVariant || "").trim();
@@ -420,8 +423,8 @@
       item.quantity == null ? 1 : Math.floor(Number(item.quantity));
     if (!Number.isFinite(quantity) || quantity < 1) return null;
 
-    const price = Number(item.price);
-    const currency = String(item.currency || "USD").toUpperCase();
+    const price = Number(display.price);
+    const currency = String(display.currency || item.currency || "USD").toUpperCase();
     const id = variantId
       ? productId + "::" + variantId
       : variant
@@ -431,12 +434,12 @@
       id,
       productId,
       variantId,
-      sku: String(item.sku || ""),
-      brand: String(item.brand || ""),
-      name: String(item.name || ""),
+      sku: String(display.sku || ""),
+      brand: String(display.brand || ""),
+      name: String(display.name || ""),
       price: Number.isFinite(price) && price > 0 ? price : 0,
       currency: /^[A-Z]{3}$/.test(currency) ? currency : "USD",
-      image: String(item.image || ""),
+      image: String(display.image || ""),
       selectedOptions,
       variant,
       quantity,
@@ -451,8 +454,13 @@
   function loadCart() {
     try {
       const parsed = JSON.parse(storageGet(CART_STORAGE_KEY, "[]"));
-      return Array.isArray(parsed)
-        ? parsed.map(normalizeCartItem).filter(Boolean)
+      const items = Array.isArray(parsed)
+        ? parsed
+        : parsed && parsed.version === 2 && Array.isArray(parsed.items)
+          ? parsed.items
+          : [];
+      return Array.isArray(items)
+        ? items.map(normalizeCartItem).filter(Boolean)
         : [];
     } catch {
       return [];
@@ -460,7 +468,23 @@
   }
 
   function saveCart() {
-    storageSet(CART_STORAGE_KEY, JSON.stringify(cart));
+    const items = cart.map(function (item) {
+      return {
+        productId: normalizeProductId(item.productId || item.id || ""),
+        variantId: String(item.variantId || "").trim(),
+        selectedOptions: normalizeSelectedOptions(item.selectedOptions),
+        quantity: item.quantity,
+        display: {
+          sku: item.sku || "",
+          brand: item.brand || "",
+          name: item.name || "",
+          image: item.image || "",
+          variant: item.variant || "",
+          currency: item.currency || "USD",
+        },
+      };
+    });
+    storageSet(CART_STORAGE_KEY, JSON.stringify({ version: 2, items: items }));
   }
 
   function formatMoney(value, currency) {
@@ -492,17 +516,8 @@
   function buildCartValidationSnapshot() {
     return cart.map((item) => ({
       productId: normalizeProductId(item.productId || item.id || ""),
-      brand: item.brand || "",
-      name: item.name || "",
-      price: Number(item.price || 0),
-      currency: item.currency || "USD",
-      image: item.image || "",
-      sku: item.sku || "",
       variant_id: String(item.variantId || "").trim(),
-      variantId: String(item.variantId || "").trim(),
       selected_options: item.selectedOptions || {},
-      selectedOptions: item.selectedOptions || {},
-      variant: item.variant || "",
       quantity: item.quantity,
     }));
   }
@@ -1073,13 +1088,13 @@
       submit: "Submit order request",
       pending: "Submitting your order request...",
       note:
-        "International orders require a final review for customs, product availability, packaging, and destination-specific shipping costs. After you submit your order request, an Athletonic sales agent will contact you with the confirmed total, payment instructions, and next steps. Free shipping on orders over US$199 applies to Latin America only and does not apply to the U.S. or Canada.",
+        "INTERNATIONAL ORDER NOTICE: This is not a pricing error. Shipping, customs duties, and local taxes vary by destination, so the amount shown is the merchandise subtotal only. Submit your order request and an Athletonic sales agent will contact you with the confirmed final total and payment instructions before you pay. Free shipping on orders over US$199 applies to Latin America only and does not apply to the U.S. or Canada.",
     },
     es: {
       submit: "Enviar solicitud de pedido",
       pending: "Enviando solicitud de pedido...",
       note:
-        "Los pedidos internacionales requieren una revisión final por aduanas, disponibilidad del producto, embalaje y costos de envío según el destino. Después de enviar tu solicitud de pedido, un agente de ventas de Athletonic se contactará contigo con el total confirmado, instrucciones de pago y próximos pasos. El envío gratis en pedidos mayores a US$199 aplica solo para Latinoamérica y no aplica para Estados Unidos ni Canadá.",
+        "AVISO PARA PEDIDOS INTERNACIONALES: Esto no es un error de precio. El envío, los aranceles de aduana y los impuestos locales varían según el destino, por eso la cantidad mostrada corresponde solo al subtotal de productos. Envía tu solicitud y un agente de Athletonic se comunicará contigo con el total final confirmado y las instrucciones de pago antes de que pagues. El envío gratis en pedidos mayores a US$199 aplica solo para Latinoamérica y no aplica para Estados Unidos ni Canadá.",
     },
   };
 
@@ -1821,15 +1836,6 @@
   }
   function productPdpHref(product) {
     return baseHref() + "product/" + encodeURIComponent(product && product.id) + ".html";
-  }
-  function primaryProductHref(product) {
-    var pdpHref = productPdpHref(product);
-    // Marketplace cards/search results must stay on Athletonic. External URLs
-    // are allowed only for records explicitly marked external-only.
-    if (product && product.external_only === true && product.has_pdp === false && product.url) {
-      return product.url;
-    }
-    return pdpHref;
   }
   function dataRoot() {
     return SCRIPT_ROOT || baseHref();
