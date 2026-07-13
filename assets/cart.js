@@ -686,14 +686,21 @@
       return liveCatalogProductsPromise;
     }
 
-    liveCatalogProductsPromise = fetch(
-      "/api/catalog/products?ids=" + encodeURIComponent(cacheKey)
+    const batches = [];
+    for (let index = 0; index < ids.length; index += 50) {
+      batches.push(ids.slice(index, index + 50));
+    }
+    liveCatalogProductsPromise = Promise.all(
+      batches.map((batch) =>
+        fetch("/api/catalog/products?ids=" + encodeURIComponent(batch.join(",")))
+          .then((response) => {
+            if (!response.ok) throw new Error("Failed to load live catalog products");
+            return response.json();
+          })
+          .then((payload) => (Array.isArray(payload && payload.products) ? payload.products : []))
+      )
     )
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to load live catalog products");
-        return response.json();
-      })
-      .then((payload) => (Array.isArray(payload && payload.products) ? payload.products : []))
+      .then((results) => results.flat())
       .catch(() => []);
     liveCatalogProductsPromise.cacheKey = cacheKey;
     return liveCatalogProductsPromise;
@@ -771,7 +778,7 @@
   }
 
   function refreshVisibleCatalogCards() {
-    const cards = $$(".product-card[data-product-id]");
+    const cards = $$(".product-card[data-product-id]:not([hidden])");
     const ids = cards
       .map((card) => normalizeProductId(card.getAttribute("data-product-id")))
       .filter(Boolean);
@@ -1854,12 +1861,24 @@
   /* ── Catalog load (cached) ── */
   var _catalog = null;
   var _catalogReq = null;
+  function isTemporarilyHiddenCatalogProduct(product) {
+    var brand = String((product && (product.brand_slug || product.brand)) || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+    return brand === "yokkao";
+  }
   function loadCatalog() {
     if (_catalog) return Promise.resolve(_catalog);
     if (_catalogReq) return _catalogReq;
     _catalogReq = fetch(catalogUrl())
       .then(function (r) { return r.json(); })
-      .then(function (d) { _catalog = d.products || []; return _catalog; })
+      .then(function (d) {
+        _catalog = (d.products || []).filter(function (product) {
+          return !isTemporarilyHiddenCatalogProduct(product);
+        });
+        return _catalog;
+      })
       .catch(function () { _catalog = []; return _catalog; });
     return _catalogReq;
   }
@@ -1897,6 +1916,8 @@
         _searchIndex = (indexData.products || []).map(function (product) {
           var richProduct = catalogById.get(normalizeCatalogProductId(product && product.id));
           return richProduct ? Object.assign({}, richProduct, product) : product;
+        }).filter(function (product) {
+          return !isTemporarilyHiddenCatalogProduct(product);
         });
         return _searchIndex;
       })

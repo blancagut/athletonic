@@ -17,6 +17,18 @@ import {
   toSpanishHtml,
   hreflangBlock,
 } from "./lib/i18n-shared.mjs";
+import {
+  isAuthenticFightShorts,
+  isBoxingGlove,
+  isCatalogEligible,
+  isFightClothing,
+  isFocusMitt,
+  isHeavyBag,
+  isNikeApparel,
+  isShinGuard,
+  isThaiPad,
+  normalizedProductText,
+} from "./lib/catalog-classifiers.mjs";
 
 const SUPABASE_PUBLIC_URL = "https://spdvsaozvdcvztinsuex.supabase.co";
 const SUPABASE_PUBLIC_KEY = "sb_publishable_OI_aEjYX0fB4tp7Ui2bk5A_001Jga0T";
@@ -25,6 +37,12 @@ const DB_PATH = ATHLETONIC_SOURCE_OF_TRUTH.sourcePolicy.productDataSource;
 const brandNames = Object.fromEntries(
   ATHLETONIC_SOURCE_OF_TRUTH.brands.map((brand) => [brand.slug, brand.name])
 );
+// Official Top King feeds use `topking`, while the source-of-truth registry may
+// use a spaced/legacy slug. Keep shopper-facing brand labels and searches stable.
+brandNames.topking = "Top King";
+brandNames.twins_special = "Twins Special";
+brandNames.boon = "Boon";
+brandNames.nike = "Nike";
 const allowedBrands = ATHLETONIC_SOURCE_OF_TRUTH.brands.map((brand) => brand.slug);
 const officialBrandDomains = Object.fromEntries(
   ATHLETONIC_SOURCE_OF_TRUTH.brands.map((brand) => [
@@ -1356,7 +1374,7 @@ const SECTION_PAGE_HREFS = {
   recovery: "pages/recovery.html",
   sleep: "pages/sleep.html",
   apparel: "pages/training-apparel.html",
-  shoes: "pages/footwear.html",
+  shoes: "pages/fight-clothing.html",
   accessories: "pages/accessories.html",
   "training-gear": "pages/lifting-gear.html",
 };
@@ -1453,10 +1471,10 @@ function departmentNavHtml(pathPrefix = "./") {
       ? `${pathPrefix}#brands`
       : `${pathPrefix}${BRANDS_PAGE_HREF}`;
   const clothingMenu = `<details class="department-submenu">
-          <summary>Clothing &amp; Shoes</summary>
+          <summary>Clothing</summary>
           <div class="department-submenu-panel">
             <a href="${html(resolveSiteHref("pages/fight-clothing.html", pathPrefix))}">Fight Clothing</a>
-            <a href="${html(resolveSiteHref("pages/footwear.html", pathPrefix))}">Nike &amp; Footwear</a>
+            <a href="${html(resolveSiteHref("pages/fight-clothing.html#nike-apparel", pathPrefix))}">Nike Apparel</a>
             <a href="${html(resolveSiteHref("pages/training-apparel.html", pathPrefix))}">Training Apparel</a>
           </div>
         </details>`;
@@ -2631,6 +2649,8 @@ function resolveSiteHref(href, pathPrefix = "./") {
 
 function renderFooterLinkList(links, pathPrefix = "./") {
   return links
+    .filter((link) => !/pages\/footwear\.html(?:$|[?#])/.test(String(link?.href || "")))
+    .filter((link) => !/yokkao/i.test(`${link?.label || ""} ${link?.href || ""}`))
     .map(
       (link) =>
         `<li><a href="${html(resolveSiteHref(link.href, pathPrefix))}"${
@@ -3549,23 +3569,47 @@ console.log(
   `Generated search index with ${searchIndexRecords.length} products in /data/search-index.json.`
 );
 
+const publishedCatalogSnapshot = readJsonFile(
+  new URL("../data/final/catalog.published.json", import.meta.url),
+  { products: [] }
+);
+const publishedCatalogRecordById = new Map(
+  (Array.isArray(publishedCatalogSnapshot.products) ? publishedCatalogSnapshot.products : [])
+    .filter(isCatalogEligible)
+    .filter((product) => !isBlockedDecorativeCatalogProduct(product))
+    .map((product) => [String(product.id), product])
+);
+
 function indexRecordToProduct(record) {
+  const canonical = publishedCatalogRecordById.get(String(record.id)) || record;
   const requiresVariantSelection = Boolean(record.requires_variant_selection);
   return {
     id: record.id,
-    brand: record.brand_slug,
-    name: record.name,
-    displayName: record.name,
+    brand: canonical.brand_slug || record.brand_slug,
+    brand_slug: canonical.brand_slug || record.brand_slug,
+    name: canonical.name || record.name,
+    displayName: canonical.name || record.name,
     displayLabel: sectionTitleById[record.section_id] ?? "Athletonic catalog",
-    image: record.image,
-    imageWidth: record.image_width || 640,
-    imageHeight: record.image_height || record.image_width || 640,
-    price: (Number(record.price_cents) || 0) / 100,
+    image: canonical.image || record.image,
+    imageWidth: canonical.image_width || record.image_width || 640,
+    imageHeight: canonical.image_height || record.image_height || record.image_width || 640,
+    price: (Number(canonical.price_cents || record.price_cents) || 0) / 100,
+    price_cents: Number(canonical.price_cents || record.price_cents) || 0,
     currency: "USD",
-    sectionId: record.section_id,
-    sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
-    store_collection: record.section_id,
-    url: record.url || null,
+    sectionId: canonical.section_id || record.section_id,
+    section_id: canonical.section_id || record.section_id,
+    sectionTitle: sectionTitleById[canonical.section_id || record.section_id] ?? "Athletonic catalog",
+    store_collection: canonical.section_id || record.section_id,
+    category: canonical.category || canonical.category_text || null,
+    category_text: canonical.category_text || canonical.category || null,
+    product_type: canonical.product_type || null,
+    search: canonical.search || record.search || "",
+    url: canonical.url || record.url || null,
+    external_url: canonical.external_url || null,
+    available: canonical.available !== false,
+    purchasable: canonical.purchasable !== false,
+    ready_for_sale: canonical.ready_for_sale !== false,
+    publish_status: canonical.publish_status,
     deal: record.deal
       ? {
           discount_percent: record.deal.discount_percent,
@@ -4361,6 +4405,40 @@ ${mobileBottomNav(pathPrefix)}
   `;
 }
 
+function compatibilityProductPage(product) {
+  const brand = brandNames[product.brand] ?? product.brand;
+  const name = product.displayName ?? product.name;
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${html(name)} | Athletonic</title>
+    ${canonicalLink(`/product/${product.id}.html`)}
+    ${assetHeadLinks("../")}
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body class="info-body">
+${renderPdpHeader("../")}
+${renderDrawers()}
+    <main class="pdp-main">
+      <section class="pdp-layout">
+        <div class="pdp-gallery"><div class="pdp-gallery-main"><img src="${html(product.image)}" alt="${html(name)}" width="${html(product.imageWidth || 640)}" height="${html(product.imageHeight || 640)}" /></div></div>
+        <div class="pdp-buybox">
+          <p class="compatibility-brand">${html(brand)}</p>
+          <h1 class="pdp-title">${html(name)}</h1>
+          <p class="pdp-price"><strong>${html(money(product.price, product.currency || "USD"))}</strong></p>
+          <p>This published product remains available in the catalog, but its current variant details need to be refreshed before online purchase.</p>
+          <a class="add-cart-button product-options-button" href="../pages/catalog.html?q=${encodeURIComponent(name)}">View in catalog</a>
+        </div>
+      </section>
+    </main>
+${renderFooter("../")}
+    <script src="../assets/cart.js" defer></script>
+  </body>
+</html>`;
+}
+
 const sectionById = new Map(populatedSections.map((section) => [section.id, section]));
 const productsBySectionId = new Map();
 for (const product of allCuratedProducts) {
@@ -4711,7 +4789,6 @@ const catalogDirectoryGroups = [
       { label: "Recovery devices", href: "pages/recovery.html", description: "Massage, red light, compression, and mobility tools." },
       { label: "Sleep recovery", href: "pages/sleep.html", description: "Sleep gear and nighttime recovery support." },
       { label: "Training apparel", href: "pages/training-apparel.html", description: "Shorts, tees, layers, leggings, and gym wear." },
-      { label: "Footwear", href: "pages/footwear.html", description: "Running, training, trail, and performance footwear." },
       { label: "Accessories", href: "pages/accessories.html", description: "Bottles, bags, grips, belts, straps, and sleeves." },
       { label: "Lifting gear", href: "pages/lifting-gear.html", description: "Training systems, belts, wraps, grips, and fight gear." },
     ],
@@ -4807,12 +4884,19 @@ const newArrivalsShelf = customShelf({
 
 const officialHomeRecords = searchIndexRecords.filter(
   (record) =>
+    record.brand_slug !== "yokkao" &&
     knownOfficialBrandSlugs.has(record.brand_slug) &&
     isOfficialBrandUrlForSlug(record.brand_slug, record.url)
 );
 
 const officialHomeProducts = officialHomeRecords.map(indexRecordToProduct);
-const catalogHomeProducts = searchIndexRecords.map(indexRecordToProduct);
+const fullCatalogRecordsById = new Map(searchIndexRecords.map((record) => [String(record.id), record]));
+for (const product of publishedCatalogRecordById.values()) {
+  fullCatalogRecordsById.set(String(product.id), product);
+}
+const catalogHomeProducts = [...fullCatalogRecordsById.values()]
+  .map(indexRecordToProduct)
+  .filter((product) => product.brand !== "yokkao");
 
 const officialDealProducts = sortDealsFirst(
   officialHomeRecords
@@ -5093,13 +5177,7 @@ const hydrationProducts = sortMerchFirst(
 );
 
 const boxingGloveProducts = sortMerchFirst(
-  catalogHomeProducts.filter(
-    (product) =>
-      cleanHomeProduct(product) &&
-      ["boon", "fairtex", "fuji_sports", "hayabusa", "rival_boxing", "sanabul", "topking", "twins_special", "venum", "windy"].includes(product.brand) &&
-      productNameMatchesTerms(product, ["boxing glove", "boxing gloves", "muay thai glove", "bgv", "gloves", "glove"]) &&
-      !productMatchesTerms(product, ["kids", "insert", "key chain", "t-shirt", "rashguard"])
-  ),
+  catalogHomeProducts.filter(isBoxingGlove),
   {
     brands: ["twins_special", "boon", "topking", "fairtex", "windy", "hayabusa", "rival_boxing", "venum", "sanabul"],
     terms: ["bgv", "boxing gloves", "muay thai", "glove"],
@@ -5291,12 +5369,7 @@ const optimumMuscletechProducts = sortMerchFirst(
 );
 
 const muayThaiClothingProducts = sortMerchFirst(
-  catalogHomeProducts.filter(
-    (product) =>
-      cleanFightProduct(product) &&
-      ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy", "primo"].includes(product.brand) &&
-      productNameMatchesTerms(product, ["muay thai shorts", "boxing shorts", "shorts", "t-shirt", "shirt", "tank"])
-  ),
+  catalogHomeProducts.filter(isFightClothing),
   { brands: ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy", "primo"] }
 );
 
@@ -5316,19 +5389,17 @@ const otherThaiFightProducts = sortMerchFirst(
   catalogHomeProducts.filter(
     (product) =>
       cleanFightProduct(product) &&
-      ["fairtex", "yokkao", "windy", "primo", "raja_boxing", "thaismai"].includes(product.brand)
+      ["fairtex", "windy", "primo", "raja_boxing", "thaismai"].includes(product.brand)
   ),
   { brands: ["fairtex", "yokkao", "windy", "primo", "raja_boxing", "thaismai"] }
 );
 
 const padsMittsProducts = sortMerchFirst(
   catalogHomeProducts.filter(
-    (product) =>
+    (product) => isThaiPad(product) || isFocusMitt(product) || (
       cleanFightProduct(product) &&
-      productNameMatchesTerms(product, [
-        "focus mitt", "punch mitt", "thai pad", "kick pad", "kicking pad",
-        "kick shield", "belly pad", "body protector", "pao",
-      ])
+      /\b(kick shield|belly pad|body protector)\b/.test(normalizedProductText(product))
+    )
   ),
   { brands: ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy", "primo"] }
 );
@@ -5356,40 +5427,104 @@ function productsWithoutBrands(products, brands) {
 }
 
 const coreThaiBrandSlugs = ["twins_special", "topking", "boon"];
-const muayThaiShortProducts = muayThaiClothingProducts.filter((product) =>
-  productNameMatchesTerms(product, ["muay thai shorts", "boxing shorts", "shorts", "skirt"])
-);
-const shinGuardProducts = protectiveGearProducts.filter((product) =>
-  productNameMatchesTerms(product, ["shin guard", "shinguard", "shin pad"])
-);
+const muayThaiShortProducts = catalogHomeProducts.filter(isAuthenticFightShorts);
+const shinGuardProducts = catalogHomeProducts.filter(isShinGuard);
 const otherProtectionProducts = protectiveGearProducts.filter(
   (product) => !shinGuardProducts.includes(product)
 );
-const thaiPadProducts = padsMittsProducts.filter((product) =>
-  productNameMatchesTerms(product, ["thai pad", "kick pad", "kicking pad", "pao"])
-);
-const focusMittProducts = padsMittsProducts.filter((product) =>
-  productNameMatchesTerms(product, ["focus mitt", "punch mitt"])
+const thaiPadProducts = padsMittsProducts.filter(isThaiPad);
+const focusMittProducts = padsMittsProducts.filter(
+  (product) => isFocusMitt(product) && !isThaiPad(product)
 );
 const shieldsAndProtectors = padsMittsProducts.filter((product) =>
   productNameMatchesTerms(product, ["kick shield", "belly pad", "body protector"])
 );
-const heavyBagProducts = gymEquipmentProducts.filter((product) =>
-  productNameMatchesTerms(product, ["heavy bag", "punching bag", "banana bag", "uppercut bag"])
-);
+const heavyBagProducts = catalogHomeProducts.filter(isHeavyBag);
 const wallPadAndMatProducts = gymEquipmentProducts.filter((product) =>
   productNameMatchesTerms(product, ["wall pad", "floor mat", "training mat"])
 );
 const fightTopProducts = muayThaiClothingProducts.filter((product) =>
+  !isAuthenticFightShorts(product) &&
   productNameMatchesTerms(product, ["t-shirt", "shirt", "tank", "tee"])
 );
+const otherFightClothingProducts = muayThaiClothingProducts.filter(
+  (product) => !muayThaiShortProducts.includes(product) && !fightTopProducts.includes(product)
+);
+const morePadsMittsProducts = padsMittsProducts.filter(
+  (product) =>
+    !thaiPadProducts.includes(product) &&
+    !focusMittProducts.includes(product) &&
+    !shieldsAndProtectors.includes(product)
+);
+const moreGymEquipmentProducts = gymEquipmentProducts.filter(
+  (product) => !heavyBagProducts.includes(product) && !wallPadAndMatProducts.includes(product)
+);
+
+const nikeApparelProducts = catalogHomeProducts.filter(isNikeApparel);
+const allTrainingApparelProducts = catalogHomeProducts.filter(
+  (product) =>
+    isCatalogEligible(product) &&
+    product.sectionId === "apparel" &&
+    !/\b(shoes?|sneakers?|boots?|cleats?|slides?|sandals?|poster|key ?chain|mirror|ornament)\b/.test(
+      normalizedProductText(product)
+    )
+);
+const nonFightTrainingApparelProducts = allTrainingApparelProducts.filter(
+  (product) => !isFightClothing(product) && !isNikeApparel(product)
+);
+
+function partitionBrandProducts(products) {
+  const buckets = { gloves: [], shorts: [], pads: [], protection: [], other: [] };
+  for (const product of products) {
+    if (isBoxingGlove(product)) buckets.gloves.push(product);
+    else if (isAuthenticFightShorts(product)) buckets.shorts.push(product);
+    else if (isThaiPad(product) || isFocusMitt(product) || /\b(kick shield|belly pad|body protector)\b/.test(normalizedProductText(product))) buckets.pads.push(product);
+    else if (isShinGuard(product) || /\b(headgear|head guard|mouthguard|groin guard|ankle guard|hand wraps?)\b/.test(normalizedProductText(product))) buckets.protection.push(product);
+    else buckets.other.push(product);
+  }
+  return buckets;
+}
+
+const topKingBuckets = partitionBrandProducts(topKingProducts);
+const boonBuckets = partitionBrandProducts(boonProducts);
+
+const priorityBrandDefinitions = [
+  ["twins_special", "Twins Special", twinsSpecialProducts],
+  ["topking", "Top King", topKingProducts],
+  ["boon", "Boon", boonProducts],
+  ["fairtex", "Fairtex", catalogHomeProducts.filter((product) => product.brand === "fairtex")],
+  ["windy", "Windy", catalogHomeProducts.filter((product) => product.brand === "windy")],
+  ["primo", "Primo", catalogHomeProducts.filter((product) => product.brand === "primo")],
+  ["optimum_nutrition", "Optimum Nutrition", catalogHomeProducts.filter((product) => product.brand === "optimum_nutrition")],
+  ["muscletech", "MuscleTech", catalogHomeProducts.filter((product) => product.brand === "muscletech")],
+  ["nike", "Nike Apparel", nikeApparelProducts],
+].filter(([, , products]) => products.length);
+
+const strictPriorityBrandShelves = priorityBrandDefinitions.map(([slug, title, products]) =>
+  customShelf({
+    anchor: `brand-${slug}`,
+    eyebrow: slug === "nike" ? "Clothing only" : "Priority brand",
+    title,
+    description: slug === "nike" ? "Published Nike apparel only; footwear is excluded." : `All eligible ${title} products in the published catalog.`,
+    products,
+  })
+);
+
+const fullBrandCountMap = buildBrandCountMap(catalogHomeProducts);
+const strictCatalogBrandItems = [...fullBrandCountMap]
+  .filter(([, count]) => count > 0)
+  .map(([slug, count]) => ({
+    label: brandNames[slug] ?? slug.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+    href: `pages/catalog.html?q=${encodeURIComponent(brandNames[slug] ?? slug)}`,
+    description: `${count} published product${count === 1 ? "" : "s"}`,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 
 const priorityFightBrandShelves = [
   { slug: "twins-special", title: "Twins Special", products: twinsSpecialProducts },
   { slug: "top-king", title: "Top King", products: topKingProducts },
   { slug: "boon", title: "Boon", products: boonProducts },
   { slug: "fairtex", title: "Fairtex", products: otherThaiFightProducts.filter((product) => product.brand === "fairtex") },
-  { slug: "yokkao", title: "YOKKAO", products: otherThaiFightProducts.filter((product) => product.brand === "yokkao") },
   { slug: "windy-primo", title: "Windy & Primo", products: productsFromBrands(otherThaiFightProducts, ["windy", "primo"]) },
 ]
   .filter((entry) => entry.products.length)
@@ -5495,7 +5630,7 @@ const initialHomeShelvesDraft = [
   }),
   customShelf({
     eyebrow: "More Thai brands",
-    title: "Fairtex, Yokkao, Windy, Primo & Raja",
+    title: "Fairtex, Windy, Primo & Raja",
     description: "More authentic fight gear after our Twins Special, Top King, and Boon collections.",
     products: otherThaiFightProducts,
     limit: 12,
@@ -5726,8 +5861,27 @@ const fightDiscoveryLinks = [
   { label: "Boxing Gloves", href: "pages/boxing-gloves.html" },
   { label: "Shin Guards", href: "pages/shin-guards.html" },
   { label: "Pads & Mitts", href: "pages/pads-punch-mitts.html" },
-  { label: "Clothing & Shoes", href: "pages/fight-clothing.html" },
+  { label: "Clothing", href: "pages/fight-clothing.html" },
 ];
+
+function brandBucketShelves(brandName, buckets) {
+  return [
+    ["gloves", "Boxing & Muay Thai Gloves", "Fight gloves"],
+    ["shorts", "Authentic Fight Shorts", "Muay Thai, boxing, and fight shorts only"],
+    ["pads", "Pads & Coach Equipment", "Thai pads, focus mitts, and shields"],
+    ["protection", "Protection", "Shin guards, headgear, wraps, and guards"],
+    ["other", "More Training Gear", "Remaining eligible catalog products"],
+  ].map(([key, title, description]) => customShelf({
+    anchor: `${brandName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${key}`,
+    eyebrow: brandName,
+    title,
+    description,
+    products: buckets[key],
+  })).filter((shelf) => shelf.products.length);
+}
+
+const topKingProductSections = brandBucketShelves("Top King", topKingBuckets);
+const boonProductSections = brandBucketShelves("Boon", boonBuckets);
 
 const supplementDiscoveryLinks = [
   { label: "Protein", href: "pages/protein.html" },
@@ -5764,15 +5918,15 @@ const staticPages = [
     summary:
       "Explore the performance, wellness, recovery, apparel, footwear, and training brands represented in the Athletonic catalog.",
     directoryGroups: [
-      { title: "Featured Brands", items: featuredBrandItems },
-      { title: "All Catalog Brands", items: catalogBrandItems, collapsible: true },
+      { title: "Priority Brands", items: priorityBrandDefinitions.map(([slug, label, products]) => ({ id: `brand-button-${slug}`, label, href: `#brand-${slug}`, description: `${products.length} published products` })) },
+      { title: "All Catalog Brands", items: strictCatalogBrandItems, collapsible: true },
     ],
     productFinder: true,
-    discoveryLinks: priorityFightBrandShelves.map((shelf) => ({
+    discoveryLinks: strictPriorityBrandShelves.map((shelf) => ({
       label: shelf.title,
       href: `#${shelf.anchor}`,
     })),
-    productSections: priorityFightBrandShelves,
+    productSections: strictPriorityBrandShelves,
     sections: [
       {
         heading: "Brand Quality",
@@ -5836,8 +5990,8 @@ const staticPages = [
     eyebrow: "Thai Fight Brand",
     summary: "Shop Top King gloves, pads, protection, shorts, and authentic Muay Thai training equipment.",
     productFinder: true,
-    discoveryLinks: fightDiscoveryLinks,
-    productSections: [customShelf({ eyebrow: "Top King", title: "Shop Top King", description: "A dedicated Top King collection with no Boon products mixed in.", products: topKingProducts, limit: 48 })],
+    discoveryLinks: topKingProductSections.map((shelf) => ({ label: shelf.title, href: `#${shelf.anchor}` })),
+    productSections: topKingProductSections,
   },
   {
     slug: "boon",
@@ -5845,8 +5999,8 @@ const staticPages = [
     eyebrow: "Thai Fight Brand",
     summary: "Shop Boon gloves, pads, protection, shorts, and authentic Muay Thai training equipment.",
     productFinder: true,
-    discoveryLinks: fightDiscoveryLinks,
-    productSections: [customShelf({ eyebrow: "Boon", title: "Shop Boon", description: "A dedicated Boon collection with no Top King products mixed in.", products: boonProducts, limit: 48 })],
+    discoveryLinks: boonProductSections.map((shelf) => ({ label: shelf.title, href: `#${shelf.anchor}` })),
+    productSections: boonProductSections,
   },
   {
     slug: "muay-thai-shorts",
@@ -5864,7 +6018,7 @@ const staticPages = [
       customShelf({ anchor: "twins-shorts", eyebrow: "Flagship brand", title: "Twins Special Shorts", description: "Twins Special Muay Thai and boxing shorts.", products: productsFromBrands(muayThaiShortProducts, ["twins_special"]), limit: 12 }),
       customShelf({ anchor: "top-king-shorts", eyebrow: "Thai brand", title: "Top King Shorts", description: "Top King Muay Thai and boxing shorts.", products: productsFromBrands(muayThaiShortProducts, ["topking"]), limit: 12 }),
       customShelf({ anchor: "boon-shorts", eyebrow: "Thai brand", title: "Boon Shorts", description: "Boon Muay Thai and boxing shorts.", products: productsFromBrands(muayThaiShortProducts, ["boon"]), limit: 12 }),
-      customShelf({ anchor: "other-shorts", eyebrow: "More brands", title: "More Fight Shorts", description: "Fight shorts from Fairtex, YOKKAO, Windy, Primo, and other Thai brands.", products: productsWithoutBrands(muayThaiShortProducts, coreThaiBrandSlugs), limit: 12 }),
+      customShelf({ anchor: "other-shorts", eyebrow: "More brands", title: "More Fight Shorts", description: "Fight shorts from Fairtex, Windy, Primo, and other Thai brands.", products: productsWithoutBrands(muayThaiShortProducts, coreThaiBrandSlugs), limit: 12 }),
     ],
   },
   {
@@ -5882,7 +6036,7 @@ const staticPages = [
     productSections: [
       customShelf({ anchor: "twins-shin-guards", eyebrow: "Flagship brand", title: "Twins Special Shin Guards", description: "Twins Special shin protection for sparring and drills.", products: productsFromBrands(shinGuardProducts, ["twins_special"]), limit: 12 }),
       customShelf({ anchor: "top-king-boon-shin-guards", eyebrow: "Thai brands", title: "Top King & Boon Shin Guards", description: "Top King and Boon are grouped only within this shin-guard comparison section.", products: productsFromBrands(shinGuardProducts, ["topking", "boon"]), limit: 12 }),
-      customShelf({ anchor: "other-shin-guards", eyebrow: "More brands", title: "More Shin Guards", description: "Shin guards from Fairtex, YOKKAO, Windy, Primo, and other fight brands.", products: productsWithoutBrands(shinGuardProducts, coreThaiBrandSlugs), limit: 12 }),
+      customShelf({ anchor: "other-shin-guards", eyebrow: "More brands", title: "More Shin Guards", description: "Shin guards from Fairtex, Windy, Primo, and other fight brands.", products: productsWithoutBrands(shinGuardProducts, coreThaiBrandSlugs), limit: 12 }),
       customShelf({ anchor: "more-protection", eyebrow: "Protection", title: "Headgear, Wraps & Guards", description: "Additional training protection organized separately from shin guards.", products: otherProtectionProducts, limit: 12 }),
     ],
   },
@@ -5896,13 +6050,13 @@ const staticPages = [
       { label: "Thai Pads", href: "#thai-pads" },
       { label: "Focus Mitts", href: "#focus-mitts" },
       { label: "Shields & Protectors", href: "#shields-protectors" },
-      { label: "All Coach Gear", href: "#all-coach-gear" },
+      ...(morePadsMittsProducts.length ? [{ label: "All Coach Gear", href: "#all-coach-gear" }] : []),
     ],
     productSections: [
       customShelf({ anchor: "thai-pads", eyebrow: "Coach gear", title: "Thai Pads & Kick Pads", description: "Thai pads and kick pads for Muay Thai training.", products: thaiPadProducts, limit: 12 }),
       customShelf({ anchor: "focus-mitts", eyebrow: "Boxing training", title: "Focus Mitts & Punch Mitts", description: "Compact mitts for accuracy, speed, and combinations.", products: focusMittProducts, limit: 12 }),
       customShelf({ anchor: "shields-protectors", eyebrow: "Power training", title: "Kick Shields & Body Protectors", description: "Larger targets and body protection for power work.", products: shieldsAndProtectors, limit: 12 }),
-      customShelf({ anchor: "all-coach-gear", eyebrow: "More equipment", title: "More Pads & Coaching Gear", description: "Additional pads and coaching equipment from the current catalog.", products: padsMittsProducts, limit: 12 }),
+      customShelf({ anchor: "all-coach-gear", eyebrow: "More equipment", title: "More Pads & Coaching Gear", description: "Additional pads and coaching equipment not shown in the sections above.", products: morePadsMittsProducts, limit: 12 }),
     ],
   },
   {
@@ -5929,29 +6083,33 @@ const staticPages = [
     discoveryLinks: [
       { label: "Heavy Bags", href: "#gym-heavy-bags" },
       { label: "Wall Pads & Mats", href: "#gym-surfaces" },
-      { label: "All Equipment", href: "#all-gym-equipment" },
+      ...(moreGymEquipmentProducts.length ? [{ label: "All Equipment", href: "#all-gym-equipment" }] : []),
     ],
     productSections: [
       customShelf({ anchor: "gym-heavy-bags", eyebrow: "Gym essentials", title: "Heavy Bags", description: "Heavy and punching bags for commercial and home gyms.", products: heavyBagProducts, limit: 12 }),
       customShelf({ anchor: "gym-surfaces", eyebrow: "Gym installation", title: "Wall Pads & Mats", description: "Training surfaces and wall protection for serious gym spaces.", products: wallPadAndMatProducts, limit: 12 }),
-      customShelf({ anchor: "all-gym-equipment", eyebrow: "More equipment", title: "More Fight Gym Equipment", description: "Additional fight-gym products from the current catalog.", products: gymEquipmentProducts, limit: 12 }),
+      customShelf({ anchor: "all-gym-equipment", eyebrow: "More equipment", title: "More Fight Gym Equipment", description: "Additional fight-gym products not shown in the sections above.", products: moreGymEquipmentProducts, limit: 12 }),
     ],
   },
   {
     slug: "fight-clothing",
-    title: "Fight Clothing",
+    title: "Clothing",
     eyebrow: "Muay Thai Apparel",
-    summary: "Shop Muay Thai shorts, boxing shorts, shirts, tanks, and authentic Thai fight-gym clothing.",
+    summary: "Shop published Nike apparel, authentic fight clothing, Muay Thai shorts, shirts, tanks, and training apparel. Footwear is excluded.",
     productFinder: true,
     discoveryLinks: [
+      { label: "Nike", href: "#nike-apparel" },
+      { label: "Fight Clothing", href: "#fight-clothing" },
       { label: "Muay Thai Shorts", href: "#fight-shorts" },
       { label: "Shirts & Tanks", href: "#fight-tops" },
-      { label: "Nike & Footwear", href: "pages/footwear.html" },
-      { label: "Training Apparel", href: "pages/training-apparel.html" },
+      { label: "Training Apparel", href: "#training-apparel" },
     ],
     productSections: [
-      customShelf({ anchor: "fight-shorts", eyebrow: "Fight apparel", title: "Muay Thai & Boxing Shorts", description: "Fight shorts from Twins Special and leading Thai brands.", products: muayThaiShortProducts, limit: 16 }),
-      customShelf({ anchor: "fight-tops", eyebrow: "Training clothing", title: "Fight Shirts & Tanks", description: "T-shirts, training shirts, and tanks from fight brands.", products: fightTopProducts, limit: 16 }),
+      customShelf({ anchor: "nike-apparel", eyebrow: "Sportswear", title: "Nike", description: "Nike apparel classified from canonical brand and apparel metadata; footwear is excluded.", products: nikeApparelProducts }),
+      customShelf({ anchor: "fight-clothing", eyebrow: "Thai brands", title: "Fight Clothing", description: "Authentic fight apparel other than shorts, shirts, and tanks, which have their own sections below.", products: otherFightClothingProducts }),
+      customShelf({ anchor: "fight-shorts", eyebrow: "Fight apparel", title: "Muay Thai Shorts", description: "Strictly classified Muay Thai, boxing, and fight shorts.", products: muayThaiShortProducts }),
+      customShelf({ anchor: "fight-tops", eyebrow: "Training clothing", title: "Shirts & Tanks", description: "T-shirts, training shirts, and tanks from fight brands.", products: fightTopProducts }),
+      customShelf({ anchor: "training-apparel", eyebrow: "Gym clothing", title: "Training Apparel", description: "Published non-footwear training apparel from the wider catalog.", products: nonFightTrainingApparelProducts }),
     ],
   },
   {
@@ -6377,15 +6535,17 @@ const staticPages = [
     eyebrow: "Apparel",
     summary:
       "Shop training apparel, gym wear, tees, shorts, leggings, hoodies, and active layers.",
-    dynamicSearch: true,
-    dynamicCategory: "apparel",
     productFinder: true,
     discoveryLinks: [
       { label: "Fight Clothing", href: "pages/fight-clothing.html" },
-      { label: "Nike & Footwear", href: "pages/footwear.html" },
-      { label: "Training Apparel", href: "pages/training-apparel.html" },
+      { label: "Nike Apparel", href: "pages/fight-clothing.html#nike-apparel" },
+      { label: "All Training Apparel", href: "#all-training-apparel" },
     ],
-    productSections: [shelfFromSection("apparel")],
+    productSections: [
+      customShelf({ anchor: "nike-training-apparel", eyebrow: "Sportswear", title: "Nike Apparel", description: "Nike clothing only; shoes are excluded.", products: nikeApparelProducts }),
+      customShelf({ anchor: "fight-training-apparel", eyebrow: "Fight apparel", title: "Fight Training Apparel", description: "Published clothing from established fight brands.", products: muayThaiClothingProducts }),
+      customShelf({ anchor: "all-training-apparel", eyebrow: "Apparel", title: "More Training Apparel", description: "The remaining published apparel catalog, organized separately from Nike and fight clothing.", products: nonFightTrainingApparelProducts }),
+    ],
     sections: [
       {
         heading: "Shop Notes",
@@ -6398,24 +6558,9 @@ const staticPages = [
     slug: "footwear",
     title: "Footwear",
     eyebrow: "Apparel",
-    summary:
-      "Shop running, training, trail, and performance footwear.",
-    dynamicSearch: true,
-    dynamicCategory: "shoes",
-    productFinder: true,
-    discoveryLinks: [
-      { label: "Nike & Footwear", href: "pages/footwear.html" },
-      { label: "Fight Clothing", href: "pages/fight-clothing.html" },
-      { label: "Training Apparel", href: "pages/training-apparel.html" },
-    ],
-    productSections: [shelfFromSection("shoes")],
-    sections: [
-      {
-        heading: "Shop Notes",
-        body:
-          "Footwear customers should compare fit, intended use, size availability, return condition, and brand-specific sizing.",
-      },
-    ],
+    summary: "Footwear is no longer a standalone Athletonic category. Continue to Clothing for apparel and training wear.",
+    redirectTo: "/pages/fight-clothing.html",
+    links: [{ label: "Continue to Clothing", href: "pages/fight-clothing.html" }],
   },
   {
     slug: "accessories",
@@ -7698,6 +7843,7 @@ function renderDirectoryGroups(groups = [], pathPrefix = "../") {
 function renderProductShelves(shelves = [], pathPrefix = "../") {
   const visibleShelves = shelves.filter((shelf) => shelf && shelf.products?.length);
   if (!visibleShelves.length) return "";
+  const initialPageSize = 24;
   return `
       <div class="listing-sections">
         ${visibleShelves
@@ -7712,11 +7858,17 @@ function renderProductShelves(shelves = [], pathPrefix = "../") {
             </div>
             <p>${html(shelf.description)}</p>
           </div>
-          <div class="product-row">
+          <div class="product-row" data-listing-shelf-grid>
 ${shelf.products
-  .slice(0, shelf.limit ?? shelf.products.length)
-  .map((product) => productCard(product, pathPrefix))
+  .map((product, index) => productCard(product, pathPrefix).replace(
+    '<article class="product-card"',
+    `<article class="product-card" data-listing-index="${index}"${index >= initialPageSize ? " hidden" : ""}`
+  ))
   .join("\n")}
+          </div>
+          <div class="listing-shelf-footer">
+            <p><span data-listing-shelf-shown>${Math.min(initialPageSize, shelf.products.length)}</span> of ${shelf.products.length} products</p>
+            ${shelf.products.length > initialPageSize ? `<button type="button" data-listing-load-more>Load more</button>` : ""}
           </div>
         </section>`
           )
@@ -7727,6 +7879,9 @@ ${shelf.products
 function renderProductFinder(pageInfo, pathPrefix = "../") {
   if (!pageInfo.productFinder) return "";
   const links = Array.isArray(pageInfo.discoveryLinks) ? pageInfo.discoveryLinks : [];
+  const uniqueCount = new Set(
+    (pageInfo.productSections || []).flatMap((shelf) => shelf.products || []).map((product) => String(product.id))
+  ).size;
   return `
       <section class="listing-finder" aria-label="Find products on this page">
         <div class="listing-finder-search">
@@ -7735,7 +7890,7 @@ function renderProductFinder(pageInfo, pathPrefix = "../") {
             <input id="listing-product-search" type="search" inputmode="search" autocomplete="off" placeholder="Search products, brands, or equipment..." data-listing-filter />
             <button type="button" data-listing-clear>Clear</button>
           </div>
-          <p data-listing-count aria-live="polite">Showing all products</p>
+          <p data-listing-count data-listing-total="${uniqueCount}" aria-live="polite">${uniqueCount} products in this collection</p>
         </div>
         <nav class="listing-quick-links" aria-label="Related shopping categories">
           ${links
@@ -7749,6 +7904,32 @@ function renderProductFinder(pageInfo, pathPrefix = "../") {
 
 function infoPage(pageInfo) {
   const pathPrefix = "../";
+  if (pageInfo.redirectTo) {
+    return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Continue to Clothing | Athletonic</title>
+    <meta name="robots" content="noindex,follow" />
+    <link rel="canonical" href="${html(canonicalUrl(pageInfo.redirectTo))}" />
+    <meta http-equiv="refresh" content="0; url=${html(pageInfo.redirectTo)}" />
+    ${assetHeadLinks(pathPrefix)}
+    <link rel="stylesheet" href="${pathPrefix}styles.css" />
+  </head>
+  <body class="info-body">
+    <main class="info-main">
+      <section class="info-hero">
+        <p class="eyebrow">Catalog update</p>
+        <h1>Footwear moved to Clothing</h1>
+        <p>Footwear is no longer a standalone category. Continue to Clothing for Nike apparel, fight clothing, and training apparel.</p>
+        <div class="info-links"><a href="${html(pageInfo.redirectTo)}">Continue to Clothing</a></div>
+      </section>
+    </main>
+    <script>window.location.replace(${JSON.stringify(pageInfo.redirectTo)});</script>
+  </body>
+</html>`;
+  }
   const hasExtendedContent =
     pageInfo.productSections?.length || pageInfo.directoryGroups?.length;
   return `<!doctype html>
@@ -7792,6 +7973,7 @@ ${renderProductFinder(pageInfo, pathPrefix)}
       <div${pageInfo.dynamicSearch ? " data-catalog-browse" : ""}>
 ${renderDirectoryGroups(pageInfo.directoryGroups, pathPrefix)}
 ${renderProductShelves(pageInfo.productSections, pathPrefix)}
+        ${pageInfo.productSections?.length ? '<p class="listing-empty" data-listing-empty hidden>No products match this search.</p>' : ""}
       </div>
       <div class="info-grid">
 ${renderInfoSections(pageInfo.sections)}
@@ -7813,18 +7995,49 @@ ${renderFooter(pathPrefix)}
         var clear = document.querySelector("[data-listing-clear]");
         var count = document.querySelector("[data-listing-count]");
         var cards = Array.from(document.querySelectorAll(".listing-sections .product-card"));
+        var shelves = Array.from(document.querySelectorAll(".listing-section"));
+        var pageSize = 24;
+        var empty = document.querySelector("[data-listing-empty]");
         if (!input || !cards.length) return;
+        shelves.forEach(function (shelf) {
+          shelf.dataset.listingShown = String(pageSize);
+          var button = shelf.querySelector("[data-listing-load-more]");
+          if (button) button.addEventListener("click", function () {
+            shelf.dataset.listingShown = String(Number(shelf.dataset.listingShown || pageSize) + pageSize);
+            applyFilter();
+          });
+        });
         function applyFilter() {
           var query = input.value.trim().toLowerCase();
           var visible = 0;
-          cards.forEach(function (card) {
-            var matches = !query || String(card.dataset.search || "").indexOf(query) !== -1;
-            card.hidden = !matches;
-            if (matches) visible += 1;
+          var visibleIds = {};
+          shelves.forEach(function (shelf) {
+            var shelfCards = Array.from(shelf.querySelectorAll(".product-card"));
+            var shown = Number(shelf.dataset.listingShown || pageSize);
+            var shelfVisible = 0;
+            shelfCards.forEach(function (card) {
+              var matches = !query || String(card.dataset.search || "").indexOf(query) !== -1;
+              var withinPage = query || Number(card.dataset.listingIndex || 0) < shown;
+              card.hidden = !(matches && withinPage);
+              if (matches && withinPage) shelfVisible += 1;
+              if (matches) visibleIds[card.dataset.productId] = true;
+            });
+            var matchingShelfTotal = shelfCards.filter(function (card) {
+              return !query || String(card.dataset.search || "").indexOf(query) !== -1;
+            }).length;
+            shelf.hidden = matchingShelfTotal === 0;
+            var footer = shelf.querySelector(".listing-shelf-footer");
+            var shownText = shelf.querySelector("[data-listing-shelf-shown]");
+            var button = shelf.querySelector("[data-listing-load-more]");
+            if (shownText) shownText.textContent = String(query ? matchingShelfTotal : Math.min(shown, matchingShelfTotal));
+            if (footer) footer.hidden = Boolean(query);
+            if (button) button.hidden = Boolean(query) || shown >= matchingShelfTotal;
           });
+          visible = Object.keys(visibleIds).length;
+          if (empty) empty.hidden = visible !== 0;
           if (count) count.textContent = query
             ? visible + " product" + (visible === 1 ? "" : "s") + " found"
-            : "Showing " + visible + " products";
+            : count.dataset.listingTotal + " products in this collection";
         }
         input.addEventListener("input", applyFilter);
         if (clear) clear.addEventListener("click", function () {
@@ -8276,6 +8489,11 @@ mkdirSync(pdpDir, { recursive: true });
 const expectedPdpIds = new Set([
   ...allCuratedProducts.map((product) => String(product.id)),
   ...searchIndexRecords.map((record) => String(record.id)),
+  ...publishedCatalogRecordById.keys(),
+]);
+const currentSourcePdpIds = new Set([
+  ...allCuratedProducts.map((product) => String(product.id)),
+  ...searchIndexRecords.map((record) => String(record.id)),
 ]);
 const stalePdpFiles = readdirSync(pdpDir)
   .filter((name) => name.endsWith(".html"))
@@ -8368,6 +8586,52 @@ console.log(
     pdpCount + extraPdpCount
   }) in /product/.`
 );
+
+// The published artifact can intentionally retain approved canonical products
+// from an earlier source refresh. Keep those products discoverable without
+// sending shoppers to an external vendor by generating a compatibility PDP
+// whenever the current DB/search refresh did not generate one above.
+const publishedRecordsBySection = new Map();
+for (const record of publishedCatalogRecordById.values()) {
+  if (!publishedRecordsBySection.has(record.section_id)) publishedRecordsBySection.set(record.section_id, []);
+  publishedRecordsBySection.get(record.section_id).push(record);
+}
+let publishedCompatibilityPdpCount = 0;
+for (const record of publishedCatalogRecordById.values()) {
+  const destination = new URL(`${record.id}.html`, pdpDir);
+  if (currentSourcePdpIds.has(String(record.id))) continue;
+  const product = indexRecordToProduct(record);
+  const peers = (publishedRecordsBySection.get(record.section_id) || [])
+    .filter((peer) => String(peer.id) !== String(record.id))
+    .slice(0, 4)
+    .map(indexRecordToProduct);
+  const canonicalVariants = Array.isArray(record.variants) ? record.variants : [];
+  const imageList = [record.image, ...(record.secondary_images || []), ...canonicalVariants.map((variant) => variant.image_url)]
+    .map((image) => typeof image === "string" ? image : image?.url)
+    .filter(Boolean)
+    .map((url) => ({ url }));
+  const variantRows = canonicalVariants.map((variant) => {
+    const selectedValues = Object.values(variant.selected_options || {});
+    return {
+      variant_id: variant.variant_id,
+      title: variant.title || variant.key || selectedValues.join(" / ") || String(product.name || ""),
+      sku: variant.sku || null,
+      price: Number(variant.price_cents || record.price_cents || 0) / 100,
+      compare_at_price: Number(variant.compare_at_price_cents || 0) / 100,
+      available: variant.available !== false,
+      option1: selectedValues[0] || null,
+      option2: selectedValues[1] || null,
+      option3: selectedValues[2] || null,
+    };
+  });
+  const pageHtml = variantRows.length
+    ? productPage(product, null, imageList, peers, variantRows)
+    : compatibilityProductPage(product);
+  writeFileSync(destination, cleanGeneratedText(pageHtml));
+  expectedPdpIds.add(String(record.id));
+  publishedCompatibilityPdpCount += 1;
+}
+console.log(`Generated ${publishedCompatibilityPdpCount} published-catalog compatibility PDPs.`);
 
 // ---------------------------------------------------------------------------
 // Authoritative checkout catalog (data/checkout-catalog.json)

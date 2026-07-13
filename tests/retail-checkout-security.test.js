@@ -115,13 +115,14 @@ test("only one canonical primaryProductHref remains and internal URLs are canoni
   const topKingStart = home.indexOf("<h2>Top King</h2>", twinsEnd);
   const boonStart = home.indexOf("<h2>Boon</h2>", topKingStart);
   const nutritionStart = home.indexOf("<h2>Optimum Nutrition &amp; MuscleTech</h2>", boonStart);
-  assert.equal((twinsShelf.match(/>twins_special</g) || []).length, 18);
+  assert.equal((twinsShelf.match(/<span>Twins Special<\/span>/g) || []).length, 18);
   assert.ok(twinsStart < topKingStart);
   assert.ok(topKingStart < boonStart);
   assert.ok(boonStart < nutritionStart);
   assert.match(home, /pages\/supplements\.html/);
   assert.match(home, /class="department-submenu"/);
-  assert.match(home, /Nike &amp; Footwear/);
+  assert.doesNotMatch(home, /Nike &amp; Footwear|pages\/footwear\.html/);
+  assert.match(home, /fight-clothing\.html#nike-apparel/);
   assert.doesNotMatch(home, /Protein Deals &amp; 5LB Tubs|Creatine Best Sellers|Hydration &amp; Electrolytes|Bundles &amp; Multi-pack Deals/);
   for (const slug of ["twins-special", "boxing-gloves", "top-king", "boon", "muay-thai-shorts", "shin-guards", "pads-punch-mitts", "heavy-bags", "gym-equipment", "fight-clothing", "supplements"]) {
     assert.match(home, new RegExp(`pages/${slug}\\.html`));
