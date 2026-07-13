@@ -109,11 +109,19 @@ test("only one canonical primaryProductHref remains and internal URLs are canoni
   assert.match(source, /external_only === true && product\.has_pdp === false/);
 
   const home = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
-  const featuredStart = home.indexOf("Featured Combat &amp; Nutrition Brands");
-  const featuredEnd = home.indexOf("</section>", featuredStart);
-  const featuredShelf = home.slice(featuredStart, featuredEnd);
-  for (const brand of ["twins_special", "boon", "topking", "Optimum Nutrition", "MuscleTech"]) {
-    assert.match(featuredShelf, new RegExp(`>${brand}<`));
+  const twinsStart = home.indexOf("<h2>Twins Special</h2>", home.indexOf('id="home-shelf'));
+  const twinsEnd = home.indexOf("</section>", twinsStart);
+  const twinsShelf = home.slice(twinsStart, twinsEnd);
+  const topKingBoonStart = home.indexOf("<h2>Top King &amp; Boon</h2>", twinsEnd);
+  const nutritionStart = home.indexOf("<h2>Optimum Nutrition &amp; MuscleTech</h2>", topKingBoonStart);
+  assert.equal((twinsShelf.match(/>twins_special</g) || []).length, 18);
+  assert.ok(twinsStart < topKingBoonStart);
+  assert.ok(topKingBoonStart < nutritionStart);
+  assert.doesNotMatch(home, /Protein Deals &amp; 5LB Tubs|Creatine Best Sellers|Hydration &amp; Electrolytes|Bundles &amp; Multi-pack Deals/);
+  for (const slug of ["twins-special", "boxing-gloves", "top-king-boon", "muay-thai-shorts", "shin-guards", "pads-punch-mitts", "heavy-bags", "gym-equipment", "fight-clothing"]) {
+    assert.match(home, new RegExp(`pages/${slug}\\.html`));
+    const categoryPage = fs.readFileSync(path.join(__dirname, `../pages/${slug}.html`), "utf8");
+    assert.match(categoryPage, /class="product-card"/);
   }
   assert.match(home, /checkout-international-notice/);
   assert.match(home, /This is not a pricing error/);

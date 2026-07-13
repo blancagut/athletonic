@@ -1380,29 +1380,29 @@ const BRANDS_PAGE_HREF = existsSync(
 
 const PRIORITY_SITELINKS = [
   {
-    label: "Shop All Products",
-    href: "pages/catalog.html",
-    pathname: "/pages/catalog.html",
+    label: "Twins Special",
+    href: "pages/twins-special.html",
+    pathname: "/pages/twins-special.html",
   },
   {
-    label: "Protein",
-    href: SECTION_PAGE_HREFS.protein,
-    pathname: "/pages/protein.html",
+    label: "Boxing Gloves",
+    href: "pages/boxing-gloves.html",
+    pathname: "/pages/boxing-gloves.html",
   },
   {
-    label: "Creatine",
-    href: SECTION_PAGE_HREFS.creatine,
-    pathname: "/pages/creatine.html",
+    label: "Top King & Boon",
+    href: "pages/top-king-boon.html",
+    pathname: "/pages/top-king-boon.html",
   },
   {
-    label: "Pre-workout",
-    href: SECTION_PAGE_HREFS["pre-workout"],
-    pathname: "/pages/pre-workout.html",
+    label: "Pads & Punch Mitts",
+    href: "pages/pads-punch-mitts.html",
+    pathname: "/pages/pads-punch-mitts.html",
   },
   {
-    label: "Hydration",
-    href: SECTION_PAGE_HREFS.hydration,
-    pathname: "/pages/hydration.html",
+    label: "Optimum & MuscleTech",
+    href: "pages/optimum-muscletech.html",
+    pathname: "/pages/optimum-muscletech.html",
   },
   {
     label: "Brands",
@@ -1426,13 +1426,21 @@ function prioritySitelinksHtml(pathPrefix = "./") {
 // every page (including category pages) gets the same reachable nav. A leading
 // hamburger button toggles `.department-nav` on narrow viewports.
 function departmentNavHtml(pathPrefix = "./") {
-  const links = populatedSections
-    .slice(0, 9)
+  const departments = [
+    ["Twins Special", "pages/twins-special.html"],
+    ["Boxing Gloves", "pages/boxing-gloves.html"],
+    ["Top King & Boon", "pages/top-king-boon.html"],
+    ["Muay Thai Shorts", "pages/muay-thai-shorts.html"],
+    ["Shin Guards", "pages/shin-guards.html"],
+    ["Pads & Punch Mitts", "pages/pads-punch-mitts.html"],
+    ["Heavy Bags", "pages/heavy-bags.html"],
+    ["Gym Equipment", "pages/gym-equipment.html"],
+    ["Fight Clothing", "pages/fight-clothing.html"],
+  ];
+  const links = departments
     .map(
-      (section) =>
-        `<a href="${html(sectionHref(section.id, pathPrefix))}">${html(
-          section.label ?? section.title
-        )}</a>`
+      ([label, href]) =>
+        `<a href="${html(resolveSiteHref(href, pathPrefix))}">${html(label)}</a>`
     )
     .join("\n        ");
   const brandsHref =
@@ -2461,15 +2469,15 @@ function renderHomeHero(featuredOffers = []) {
     return `
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Performance store</p>
-          <h1>Build your training stack in one store.</h1>
+          <p class="eyebrow">Authentic Thai fight gear</p>
+          <h1>Twins Special is the heart of Athletonic.</h1>
           <p>
-            Supplements, hydration, wellness, recovery devices, footwear,
-            apparel, bottles, bags, and gym accessories from fitness-first brands.
+            Shop Twins Special first, followed by Top King and Boon, with authentic
+            Muay Thai equipment selected for fighters worldwide.
           </p>
           <div class="hero-actions">
-            <a href="${sectionHref("protein")}">Shop products</a>
-            <a href="./pages/daily-deals.html">See deals</a>
+            <a href="./pages/twins-special.html">Shop Twins Special</a>
+            <a href="./pages/boxing-gloves.html">Shop boxing gloves</a>
           </div>
         </div>
       </section>`;
@@ -2490,12 +2498,12 @@ function renderHomeHero(featuredOffers = []) {
   return `
       <section class="hero hero-offers">
         <div class="hero-copy">
-          <p class="eyebrow">Today's Deals</p>
-          <h1>Today's Deals</h1>
-          <p>Supplements, protein value picks, strength staples, and fight gear from the live catalog.</p>
+          <p class="eyebrow">Athletonic flagship brand</p>
+          <h1>Twins Special</h1>
+          <p>Authentic Thai boxing gloves, pads, guards, shorts, and training equipment. Twins leads every Athletonic fight-gear collection.</p>
           <div class="hero-actions">
-            <a href="./product/${html(primaryOffer.id)}.html">Shop offer</a>
-            <a href="./pages/daily-deals.html">Browse all deals</a>
+            <a href="./pages/twins-special.html">Shop Twins Special</a>
+            <a href="./pages/boxing-gloves.html">Shop boxing gloves</a>
           </div>
         </div>
 
@@ -2517,7 +2525,7 @@ function renderHomeHero(featuredOffers = []) {
                 ? `<span>${html(money(primaryCompare, primaryOffer.currency || "USD"))}</span>`
                 : ""
             }</strong>
-            <a class="hero-deal-link" href="./product/${html(primaryOffer.id)}.html">Shop deal</a>
+            <a class="hero-deal-link" href="./product/${html(primaryOffer.id)}.html">Shop Twins</a>
           </article>
 
           ${supportingOffers
@@ -2549,7 +2557,7 @@ function renderHomeHero(featuredOffers = []) {
                 ? `<span>${html(money(compare, product.currency || "USD"))}</span>`
                 : ""
             }</strong>
-            <a class="hero-deal-link" href="./product/${html(product.id)}.html">Shop deal</a>
+            <a class="hero-deal-link" href="./product/${html(product.id)}.html">View product</a>
           </article>`;
             })
             .join("\n")}
@@ -5205,210 +5213,191 @@ const bundleProducts = sortDealsFirst(
   )
 );
 
+function cleanFightProduct(product) {
+  return (
+    realPricedProduct(product) &&
+    !productMatchesTerms(product, [
+      "gift card", "sample", "test product", "replacement", "insert for glove",
+      "key chain", "deodorizer", "air freshener", "dog toy", "airpod", "case skin",
+    ])
+  );
+}
+
+const twinsSpecialProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) => cleanFightProduct(product) && product.brand === "twins_special"
+  ),
+  { terms: ["boxing gloves", "bgvl", "shin guards", "thai pads", "muay thai shorts"] }
+);
+
+const topKingBoonProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) => cleanFightProduct(product) && ["topking", "boon"].includes(product.brand)
+  ),
+  {
+    brands: ["topking", "boon"],
+    terms: ["boxing gloves", "muay thai", "shin guards", "thai pads", "shorts"],
+  }
+);
+
+const optimumMuscletechProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) =>
+      cleanHomeProduct(product) && ["optimum_nutrition", "muscletech"].includes(product.brand)
+  ),
+  {
+    brands: ["optimum_nutrition", "muscletech"],
+    terms: ["gold standard", "whey", "protein", "mass gainer", "creatine"],
+  }
+);
+
+const muayThaiClothingProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) =>
+      cleanFightProduct(product) &&
+      ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy", "primo"].includes(product.brand) &&
+      productNameMatchesTerms(product, ["muay thai shorts", "boxing shorts", "shorts", "t-shirt", "shirt", "tank"])
+  ),
+  { brands: ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy", "primo"] }
+);
+
+const gymEquipmentProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) =>
+      cleanFightProduct(product) &&
+      productNameMatchesTerms(product, [
+        "heavy bag", "punching bag", "banana bag", "wall pad", "floor mat",
+        "training mat", "speed bag", "reflex bag", "uppercut bag", "bag stand",
+      ])
+  ),
+  { brands: ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy"] }
+);
+
+const otherThaiFightProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) =>
+      cleanFightProduct(product) &&
+      ["fairtex", "yokkao", "windy", "primo", "raja_boxing", "thaismai"].includes(product.brand)
+  ),
+  { brands: ["fairtex", "yokkao", "windy", "primo", "raja_boxing", "thaismai"] }
+);
+
+const padsMittsProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) =>
+      cleanFightProduct(product) &&
+      productNameMatchesTerms(product, [
+        "focus mitt", "punch mitt", "thai pad", "kick pad", "kicking pad",
+        "kick shield", "belly pad", "body protector", "pao",
+      ])
+  ),
+  { brands: ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy", "primo"] }
+);
+
+const protectiveGearProducts = sortMerchFirst(
+  catalogHomeProducts.filter(
+    (product) =>
+      cleanFightProduct(product) &&
+      productNameMatchesTerms(product, [
+        "shin guard", "shinguard", "headgear", "head guard", "mouthguard",
+        "groin guard", "ankle guard", "hand wrap", "quick handwrap",
+      ])
+  ),
+  { brands: ["twins_special", "topking", "boon", "fairtex", "yokkao", "windy", "primo"] }
+);
+
 const initialHomeShelvesDraft = [
   customShelf({
-    eyebrow: "Deals",
-    title: "Today's Deals",
-    description: "Live deals and value picks from the real Athletonic catalog, selected for variety instead of repetition.",
-    products:
-      coreHeroDealProducts.length >= 8
-        ? coreHeroDealProducts
-        : uniqueProducts(
-            [...coreHeroDealProducts, ...officialDealProducts.filter(isHomeDealCandidate), ...homeValueProducts],
-            80
-          ),
-    limit: 8,
-    maxPerBrand: 1,
-    maxGlobalBrand: 2,
-    maxPerSection: 2,
-    minUniqueBrands: 4,
+    eyebrow: "Flagship brand",
+    title: "Twins Special",
+    description: "Athletonic's leading collection: authentic Thai gloves, pads, guards, shorts, and fight equipment.",
+    products: twinsSpecialProducts,
+    limit: 18,
+    maxPerBrand: 18,
+    maxGlobalBrand: 30,
+    minUniqueBrands: 1,
   }),
   customShelf({
-    eyebrow: "Popular picks",
-    title: "Best Sellers",
-    description: "Top catalog picks across supplements, recovery, and training essentials.",
-    products: populatedSections.flatMap((section) => sectionProducts(section.id, 2)),
-    limit: 12,
-    maxPerBrand: 1,
-    maxGlobalBrand: 3,
-    maxPerSection: 3,
-    minUniqueBrands: 5,
+    eyebrow: "Thai fight gear",
+    title: "Top King & Boon",
+    description: "Our next priority brands for authentic Muay Thai equipment and apparel.",
+    products: topKingBoonProducts,
+    limit: 16,
+    maxPerBrand: 8,
+    maxGlobalBrand: 20,
+    minUniqueBrands: 2,
   }),
   customShelf({
-    eyebrow: "Athletonic essentials",
-    title: "Featured Combat & Nutrition Brands",
-    description: "Shop current picks from Twins Special, Boon, Top King, Optimum Nutrition, and MuscleTech.",
-    products: sortMerchFirst(
-      catalogHomeProducts.filter(
-        (product) =>
-          cleanHomeProduct(product) &&
-          ["twins_special", "boon", "topking", "optimum_nutrition", "muscletech"].includes(product.brand)
-      ),
-      {
-        brands: ["twins_special", "boon", "topking", "optimum_nutrition", "muscletech"],
-        terms: ["boxing gloves", "muay thai", "whey", "protein", "creatine", "mass gainer"],
-      }
-    ),
-    limit: 15,
-    maxPerBrand: 3,
-    maxGlobalBrand: 6,
-    maxPerSection: 9,
-    minUniqueBrands: 5,
-  }),
-  customShelf({
-    eyebrow: "Combat sports",
+    eyebrow: "Fight essentials",
     title: "Boxing & Muay Thai Gloves",
-    description: "Boxing gloves and Muay Thai gloves from real fight-gear inventory.",
+    description: "Gloves led by Twins Special, Top King, Boon, and established Thai fight brands.",
     products: boxingGloveProducts,
+    limit: 14,
+    maxPerBrand: 4,
+    maxGlobalBrand: 24,
+    minUniqueBrands: 3,
+  }),
+  customShelf({
+    eyebrow: "Coach essentials",
+    title: "Pads & Punch Mitts",
+    description: "Thai pads, focus mitts, kick shields, and coaching equipment for serious training.",
+    products: padsMittsProducts,
     limit: 12,
     maxPerBrand: 3,
-    maxGlobalBrand: 5,
-    maxPerSection: 12,
+    maxGlobalBrand: 24,
     minUniqueBrands: 3,
   }),
   customShelf({
-    eyebrow: "Protein",
-    title: "Protein Essentials",
-    description: "Core whey, isolate, mass gainer, and Gold Standard protein basics.",
-    products: proteinEssentialsProducts,
-    limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 4,
-    maxPerSection: 12,
-    minUniqueBrands: 5,
-  }),
-  customShelf({
-    eyebrow: "Protein",
-    title: "Protein Deals & 5LB Tubs",
-    description: "Whey deals, isolate value picks, 5LB tubs, and multi-pack protein offers.",
-    products: uniqueProducts(
-      [
-        ...proteinEssentialsProducts.filter((product) =>
-          product.variantOffer && productNameMatchesTerms(product, ["gold standard 100% whey", "100% whey"])
-        ),
-        ...proteinValueProducts.filter((product) => product.deal || product.variantOffer),
-        ...proteinValueProducts,
-        ...proteinEssentialsProducts.filter((product) =>
-          productMatchesTerms(product, ["5lb", "5 lb", "5 lbs", "2x", "gold standard"])
-        ),
-      ],
-      80
-    ),
-    limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 5,
-    maxPerSection: 12,
-    minUniqueBrands: 4,
-  }),
-  customShelf({
-    eyebrow: "Strength",
-    title: "Creatine Best Sellers",
-    description: "Creatine powders, HMB blends, capsules, and strength staples.",
-    products: creatineProducts,
-    limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 4,
-    maxPerSection: 12,
-    minUniqueBrands: 5,
-  }),
-  customShelf({
-    eyebrow: "Energy",
-    title: "Pre-Workout",
-    description: "Training energy, pumps, nitric formulas, and stimulant-free options.",
-    products: preWorkoutProducts,
-    limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 4,
-    maxPerSection: 12,
-    minUniqueBrands: 5,
-  }),
-  customShelf({
-    eyebrow: "Hydration",
-    title: "Hydration & Electrolytes",
-    description: "Electrolyte sticks, hydration multipliers, drink mixes, and training fluids.",
-    products: hydrationProducts,
-    limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 4,
-    maxPerSection: 12,
-    minUniqueBrands: 5,
-  }),
-  customShelf({
-    eyebrow: "Supplements",
-    title: "Top Supplements",
-    description: "Vitamins, greens, bars, shakes, daily health, and supplement staples.",
-    sectionIds: ["vitamins", "greens", "bars-shakes", "hydration"],
-    limit: 12,
-    maxPerBrand: 1,
-    maxGlobalBrand: 3,
-    maxPerSection: 3,
-    minUniqueBrands: 4,
-  }),
-  customShelf({
-    eyebrow: "Combat sports",
-    title: "Punching Bags, Mitts & Pads",
-    description: "Heavy bags, Muay Thai bags, punch mitts, focus mitts, and training pads.",
-    products: bagsMittsPadsProducts,
-    limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 4,
-    maxPerSection: 12,
+    eyebrow: "Fight apparel",
+    title: "Muay Thai Shorts & Fight Clothing",
+    description: "Training shorts, fight shorts, shirts, and authentic Thai gym style.",
+    products: muayThaiClothingProducts,
+    limit: 14,
+    maxPerBrand: 4,
+    maxGlobalBrand: 30,
     minUniqueBrands: 3,
   }),
   customShelf({
-    eyebrow: "Fight accessories",
-    title: "Wraps, Guards & Fight Accessories",
-    description: "Hand wraps, quick wraps, headgear, shin guards, mouthguards, and protection.",
-    products: wrapsGuardsFightAccessoriesProducts,
+    eyebrow: "Protection",
+    title: "Shin Guards & Protective Gear",
+    description: "Shin guards, headgear, wraps, mouthguards, and protection for daily training.",
+    products: protectiveGearProducts,
     limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 4,
-    maxPerSection: 12,
+    maxPerBrand: 3,
+    maxGlobalBrand: 30,
     minUniqueBrands: 3,
   }),
   customShelf({
-    eyebrow: "Recovery",
-    title: "Recovery & Training Essentials",
-    description: "Recovery devices and useful training gear placed below the core shopping rows.",
-    sectionIds: ["recovery", "sleep", "accessories"],
+    eyebrow: "Gym setup",
+    title: "Heavy Bags & Gym Equipment",
+    description: "Heavy bags, wall pads, training mats, and equipment for fight gyms and home training.",
+    products: gymEquipmentProducts,
     limit: 12,
-    maxPerBrand: 2,
-    maxGlobalBrand: 4,
-    maxPerSection: 5,
-    minUniqueBrands: 4,
+    maxPerBrand: 3,
+    maxGlobalBrand: 30,
+    minUniqueBrands: 3,
+  }),
+  customShelf({
+    eyebrow: "Sports nutrition",
+    title: "Optimum Nutrition & MuscleTech",
+    description: "Our priority supplement brands for protein, mass gainers, creatine, and performance nutrition.",
+    products: optimumMuscletechProducts,
+    limit: 12,
+    maxPerBrand: 6,
+    maxGlobalBrand: 20,
+    minUniqueBrands: 2,
+  }),
+  customShelf({
+    eyebrow: "More Thai brands",
+    title: "Fairtex, Yokkao, Windy, Primo & Raja",
+    description: "More authentic fight gear after our Twins Special, Top King, and Boon collections.",
+    products: otherThaiFightProducts,
+    limit: 12,
+    maxPerBrand: 3,
+    maxGlobalBrand: 20,
+    minUniqueBrands: 3,
   }),
 ];
-
-if (bundleProducts.length >= 4) {
-  initialHomeShelvesDraft.push(
-    customShelf({
-      eyebrow: "Value picks",
-      title: "Bundles & Multi-pack Deals",
-      description: "Only real bundles, variety packs, and multi-bottle offers with valid pricing.",
-      products: bundleProducts,
-      limit: 12,
-      maxPerBrand: 2,
-      maxGlobalBrand: 4,
-      minUniqueBrands: 2,
-    })
-  );
-}
-
-const latestProductsDraft = latestOfficialProducts(12);
-if (latestProductsDraft.length >= 4) {
-  initialHomeShelvesDraft.push(
-    customShelf({
-      eyebrow: "New arrivals",
-      title: "New Arrivals",
-      description: "Recently added products pulled from the current official catalog data.",
-      products: latestProductsDraft,
-      limit: 12,
-      maxPerBrand: 2,
-      maxGlobalBrand: 4,
-      minUniqueBrands: 3,
-    })
-  );
-}
 
 const homeShelfCandidates = initialHomeShelvesDraft.flatMap((shelf) => shelf.products);
 const homePurchaseMeta = homePurchaseMetaWithOffers(
@@ -5418,39 +5407,39 @@ const homePurchaseMeta = homePurchaseMetaWithOffers(
 
 const homeShelves = buildHomeShelvesWithDiversity(initialHomeShelvesDraft, homePurchaseMeta);
 
-const heroSlides = (homeShelves.find((shelf) => shelf.title === "Today's Deals")?.products ?? [])
+const heroSlides = (homeShelves.find((shelf) => shelf.title === "Twins Special")?.products ?? [])
   .slice(0, 4);
 
 const categoryCards = [
   {
-    title: "Protein",
-    href: sectionHref("protein"),
-    description: "Whey, isolate, plant protein, and recovery shakes.",
+    title: "Twins Special",
+    href: "./pages/twins-special.html",
+    description: "Our flagship Thai boxing and Muay Thai collection.",
   },
   {
-    title: "Creatine",
-    href: sectionHref("creatine"),
-    description: "Powders, capsules, gummies, and daily strength support.",
+    title: "Boxing Gloves",
+    href: "./pages/boxing-gloves.html",
+    description: "Twins, Top King, Boon, and leading Thai glove brands.",
   },
   {
-    title: "Pre-workout",
-    href: sectionHref("pre-workout"),
-    description: "Pump, energy, nitric oxide, and stim-free formulas.",
+    title: "Top King & Boon",
+    href: "./pages/top-king-boon.html",
+    description: "Priority Muay Thai gear after Twins Special.",
   },
   {
-    title: "Hydration",
-    href: sectionHref("hydration"),
-    description: "Electrolytes, sticks, multipliers, and drink mixes.",
+    title: "Pads & Punch Mitts",
+    href: "./pages/pads-punch-mitts.html",
+    description: "Thai pads, focus mitts, shields, and coach equipment.",
   },
   {
-    title: "Supplements",
-    href: "./pages/catalog.html",
-    description: "Shop sports nutrition, wellness, bars, and daily performance.",
+    title: "Gym Equipment",
+    href: "./pages/gym-equipment.html",
+    description: "Heavy bags, wall pads, mats, and fight-gym essentials.",
   },
   {
-    title: "Boxing Gear",
-    href: sectionHref("training-gear"),
-    description: "Gloves, mitts, pads, bags, and Muay Thai essentials.",
+    title: "Optimum & MuscleTech",
+    href: "./pages/optimum-muscletech.html",
+    description: "Our priority protein and performance nutrition brands.",
   },
 ];
 
@@ -5459,10 +5448,10 @@ const page = `<!doctype html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Athletonic | Performance Supplements, Recovery &amp; Training Gear</title>
+    <title>Athletonic | Twins Special, Top King, Boon &amp; Authentic Muay Thai Gear</title>
     <meta
       name="description"
-      content="Athletonic.com is a performance store for supplements, sports nutrition, hydration, recovery, apparel, and fitness essentials."
+      content="Shop Twins Special, Top King, Boon, authentic Muay Thai gloves, pads, shorts, gym equipment, plus Optimum Nutrition and MuscleTech."
     />
     ${canonicalLink("/")}
     ${hreflangBlock("/", SITE_ORIGIN)}
@@ -5655,6 +5644,76 @@ const staticPages = [
           "Athletonic keeps brand pages tied to products that are currently present in the curated catalog instead of listing empty brand destinations.",
       },
     ],
+  },
+  {
+    slug: "twins-special",
+    title: "Twins Special",
+    eyebrow: "Athletonic Flagship Brand",
+    summary: "Shop Athletonic's largest priority collection of authentic Twins Special gloves, pads, guards, shorts, and training equipment.",
+    productSections: [customShelf({ eyebrow: "Twins Special", title: "Shop Twins Special", description: "Authentic Thai fight gear led by the signature Athletonic brand.", products: twinsSpecialProducts, limit: 48 })],
+  },
+  {
+    slug: "boxing-gloves",
+    title: "Boxing & Muay Thai Gloves",
+    eyebrow: "Fight Essentials",
+    summary: "Shop boxing and Muay Thai gloves with Twins Special first, followed by Top King, Boon, and other established Thai brands.",
+    productSections: [customShelf({ eyebrow: "Gloves", title: "Boxing & Muay Thai Gloves", description: "Thai-brand gloves for bag work, pads, sparring, and competition.", products: boxingGloveProducts, limit: 48 })],
+  },
+  {
+    slug: "top-king-boon",
+    title: "Top King & Boon",
+    eyebrow: "Priority Thai Brands",
+    summary: "Shop authentic Top King and Boon gloves, pads, guards, shorts, and Muay Thai training gear.",
+    productSections: [customShelf({ eyebrow: "Thai fight gear", title: "Top King & Boon", description: "Two core Athletonic Muay Thai brands after Twins Special.", products: topKingBoonProducts, limit: 48 })],
+  },
+  {
+    slug: "muay-thai-shorts",
+    title: "Muay Thai Shorts",
+    eyebrow: "Fight Clothing",
+    summary: "Shop authentic Muay Thai and boxing shorts led by Twins Special, Top King, and Boon.",
+    productSections: [customShelf({ eyebrow: "Fight apparel", title: "Muay Thai Shorts", description: "Thai shorts for training, competition, and fight-gym style.", products: muayThaiClothingProducts.filter((product) => productNameMatchesTerms(product, ["shorts", "skirt"])), limit: 48 })],
+  },
+  {
+    slug: "shin-guards",
+    title: "Shin Guards & Protection",
+    eyebrow: "Training Protection",
+    summary: "Shop shin guards, headgear, wraps, mouthguards, and protective equipment from Thai fight brands.",
+    productSections: [customShelf({ eyebrow: "Protection", title: "Shin Guards & Protective Gear", description: "Protection for sparring, drills, and daily Muay Thai training.", products: protectiveGearProducts, limit: 48 })],
+  },
+  {
+    slug: "pads-punch-mitts",
+    title: "Pads & Punch Mitts",
+    eyebrow: "Coach Equipment",
+    summary: "Shop Thai pads, focus mitts, kick pads, shields, and coaching equipment for fight training.",
+    productSections: [customShelf({ eyebrow: "Coach gear", title: "Pads & Punch Mitts", description: "Training tools for boxing and Muay Thai coaches.", products: padsMittsProducts, limit: 48 })],
+  },
+  {
+    slug: "heavy-bags",
+    title: "Heavy Bags",
+    eyebrow: "Fight Gym Equipment",
+    summary: "Shop heavy bags, banana bags, uppercut bags, wall pads, and striking equipment.",
+    productSections: [customShelf({ eyebrow: "Gym setup", title: "Heavy Bags", description: "Striking equipment for commercial gyms and home training spaces.", products: gymEquipmentProducts.filter((product) => productNameMatchesTerms(product, ["bag", "wall pad"])), limit: 48 })],
+  },
+  {
+    slug: "gym-equipment",
+    title: "Fight Gym Equipment",
+    eyebrow: "Gym Setup",
+    summary: "Shop heavy bags, wall pads, training mats, striking stations, and equipment for Muay Thai and boxing gyms.",
+    productSections: [customShelf({ eyebrow: "Equipment", title: "Fight Gym Equipment", description: "Build a serious training space with authentic fight-gym equipment.", products: gymEquipmentProducts, limit: 48 })],
+  },
+  {
+    slug: "fight-clothing",
+    title: "Fight Clothing",
+    eyebrow: "Muay Thai Apparel",
+    summary: "Shop Muay Thai shorts, boxing shorts, shirts, tanks, and authentic Thai fight-gym clothing.",
+    productSections: [customShelf({ eyebrow: "Apparel", title: "Fight Clothing", description: "Training and lifestyle clothing from Twins Special and leading Thai brands.", products: muayThaiClothingProducts, limit: 48 })],
+  },
+  {
+    slug: "optimum-muscletech",
+    title: "Optimum Nutrition & MuscleTech",
+    eyebrow: "Priority Sports Nutrition",
+    summary: "Shop Athletonic's priority supplement brands for whey protein, mass gainers, creatine, and performance nutrition.",
+    productSections: [customShelf({ eyebrow: "Sports nutrition", title: "Optimum Nutrition & MuscleTech", description: "Protein and performance essentials after Athletonic's core fight-gear collections.", products: optimumMuscletechProducts, limit: 48 })],
   },
   {
     slug: "best-sellers",
@@ -7363,7 +7422,10 @@ function renderProductShelves(shelves = [], pathPrefix = "../") {
             <p>${html(shelf.description)}</p>
           </div>
           <div class="product-row">
-${shelf.products.map((product) => productCard(product, pathPrefix)).join("\n")}
+${shelf.products
+  .slice(0, shelf.limit ?? shelf.products.length)
+  .map((product) => productCard(product, pathPrefix))
+  .join("\n")}
           </div>
         </section>`
           )
