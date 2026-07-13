@@ -60,6 +60,10 @@ test("category pages never revive records outside the current approved search in
       assert.ok(approvedIds.has(id), `${slug} revived non-approved product ${id}`);
     }
   }
+  const publishedSearchIds = new Set(require("../data/final/search-index.published.json").products.map((product) => String(product.id)));
+  const publishedCatalogIds = require("../data/final/catalog.published.json").products.map((product) => String(product.id));
+  assert.deepEqual(publishedSearchIds, approvedIds);
+  assert.ok(publishedCatalogIds.every((id) => approvedIds.has(id)));
 });
 
 test("all collection product links are canonical internal PDP links", () => {

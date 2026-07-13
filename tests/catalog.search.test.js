@@ -53,5 +53,5 @@ test("catalog search matches SKU-only queries from the published catalog", async
 test("catalog search matches variant SKU queries", async () => {
   const payload = await search("fsgl10-49-white-blackS");
   assert.ok(payload.products.length > 0, "expected variant SKU search results");
-  assert.equal(payload.products[0].id, "official-twins_special-fsgl10-49-white-blacks");
+  assert.equal(payload.products[0].id, "official-twins-fsgl10-49-white-black");
 });

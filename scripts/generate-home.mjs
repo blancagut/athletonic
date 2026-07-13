@@ -41,6 +41,7 @@ const brandNames = Object.fromEntries(
 // use a spaced/legacy slug. Keep shopper-facing brand labels and searches stable.
 brandNames.topking = "Top King";
 brandNames.twins_special = "Twins Special";
+brandNames.twins_special_mmawarehouse = "Twins Special";
 brandNames.boon = "Boon";
 brandNames.nike = "Nike";
 const allowedBrands = ATHLETONIC_SOURCE_OF_TRUTH.brands.map((brand) => brand.slug);
@@ -8599,35 +8600,23 @@ writeFileSync(
 
 const finalCatalogUrl = new URL("final/catalog.published.json", commerceCatalogDir);
 const previousFinalCatalog = JSON.parse(readFileSync(finalCatalogUrl, "utf8"));
-const publishedProductsById = new Map(
-  (previousFinalCatalog.products || [])
-    .filter((product) => !isBlockedDecorativeCatalogProduct(product))
-    .map((product) => [String(product.id), product])
-);
-for (const product of checkoutCatalogRecords) publishedProductsById.set(String(product.id), product);
 writeFileSync(
   finalCatalogUrl,
   JSON.stringify({
     ...previousFinalCatalog,
     generated_at: new Date().toISOString(),
-    products: [...publishedProductsById.values()],
+    products: checkoutCatalogRecords,
   })
 );
 
 const finalSearchUrl = new URL("final/search-index.published.json", commerceCatalogDir);
 const previousFinalSearch = JSON.parse(readFileSync(finalSearchUrl, "utf8"));
-const publishedSearchById = new Map(
-  (previousFinalSearch.products || [])
-    .filter((product) => !isBlockedDecorativeCatalogProduct(product))
-    .map((product) => [String(product.id), product])
-);
-for (const product of searchIndexRecords) publishedSearchById.set(String(product.id), product);
 writeFileSync(
   finalSearchUrl,
   JSON.stringify({
     ...previousFinalSearch,
     generated_at: new Date().toISOString(),
-    products: [...publishedSearchById.values()],
+    products: searchIndexRecords,
   })
 );
 
