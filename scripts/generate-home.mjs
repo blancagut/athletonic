@@ -3569,47 +3569,35 @@ console.log(
   `Generated search index with ${searchIndexRecords.length} products in /data/search-index.json.`
 );
 
-const publishedCatalogSnapshot = readJsonFile(
-  new URL("../data/final/catalog.published.json", import.meta.url),
-  { products: [] }
-);
-const publishedCatalogRecordById = new Map(
-  (Array.isArray(publishedCatalogSnapshot.products) ? publishedCatalogSnapshot.products : [])
-    .filter(isCatalogEligible)
-    .filter((product) => !isBlockedDecorativeCatalogProduct(product))
-    .map((product) => [String(product.id), product])
-);
-
 function indexRecordToProduct(record) {
-  const canonical = publishedCatalogRecordById.get(String(record.id)) || record;
   const requiresVariantSelection = Boolean(record.requires_variant_selection);
   return {
     id: record.id,
-    brand: canonical.brand_slug || record.brand_slug,
-    brand_slug: canonical.brand_slug || record.brand_slug,
-    name: canonical.name || record.name,
-    displayName: canonical.name || record.name,
+    brand: record.brand_slug,
+    brand_slug: record.brand_slug,
+    name: record.name,
+    displayName: record.name,
     displayLabel: sectionTitleById[record.section_id] ?? "Athletonic catalog",
-    image: canonical.image || record.image,
-    imageWidth: canonical.image_width || record.image_width || 640,
-    imageHeight: canonical.image_height || record.image_height || record.image_width || 640,
-    price: (Number(canonical.price_cents || record.price_cents) || 0) / 100,
-    price_cents: Number(canonical.price_cents || record.price_cents) || 0,
+    image: record.image,
+    imageWidth: record.image_width || 640,
+    imageHeight: record.image_height || record.image_width || 640,
+    price: (Number(record.price_cents) || 0) / 100,
+    price_cents: Number(record.price_cents) || 0,
     currency: "USD",
-    sectionId: canonical.section_id || record.section_id,
-    section_id: canonical.section_id || record.section_id,
-    sectionTitle: sectionTitleById[canonical.section_id || record.section_id] ?? "Athletonic catalog",
-    store_collection: canonical.section_id || record.section_id,
-    category: canonical.category || canonical.category_text || null,
-    category_text: canonical.category_text || canonical.category || null,
-    product_type: canonical.product_type || null,
-    search: canonical.search || record.search || "",
-    url: canonical.url || record.url || null,
-    external_url: canonical.external_url || null,
-    available: canonical.available !== false,
-    purchasable: canonical.purchasable !== false,
-    ready_for_sale: canonical.ready_for_sale !== false,
-    publish_status: canonical.publish_status,
+    sectionId: record.section_id,
+    section_id: record.section_id,
+    sectionTitle: sectionTitleById[record.section_id] ?? "Athletonic catalog",
+    store_collection: record.section_id,
+    category: record.category || record.category_text || null,
+    category_text: record.category_text || record.category || null,
+    product_type: record.product_type || null,
+    search: record.search || "",
+    url: record.url || null,
+    external_url: record.external_url || null,
+    available: record.available !== false,
+    purchasable: record.purchasable !== false,
+    ready_for_sale: record.ready_for_sale !== false,
+    publish_status: record.publish_status,
     deal: record.deal
       ? {
           discount_percent: record.deal.discount_percent,
@@ -4405,40 +4393,6 @@ ${mobileBottomNav(pathPrefix)}
   `;
 }
 
-function compatibilityProductPage(product) {
-  const brand = brandNames[product.brand] ?? product.brand;
-  const name = product.displayName ?? product.name;
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${html(name)} | Athletonic</title>
-    ${canonicalLink(`/product/${product.id}.html`)}
-    ${assetHeadLinks("../")}
-    <link rel="stylesheet" href="../styles.css" />
-  </head>
-  <body class="info-body">
-${renderPdpHeader("../")}
-${renderDrawers()}
-    <main class="pdp-main">
-      <section class="pdp-layout">
-        <div class="pdp-gallery"><div class="pdp-gallery-main"><img src="${html(product.image)}" alt="${html(name)}" width="${html(product.imageWidth || 640)}" height="${html(product.imageHeight || 640)}" /></div></div>
-        <div class="pdp-buybox">
-          <p class="compatibility-brand">${html(brand)}</p>
-          <h1 class="pdp-title">${html(name)}</h1>
-          <p class="pdp-price"><strong>${html(money(product.price, product.currency || "USD"))}</strong></p>
-          <p>This published product remains available in the catalog, but its current variant details need to be refreshed before online purchase.</p>
-          <a class="add-cart-button product-options-button" href="../pages/catalog.html?q=${encodeURIComponent(name)}">View in catalog</a>
-        </div>
-      </section>
-    </main>
-${renderFooter("../")}
-    <script src="../assets/cart.js" defer></script>
-  </body>
-</html>`;
-}
-
 const sectionById = new Map(populatedSections.map((section) => [section.id, section]));
 const productsBySectionId = new Map();
 for (const product of allCuratedProducts) {
@@ -4890,11 +4844,7 @@ const officialHomeRecords = searchIndexRecords.filter(
 );
 
 const officialHomeProducts = officialHomeRecords.map(indexRecordToProduct);
-const fullCatalogRecordsById = new Map(searchIndexRecords.map((record) => [String(record.id), record]));
-for (const product of publishedCatalogRecordById.values()) {
-  fullCatalogRecordsById.set(String(product.id), product);
-}
-const catalogHomeProducts = [...fullCatalogRecordsById.values()]
+const catalogHomeProducts = searchIndexRecords
   .map(indexRecordToProduct)
   .filter((product) => product.brand !== "yokkao");
 
@@ -8489,11 +8439,6 @@ mkdirSync(pdpDir, { recursive: true });
 const expectedPdpIds = new Set([
   ...allCuratedProducts.map((product) => String(product.id)),
   ...searchIndexRecords.map((record) => String(record.id)),
-  ...publishedCatalogRecordById.keys(),
-]);
-const currentSourcePdpIds = new Set([
-  ...allCuratedProducts.map((product) => String(product.id)),
-  ...searchIndexRecords.map((record) => String(record.id)),
 ]);
 const stalePdpFiles = readdirSync(pdpDir)
   .filter((name) => name.endsWith(".html"))
@@ -8586,52 +8531,6 @@ console.log(
     pdpCount + extraPdpCount
   }) in /product/.`
 );
-
-// The published artifact can intentionally retain approved canonical products
-// from an earlier source refresh. Keep those products discoverable without
-// sending shoppers to an external vendor by generating a compatibility PDP
-// whenever the current DB/search refresh did not generate one above.
-const publishedRecordsBySection = new Map();
-for (const record of publishedCatalogRecordById.values()) {
-  if (!publishedRecordsBySection.has(record.section_id)) publishedRecordsBySection.set(record.section_id, []);
-  publishedRecordsBySection.get(record.section_id).push(record);
-}
-let publishedCompatibilityPdpCount = 0;
-for (const record of publishedCatalogRecordById.values()) {
-  const destination = new URL(`${record.id}.html`, pdpDir);
-  if (currentSourcePdpIds.has(String(record.id))) continue;
-  const product = indexRecordToProduct(record);
-  const peers = (publishedRecordsBySection.get(record.section_id) || [])
-    .filter((peer) => String(peer.id) !== String(record.id))
-    .slice(0, 4)
-    .map(indexRecordToProduct);
-  const canonicalVariants = Array.isArray(record.variants) ? record.variants : [];
-  const imageList = [record.image, ...(record.secondary_images || []), ...canonicalVariants.map((variant) => variant.image_url)]
-    .map((image) => typeof image === "string" ? image : image?.url)
-    .filter(Boolean)
-    .map((url) => ({ url }));
-  const variantRows = canonicalVariants.map((variant) => {
-    const selectedValues = Object.values(variant.selected_options || {});
-    return {
-      variant_id: variant.variant_id,
-      title: variant.title || variant.key || selectedValues.join(" / ") || String(product.name || ""),
-      sku: variant.sku || null,
-      price: Number(variant.price_cents || record.price_cents || 0) / 100,
-      compare_at_price: Number(variant.compare_at_price_cents || 0) / 100,
-      available: variant.available !== false,
-      option1: selectedValues[0] || null,
-      option2: selectedValues[1] || null,
-      option3: selectedValues[2] || null,
-    };
-  });
-  const pageHtml = variantRows.length
-    ? productPage(product, null, imageList, peers, variantRows)
-    : compatibilityProductPage(product);
-  writeFileSync(destination, cleanGeneratedText(pageHtml));
-  expectedPdpIds.add(String(record.id));
-  publishedCompatibilityPdpCount += 1;
-}
-console.log(`Generated ${publishedCompatibilityPdpCount} published-catalog compatibility PDPs.`);
 
 // ---------------------------------------------------------------------------
 // Authoritative checkout catalog (data/checkout-catalog.json)

@@ -8,6 +8,8 @@ const path = require("node:path");
 const ROOT = path.join(__dirname, "..");
 const catalog = require("../data/final/catalog.published.json");
 const byId = new Map(catalog.products.map((product) => [String(product.id), product]));
+const approvedSearchIndex = require("../data/search-index.json");
+const approvedIds = new Set(approvedSearchIndex.products.map((product) => String(product.id)));
 const categorySlugs = [
   "boxing-gloves", "top-king", "boon", "top-king-boon", "muay-thai-shorts",
   "shin-guards", "pads-punch-mitts", "heavy-bags", "gym-equipment",
@@ -48,6 +50,16 @@ test("category pages expose the complete collection through organized Load more 
   assert.ok(new Set(productIds(page("top-king"))).size > 48);
   assert.ok(new Set(productIds(page("boon"))).size > 48);
   assert.ok(new Set(productIds(page("training-apparel"))).size > 48);
+});
+
+test("category pages never revive records outside the current approved search index", () => {
+  const generator = fs.readFileSync(path.join(ROOT, "scripts/generate-home.mjs"), "utf8");
+  assert.doesNotMatch(generator, /publishedCatalogRecordById|published-catalog compatibility PDPs/);
+  for (const slug of categorySlugs) {
+    for (const id of productIds(page(slug))) {
+      assert.ok(approvedIds.has(id), `${slug} revived non-approved product ${id}`);
+    }
+  }
 });
 
 test("all collection product links are canonical internal PDP links", () => {
