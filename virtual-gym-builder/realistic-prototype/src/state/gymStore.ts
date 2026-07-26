@@ -8,6 +8,9 @@ import type { ArchitectureElement, ArchitectureElementKind, ArchitectureWall, Ar
 import { constrainTransform, moveSnapStep, rotationSnapStep, serializeTransform, transitionInteraction, type InteractionEvent } from '../interaction/interaction'
 
 const STORAGE_KEY = 'athletonic-realistic-gym-prototype-v1'
+const DEFAULT_EQUIPMENT: PlacedEquipment[] = [
+  { id: 'rack-1', kind: 'equipment-rack', x: 4.6, z: 4.7, rotation: 0 },
+]
 export { DEFAULT_ARCHITECTURE }
 
 function defaultArchitectureElements(room: GymDesign['room']): ArchitectureElement[] {
@@ -28,38 +31,21 @@ const templateDesigns: Record<TemplateId, Omit<GymDesign, 'logoDataUrl'>> = {
     template: 'striking',
     room: { width: 14, depth: 11, height: 3.4 },
     wallsVisible: true,
-    equipment: [
-      { id: 'ring-1', kind: 'boxing-ring', x: -3.1, z: 0.5, rotation: 0 },
-      { id: 'bag-1', kind: 'heavy-bag', x: 3, z: -2.8, rotation: 0 },
-      { id: 'bag-2', kind: 'banana-bag', x: 4.4, z: -2.8, rotation: 0 },
-      { id: 'bag-3', kind: 'teardrop-bag', x: 3.7, z: -0.8, rotation: 0 },
-      { id: 'rack-1', kind: 'equipment-rack', x: 4.6, z: 4.7, rotation: 0 },
-    ],
+    equipment: DEFAULT_EQUIPMENT,
   },
   mma: {
     version: 1,
     template: 'mma',
     room: { width: 15, depth: 12, height: 3.6 },
     wallsVisible: true,
-    equipment: [
-      { id: 'cage-1', kind: 'mma-cage', x: -2.5, z: 0, rotation: 0 },
-      { id: 'bag-1', kind: 'banana-bag', x: 4.5, z: -3.4, rotation: 0 },
-      { id: 'bench-1', kind: 'bench', x: 4.5, z: 3.8, rotation: Math.PI / 2 },
-      { id: 'pads-1', kind: 'wall-pads', x: 0, z: -5.85, rotation: 0 },
-    ],
+    equipment: DEFAULT_EQUIPMENT,
   },
   combined: {
     version: 1,
     template: 'combined',
     room: { width: 24, depth: 14, height: 4 },
     wallsVisible: true,
-    equipment: [
-      { id: 'ring-1', kind: 'boxing-ring', x: -7, z: 0, rotation: 0 },
-      { id: 'cage-1', kind: 'mma-cage', x: 3.5, z: 0, rotation: 0 },
-      { id: 'bag-1', kind: 'heavy-bag', x: 9.7, z: -4.6, rotation: 0 },
-      { id: 'bag-2', kind: 'banana-bag', x: 9.7, z: -2.6, rotation: 0 },
-      { id: 'rack-1', kind: 'equipment-rack', x: 10.5, z: 5.8, rotation: 0 },
-    ],
+    equipment: DEFAULT_EQUIPMENT,
   },
 }
 
@@ -480,19 +466,19 @@ export const useGymStore = create<GymStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 1,
+      version: 2,
       migrate: (persistedState, version) => {
         const restored = persistedState as Partial<GymStore>
-        if (version >= 1 || !restored.design) return persistedState as GymStore
+        if (!restored.design) return persistedState as GymStore
         return {
           ...restored,
           design: {
             ...restored.design,
+            equipment: version < 2 ? DEFAULT_EQUIPMENT.map((item) => ({ ...item })) : restored.design.equipment,
             architecture: {
               ...DEFAULT_ARCHITECTURE,
               ...restored.design.architecture,
-              ceiling: false,
-              ledLighting: false,
+              ...(version < 1 ? { ceiling: false, ledLighting: false } : {}),
             },
           },
         } as GymStore

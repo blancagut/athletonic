@@ -7,7 +7,7 @@ import { compatibleEquipment, ensureRackConfiguration, rackDimensions, rackWarni
 import type { EquipmentKind, FloorColor, LogoPlacementSurface, RoomArchitecture, RoomLayout } from './domain/types'
 import { GymScene } from './scene/GymScene'
 import { DEFAULT_ARCHITECTURE, useGymStore } from './state/gymStore'
-import { downloadGymJson, downloadGymPdf, downloadGymPng, prepareGymCanvas } from './utils/exportGym'
+import { downloadGymPdf, downloadGymPng, prepareGymCanvas } from './utils/exportGym'
 
 const FLOOR_SWATCHES: Array<{ id: FloorColor; label: string; hex: string }> = [
   { id: 'black', label: 'Black', hex: '#161a19' },
@@ -97,6 +97,8 @@ function App() {
   const equipmentLogoInput = useRef<HTMLInputElement>(null)
   const [savedNotice, setSavedNotice] = useState(false)
   const [exportStatus, setExportStatus] = useState<string | null>(null)
+  const [exportEmail, setExportEmail] = useState('')
+  const [mobilePanel, setMobilePanel] = useState<'library' | 'stage' | 'inspector'>('stage')
   const [assignmentError, setAssignmentError] = useState<string | null>(null)
   const [logoError, setLogoError] = useState<string | null>(null)
   const [rackStationCount, setRackStationCount] = useState(4)
@@ -198,15 +200,17 @@ function App() {
     window.setTimeout(() => setSavedNotice(false), 1800)
   }
 
-  const exportGym = async (format: 'png' | 'pdf' | 'json') => {
+  const exportGym = async (format: 'png' | 'pdf') => {
+    if (!/^\S+@\S+\.\S+$/.test(exportEmail.trim())) {
+      setExportStatus('Enter a valid email to download your gym.')
+      window.setTimeout(() => setExportStatus(null), 2800)
+      return
+    }
     try {
       setExportStatus(`Preparing ${format.toUpperCase()}...`)
-      if (format === 'json') downloadGymJson(design)
-      else {
-        const canvas = await prepareGymCanvas()
-        if (format === 'png') await downloadGymPng(canvas)
-        else await downloadGymPdf(canvas, design)
-      }
+      const canvas = await prepareGymCanvas()
+      if (format === 'png') await downloadGymPng(canvas)
+      else await downloadGymPdf(canvas, design)
       setExportStatus(`${format.toUpperCase()} downloaded`)
     } catch (error) {
       setExportStatus(error instanceof Error ? error.message : 'Export failed. Please try again.')
@@ -253,9 +257,9 @@ function App() {
           <details className="export-menu">
             <summary><Download size={16} /> Export</summary>
             <div>
+              <label className="export-email"><span>Email required</span><input type="email" required placeholder="you@example.com" value={exportEmail} onChange={(event) => setExportEmail(event.target.value)} /></label>
               <button onClick={() => void exportGym('png')}><strong>PNG image</strong><small>Current 3D view</small></button>
               <button onClick={() => void exportGym('pdf')}><strong>PDF report</strong><small>Image + design summary</small></button>
-              <button onClick={() => void exportGym('json')}><strong>Design JSON</strong><small>Technical backup</small></button>
             </div>
           </details>
           <button className="save-button" onClick={showSaved}><Save size={16} /> {savedNotice ? 'Saved' : 'Save local'}</button>
@@ -263,7 +267,14 @@ function App() {
         {exportStatus && <div className="export-status" role="status">{exportStatus}</div>}
       </header>
 
-      <section className="workspace">
+      <nav className="mobile-panel-tabs" aria-label="Gym builder sections">
+        <p>For the full workspace, rotate your phone to landscape.</p>
+        <button className={mobilePanel === 'library' ? 'is-active' : ''} onClick={() => setMobilePanel('library')}>Equipment</button>
+        <button className={mobilePanel === 'stage' ? 'is-active' : ''} onClick={() => setMobilePanel('stage')}>Gym</button>
+        <button className={mobilePanel === 'inspector' ? 'is-active' : ''} onClick={() => setMobilePanel('inspector')}>Customize</button>
+      </nav>
+
+      <section className={`workspace mobile-panel-${mobilePanel}`}>
         <aside className="library-panel">
           <div className="panel-title"><span>Equipment library</span><strong>Generic planning equipment</strong></div>
           <div className="catalog-scroll">

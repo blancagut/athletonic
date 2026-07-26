@@ -15,16 +15,19 @@
 .export-menu summary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: #fff; font-size: 11px; font-weight: 700; cursor: pointer; list-style: none; }
 .export-menu summary::-webkit-details-marker { display: none; }
 .export-menu[open] summary { border-color: #9aacca; background: #f0f3f8; }
-.export-menu > div { position: absolute; top: 40px; right: 0; display: grid; width: 190px; padding: 5px; border: 1px solid var(--line); border-radius: 7px; background: #fff; box-shadow: 0 12px 28px rgba(20, 29, 25, .18); }
+.export-menu > div { position: absolute; top: 40px; right: 0; display: grid; width: 210px; padding: 7px; border: 1px solid var(--line); border-radius: 7px; background: #fff; box-shadow: 0 12px 28px rgba(20, 29, 25, .18); }
 .export-menu > div button { display: grid; gap: 2px; padding: 9px; border: 0; border-radius: 5px; color: var(--ink); background: transparent; text-align: left; cursor: pointer; }
 .export-menu > div button:hover { background: #edf2ef; }
 .export-menu > div strong { font-size: 9px; }
 .export-menu > div small { color: var(--muted); font-size: 7px; }
+.export-email { display: grid; gap: 4px; padding: 4px 6px 7px; color: var(--muted); font-size: 8px; font-weight: 800; text-transform: uppercase; }
+.export-email input { width: 100%; height: 32px; padding: 0 8px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: #f7f8f7; font-size: 10px; text-transform: none; }
 .export-status { position: fixed; top: 68px; right: 14px; z-index: 50; max-width: 280px; padding: 8px 11px; border: 1px solid #aab8cd; border-radius: 6px; color: #304f78; background: #f0f4fa; box-shadow: 0 5px 18px rgba(30, 39, 54, .14); font-size: 9px; font-weight: 800; }
 .icon-button, .save-button, .scene-tools button { display: inline-flex; align-items: center; justify-content: center; height: 34px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; }
 .icon-button { width: 34px; padding: 0; }
 .save-button { gap: 7px; padding: 0 13px; color: #fff; border-color: var(--ink); background: var(--ink); font-size: 11px; font-weight: 700; }
 .workspace { display: grid; grid-template-columns: 248px minmax(0, 1fr) 254px; min-height: 0; }
+.mobile-panel-tabs { display: none; }
 .library-panel, .inspector-panel { z-index: 10; display: flex; min-height: 0; flex-direction: column; background: var(--panel); }
 .library-panel { border-right: 1px solid var(--line); }
 .inspector-panel { overflow-x: hidden; overflow-y: auto; border-left: 1px solid var(--line); overscroll-behavior: contain; }
@@ -207,10 +210,17 @@
 }
 
 @media (max-width: 720px) {
-  .studio-shell { grid-template-rows: 98px minmax(0, 1fr); }
+  .studio-shell { grid-template-rows: 98px 62px minmax(0, 1fr); }
   .topbar { grid-template-columns: 1fr auto; grid-template-rows: 52px 40px; }
   .workspace { grid-template-columns: 1fr; }
-  .library-panel, .inspector-panel { display: none; }
+  .mobile-panel-tabs { z-index: 25; display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 4px; border-bottom: 1px solid var(--line); background: #f5f6f5; }
+  .mobile-panel-tabs p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 8px; font-weight: 700; text-align: center; }
+  .mobile-panel-tabs button { border: 0; border-radius: 4px; color: var(--muted); background: transparent; font-size: 10px; font-weight: 800; }
+  .mobile-panel-tabs button.is-active { color: var(--ink); background: #fff; box-shadow: 0 1px 4px rgba(20, 29, 25, .14); }
+  .library-panel, .inspector-panel, .stage { display: none; }
+  .mobile-panel-library .library-panel, .mobile-panel-inspector .inspector-panel, .mobile-panel-stage .stage { display: flex; }
+  .mobile-panel-inspector .inspector-panel { position: static; width: auto; box-shadow: none; }
+  .library-panel, .inspector-panel { height: 100%; }
   .stage { padding: 0; }
   .scene-status span:first-child, .scene-status span:last-child { display: none; }
 }
