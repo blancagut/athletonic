@@ -245,7 +245,7 @@ function App() {
     <main className="studio-shell">
       <header className="topbar">
         <div className="brand-block">
-          <img className="brand-mark" src="/athletonic-logo.svg" alt="" />
+          <img className="brand-mark" src={`${import.meta.env.BASE_URL}athletonic-logo.svg`} alt="" />
           <span><span className="brand-title"><strong>Atheltonic</strong><b>BETA</b></span><small>Gym configurator</small></span>
         </div>
         <div className="top-actions">
