@@ -1,4 +1,5 @@
 import { RoundedBox } from '@react-three/drei'
+import { POWDER_COAT_BUMP_TEXTURE } from './materialTextures'
 
 const STEEL = '#303735'
 const DARK_STEEL = '#202624'
@@ -22,7 +23,7 @@ function BoxPart({
   return (
     <mesh position={position} castShadow receiveShadow>
       <boxGeometry args={size} />
-      <meshStandardMaterial color={color} metalness={metalness} roughness={roughness} />
+      <meshPhysicalMaterial color={color} metalness={metalness} roughness={roughness} clearcoat={0.07} clearcoatRoughness={0.58} bumpMap={POWDER_COAT_BUMP_TEXTURE} bumpScale={0.0025} />
     </mesh>
   )
 }
@@ -102,6 +103,12 @@ export function EquipmentRack() {
         <group key={x}>
           <BoxPart position={[x, 1.52, 0]} size={[0.04, 0.04, 0.46]} />
           <BoxPart position={[x, 0.99, 0]} size={[0.04, 0.04, 0.46]} />
+          {[0.18, 0.72, 1.26, 1.78].map((y) => (
+            <mesh key={y} position={[x, y + 0.02, 0.265]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+              <cylinderGeometry args={[0.012, 0.012, 0.012, 12]} />
+              <meshStandardMaterial color={HARDWARE} metalness={0.82} roughness={0.24} />
+            </mesh>
+          ))}
         </group>
       ))}
     </group>

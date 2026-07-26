@@ -188,7 +188,7 @@ function DoorAssembly({ label, color }: { label: string; color: string }) {
 }
 
 function WindowAssembly({ width, height }: { width: number; height: number }) {
-  const frameWidth = 0.045
+  const frameWidth = 0.068
   const glassWidth = width - frameWidth * 2
   const glassHeight = height - frameWidth * 2
   const sillHeight = 0.82
@@ -206,7 +206,7 @@ function WindowAssembly({ width, height }: { width: number; height: number }) {
       </mesh>
       {[-1, 1].map((side) => <mesh key={`side-${side}`} position={[side * (width / 2 - frameWidth / 2), 0, 0.07]} castShadow><boxGeometry args={[frameWidth, height, 0.055]} />{frameMaterial}</mesh>)}
       {[-1, 1].map((side) => <mesh key={`rail-${side}`} position={[0, side * (height / 2 - frameWidth / 2), 0.07]} castShadow><boxGeometry args={[width, frameWidth, 0.055]} />{frameMaterial}</mesh>)}
-      {width >= 3.15 && <mesh position={[0, 0, 0.072]} castShadow><boxGeometry args={[0.032, glassHeight, 0.05]} />{frameMaterial}</mesh>}
+      {width >= 3.15 && <mesh position={[0, 0, 0.072]} castShadow><boxGeometry args={[0.048, glassHeight, 0.06]} />{frameMaterial}</mesh>}
       <mesh position={[0, -height / 2 - 0.045, 0.075]} castShadow receiveShadow>
         <boxGeometry args={[width + 0.16, 0.055, 0.16]} />
         <meshStandardMaterial color="#596260" metalness={0.32} roughness={0.52} />

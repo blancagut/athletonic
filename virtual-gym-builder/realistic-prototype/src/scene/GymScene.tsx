@@ -12,6 +12,7 @@ import { useGymStore } from '../state/gymStore'
 import { ArchitecturalElements } from './ArchitecturalElements'
 import { Bench, EquipmentRack, ReceptionCounter, WallPads } from './FacilitiesModels'
 import { LicensedModel } from './LicensedModel'
+import { CANVAS_BUMP_TEXTURE, EVA_BUMP_TEXTURE, POWDER_COAT_BUMP_TEXTURE } from './materialTextures'
 import { isProductBagKind, ProductBagModel } from './ProductBagModels'
 import { BLACK_LEATHER_BUMP_TEXTURE } from './bagMaterials'
 
@@ -257,11 +258,11 @@ function TatamiSurface({ width, depth, primary, border }: { width: number; depth
     <group position={[0, 0.025, 0]}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={[width, 0.05, depth]} />
-        <meshStandardMaterial color={border} roughness={0.96} />
+        <meshStandardMaterial color={border} roughness={0.94} bumpMap={EVA_BUMP_TEXTURE} bumpScale={0.006} />
       </mesh>
       <mesh position={[0, 0.027, 0]} receiveShadow>
         <boxGeometry args={[innerWidth, 0.018, innerDepth]} />
-        <meshStandardMaterial color={primary} roughness={0.97} />
+        <meshStandardMaterial color={primary} roughness={0.93} bumpMap={EVA_BUMP_TEXTURE} bumpScale={0.008} />
       </mesh>
       <gridHelper
         args={[Math.max(width, depth), Math.ceil(Math.max(width, depth)), seamColor, seamColor]}
@@ -302,8 +303,14 @@ function Room() {
             <boxGeometry args={[0.18, room.height, room.depth]} />
             <meshStandardMaterial color="#d9dedb" roughness={0.78} />
           </mesh>
-          <Bar from={[-room.width / 2 + 0.1, 0.13, -room.depth / 2 + 0.1]} to={[room.width / 2, 0.13, -room.depth / 2 + 0.1]} radius={0.075} color="#53605b" />
-          <Bar from={[-room.width / 2 + 0.1, 0.13, -room.depth / 2]} to={[-room.width / 2 + 0.1, 0.13, room.depth / 2]} radius={0.075} color="#53605b" />
+          <mesh position={[0, 0.06, -room.depth / 2 + 0.102]} castShadow receiveShadow>
+            <boxGeometry args={[room.width - 0.18, 0.12, 0.026]} />
+            <meshStandardMaterial color="#4d5753" roughness={0.58} bumpMap={POWDER_COAT_BUMP_TEXTURE} bumpScale={0.002} />
+          </mesh>
+          <mesh position={[-room.width / 2 + 0.102, 0.06, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.026, 0.12, room.depth - 0.18]} />
+            <meshStandardMaterial color="#4d5753" roughness={0.58} bumpMap={POWDER_COAT_BUMP_TEXTURE} bumpScale={0.002} />
+          </mesh>
           <Bar from={[-room.width / 2 + 0.1, 0, -room.depth / 2 + 0.1]} to={[-room.width / 2 + 0.1, room.height, -room.depth / 2 + 0.1]} radius={0.065} color="#69736f" />
           <Bar from={[room.width / 2 - 0.1, 0, -room.depth / 2 + 0.1]} to={[room.width / 2 - 0.1, room.height, -room.depth / 2 + 0.1]} radius={0.065} color="#69736f" />
           <Bar from={[-room.width / 2 + 0.1, 0, room.depth / 2 - 0.1]} to={[-room.width / 2 + 0.1, room.height, room.depth / 2 - 0.1]} radius={0.065} color="#69736f" />
@@ -386,7 +393,7 @@ function SquareBeam({ from, to, size = 0.065, color = '#171c1a' }: { from: THREE
   return (
     <mesh position={midpoint} quaternion={quaternion} castShadow receiveShadow>
       <boxGeometry args={[size, length, size]} />
-      <meshStandardMaterial color={color} metalness={0.56} roughness={0.34} />
+      <meshPhysicalMaterial color={color} metalness={0.58} roughness={0.36} clearcoat={0.08} clearcoatRoughness={0.54} bumpMap={POWDER_COAT_BUMP_TEXTURE} bumpScale={0.0025} />
     </mesh>
   )
 }
@@ -426,8 +433,8 @@ function RingRope({ from, to, height, color }: { from: [number, number]; to: [nu
 
   return (
     <mesh castShadow>
-      <tubeGeometry args={[curve, 40, 0.022, 8, false]} />
-      <meshStandardMaterial color={color} roughness={0.72} />
+      <tubeGeometry args={[curve, 48, 0.027, 12, false]} />
+      <meshStandardMaterial color={color} roughness={0.68} bumpMap={CANVAS_BUMP_TEXTURE} bumpScale={0.0035} />
     </mesh>
   )
 }
@@ -497,7 +504,7 @@ function BoxingRing({ item }: { item: PlacedEquipment }) {
       ])}
       <mesh position={[0, 0.955, 0]} receiveShadow>
         <boxGeometry args={[7.72, 0.09, 7.72]} />
-        <meshStandardMaterial color={FLOOR_COLORS[item.customization?.surfaceColor ?? 'gray']} roughness={0.9} />
+        <meshStandardMaterial color={FLOOR_COLORS[item.customization?.surfaceColor ?? 'gray']} roughness={0.86} bumpMap={CANVAS_BUMP_TEXTURE} bumpScale={0.012} />
       </mesh>
       <mesh position={[0, 0.91, 3.895]} receiveShadow><boxGeometry args={[7.8, 0.82, 0.03]} /><meshStandardMaterial color="#242b28" roughness={0.7} /></mesh>
       <mesh position={[0, 0.91, -3.895]} receiveShadow><boxGeometry args={[7.8, 0.82, 0.03]} /><meshStandardMaterial color="#242b28" roughness={0.7} /></mesh>
