@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Virtual Gym Builder | Athletonic</title>
+    <meta
+      name="description"
+      content="Virtual Gym Builder by Athletonic. Empty gym plan editor with grid, zoom, pan, dimensions, and configurable room size."
+    />
+    <link rel="canonical" href="https://athletonic.com/virtual-gym-builder" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href="/virtual-gym-builder/styles.css" />
+    <script src="/virtual-gym-builder/app.js" defer></script>
+  </head>
+  <body>
+    <main class="builder-page">
+      <header class="builder-toolbar">
+        <div class="toolbar-intro">
+          <p class="toolbar-eyebrow">Athletonic</p>
+          <h1>Virtual Gym Builder</h1>
+          <p class="toolbar-copy">Empty layout editor with scale, grid, zoom, pan, and live measurements.</p>
+        </div>
+
+        <form class="toolbar-controls" id="size-form">
+          <fieldset class="quick-sizes">
+            <legend>Quick sizes</legend>
+            <div class="quick-size-list">
+              <button type="button" class="quick-size-button" data-area="50">50 m²</button>
+              <button type="button" class="quick-size-button" data-area="100">100 m²</button>
+              <button type="button" class="quick-size-button" data-area="200">200 m²</button>
+              <button type="button" class="quick-size-button" data-area="300">300 m²</button>
+              <button type="button" class="quick-size-button" data-area="500">500 m²</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="custom-size">
+            <legend>Custom size</legend>
+            <label>
+              <span>Width (m)</span>
+              <input id="width-input" name="width" type="number" min="1" step="0.1" value="10" inputmode="decimal" />
+            </label>
+            <label>
+              <span>Length (m)</span>
+              <input id="length-input" name="length" type="number" min="1" step="0.1" value="10" inputmode="decimal" />
+            </label>
+            <button type="submit" class="apply-button">Apply size</button>
+          </fieldset>
+
+          <fieldset class="view-controls">
+            <legend>View</legend>
+            <div class="view-button-row">
+              <button type="button" id="zoom-out-button" aria-label="Zoom out">-</button>
+              <button type="button" id="zoom-in-button" aria-label="Zoom in">+</button>
+              <button type="button" id="fit-button">Fit</button>
+              <button type="button" id="reset-button">Reset</button>
+            </div>
+            <p class="zoom-readout">Zoom <strong id="zoom-value">100%</strong></p>
+          </fieldset>
+
+          <fieldset class="edit-controls">
+            <legend>Edit</legend>
+            <div class="edit-button-row">
+              <button type="button" id="undo-button">Undo</button>
+              <button type="button" id="redo-button">Redo</button>
+              <button type="button" id="copy-button">Copy</button>
+              <button type="button" id="paste-button">Paste</button>
+              <button type="button" id="duplicate-button">Duplicate</button>
+              <button type="button" id="delete-button">Delete</button>
+              <button type="button" id="rotate-left-button">Rotate -15°</button>
+              <button type="button" id="rotate-right-button">Rotate +15°</button>
+              <button type="button" id="front-button">Bring Front</button>
+              <button type="button" id="back-button">Send Back</button>
+              <button type="button" id="snap-button" class="is-active" aria-pressed="true">Snap to Grid</button>
+              <button type="button" id="multi-select-button" aria-pressed="false">Multi-Select</button>
+            </div>
+            <p class="selection-readout" id="selection-readout">No products selected</p>
+          </fieldset>
+
+          <section class="scale-readout" aria-label="Scale information">
+            <p><span>Gym</span><strong id="gym-size-readout">10.0 m × 10.0 m</strong></p>
+            <p><span>Area</span><strong id="area-readout">100.0 m²</strong></p>
+            <p><span>Scale</span><strong id="scale-readout">1 m = 64 px</strong></p>
+          </section>
+        </form>
+      </header>
+
+      <section class="builder-workspace">
+        <aside class="builder-library" aria-label="Product library">
+          <div class="library-header">
+            <p class="library-eyebrow">Product Library</p>
+            <h2>Layout library</h2>
+            <p>Drag catalog products or external custom fixtures onto the plan.</p>
+          </div>
+          <div id="library-categories" class="library-categories"></div>
+        </aside>
+
+        <section class="builder-stage" aria-label="Gym editor">
+          <div class="stage-hint" id="stage-hint">Drag to move the plan. Drag products from the left panel to place them.</div>
+          <div class="stage-drop-indicator" id="stage-drop-indicator" hidden>Drop to place item</div>
+          <canvas id="gym-canvas"></canvas>
+        </section>
+      </section>
+    </main>
+    <div class="drag-preview" id="drag-preview" hidden></div>
+  </body>
+</html>
