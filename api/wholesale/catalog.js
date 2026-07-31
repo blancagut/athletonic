@@ -3,10 +3,12 @@ const path = require("path");
 const { handleError, json, methodNotAllowed } = require("../_lib/http");
 const {
   collectWholesaleFacets,
+  loadPublishedFightCatalogManifest,
   loadWholesaleCatalogManifest,
   matchesWholesaleFilters,
   paginateWholesaleProducts,
 } = require("../_lib/wholesale-muay-thai");
+const { isHealthCareSupplement, loadSupplementsCatalogManifest } = require("../_lib/wholesale-supplements");
 
 const MAX_PAGE_SIZE = 5000;
 
@@ -86,6 +88,10 @@ function normalizePageValue(value, fallback, maxValue) {
   return Math.min(parsed, maxValue);
 }
 
+function queryText(value) {
+  return String(value || "").replace(/\+/g, " ").trim();
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     methodNotAllowed(res, ["GET"]);
@@ -93,14 +99,21 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const manifest = loadWholesaleCatalogManifest();
+    const listName = queryText(req.query.list);
+    const catalogName = queryText(req.query.catalog);
+    const catalogGroup = queryText(req.query.catalog_group).toLowerCase();
+    const manifest = catalogName === "supplements"
+      ? loadSupplementsCatalogManifest()
+      : listName === "muaythai_mma"
+        ? loadPublishedFightCatalogManifest()
+        : loadWholesaleCatalogManifest();
     const filters = {
-      search: String(req.query.search || req.query.q || "").trim(),
-      brand: String(req.query.brand || "").trim(),
-      category: String(req.query.category || "").trim(),
-      size: String(req.query.size || "").trim(),
-      color: String(req.query.color || "").trim(),
-      availability: String(req.query.availability || "").trim(),
+      search: queryText(req.query.search || req.query.q),
+      brand: queryText(req.query.brand),
+      category: queryText(req.query.category),
+      size: queryText(req.query.size),
+      color: queryText(req.query.color),
+      availability: queryText(req.query.availability),
     };
 
     const allowedBrands = new Set(
@@ -120,6 +133,8 @@ module.exports = async function handler(req, res) {
     const baseProducts = manifest.products.filter((product) => {
       if (allowedBrands.size && !allowedBrands.has(String(product.brand_slug || "").toLowerCase())) return false;
       if (excludedIds.size && excludedIds.has(String(product.id))) return false;
+      if (catalogName === "supplements" && catalogGroup === "health-care" && !isHealthCareSupplement(product)) return false;
+      if (catalogName === "supplements" && catalogGroup === "supplements" && isHealthCareSupplement(product)) return false;
       return true;
     });
 
@@ -147,6 +162,7 @@ module.exports = async function handler(req, res) {
 
     json(res, 200, {
       generated_at: manifest.generated_at,
+      catalog_group: catalogGroup || null,
       product_count: manifest.products.length,
       filtered_count: filtered.length,
       category_counts: categoryCounts,
@@ -179,6 +195,8 @@ module.exports = async function handler(req, res) {
         retail_price_cents: product.retail_price_cents,
         wholesale_price_cents: product.wholesale_price_cents,
         wholesale_discount_bps: product.wholesale_discount_bps,
+        trainer_price_cents: product.trainer_price_cents,
+        trainer_discount_bps: product.trainer_discount_bps,
         sizes: product.sizes,
         colors: product.colors,
         other_options: product.other_options,

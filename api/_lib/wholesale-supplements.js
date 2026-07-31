@@ -7,6 +7,24 @@ const { cleanText, humanizeSlug, stripHtml, toPriceCents } = require("./wholesal
 const SUPPLEMENTS_CATALOG_PATH = path.join(process.cwd(), "data", "wholesale-supplements-catalog.json");
 
 const WHOLESALE_SUPPLEMENTS_DISCOUNT_BPS = SUPPLEMENT_DISCOUNT_BPS;
+const TRAINER_SUPPLEMENTS_DISCOUNT_BPS = 3000;
+
+const HEALTH_CARE_CATEGORY_SLUGS = new Set([
+  "adaptogens_herbals",
+  "collagen_beauty",
+  "gut_health",
+  "hair_skin_nails",
+  "hormone_support",
+  "immune_support",
+  "joint_support",
+  "longevity",
+  "menopause",
+  "multivitamins",
+  "omega_fish_oil",
+  "prenatal_postnatal",
+  "sleep_stress",
+  "vitamins_minerals",
+]);
 
 // Brands approved for the supplements / vitamins / beauty wholesale line sheet.
 const SUPPLEMENT_WHOLESALE_BRANDS = new Set([
@@ -160,6 +178,15 @@ function supplementWholesalePriceCents(retailPriceCents) {
   return Math.max(1, Math.round((retailPriceCents * (10000 - WHOLESALE_SUPPLEMENTS_DISCOUNT_BPS)) / 10000));
 }
 
+function supplementTrainerPriceCents(retailPriceCents) {
+  if (!Number.isInteger(retailPriceCents) || retailPriceCents <= 0) return null;
+  return Math.max(1, Math.round((retailPriceCents * (10000 - TRAINER_SUPPLEMENTS_DISCOUNT_BPS)) / 10000));
+}
+
+function isHealthCareSupplement(product) {
+  return HEALTH_CARE_CATEGORY_SLUGS.has(String(product?.category_slug || "").trim().toLowerCase());
+}
+
 function normalizeTextList(values) {
   return [...new Set((values || []).map((value) => stripHtml(value).trim()).filter(Boolean))];
 }
@@ -190,6 +217,8 @@ function normalizeSupplementsCatalogProduct(product) {
     retail_price_cents: retailPriceCents,
     wholesale_price_cents: supplementWholesalePriceCents(retailPriceCents),
     wholesale_discount_bps: WHOLESALE_SUPPLEMENTS_DISCOUNT_BPS,
+    trainer_price_cents: supplementTrainerPriceCents(retailPriceCents),
+    trainer_discount_bps: TRAINER_SUPPLEMENTS_DISCOUNT_BPS,
     sizes: Array.isArray(product.sizes) ? normalizeTextList(product.sizes) : [],
     colors: Array.isArray(product.colors) ? normalizeTextList(product.colors) : [],
     other_options: Array.isArray(product.other_options) ? normalizeTextList(product.other_options) : [],
@@ -215,11 +244,15 @@ module.exports = {
   SUPPLEMENTS_CATALOG_PATH,
   SUPPLEMENT_WHOLESALE_BRANDS,
   SUPPLEMENT_DEPARTMENTS,
+  HEALTH_CARE_CATEGORY_SLUGS,
   WHOLESALE_SUPPLEMENTS_DISCOUNT_BPS,
+  TRAINER_SUPPLEMENTS_DISCOUNT_BPS,
   cleanText,
   deriveSupplementCategory,
+  isHealthCareSupplement,
   loadSupplementsCatalogManifest,
   normalizeSupplementsCatalogProduct,
+  supplementTrainerPriceCents,
   supplementWholesalePriceCents,
   toPriceCents,
 };

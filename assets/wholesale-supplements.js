@@ -1,8 +1,23 @@
 (function () {
   const API_URL = "/api/wholesale/supplements-catalog";
   const QUOTE_API_URL = "/api/wholesale/quote-requests";
-  const STORAGE_KEY = "athletonic-wholesale-supplements-quote-cart-v1";
+  const PRICING_TIER = document.body.dataset.pricingTier === "trainer" ? "trainer" : "wholesale";
+  const TIER_LABEL = PRICING_TIER === "trainer" ? "Trainer" : "Wholesale";
+  const PRICE_FIELD = PRICING_TIER === "trainer" ? "trainer_price_cents" : "wholesale_price_cents";
+  const DISCOUNT_FIELD = PRICING_TIER === "trainer" ? "trainer_discount_bps" : "wholesale_discount_bps";
+  const STORAGE_KEY = `athletonic-${PRICING_TIER}-supplements-quote-cart-v1`;
   const PAGE_SIZE = 60;
+  const INITIAL_CATALOG_GROUP = new URLSearchParams(window.location.search).get("catalog") === "health-care"
+    ? "health-care"
+    : "supplements";
+  const BRAND_LOGOS = {
+    optimum_nutrition: "/assets/brands/Optimum-Nutrition-Logo.png",
+    muscletech: "/assets/brands/muscletech%20-%20logo.png",
+    animal_pak: "/assets/brands/animal-logo.png",
+    cellucor: "/assets/brands/cellucor-logo.svg",
+    ghost_lifestyle: "/assets/brands/ghost-logo.png",
+    nutrabio: "/assets/brands/nutrabio-logo.svg",
+  };
 
   const els = {
     resultCount: document.querySelector("[data-result-count]"),
@@ -14,6 +29,7 @@
     category: document.querySelector("[data-filter-category]"),
     size: document.querySelector("[data-filter-size]"),
     color: document.querySelector("[data-filter-color]"),
+    catalogGroups: [...document.querySelectorAll("[data-catalog-group]")],
     quoteOpen: document.querySelector("[data-quote-open]"),
     quoteClose: document.querySelector("[data-quote-close]"),
     quoteDrawer: document.querySelector("[data-quote-drawer]"),
@@ -32,6 +48,7 @@
 
   const state = {
     filters: { search: "", brand: "", category: "", size: "", color: "" },
+    catalogGroup: INITIAL_CATALOG_GROUP,
     facets: { brands: [], categories: [], sizes: [], colors: [] },
     page: 1,
     pageSize: PAGE_SIZE,
@@ -104,21 +121,22 @@
 
   function priceCellHtml(product) {
     const retail = formatUsd(product.retail_price_cents);
-    const wholesale = formatUsd(product.wholesale_price_cents);
-    if (!retail || !wholesale) {
+    const tierPrice = formatUsd(product[PRICE_FIELD]);
+    if (!retail || !tierPrice) {
       return '<div class="wholesale-line__price"><span class="wholesale-muted">Quote only</span></div>';
     }
     return `
       <div class="wholesale-line__price">
-        <strong>${retail}</strong>
-        <span>Wholesale <b>${wholesale}</b></span>
+        <span class="supplement-list-price">List <del>${retail}</del></span>
+        <strong>${tierPrice}</strong>
+        <em>${escapeHtml(discountLabel(product[DISCOUNT_FIELD]))}</em>
       </div>
     `;
   }
 
-  function estimatedWholesaleTotalCents() {
+  function estimatedTierTotalCents() {
     return state.quoteCart.reduce((sum, item) => {
-      const unit = Number(item.wholesale_price_cents);
+      const unit = Number(item.tier_price_cents);
       if (!Number.isFinite(unit) || unit <= 0) return sum;
       return sum + unit * Number(item.quantity || 0);
     }, 0);
@@ -173,7 +191,7 @@
     if (els.quoteCount) els.quoteCount.textContent = String(lineCount);
     if (els.quoteOpen) els.quoteOpen.dataset.hasItems = lineCount > 0 ? "true" : "false";
     if (els.quoteEstimate) {
-      const totalCents = estimatedWholesaleTotalCents();
+      const totalCents = estimatedTierTotalCents();
       els.quoteEstimate.textContent = totalCents > 0 ? formatUsd(totalCents) : "\u2014";
     }
   }
@@ -192,11 +210,25 @@
     selectEl.value = currentValue || "";
   }
 
+  function displayCategoryLabel(value) {
+    return value === "Collagen & Beauty" ? "Collagen & Skin Care" : value;
+  }
+
+  function catalogGroupLabel() {
+    return state.catalogGroup === "health-care" ? "Health Care" : "Supplements";
+  }
+
+  function syncCatalogGroupMenu() {
+    els.catalogGroups.forEach((button) => {
+      button.setAttribute("aria-pressed", button.dataset.catalogGroup === state.catalogGroup ? "true" : "false");
+    });
+  }
+
   function updateFacetMenus() {
     renderSelect(els.brand, state.facets.brands, state.filters.brand, "All brands");
     renderSelect(
       els.category,
-      (state.facets.categories || []).map((value) => ({ value, label: value })),
+      (state.facets.categories || []).map((value) => ({ value, label: displayCategoryLabel(value) })),
       state.filters.category,
       "All categories"
     );
@@ -239,6 +271,30 @@
     `;
   }
 
+  function brandBadgeHtml(product) {
+    const logo = BRAND_LOGOS[product.brand_slug];
+    if (logo) {
+      return `
+        <div class="supplement-product-brand">
+          <img src="${escapeHtml(logo)}" alt="" loading="lazy" decoding="async" />
+          <span>${escapeHtml(product.brand)}</span>
+        </div>
+      `;
+    }
+    const initials = String(product.brand || "")
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase();
+    return `
+      <div class="supplement-product-brand">
+        <b aria-hidden="true">${escapeHtml(initials)}</b>
+        <span>${escapeHtml(product.brand)}</span>
+      </div>
+    `;
+  }
+
   function renderProducts(products, append) {
     if (!els.list) return;
     const html = products
@@ -254,9 +310,9 @@
               <strong>${escapeHtml(product.name)}</strong>
               <span>${escapeHtml(product.id)}</span>
             </div>
-            <div class="wholesale-line__brand">${escapeHtml(product.brand)}</div>
+            <div class="wholesale-line__brand">${brandBadgeHtml(product)}</div>
             <div class="wholesale-line__type">
-              <b>${escapeHtml(product.category_label || product.product_type)}</b>
+              <b>${escapeHtml(displayCategoryLabel(product.category_label || product.product_type))}</b>
             </div>
             <div class="wholesale-line__options">
               ${optionChips(product.sizes, "Sizes")}
@@ -292,9 +348,9 @@
         const options = Object.entries(item.selected_options || {})
           .map(([key, value]) => `<span>${escapeHtml(key)}: ${escapeHtml(value)}</span>`)
           .join("");
-        const wholesale = formatUsd(item.wholesale_price_cents);
-        const priceLine = wholesale
-          ? `<span class="wholesale-quote-item__price">Wholesale <b>${wholesale}</b>/unit</span>`
+        const tierPrice = formatUsd(item.tier_price_cents);
+        const priceLine = tierPrice
+          ? `<span class="wholesale-quote-item__price">${escapeHtml(TIER_LABEL)} <b>${tierPrice}</b>/unit</span>`
           : '<span class="wholesale-quote-item__price wholesale-muted">Price on quote</span>';
         return `
           <article class="wholesale-quote-item" data-quote-key="${escapeHtml(quoteItemKey(item))}">
@@ -303,7 +359,7 @@
               <strong>${escapeHtml(item.name)}</strong>
               <span>${escapeHtml(item.brand)}</span>
               ${priceLine}
-              <div class="wholesale-quote-item__meta">${options || `<span>${escapeHtml(item.category_label || "")}</span>`}</div>
+              <div class="wholesale-quote-item__meta">${options || `<span>${escapeHtml(displayCategoryLabel(item.category_label || ""))}</span>`}</div>
               <div class="wholesale-quote-item__controls">
                 <label>
                   <span>Qty</span>
@@ -362,7 +418,12 @@
 
     setLoading(true);
     try {
-      const query = params({ ...state.filters, page: state.page, page_size: state.pageSize });
+      const query = params({
+        ...state.filters,
+        catalog_group: state.catalogGroup,
+        page: state.page,
+        page_size: state.pageSize,
+      });
       const response = await fetch(`${API_URL}?${query}`, { headers: { Accept: "application/json" } });
       if (!response.ok) throw new Error(`Catalog request failed (${response.status})`);
       const payload = await response.json();
@@ -376,7 +437,7 @@
       if (reset) updateFacetMenus();
       renderProducts(incoming, !reset);
       if (els.resultCount) els.resultCount.textContent = String(state.total);
-      setStatus(`${state.total} catalog lines`);
+      setStatus(`${state.total} ${catalogGroupLabel()} lines`);
       if (els.loadMore) els.loadMore.hidden = !state.hasMore;
     } catch (error) {
       if (els.list) els.list.innerHTML = '<p class="wholesale-empty">Could not load catalog.</p>';
@@ -425,7 +486,7 @@
         url: product.url,
         availability_status: product.availability_status,
         retail_price_cents: product.retail_price_cents || null,
-        wholesale_price_cents: product.wholesale_price_cents || null,
+        tier_price_cents: product[PRICE_FIELD] || null,
         selected_options: selectedOptions,
         quantity,
       });
@@ -492,6 +553,7 @@
       whatsapp: String(formData.get("whatsapp") || "").trim(),
       country: String(formData.get("country") || "").trim(),
       notes: String(formData.get("notes") || "").trim(),
+      pricing_tier: PRICING_TIER,
       items: state.quoteCart.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
@@ -539,6 +601,21 @@
     [els.brand, els.category, els.size, els.color].forEach((el) => {
       if (el) el.addEventListener("change", reload);
     });
+    els.catalogGroups.forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextGroup = button.dataset.catalogGroup === "health-care" ? "health-care" : "supplements";
+        if (nextGroup === state.catalogGroup) return;
+        state.catalogGroup = nextGroup;
+        state.filters.category = "";
+        if (els.category) els.category.value = "";
+        const url = new URL(window.location.href);
+        if (nextGroup === "health-care") url.searchParams.set("catalog", "health-care");
+        else url.searchParams.delete("catalog");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+        syncCatalogGroupMenu();
+        reload();
+      });
+    });
     if (els.loadMore) {
       els.loadMore.addEventListener("click", () => {
         if (state.loading || !state.hasMore) return;
@@ -575,6 +652,7 @@
 
   function boot() {
     bindEvents();
+    syncCatalogGroupMenu();
     renderQuoteCart();
     updateQuoteBadges();
     loadCatalog({ reset: true });

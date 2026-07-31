@@ -3,10 +3,13 @@ const test = require("node:test");
 
 const {
   SUPPLEMENT_WHOLESALE_BRANDS,
+  TRAINER_SUPPLEMENTS_DISCOUNT_BPS,
   WHOLESALE_SUPPLEMENTS_DISCOUNT_BPS,
   deriveSupplementCategory,
+  isHealthCareSupplement,
   loadSupplementsCatalogManifest,
   normalizeSupplementsCatalogProduct,
+  supplementTrainerPriceCents,
   supplementWholesalePriceCents,
 } = require("../api/_lib/wholesale-supplements");
 const { sanitizeQuoteItem } = require("../api/_lib/wholesale-muay-thai");
@@ -18,6 +21,15 @@ test("supplements wholesale discount is 50%", () => {
   assert.equal(supplementWholesalePriceCents(1), 1);
   assert.equal(supplementWholesalePriceCents(null), null);
   assert.equal(supplementWholesalePriceCents(0), null);
+});
+
+test("supplements trainer discount is 30%", () => {
+  assert.equal(TRAINER_SUPPLEMENTS_DISCOUNT_BPS, 3000);
+  assert.equal(supplementTrainerPriceCents(10000), 7000);
+  assert.equal(supplementTrainerPriceCents(2999), 2099);
+  assert.equal(supplementTrainerPriceCents(1), 1);
+  assert.equal(supplementTrainerPriceCents(null), null);
+  assert.equal(supplementTrainerPriceCents(0), null);
 });
 
 test("normalizeSupplementsCatalogProduct applies supplement pricing", () => {
@@ -35,6 +47,8 @@ test("normalizeSupplementsCatalogProduct applies supplement pricing", () => {
   assert.equal(product.retail_price_cents, 7999);
   assert.equal(product.wholesale_price_cents, 4000);
   assert.equal(product.wholesale_discount_bps, 5000);
+  assert.equal(product.trainer_price_cents, 5599);
+  assert.equal(product.trainer_discount_bps, 3000);
   assert.equal(product.category_label, "Supplements");
 });
 
@@ -64,6 +78,13 @@ test("deriveSupplementCategory maps store collections", () => {
   assert.deepEqual(deriveSupplementCategory(""), { slug: "supplements", label: "Supplements" });
 });
 
+test("health care categories stay separate from performance supplements", () => {
+  assert.equal(isHealthCareSupplement({ category_slug: "collagen_beauty" }), true);
+  assert.equal(isHealthCareSupplement({ category_slug: "vitamins_minerals" }), true);
+  assert.equal(isHealthCareSupplement({ category_slug: "protein" }), false);
+  assert.equal(isHealthCareSupplement({ category_slug: "pre_workout" }), false);
+});
+
 test("supplements catalog manifest loads with priced products from approved brands", () => {
   const manifest = loadSupplementsCatalogManifest();
   assert.ok(manifest.products.length > 1000, "expected a large supplements catalog");
@@ -74,13 +95,19 @@ test("supplements catalog manifest loads with priced products from approved bran
   for (const product of manifest.products.slice(0, 500)) {
     assert.ok(SUPPLEMENT_WHOLESALE_BRANDS.has(product.brand_slug), `unexpected brand ${product.brand_slug}`);
     assert.equal(product.wholesale_discount_bps, 5000);
+    assert.equal(product.trainer_discount_bps, 3000);
     if (Number.isInteger(product.retail_price_cents)) {
       assert.equal(
         product.wholesale_price_cents,
         Math.max(1, Math.round(product.retail_price_cents * 0.5))
       );
+      assert.equal(
+        product.trainer_price_cents,
+        Math.max(1, Math.round((product.retail_price_cents * 7000) / 10000))
+      );
     } else {
       assert.equal(product.wholesale_price_cents, null);
+      assert.equal(product.trainer_price_cents, null);
     }
   }
 
