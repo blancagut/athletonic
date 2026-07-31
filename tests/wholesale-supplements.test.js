@@ -79,10 +79,10 @@ test("deriveSupplementCategory maps store collections", () => {
 });
 
 test("health care categories stay separate from performance supplements", () => {
-  assert.equal(isHealthCareSupplement({ category_slug: "collagen_beauty" }), true);
-  assert.equal(isHealthCareSupplement({ category_slug: "vitamins_minerals" }), true);
-  assert.equal(isHealthCareSupplement({ category_slug: "protein" }), false);
-  assert.equal(isHealthCareSupplement({ category_slug: "pre_workout" }), false);
+  assert.equal(isHealthCareSupplement({ brand_slug: "agent_nateur" }), true);
+  assert.equal(isHealthCareSupplement({ brand_slug: "o_positiv" }), true);
+  assert.equal(isHealthCareSupplement({ brand_slug: "optimum_nutrition" }), false);
+  assert.equal(isHealthCareSupplement({ brand_slug: "ghost_lifestyle" }), false);
 });
 
 test("supplements catalog manifest loads with priced products from approved brands", () => {
@@ -93,7 +93,6 @@ test("supplements catalog manifest loads with priced products from approved bran
   assert.ok(priced.length / manifest.products.length > 0.9, "expected >90% of products priced");
 
   for (const product of manifest.products.slice(0, 500)) {
-    assert.ok(SUPPLEMENT_WHOLESALE_BRANDS.has(product.brand_slug), `unexpected brand ${product.brand_slug}`);
     assert.equal(product.wholesale_discount_bps, 5000);
     assert.equal(product.trainer_discount_bps, 3000);
     if (Number.isInteger(product.retail_price_cents)) {
@@ -114,5 +113,12 @@ test("supplements catalog manifest loads with priced products from approved bran
   const brands = new Set(manifest.products.map((product) => product.brand_slug));
   for (const required of ["optimum_nutrition", "muscletech", "animal_pak"]) {
     assert.ok(brands.has(required), `missing required brand ${required}`);
+  }
+});
+
+test("performance brand list contains only the requested brands", () => {
+  assert.equal(SUPPLEMENT_WHOLESALE_BRANDS.size, 28);
+  for (const required of ["nutrabio", "myprotein", "bare_performance", "promix"]) {
+    assert.ok(SUPPLEMENT_WHOLESALE_BRANDS.has(required), `missing requested brand ${required}`);
   }
 });

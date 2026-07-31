@@ -4,7 +4,7 @@ const {
   matchesWholesaleFilters,
   paginateWholesaleProducts,
 } = require("../_lib/wholesale-muay-thai");
-const { loadSupplementsCatalogManifest } = require("../_lib/wholesale-supplements");
+const { isHealthCareSupplement, loadSupplementsCatalogManifest } = require("../_lib/wholesale-supplements");
 
 const MAX_PAGE_SIZE = 48;
 
@@ -22,6 +22,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const manifest = loadSupplementsCatalogManifest();
+    const catalogGroup = String(req.query.catalog_group || "supplements").trim().toLowerCase();
     const filters = {
       search: String(req.query.search || req.query.q || "").trim(),
       brand: String(req.query.brand || "").trim(),
@@ -31,15 +32,20 @@ module.exports = async function handler(req, res) {
       availability: String(req.query.availability || "").trim(),
     };
 
-    const filtered = manifest.products.filter((product) => matchesWholesaleFilters(product, filters));
+    const baseProducts = manifest.products.filter((product) => {
+      if (catalogGroup === "health-care") return isHealthCareSupplement(product);
+      return !isHealthCareSupplement(product);
+    });
+    const filtered = baseProducts.filter((product) => matchesWholesaleFilters(product, filters));
     const page = normalizePageValue(req.query.page, 1, 9999);
     const pageSize = normalizePageValue(req.query.page_size || req.query.limit, 24, MAX_PAGE_SIZE);
     const pagination = paginateWholesaleProducts(filtered, page, pageSize);
-    const facets = collectWholesaleFacets(manifest.products);
+    const facets = collectWholesaleFacets(baseProducts);
 
     json(res, 200, {
       generated_at: manifest.generated_at,
-      product_count: manifest.products.length,
+      catalog_group: catalogGroup,
+      product_count: baseProducts.length,
       filtered_count: filtered.length,
       pagination: {
         page: pagination.page,
@@ -70,6 +76,8 @@ module.exports = async function handler(req, res) {
         retail_price_cents: product.retail_price_cents,
         wholesale_price_cents: product.wholesale_price_cents,
         wholesale_discount_bps: product.wholesale_discount_bps,
+        trainer_price_cents: product.trainer_price_cents,
+        trainer_discount_bps: product.trainer_discount_bps,
         sizes: product.sizes,
         colors: product.colors,
         other_options: product.other_options,

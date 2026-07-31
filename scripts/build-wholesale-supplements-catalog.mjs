@@ -92,7 +92,6 @@ function buildCandidateSql() {
     from products p
     where p.excluded = 0
       and p.available = 1
-      and lower(p.brand) in (${sqlList(SUPPLEMENT_WHOLESALE_BRANDS)})
       and lower(coalesce(p.store_department, '')) in (${sqlList(SUPPLEMENT_DEPARTMENTS)})
       and coalesce(
         (
