@@ -2,6 +2,7 @@ const { getSiteUrl, getClientIp, handleError, json, methodNotAllowed, readJson, 
 const { getSupabaseAdmin } = require("../_lib/supabase");
 const {
   loadWholesaleCatalogManifest,
+  loadPublishedFightCatalogManifest,
   normalizeQuoteRequestBody,
   sanitizeQuoteItem,
 } = require("../_lib/wholesale-muay-thai");
@@ -56,6 +57,19 @@ function validateSelectedOptions(product, selectedOptions) {
     }
   }
 
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  if (variants.length && Object.keys(clean).length) {
+    const selectedVariant = variants.find((variant) =>
+      Object.entries(clean).every(([key, value]) => String(variant.selected_options?.[key] || "").toLowerCase() === String(value).toLowerCase())
+    );
+    if (selectedVariant && selectedVariant.available === false) {
+      const error = new Error("That size or flavor is currently unavailable.");
+      error.statusCode = 400;
+      error.code = "unavailable_variant";
+      throw error;
+    }
+  }
+
   return clean;
 }
 
@@ -63,6 +77,23 @@ function isInternationalRetailRequest(rawBody, sourcePage) {
   const explicitMode = String((rawBody && (rawBody.order_mode || rawBody.orderMode)) || "").trim().toLowerCase();
   if (explicitMode === "international_retail") return true;
   return /\/catalog\/international_orders_martial_arts/i.test(String(sourcePage || ""));
+}
+
+function isMuaythaiMmaSource(sourcePage) {
+  return /(?:^|\/)(?:pages\/catalog\/)?muaythai_mma(?:\.html)?(?:[?#]|$)/i.test(String(sourcePage || ""));
+}
+
+function supplementsPricingTier(sourcePage) {
+  const source = String(sourcePage || "");
+  if (/\/supplements\/trainer(?:[/?#]|$)/i.test(source)) return "trainer";
+  if (
+    /\/supplements\/wholesale(?:[/?#]|$)/i.test(source) ||
+    /\/catalog\/wholesale-supplements(?:[/?#]|$)/i.test(source) ||
+    /\/pages\/catalog\/wholesale-supplements(?:\.html)?(?:[/?#]|$)/i.test(source)
+  ) {
+    return "wholesale";
+  }
+  return null;
 }
 
 function sumQuantities(items) {
@@ -157,8 +188,6 @@ module.exports = async function handler(req, res) {
 
   try {
     requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]);
-    const manifest = loadWholesaleCatalogManifest();
-    const supplementsManifest = loadSupplementsCatalogManifest();
     const rawBody = await readJson(req);
     const sourcePage = String(
       rawBody.source_page ||
@@ -168,10 +197,19 @@ module.exports = async function handler(req, res) {
         "/catalog/wholesale-muay-thai"
     ).slice(0, 300);
     const isInternationalRetail = isInternationalRetailRequest(rawBody, sourcePage);
+    const pricingTier = supplementsPricingTier(sourcePage);
+    const usePublishedFightCatalog = isMuaythaiMmaSource(sourcePage);
+    const manifest = usePublishedFightCatalog
+      ? loadPublishedFightCatalogManifest()
+      : loadWholesaleCatalogManifest();
+    const supplementsManifest = usePublishedFightCatalog
+      ? { products: [] }
+      : loadSupplementsCatalogManifest();
     const body = normalizeQuoteRequestBody(rawBody, { requireCompany: !isInternationalRetail });
-    const productsById = new Map(
-      [...manifest.products, ...supplementsManifest.products].map((product) => [String(product.id), product])
-    );
+    const catalogProducts = pricingTier
+      ? supplementsManifest.products
+      : [...manifest.products, ...supplementsManifest.products];
+    const productsById = new Map(catalogProducts.map((product) => [String(product.id), product]));
     const items = body.items.map((rawItem) => {
       const productId = String(rawItem.product_id || rawItem.id || "").trim();
       if (!productId) {
@@ -198,9 +236,17 @@ module.exports = async function handler(req, res) {
       }
 
       const selectedOptions = validateSelectedOptions(product, rawItem.selected_options);
+      const pricedProduct =
+        pricingTier === "trainer"
+          ? {
+              ...product,
+              wholesale_price_cents: product.trainer_price_cents,
+              wholesale_discount_bps: product.trainer_discount_bps,
+            }
+          : product;
       return sanitizeQuoteItem(
         { ...rawItem, quantity, selected_options: selectedOptions },
-        product,
+        pricedProduct,
         { noDiscount: isInternationalRetail }
       );
     });
@@ -224,8 +270,9 @@ module.exports = async function handler(req, res) {
       client_ip: getClientIp(req),
       user_agent: String(req.headers["user-agent"] || "").slice(0, 500) || null,
       source_page: sourcePage,
-      catalog_generated_at: manifest.generated_at,
-      order_mode: isInternationalRetail ? "international_retail" : "wholesale",
+      catalog_generated_at: pricingTier ? supplementsManifest.generated_at : manifest.generated_at,
+      order_mode: isInternationalRetail ? "international_retail" : pricingTier || "wholesale",
+      pricing_tier: pricingTier,
       ...(bundleDiscountCents > 0
         ? { bundle_discount_cents: bundleDiscountCents, bundles: bundleInfo.bundles }
         : {}),

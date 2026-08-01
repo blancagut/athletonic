@@ -82,6 +82,7 @@ module.exports = async function handler(req, res) {
         colors: product.colors,
         other_options: product.other_options,
         variant_count: product.variant_count,
+        variants: product.variants,
       })),
     });
   } catch (error) {

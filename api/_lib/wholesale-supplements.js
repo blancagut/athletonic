@@ -115,6 +115,18 @@ function normalizeSupplementsCatalogProduct(product) {
       ? product.retail_price_cents
       : null;
 
+  const variants = Array.isArray(product.variants)
+    ? product.variants.map((variant) => ({
+        id: String(variant.id || variant.variant_id || "").trim(),
+        selected_options: variant.selected_options && typeof variant.selected_options === "object"
+          ? variant.selected_options
+          : {},
+        retail_price_cents: Number.isInteger(variant.retail_price_cents) ? variant.retail_price_cents : null,
+        available: variant.available !== false,
+        image_url: String(variant.image_url || "").trim() || null,
+      }))
+    : [];
+
   return {
     id: String(product.id || ""),
     brand_slug: String(product.brand_slug || "").trim(),
@@ -141,6 +153,7 @@ function normalizeSupplementsCatalogProduct(product) {
     colors: Array.isArray(product.colors) ? normalizeTextList(product.colors) : [],
     other_options: Array.isArray(product.other_options) ? normalizeTextList(product.other_options) : [],
     variant_count: Number(product.variant_count || 0) || 0,
+    variants,
   };
 }
 
@@ -150,7 +163,8 @@ function loadSupplementsCatalogManifest() {
   }
 
   const manifest = JSON.parse(fs.readFileSync(SUPPLEMENTS_CATALOG_PATH, "utf8"));
-  const products = Array.isArray(manifest.products) ? manifest.products.map(normalizeSupplementsCatalogProduct) : [];
+  const products = (Array.isArray(manifest.products) ? manifest.products.map(normalizeSupplementsCatalogProduct) : [])
+    .sort((a, b) => a.brand.localeCompare(b.brand, undefined, { sensitivity: "base" }) || a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
   return {
     generated_at: manifest.generated_at || null,
     source_db: manifest.source_db || null,

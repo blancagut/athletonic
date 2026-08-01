@@ -129,8 +129,8 @@
     }
     return `
       <div class="wholesale-line__price">
-        <span class="supplement-list-price">List <del>${retail}</del></span>
-        <strong>${tierPrice}</strong>
+        <span class="supplement-list-price">List <del data-current-retail-price>${retail}</del></span>
+        <strong data-current-tier-price>${tierPrice}</strong>
         <em>${escapeHtml(discountLabel(product[DISCOUNT_FIELD]))}</em>
       </div>
     `;
@@ -465,6 +465,22 @@
     return selected;
   }
 
+  function updateLineVariantPrice(line, product) {
+    const variants = Array.isArray(product.variants) ? product.variants : [];
+    if (!variants.length) return;
+    const selected = selectedOptionsForLine(line, product);
+    const variant = variants.find((candidate) => Object.entries(selected).every(([key, value]) =>
+      String(candidate.selected_options?.[key] || "").toLowerCase() === String(value).toLowerCase()
+    ));
+    if (!variant || !Number.isInteger(variant.retail_price_cents)) return;
+    const discount = Number(product[DISCOUNT_FIELD] || 0);
+    const tierPrice = Math.max(1, Math.round(variant.retail_price_cents * (10000 - discount) / 10000));
+    const retailEl = line.querySelector("[data-current-retail-price]");
+    const tierEl = line.querySelector("[data-current-tier-price]");
+    if (retailEl) retailEl.textContent = formatUsd(variant.retail_price_cents);
+    if (tierEl) tierEl.textContent = formatUsd(tierPrice);
+  }
+
   function quantityForLine(line) {
     const input = line.querySelector("[data-card-qty]");
     const value = Number.parseInt(input && input.value, 10);
@@ -626,6 +642,11 @@
       });
     }
     if (els.list) els.list.addEventListener("click", handleLineClick);
+    if (els.list) els.list.addEventListener("change", (event) => {
+      const line = event.target.closest("[data-product-id]");
+      const product = line ? productById(line.dataset.productId) : null;
+      if (line && product) updateLineVariantPrice(line, product);
+    });
     if (els.quoteOpen) els.quoteOpen.addEventListener("click", openQuoteDrawer);
     if (els.quoteClose) els.quoteClose.addEventListener("click", closeQuoteDrawer);
     if (els.quoteBackdrop) els.quoteBackdrop.addEventListener("click", closeQuoteDrawer);
