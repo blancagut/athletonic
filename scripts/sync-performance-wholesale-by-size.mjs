@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const {
   SUPPLEMENT_WHOLESALE_BRANDS,
+  isNonSupplementCatalogProduct,
   normalizeSupplementSizeLabel,
 } = require("../api/_lib/wholesale-supplements.js");
 
@@ -124,7 +125,7 @@ for (const product of manifest.products) {
   }
 }
 
-manifest.products = rebuilt.sort((a, b) =>
+manifest.products = rebuilt.filter((product) => !isNonSupplementCatalogProduct(product)).sort((a, b) =>
   String(a.brand).localeCompare(String(b.brand), undefined, { sensitivity: "base" }) ||
   String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base", numeric: true })
 );

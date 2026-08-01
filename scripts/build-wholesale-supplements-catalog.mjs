@@ -9,6 +9,7 @@ const {
   SUPPLEMENT_WHOLESALE_BRANDS,
   SUPPLEMENT_DEPARTMENTS,
   deriveSupplementCategory,
+  isNonSupplementCatalogProduct,
 } = require("../api/_lib/wholesale-supplements.js");
 
 const ROOT = process.cwd();
@@ -156,7 +157,7 @@ function main() {
     const options = parseOptionGroups(row.options);
     const variantCount = Math.max(options.sizes.length, 1) * Math.max(options.flavors.length, 1);
 
-    products.push({
+    const product = {
       id,
       brand_slug: brandSlug,
       brand: brandLabel(brandSlug),
@@ -178,7 +179,8 @@ function main() {
       colors: options.flavors,
       other_options: options.other,
       variant_count: variantCount,
-    });
+    };
+    if (!isNonSupplementCatalogProduct(product)) products.push(product);
   }
 
   products.sort((a, b) => {

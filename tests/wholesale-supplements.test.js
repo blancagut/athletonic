@@ -7,6 +7,7 @@ const {
   WHOLESALE_SUPPLEMENTS_DISCOUNT_BPS,
   deriveSupplementCategory,
   isHealthCareSupplement,
+  isNonSupplementCatalogProduct,
   loadSupplementsCatalogManifest,
   normalizeSupplementsCatalogProduct,
   normalizeSupplementSizeLabel,
@@ -84,6 +85,20 @@ test("health care categories stay separate from performance supplements", () => 
   assert.equal(isHealthCareSupplement({ brand_slug: "o_positiv" }), true);
   assert.equal(isHealthCareSupplement({ brand_slug: "optimum_nutrition" }), false);
   assert.equal(isHealthCareSupplement({ brand_slug: "ghost_lifestyle" }), false);
+});
+
+test("non-supplement merchandise is excluded from supplement catalogs", () => {
+  for (const name of [
+    "Beer Gut Blaster E-Book Offer",
+    "Huge Supplements Digital Gift Card",
+    "Limited Edition Trucker Hat",
+    "Opti-Lock Shaker",
+    "Smart Energy Resistance Band",
+  ]) {
+    assert.equal(isNonSupplementCatalogProduct({ name }), true, name);
+  }
+  assert.equal(isNonSupplementCatalogProduct({ name: "Gold Standard 100% Whey" }), false);
+  assert.equal(isNonSupplementCatalogProduct({ name: "PRO Quench", category_label: "Accessories" }), false);
 });
 
 test("supplements catalog manifest loads with priced products from approved brands", () => {
@@ -164,4 +179,9 @@ test("all performance supplement rows use active size-specific variants", () => 
     assert.ok(product.variants.length > 0, `${product.brand}: ${product.name} has no variants`);
     assert.ok(product.variants.every((variant) => variant.available), `${product.brand}: ${product.name} includes unavailable variants`);
   }
+});
+
+test("published supplement manifest contains only consumable products", () => {
+  const manifest = require("../data/wholesale-supplements-catalog.json");
+  assert.equal(manifest.products.some(isNonSupplementCatalogProduct), false);
 });

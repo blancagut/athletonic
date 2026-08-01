@@ -83,6 +83,18 @@ const COLLECTION_LABELS = {
   rtd_shakes: "RTD Shakes",
 };
 
+const NON_SUPPLEMENT_PRODUCT_PATTERNS = [
+  /\be-?books?\b/i,
+  /\bdigital (?:download|gift card|guide|workbook)\b/i,
+  /\b(?:online|electronic|e-?) gift card\b/i,
+  /\bgift card\b/i,
+  /\bmystery gift\b/i,
+  /\b(?:training|workout|meal) (?:guide|plan|program|workbook)\b/i,
+  /\b(?:t-?shirts?|tee shirts?|hoodies?|sweatshirts?|tank tops?|joggers?|leggings?|sports bras?|crop tops?|jerseys?|crewnecks?)\b/i,
+  /\b(?:trucker hats?|snapbacks?|beanies?|baseball caps?)\b/i,
+  /\b(?:shakers?|resistance bands?|gym bags?|duffels?|backpacks?|keychains?|lifting straps?|wrist wraps?|knee sleeves?|pill organizers?)\b/i,
+];
+
 function deriveSupplementCategory(storeCollection) {
   const slug = String(storeCollection || "").trim().toLowerCase();
   return {
@@ -103,6 +115,17 @@ function supplementTrainerPriceCents(retailPriceCents) {
 
 function isHealthCareSupplement(product) {
   return !SUPPLEMENT_WHOLESALE_BRANDS.has(String(product?.brand_slug || "").trim().toLowerCase());
+}
+
+function isNonSupplementCatalogProduct(product) {
+  const searchable = [
+    product?.name,
+    product?.product_type,
+    product?.category_label,
+    product?.url,
+  ].filter(Boolean).join(" ");
+
+  return NON_SUPPLEMENT_PRODUCT_PATTERNS.some((pattern) => pattern.test(searchable));
 }
 
 function normalizeSupplementSizeLabel(value) {
@@ -174,6 +197,7 @@ function loadSupplementsCatalogManifest() {
 
   const manifest = JSON.parse(fs.readFileSync(SUPPLEMENTS_CATALOG_PATH, "utf8"));
   const products = (Array.isArray(manifest.products) ? manifest.products.map(normalizeSupplementsCatalogProduct) : [])
+    .filter((product) => !isNonSupplementCatalogProduct(product))
     .sort((a, b) => a.brand.localeCompare(b.brand, undefined, { sensitivity: "base" }) || a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
   return {
     generated_at: manifest.generated_at || null,
@@ -191,6 +215,7 @@ module.exports = {
   cleanText,
   deriveSupplementCategory,
   isHealthCareSupplement,
+  isNonSupplementCatalogProduct,
   normalizeSupplementSizeLabel,
   loadSupplementsCatalogManifest,
   normalizeSupplementsCatalogProduct,
