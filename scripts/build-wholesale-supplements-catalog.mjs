@@ -150,6 +150,7 @@ function main() {
 
     const name = stripHtml(row.name || "").trim();
     if (!name) continue;
+    if (brandSlug === "alpha_lion" && /^mystery gift$/i.test(name)) continue;
 
     const category = deriveSupplementCategory(row.store_collection);
     const options = parseOptionGroups(row.options);

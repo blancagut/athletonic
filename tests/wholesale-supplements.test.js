@@ -153,3 +153,15 @@ test("Optimum wholesale rows are split by size and use MSRP instead of sale pric
   assert.deepEqual(serious12lb.sizes, ["12 lb"]);
   assert.equal(serious12lb.retail_price_cents, 11499);
 });
+
+test("all performance supplement rows use active size-specific variants", () => {
+  const manifest = loadSupplementsCatalogManifest();
+  const performance = manifest.products.filter((product) => SUPPLEMENT_WHOLESALE_BRANDS.has(product.brand_slug));
+
+  assert.ok(performance.length > 1500);
+  for (const product of performance) {
+    assert.ok(product.sizes.length <= 1, `${product.brand}: ${product.name} contains multiple sizes`);
+    assert.ok(product.variants.length > 0, `${product.brand}: ${product.name} has no variants`);
+    assert.ok(product.variants.every((variant) => variant.available), `${product.brand}: ${product.name} includes unavailable variants`);
+  }
+});

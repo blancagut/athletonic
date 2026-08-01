@@ -36,7 +36,7 @@ for (const product of products) {
   for (const [size, sizeVariants] of bySize) {
     const activeVariants = sizeVariants.filter((variant) => variant.availability_status === "active");
     const defaultVariant = activeVariants[0] || sizeVariants[0];
-    const mappedVariants = sizeVariants.map((variant) => ({
+    const mappedVariants = activeVariants.map((variant) => ({
       id: String(variant.variant_id),
       selected_options: {
         ...(variant.exact_flavor_name ? { Flavor: variant.exact_flavor_name } : {}),
@@ -47,6 +47,7 @@ for (const product of products) {
       image_url: imageFor(variant, product),
     }));
 
+    if (!mappedVariants.length) continue;
     optimumRows.push({
       id: `official-optimum-${product.product_handle}-${slug(size)}`,
       brand_slug: "optimum_nutrition",
@@ -66,7 +67,7 @@ for (const product of products) {
       availability_status: activeVariants.length > 0 ? "Available" : "Out of stock",
       retail_price_cents: defaultVariant ? cents(listPrice(defaultVariant)) : null,
       sizes: size === "Standard" ? [] : [size],
-      colors: [...new Set(sizeVariants.map((variant) => variant.exact_flavor_name).filter(Boolean))],
+      colors: [...new Set(activeVariants.map((variant) => variant.exact_flavor_name).filter(Boolean))],
       other_options: [],
       variant_count: mappedVariants.length || 1,
       variants: mappedVariants,
