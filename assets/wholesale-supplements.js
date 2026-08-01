@@ -13,12 +13,34 @@
     : "supplements";
   const INITIAL_BRAND = INITIAL_QUERY.get("brand") || "";
   const BRAND_LOGOS = {
+    alpha_lion: "/assets/brands/alpha_lion-logo.png",
     optimum_nutrition: "/assets/brands/Optimum-Nutrition-Logo.png",
     muscletech: "/assets/brands/muscletech%20-%20logo.png",
     animal_pak: "/assets/brands/animal-logo.png",
+    bare_performance: "/assets/brands/bare_performance-logo.png",
+    black_magic_supps: "/assets/brands/black_magic_supps-logo.png",
+    bucked_up: "/assets/brands/bucked_up-logo.png",
     cellucor: "/assets/brands/cellucor-logo.svg",
+    core_nutritionals: "/assets/brands/core_nutritionals-logo.svg",
     ghost_lifestyle: "/assets/brands/ghost-logo.png",
+    glaxon: "/assets/brands/glaxon-logo.svg",
+    gorilla_mind: "/assets/brands/gorilla_mind-logo.png",
+    huge_supplements: "/assets/brands/huge_supplements-logo.png",
+    jacked_factory: "/assets/brands/jacked_factory-logo.png",
+    jym: "/assets/brands/jym-logo.png",
+    kaged: "/assets/brands/kaged-logo.png",
+    musclepharm: "/assets/brands/musclepharm-logo.svg",
+    myprotein: "/assets/brands/myprotein-logo.png",
     nutrabio: "/assets/brands/nutrabio-logo.svg",
+    nutrex: "/assets/brands/nutrex-logo.png",
+    pescience: "/assets/brands/pescience-logo.png",
+    promix: "/assets/brands/promix-logo.png",
+    quest_nutrition: "/assets/brands/quest_nutrition-logo.png",
+    raw_nutrition: "/assets/brands/raw_nutrition-logo.png",
+    redcon1: "/assets/brands/redcon1-logo.png",
+    ryse_supplements: "/assets/brands/ryse_supplements-logo.png",
+    swolverine: "/assets/brands/swolverine-logo.png",
+    transparent_labs: "/assets/brands/transparent_labs-logo.png",
   };
 
   const els = {
