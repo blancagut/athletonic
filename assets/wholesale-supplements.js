@@ -477,8 +477,10 @@
     const tierPrice = Math.max(1, Math.round(variant.retail_price_cents * (10000 - discount) / 10000));
     const retailEl = line.querySelector("[data-current-retail-price]");
     const tierEl = line.querySelector("[data-current-tier-price]");
+    const imageEl = line.querySelector(".wholesale-line__photo img");
     if (retailEl) retailEl.textContent = formatUsd(variant.retail_price_cents);
     if (tierEl) tierEl.textContent = formatUsd(tierPrice);
+    if (imageEl && variant.image_url) imageEl.src = variant.image_url;
   }
 
   function quantityForLine(line) {
