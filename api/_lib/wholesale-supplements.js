@@ -105,6 +105,16 @@ function isHealthCareSupplement(product) {
   return !SUPPLEMENT_WHOLESALE_BRANDS.has(String(product?.brand_slug || "").trim().toLowerCase());
 }
 
+function normalizeSupplementSizeLabel(value) {
+  const text = String(value || "").trim().replace(/\s+/g, " ");
+  const weight = text.match(/^(\d+(?:\.\d+)?)\s*(lb|lbs|kg|g|grams?|oz)\.?\s*(?:bag|canister|tub)?$/i);
+  if (!weight) return text;
+  const amount = String(Number(weight[1]));
+  const rawUnit = weight[2].toLowerCase();
+  const unit = rawUnit === "lbs" ? "lb" : rawUnit.startsWith("gram") ? "g" : rawUnit;
+  return `${amount} ${unit}`;
+}
+
 function normalizeTextList(values) {
   return [...new Set((values || []).map((value) => stripHtml(value).trim()).filter(Boolean))];
 }
@@ -181,6 +191,7 @@ module.exports = {
   cleanText,
   deriveSupplementCategory,
   isHealthCareSupplement,
+  normalizeSupplementSizeLabel,
   loadSupplementsCatalogManifest,
   normalizeSupplementsCatalogProduct,
   supplementTrainerPriceCents,

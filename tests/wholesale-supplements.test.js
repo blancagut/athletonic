@@ -9,6 +9,7 @@ const {
   isHealthCareSupplement,
   loadSupplementsCatalogManifest,
   normalizeSupplementsCatalogProduct,
+  normalizeSupplementSizeLabel,
   supplementTrainerPriceCents,
   supplementWholesalePriceCents,
 } = require("../api/_lib/wholesale-supplements");
@@ -121,6 +122,16 @@ test("performance brand list contains only the requested brands", () => {
   for (const required of ["nutrabio", "myprotein", "bare_performance", "promix"]) {
     assert.ok(SUPPLEMENT_WHOLESALE_BRANDS.has(required), `missing requested brand ${required}`);
   }
+});
+
+test("supplement size filters group equivalent weight labels", () => {
+  assert.equal(normalizeSupplementSizeLabel("5lb"), "5 lb");
+  assert.equal(normalizeSupplementSizeLabel("5 LB"), "5 lb");
+  assert.equal(normalizeSupplementSizeLabel("5 lbs"), "5 lb");
+  assert.equal(normalizeSupplementSizeLabel("5 LB Bag"), "5 lb");
+  assert.equal(normalizeSupplementSizeLabel("10 lbs"), "10 lb");
+  assert.equal(normalizeSupplementSizeLabel("500 Grams"), "500 g");
+  assert.equal(normalizeSupplementSizeLabel("30 Servings"), "30 Servings");
 });
 
 test("Optimum wholesale rows are split by size and use MSRP instead of sale price", () => {

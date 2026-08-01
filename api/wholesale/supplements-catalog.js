@@ -4,7 +4,11 @@ const {
   matchesWholesaleFilters,
   paginateWholesaleProducts,
 } = require("../_lib/wholesale-muay-thai");
-const { isHealthCareSupplement, loadSupplementsCatalogManifest } = require("../_lib/wholesale-supplements");
+const {
+  isHealthCareSupplement,
+  loadSupplementsCatalogManifest,
+  normalizeSupplementSizeLabel,
+} = require("../_lib/wholesale-supplements");
 
 const MAX_PAGE_SIZE = 48;
 
@@ -36,11 +40,19 @@ module.exports = async function handler(req, res) {
       if (catalogGroup === "health-care") return isHealthCareSupplement(product);
       return !isHealthCareSupplement(product);
     });
-    const filtered = baseProducts.filter((product) => matchesWholesaleFilters(product, filters));
+    const canonicalSize = normalizeSupplementSizeLabel(filters.size).toLowerCase();
+    const filtered = baseProducts.filter((product) => {
+      if (!matchesWholesaleFilters(product, { ...filters, size: "" })) return false;
+      if (!canonicalSize) return true;
+      return product.sizes.some((value) => normalizeSupplementSizeLabel(value).toLowerCase() === canonicalSize);
+    });
     const page = normalizePageValue(req.query.page, 1, 9999);
     const pageSize = normalizePageValue(req.query.page_size || req.query.limit, 24, MAX_PAGE_SIZE);
     const pagination = paginateWholesaleProducts(filtered, page, pageSize);
     const facets = collectWholesaleFacets(baseProducts);
+    facets.sizes = [...new Set(
+      baseProducts.flatMap((product) => product.sizes || []).map(normalizeSupplementSizeLabel).filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
 
     json(res, 200, {
       generated_at: manifest.generated_at,
