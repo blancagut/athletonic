@@ -122,3 +122,23 @@ test("performance brand list contains only the requested brands", () => {
     assert.ok(SUPPLEMENT_WHOLESALE_BRANDS.has(required), `missing requested brand ${required}`);
   }
 });
+
+test("Optimum wholesale rows are split by size and use MSRP instead of sale price", () => {
+  const manifest = loadSupplementsCatalogManifest();
+  const optimum = manifest.products.filter((product) => product.brand_slug === "optimum_nutrition");
+  const whey5lb = optimum.find((product) => product.id === "official-optimum-gold-standard-100-whey-protein-powder-5-lb");
+  const serious6lb = optimum.find((product) => product.id === "official-optimum-serious-mass-weight-gainer-protein-powder-6-lb");
+  const serious12lb = optimum.find((product) => product.id === "official-optimum-serious-mass-weight-gainer-protein-powder-12-lb");
+
+  assert.ok(whey5lb);
+  assert.deepEqual(whey5lb.sizes, ["5 lb"]);
+  assert.equal(whey5lb.retail_price_cents, 13199);
+  assert.equal(whey5lb.wholesale_price_cents, 6600);
+  assert.ok(whey5lb.colors.includes("Double Rich Chocolate"));
+  assert.ok(whey5lb.colors.includes("Vanilla Ice Cream"));
+  assert.ok(serious6lb);
+  assert.ok(serious12lb);
+  assert.deepEqual(serious6lb.sizes, ["6 lb"]);
+  assert.deepEqual(serious12lb.sizes, ["12 lb"]);
+  assert.equal(serious12lb.retail_price_cents, 11499);
+});
