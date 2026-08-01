@@ -7,9 +7,11 @@
   const DISCOUNT_FIELD = PRICING_TIER === "trainer" ? "trainer_discount_bps" : "wholesale_discount_bps";
   const STORAGE_KEY = `athletonic-${PRICING_TIER}-supplements-quote-cart-v1`;
   const PAGE_SIZE = 60;
-  const INITIAL_CATALOG_GROUP = new URLSearchParams(window.location.search).get("catalog") === "health-care"
+  const INITIAL_QUERY = new URLSearchParams(window.location.search);
+  const INITIAL_CATALOG_GROUP = INITIAL_QUERY.get("catalog") === "health-care"
     ? "health-care"
     : "supplements";
+  const INITIAL_BRAND = INITIAL_QUERY.get("brand") || "";
   const BRAND_LOGOS = {
     optimum_nutrition: "/assets/brands/Optimum-Nutrition-Logo.png",
     muscletech: "/assets/brands/muscletech%20-%20logo.png",
@@ -47,7 +49,7 @@
   };
 
   const state = {
-    filters: { search: "", brand: "", category: "", size: "", color: "" },
+    filters: { search: "", brand: INITIAL_BRAND, category: "", size: "", color: "" },
     catalogGroup: INITIAL_CATALOG_GROUP,
     facets: { brands: [], categories: [], sizes: [], colors: [] },
     page: 1,
