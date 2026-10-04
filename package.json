@@ -1,0 +1,50 @@
+{
+  "name": "athletonic",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/serve-local.mjs",
+    "serve": "node scripts/serve-local.mjs",
+    "deals": "node scripts/deals-engine.mjs",
+    "generate": "node scripts/generate-home.mjs && node scripts/build-us-seo-landings.mjs && npm run sync:google-tag",
+    "seo:us": "node scripts/build-us-seo-landings.mjs",
+    "sync:product-social": "node scripts/sync-product-social-meta.mjs",
+    "sync:product-urls": "node scripts/sync-product-public-urls.mjs",
+    "check:product-urls": "node scripts/sync-product-public-urls.mjs --check",
+    "sync:product-routes": "node scripts/sync-product-routes.mjs",
+    "scrape:primo": "node scripts/scrape-yokkao-primo.mjs primo",
+    "normalize:cleto-variants": "node scripts/normalize-cleto-reyes-variants.mjs",
+    "discount:cleto-reyes": "node scripts/apply-cleto-reyes-discount.mjs",
+    "remove:cleto-product": "node scripts/remove-cleto-reyes-product.mjs",
+    "sync:primo": "node scripts/sync-primo-storefront.mjs",
+    "sync:fairtex": "node scripts/sync-fairtex-catalog.mjs",
+    "audit:product-social": "node scripts/sync-product-social-meta.mjs --check",
+    "sync:account-panel": "node scripts/sync-account-panel.mjs",
+    "sync:navigation": "node scripts/sync-primary-navigation.mjs",
+    "check:navigation": "node scripts/sync-primary-navigation.mjs --check",
+    "sync:optimum-navigation": "node scripts/sync-optimum-product-navigation.mjs",
+    "check:optimum-navigation": "node scripts/sync-optimum-product-navigation.mjs --check",
+    "seal:commerce": "node scripts/seal-commerce-data.mjs",
+    "verify:commerce-seal": "node scripts/seal-commerce-data.mjs --check",
+    "build:kit-index": "node scripts/build-kit-builder-index.mjs",
+    "sync:brand-social": "node scripts/sync-brand-social-meta.mjs",
+    "check:brand-social": "node scripts/sync-brand-social-meta.mjs --check",
+    "generate:deals": "npm run deals && npm run generate",
+    "audit:products": "node scripts/audit-product-html.mjs",
+    "sync:i18n": "node scripts/sync-i18n-dict.mjs",
+    "build:locales": "node scripts/sync-i18n-dict.mjs && node scripts/build-locales.mjs && npm run sync:google-tag",
+    "sync:google-tag": "npm run verify:commerce-seal && node scripts/sync-google-tag.mjs && npm run verify:commerce-seal",
+    "check:google-tag": "node scripts/sync-google-tag.mjs --check",
+    "test": "find api -name '*.js' -exec node --check {} ';' && node --check assets/i18n.js && node --check assets/cart.js && node --check assets/order-confirmation.js && node --check assets/wholesale-muay-thai.js && node scripts/sync-i18n-dict.mjs --check && node scripts/sync-primary-navigation.mjs --check && node --test tests/checkout.validate.test.js tests/checkout.variant-overrides.test.js tests/retail-checkout-security.test.js tests/private-pricing.account.test.js tests/wholesale-applications.test.js tests/i18n-locales.test.js tests/pdp-catalog-consistency.test.js tests/admin.catalog-api.test.js tests/public.catalog-products.test.js tests/catalog.search.test.js tests/admin.variant-pricing-api.test.js tests/wholesale-muay-thai.test.js tests/wholesale-supplements.test.js tests/catalog-category-pages.test.js tests/fairtex-catalog-authority.test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "qrcode": "^1.5.4",
+    "resend": "^6.14.0"
+  },
+  "devDependencies": {
+    "vercel": "^54.2.0"
+  }
+}

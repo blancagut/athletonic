@@ -1,0 +1,72 @@
+# Python backend / scraper tooling — not deployed
+*.py
+__pycache__/
+.venv/
+requirements.txt
+node_modules/
+.vercel/
+.deploy-final-20260715/
+.git/
+.DS_Store
+test-results/
+.tmp/
+artifacts/
+research/
+Delete me/
+delete me/
+
+# Scraped data and images (large) — keep only the small catalogs the wholesale
+# APIs read at runtime (api/_lib/wholesale-muay-thai.js, wholesale-supplements.js);
+# everything else in data/ (multi-MB build sources / search indexes / checkout
+# catalog) stays excluded to avoid the Vercel request body / bundle size limit.
+output/
+outputs/
+archive_original_project/
+Sups-fight-only/
+Sups-raja-red/
+Sups-worktrees/
+virtual-gym-builder/
+data/*.json
+!data/checkout-catalog.json
+!data/search-index.json
+!data/wholesale-muay-thai-catalog.json
+!data/topking-products.json
+!data/wholesale-supplements-catalog.json
+data/final/*.json
+!data/final/catalog.published.json
+!data/final/search-index.published.json
+!data/brand-page-catalog.json
+!data/cleto-reyes-products.json
+data/archive/
+api/cart/validate 2.js
+api/catalog/products 2.js
+api/checkout/index 2.js
+
+# Legacy card-checkout endpoints are kept in source history but are not part of
+# the bank-transfer order flow deployed to production.
+api/admin/
+api/checkout.js
+api/checkout-quote.js
+api/checkout/quote.js
+api/orders/index.js
+api/newsletter.js
+api/wholesale/supplements-catalog.js
+
+# Supabase CLI local dev files
+supabase/
+supabase/.temp/
+supabase/.branches/
+
+# Dev/tool scripts
+scripts/
+tools/
+tests/
+utils/
+scrapers/
+src/
+docs/
+virtual-gym-builder/realistic-prototype/
+
+# Secrets (belt-and-suspenders — also in .gitignore)
+.env
+.env.*
