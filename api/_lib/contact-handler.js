@@ -1,11 +1,12 @@
 "use strict";
 
-const { normalizeContactMessage } = require("./_lib/contact-message");
-const { sendContactMessageEmail } = require("./_lib/email");
-const { getClientIp, handleError, json, methodNotAllowed, readJson, requireEnv } = require("./_lib/http");
+const { normalizeContactMessage } = require("./contact-message");
+const { sendContactMessageEmail } = require("./email");
+const { getClientIp, handleError, json, methodNotAllowed, readJson, requireEnv } = require("./http");
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
+const MAX_RATE_LIMIT_KEYS = 2000;
 const attemptsByIp = new Map();
 
 function checkRateLimit(ip) {
@@ -16,7 +17,7 @@ function checkRateLimit(ip) {
     else attemptsByIp.delete(key);
   }
 
-  const key = ip || "unknown";
+  const key = String(ip || "unknown").slice(0, 80);
   const recent = attemptsByIp.get(key) || [];
   if (recent.length >= RATE_LIMIT_MAX) {
     const error = new Error("Too many messages. Please try again later.");
@@ -24,14 +25,14 @@ function checkRateLimit(ip) {
     error.code = "contact_rate_limited";
     throw error;
   }
-  if (!attemptsByIp.has(key) && attemptsByIp.size >= 2000) {
+  if (!attemptsByIp.has(key) && attemptsByIp.size >= MAX_RATE_LIMIT_KEYS) {
     attemptsByIp.delete(attemptsByIp.keys().next().value);
   }
   recent.push(now);
   attemptsByIp.set(key, recent);
 }
 
-module.exports = async function handler(req, res) {
+module.exports = async function handleContactMessage(req, res) {
   if (req.method !== "POST") {
     methodNotAllowed(res, ["POST"]);
     return;

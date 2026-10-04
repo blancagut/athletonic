@@ -10,6 +10,7 @@ const {
   sendInternationalOrderCustomerEmail,
   sendInternationalOrderSalesEmail,
 } = require("./_lib/email");
+const handleContactMessage = require("./_lib/contact-handler");
 
 const MAX_ORDER_BYTES = 6 * 1024 * 1024;
 
@@ -22,6 +23,17 @@ function uniqueEmails(values) {
 }
 
 module.exports = async function handler(req, res) {
+  const query =
+    req.query && typeof req.query === "object"
+      ? req.query
+      : Object.fromEntries(new URL(req.url, "http://localhost").searchParams);
+  // Keep the public contact endpoint within Vercel Hobby's function quota by
+  // routing it through this already-deployed handler via vercel.json.
+  if (query.workflow === "contact") {
+    await handleContactMessage(req, res);
+    return;
+  }
+
   if (req.method === "GET") {
     try {
       const params =

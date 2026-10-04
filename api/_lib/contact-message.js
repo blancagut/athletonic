@@ -24,7 +24,7 @@ function normalizeContactMessage(body) {
     throw invalid("Please wait a moment and submit the form again.", "invalid_submission_timing");
   }
 
-  const name = String(body?.name || "").trim();
+  const name = String(body?.name || "").replace(/[\r\n\t]+/g, " ").trim();
   if (name.length < 2 || name.length > 120) throw invalid("Enter your name.", "invalid_name");
 
   const email = normalizeEmail(body?.email);
@@ -36,7 +36,7 @@ function normalizeContactMessage(body) {
   const message = String(body?.message || "").trim();
   if (message.length < 10 || message.length > 4000) throw invalid("Write a message between 10 and 4,000 characters.", "invalid_message");
 
-  const orderReference = String(body?.order_reference || "").trim().slice(0, 80);
+  const orderReference = String(body?.order_reference || "").replace(/[\r\n\t]+/g, " ").trim().slice(0, 80);
   return { name, email, topic, topicLabel: TOPICS[topic], message, orderReference };
 }
 
