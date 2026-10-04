@@ -1536,6 +1536,42 @@ async function sendInternationalOrderSalesEmail({ order, bankDetails, siteUrl, r
   });
 }
 
+async function sendContactMessageEmail({ recipientEmail, name, email, topicLabel, message, orderReference }) {
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeTopic = escapeHtml(topicLabel);
+  const safeReference = escapeHtml(orderReference || "Not provided");
+  const safeMessage = escapeHtml(message).replaceAll("\n", "<br />");
+  const text = [
+    "New Athletonic website inquiry",
+    "",
+    `Name: ${name}`,
+    `Email: ${email}`,
+    `Topic: ${topicLabel}`,
+    `Order reference: ${orderReference || "Not provided"}`,
+    "",
+    "Message:",
+    message,
+  ].join("\n");
+
+  return sendEmail({
+    to: recipientEmail,
+    subject: `Athletonic website inquiry: ${topicLabel}`,
+    replyTo: email,
+    text,
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;padding:24px;">
+        <p style="margin:0 0 12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;">Athletonic contact form</p>
+        <h1 style="margin:0 0 20px;font-size:24px;line-height:1.25;">New website inquiry</h1>
+        <p><strong>Topic:</strong> ${safeTopic}</p>
+        <p><strong>Name:</strong> ${safeName}<br /><strong>Reply email:</strong> ${safeEmail}</p>
+        <p><strong>Order reference:</strong> ${safeReference}</p>
+        <div style="margin-top:20px;padding:16px;background:#f1f5f9;border-radius:12px;">${safeMessage}</div>
+      </div>
+    `,
+  });
+}
+
 module.exports = {
   bankTransferAmountsHtml,
   bankTransferAmountsText,
@@ -1551,4 +1587,5 @@ module.exports = {
   sendWholesaleQuoteBuyerEmail,
   sendWholesaleOrderBuyerEmail,
   sendWholesaleOrderSalesEmail,
+  sendContactMessageEmail,
 };
